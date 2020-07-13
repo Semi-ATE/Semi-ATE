@@ -65,9 +65,9 @@ class ATEWidget(PluginMainWidget):
     def setup(self, options):
         refresh_action = self.create_action(
             name="refresh_ate",
-            text="Run",
+            text="Refresh",
             icon=self.create_icon("refresh"),
-            triggered=self.run_ate_project,
+            triggered=self.refresh_ate,
         )
 
         run_action = self.create_action(
@@ -96,4 +96,7 @@ class ATEWidget(PluginMainWidget):
     # --- PluginMainWidget API
     # ------------------------------------------------------------------------
     def run_ate_project(self):
+        pass
+
+    def refresh_ate(self):
         pass
