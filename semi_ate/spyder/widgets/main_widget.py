@@ -6,12 +6,16 @@ ATE widget.
 import sys
 
 # Third party imports
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QTreeView
+from qtpy.QtCore import Qt
 
 # Local imports
 from spyder.api.translations import get_translation
 from spyder.api.widgets import PluginMainWidget
 from spyder.api.widgets.toolbars import ApplicationToolBar
+
+from semi_ATE.spyder.widgets.navigation import ProjectNavigation
+from semi_ATE.spyder.widgets.validation import is_ATE_project
 
 
 # Localization
@@ -33,7 +37,14 @@ class ATEWidget(PluginMainWidget):
         super().__init__(name, plugin, parent=parent, options=options)
 
         # Widgets
-        self.tree = QWidget()
+        self.tree = QTreeView()
+        self.tree.setHeaderHidden(True)
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.context_menu_manager)
+
+
+
+
         self.toolbar = ApplicationToolBar(self, "ATE Plugin toolbar")
         self.label_hardware = QLabel("Hardware")
         self.label_base = QLabel("Base")
@@ -86,6 +97,41 @@ class ATEWidget(PluginMainWidget):
                 self.toolbar,
                 "run",
             )
+
+    def context_menu_manager(self, point):
+        # https://riverbankcomputing.com/pipermail/pyqt/2009-April/022668.html
+        # https://doc.qt.io/qt-5/qtreewidget-members.html
+        # https://www.qtcentre.org/threads/18929-QTreeWidgetItem-have-contextMenu
+        # https://cdn.materialdesignicons.com/4.9.95/
+        indexes = self.tree.selectedIndexes()
+        if indexes is None:
+            return
+
+        model_index = self.tree.indexAt(point)
+        item = self.model.itemFromIndex(model_index)
+        if item is None:
+            return
+
+        item.exec_context_menu()
+
+    def set_tree(self):
+        from semi_ate.spyder.widgets.actions_on.model.TreeModel import TreeModel
+        self.model = TreeModel(self.project_info, parent=self)
+        self.model.edit_file.connect(self.edit_test)
+        self.model.delete_file.connect(self.delete_test)
+        self.tree.setModel(self.model)
+        self.tree.doubleClicked.connect(self.item_double_clicked)
+
+    def item_double_clicked(self, index):
+        try:
+            item = self.tree.selectedIndexes()[0]
+        except Exception:
+            return
+
+        model_item = item.model().itemFromIndex(index)
+        from semi_ate.spyder.widgets.actions_on.tests.TestItem import TestItemChild
+        if isinstance(model_item, TestItemChild):
+            self.edit_test(model_item.path)
 
     def on_option_update(self, option, value):
         pass

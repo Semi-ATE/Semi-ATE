@@ -1,0 +1,41 @@
+#!/usr/bin/env conda run -n ATE python
+# -*- coding: utf-8 -*-
+"""
+{% for line in module_doc_string %}
+{{ line }}
+{% endfor %}
+"""
+import {{ definition['base_class'] }}
+
+
+class {{ definition['name'] }}({{ definition['base_class'] }}):
+    '''{{ definition['docstring'][0] }}
+    {% for i in range(1, definition['doc_string'].__len__()) %}
+    TDOD:  editing the test paramter must update the docstring
+    {{ definition['doc_string'][i] }}
+    {% endfor %}
+
+    {% for line in input_parameter_table %}
+    {{ line }}
+    {% endfor%}
+
+    {% for line in output_parameter_table %}
+    {{ line }}
+    {% endfor %}
+    '''
+
+    def do(self, ip, op):
+        """Default implementation for the '{{ definition['name'] }}' test."""
+        super().do(ip, op)
+
+
+if __name__ == '__main__':
+    import os
+    tester = os.environ.get('TESTER')
+    tester_mode = os.environ.get('TESTERMODE')
+    if tester_mode == 'DIRECT':
+        pass  # TODO: implement
+    else:  # 'INTERACTIVE'
+        from ATE.org import TestRunner
+        testRunner = TestRunner(__file__)
+

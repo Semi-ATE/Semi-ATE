@@ -1,0 +1,28 @@
+import common
+import sys
+from numpy import nan
+from ATE.org.sequencers import SequencerBase
+from ATE.org.sequencers.SequencerMqttClient import SequencerMqttClient
+{% for testinstance in test_list %}
+from {{testinstance.test_module}} import {{testinstance.test_class}}
+{% endfor %}
+
+sequencer = SequencerBase(None)
+
+{% for testinstance in test_list %}
+{{ testinstance.instance_name }} = {{ testinstance.test_class }}({{testinstance.input_parameters}}, { {% for op in testinstance.output_parameters %}'{{op}}': {'LTL': {{testinstance.output_parameters[op]['LTL']}}, 'UTL': {{testinstance.output_parameters[op]['UTL']}}},{% endfor %} })
+sequencer.register_test({{ testinstance.instance_name }})
+
+{% endfor %}
+if __name__ == '__main__':
+    # Assumptions:
+    # * common.mqtt contains an already constructed SequencerMqttClient
+    #   Note, that we assume, that any other business objects that need mqtt
+    #   have been given the very same client instance!
+    # * We've received the final mqtt settings (i.e. broker port etc. via cmdline)
+    # * The sequencer has been constructed with all relevant testcases
+
+    # Start MQTT using the sequencer.
+    # Note that run_from_command_line_with_sequencer will
+    # only return when the program should terminate.    
+    SequencerMqttClient.run_from_command_line_with_sequencer(sys.argv, common.mqtt, sequencer)

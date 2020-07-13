@@ -1,0 +1,47 @@
+#!/usr/bin/env conda run -n ATE python
+# -*- coding: utf-8 -*-
+"""
+{% for line in module_doc_string %}
+{{ line }}
+{% endfor %}
+"""
+from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+
+
+class {{ definition['name'] }}({{ definition['name'] }}_BC):
+    '''{{ definition['docstring'][0] }}
+    {% for i in range(1, definition['doc_string'].__len__()) %}
+    {{ definition['doc_string'][i] }}
+    {% endfor %}
+
+    {% for line in input_parameter_table %}
+    {{ line }}
+    {% endfor%}
+
+    {% for line in output_parameter_table %}
+    {{ line }}
+    {% endfor %}
+    '''
+
+    def do(self):
+        """Default implementation for the '{{ definition['name'] }}' test."""
+
+        {% for input_parameter in definition['input_parameters'] %}
+        print(self.ip.{{ input_parameter }})
+        {% endfor %}
+
+        {% for output_parameter in definition['output_parameters'] %}
+        self.op.{{ output_parameter }}.randn()
+        {% endfor %}
+
+
+if __name__ == '__main__':
+    import os
+    tester = os.environ.get('TESTER')
+    tester_mode = os.environ.get('TESTERMODE')
+    if tester_mode == 'DIRECT':
+        pass  # TODO: implement
+    else:  # 'INTERACTIVE'
+        from ATE.org import TestRunner
+        testRunner = TestRunner(__file__)
+
