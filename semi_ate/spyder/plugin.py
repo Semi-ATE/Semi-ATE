@@ -12,7 +12,7 @@ from qtpy.QtGui import QIcon
 # Local imports
 from spyder.api.plugins import ApplicationMenus, Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
-from ate.spyder.widgets.main_widget import ATEWidget
+from semi_ate.spyder.widgets.main_widget import ATEWidget
 
 # Localization
 _ = get_translation('spyder')
