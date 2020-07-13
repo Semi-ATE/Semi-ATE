@@ -6,5 +6,7 @@
 This means that the system is **not** build around a specific instrument (let's consider an ATE tester for a moment as a super instrument😋), it rather focuses on 
 organizing semiconductor testing in such a way that **all** use- (and special) corner cases have their well known place. This enables the users (read: DE's, TCE's, TE's & PE's) to focus on the **REAL** work (respectively: writing fast and stable tests & organizing the tests into test programs). 
 
+The `Semi-ATE` package is writen purely in Python (noarch) and provides besides libraries also a plugin to the [Spyder](https://www.spyder-ide.org/) IDE.
+
 Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
