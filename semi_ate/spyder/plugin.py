@@ -26,7 +26,7 @@ class ATE(SpyderDockablePlugin):
     """
     NAME = 'ate'
     REQUIRES = []
-    TABIFY = [Plugins.Help]
+    TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
 
@@ -45,7 +45,9 @@ class ATE(SpyderDockablePlugin):
         return QIcon()
 
     def register(self):
-        pass
-        # widget = self.get_widget()
+        widget = self.get_widget()
+
+        # Add toolbar
+        self.add_application_toolbar('ate_toolbar', widget.toolbar)
 
         # Register a new project type
