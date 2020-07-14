@@ -12,6 +12,7 @@ from qtpy.QtGui import QIcon
 # Local imports
 from spyder.api.plugins import ApplicationMenus, Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
+from ATE.spyder.project import ATEProject
 from ATE.spyder.widgets.main_widget import ATEWidget
 
 # Localization
@@ -49,5 +50,31 @@ class ATE(SpyderDockablePlugin):
 
         # Add toolbar
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
+        widget.toolbar.hide()
 
         # Register a new project type
+        # TODO: Temporal fix
+        projects = self._main._PLUGINS["project_explorer"]
+        projects.register_project_type(ATEProject)
+
+        # Register a new action to create consoles on the IPythonConsole
+        # TODO: Temporal fix
+        zconf_action = self.create_action(
+            name="show_zconf_dialog",
+            text="Select kernel from Zero Conf",
+            tip="",
+            icon=self.create_icon("run"),
+            triggered=self.show_zero_conf_dialog,
+        )
+        ipython = self._main._PLUGINS["ipython_console"]
+        # menu = ipython.get_main_menu()
+        # self.add_item_to_menu(
+        #     zconf_action,
+        #     menu,
+        #     "top",
+        # )
+
+    # --- ATE Plugin API
+    # ------------------------------------------------------------------------
+    def show_zero_conf_dialog(self):
+        print("something!")
