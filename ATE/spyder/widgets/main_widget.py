@@ -3,6 +3,7 @@ ATE widget.
 """
 
 # Standard library imports
+import os
 import sys
 
 # Third party imports
@@ -15,8 +16,7 @@ from spyder.api.widgets import PluginMainWidget
 from spyder.api.widgets.toolbars import ApplicationToolBar
 
 from ATE.spyder.widgets.navigation import ProjectNavigation
-from ATE.spyder.widgets.validation import is_ATE_project
-
+from ATE.spyder.widgets.actions_on.project.ProjectWizard import NewProjectDialog
 
 # Localization
 _ = get_translation('spyder')
@@ -42,9 +42,6 @@ class ATEWidget(PluginMainWidget):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.context_menu_manager)
 
-
-
-
         self.toolbar = ApplicationToolBar(self, "ATE Plugin toolbar")
         self.label_hardware = QLabel("Hardware")
         self.label_base = QLabel("Base")
@@ -52,6 +49,9 @@ class ATEWidget(PluginMainWidget):
         self.combo_hardware = QComboBox(parent=self)
         self.combo_base = QComboBox(parent=self)
         self.combo_target = QComboBox(parent=self)
+
+        # TODO: simplify the navigator to get ride of 'workspace_path'
+        self.project_info = ProjectNavigation('', '')
 
         # TODO: Temporary workaround
         self.label_hardware.setStyleSheet("background-color: transparent;")
@@ -74,12 +74,6 @@ class ATEWidget(PluginMainWidget):
         return self.tree
 
     def setup(self, options):
-        refresh_action = self.create_action(
-            name="refresh_ate",
-            text="Refresh",
-            icon=self.create_icon("refresh"),
-            triggered=self.refresh_ate,
-        )
 
         run_action = self.create_action(
             name="run_ate",
@@ -89,7 +83,7 @@ class ATEWidget(PluginMainWidget):
         )
 
         # Add items to toolbar
-        for item in [refresh_action, run_action, self.label_hardware,
+        for item in [run_action, self.label_hardware,
                      self.combo_hardware, self.label_base, self.combo_base,
                      self.label_target, self.combo_target]:
             self.add_item_to_toolbar(
@@ -97,6 +91,19 @@ class ATEWidget(PluginMainWidget):
                 self.toolbar,
                 "run",
             )
+
+    def on_option_update(self, option, value):
+        pass
+
+    def update_actions(self):
+        pass
+
+    # --- PluginMainWidget API
+    # ------------------------------------------------------------------------
+    def run_ate_project(self):
+        """For now the run of an ATE project is not integrated in the global
+        run button yet"""
+        pass
 
     def context_menu_manager(self, point):
         # https://riverbankcomputing.com/pipermail/pyqt/2009-April/022668.html
@@ -133,16 +140,23 @@ class ATEWidget(PluginMainWidget):
         if isinstance(model_item, TestItemChild):
             self.edit_test(model_item.path)
 
-    def on_option_update(self, option, value):
-        pass
+    def edit_test(self, path):
+        """This method is called from ATE, and calls Spyder to open the file
+        given by path"""
+        print("implement call to spyder API")
 
-    def update_actions(self):
-        pass
+    def create_project(self, project_path):
+        print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
 
-    # --- PluginMainWidget API
-    # ------------------------------------------------------------------------
-    def run_ate_project(self):
-        pass
+        new_project_name, new_project_quality = NewProjectDialog(self, os.path.basename(project_path), self.project_info)
+        if not new_project_name:
+            return
 
-    def refresh_ate(self):
-        pass
+        self.toolbar(self.project_info)
+        self.set_tree()
+
+    def open_project(self, project_path):
+        print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
+
+    def close_project(self):
+        print(f"main_widget : Closing ATE project '{os.path.basename(project_path)}'")

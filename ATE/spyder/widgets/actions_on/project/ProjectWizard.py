@@ -17,10 +17,12 @@ class ProjectWizard(QtWidgets.QDialog):
         super().__init__(parent)
 
         self.project_info = navigator
+
         my_ui = __file__.replace('.py', '.ui')
         if not os.path.exists(my_ui):
             raise Exception("can not find %s" % my_ui)
         uic.loadUi(my_ui, self)
+
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.setWindowTitle(title)
 
@@ -37,7 +39,7 @@ class ProjectWizard(QtWidgets.QDialog):
         self.ProjectName.setText("")
         self.ProjectName.textChanged.connect(self.verify)
 
-        self.existing_projects = navigator.list_ATE_projects(navigator.workspace_path)
+        # self.existing_projects = navigator.list_ATE_projects(navigator.workspace_path)
 
         self.Feedback.setStyleSheet('color: orange')
 
@@ -78,9 +80,9 @@ class ProjectWizard(QtWidgets.QDialog):
         self.reject()
 
 
-def NewProjectDialog(parent, navigator):
+def NewProjectDialog(parent, project_name, navigator):
     """This dialog is called when we want to create a new project"""
-    newProjectWizard = ProjectWizard(parent, navigator, 'New Project Wizard')
+    newProjectWizard = ProjectWizard(parent, navigator, 'New ATE Project Wizard')
     if newProjectWizard.exec_():  # OK button pressed
         project_name = newProjectWizard.project_name
         project_quality = newProjectWizard.project_quality

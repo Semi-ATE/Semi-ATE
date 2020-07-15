@@ -58,9 +58,9 @@ class ProjectNavigation(QObject):
 
     verbose = True
 
-    def __init__(self, project_directory, workspace_path, parent, project_quality=''):
-        super().__init__(parent)
-        self.workspace_path = workspace_path
+    def __init__(self, project_directory, project_quality=''):
+        super().__init__()
+        # self.workspace_path = workspace_path
         self.__call__(project_directory, project_quality)
 
     def __call__(self, project_directory, project_quality=''):
@@ -120,17 +120,18 @@ class ProjectNavigation(QObject):
             self.cur = self.con.cursor()
 
         if self.verbose:
-            print(f"operating system = '{self.os}'")
-            print(f"user = '{self.user}'")
-            print(f"desktop path = '{self.desktop_path}'")
-            print(f"template path = '{self.template_directory}'")
-            print(f"project path = '{self.project_directory}'")
-            print(f"active target = '{self.active_target}'")
-            print(f"active hardware = '{self.active_hardware}'")
-            print(f"active base = '{self.active_base}'")
-            print(f"project name = '{self.project_name}'")
-            print(f"project grade = '{self.project_quality}'")
-            print(f"project db file = '{self.db_file}'")
+            print("Navigator:")
+            print(f"  - operating system = '{self.os}'")
+            print(f"  - user = '{self.user}'")
+            print(f"  - desktop path = '{self.desktop_path}'")
+            print(f"  - template path = '{self.template_directory}'")
+            print(f"  - project path = '{self.project_directory}'")
+            print(f"  - active target = '{self.active_target}'")
+            print(f"  - active hardware = '{self.active_hardware}'")
+            print(f"  - active base = '{self.active_base}'")
+            print(f"  - project name = '{self.project_name}'")
+            print(f"  - project grade = '{self.project_quality}'")
+            print(f"  - project db file = '{self.db_file}'")
 
     def update_toolbar_elements(self, active_hardware, active_base, active_target):
         self.active_hardware = active_hardware
@@ -164,53 +165,53 @@ class ProjectNavigation(QObject):
         project_directory = os.path.join(self.workspace_path, project_name)
         self.__call__(project_directory, project_quality)
 
-    def dict_projects(self, workspace_path=''):
-        '''
-        given a workspace_path, create a list with projects as key, and their
-        (absolute) project_path as value.
-        if workspace_path is empty, the parent's "workspace_path" is used.
-        '''
-        retval = {}
-        if workspace_path == '':
-            workspace_path = self.workspace_path
-        for directory in os.listdir(workspace_path):
-            full_directory = os.path.join(workspace_path, directory)
-            if os.path.isdir(full_directory):
-                retval[directory] = full_directory
-        return retval
+    # def dict_projects(self, workspace_path=''):
+    #     '''
+    #     given a workspace_path, create a list with projects as key, and their
+    #     (absolute) project_path as value.
+    #     if workspace_path is empty, the parent's "workspace_path" is used.
+    #     '''
+    #     retval = {}
+    #     if workspace_path == '':
+    #         workspace_path = self.workspace_path
+    #     for directory in os.listdir(workspace_path):
+    #         full_directory = os.path.join(workspace_path, directory)
+    #         if os.path.isdir(full_directory):
+    #             retval[directory] = full_directory
+    #     return retval
 
-    def list_projects(self, workspace_path=''):
-        '''
-        given a workspace_path, extract a list of all projects
-        '''
-        if workspace_path == '':
-            workspace_path = self.workspace_path
-        return list(self.dict_projects(workspace_path))
+    # def list_projects(self, workspace_path=''):
+    #     '''
+    #     given a workspace_path, extract a list of all projects
+    #     '''
+    #     if workspace_path == '':
+    #         workspace_path = self.workspace_path
+    #     return list(self.dict_projects(workspace_path))
 
-    def list_ATE_projects(self, workspace_path=''):
-        '''
-        given a workspace_path, extract a list of all ATE projects
-        if workspace_path is empty, the parent's "workspace_path" will be used.
-        '''
-        if workspace_path == '':
-            workspace_path = self.workspace_path
-        return list(self.dict_ATE_projects(workspace_path))
+    # def list_ATE_projects(self, workspace_path=''):
+    #     '''
+    #     given a workspace_path, extract a list of all ATE projects
+    #     if workspace_path is empty, the parent's "workspace_path" will be used.
+    #     '''
+    #     if workspace_path == '':
+    #         workspace_path = self.workspace_path
+    #     return list(self.dict_ATE_projects(workspace_path))
 
-    def dict_ATE_projects(self, workspace_path=''):
-        '''
-        given a workspace_path, create a dictionary with all ATE projects as key,
-        and the (absolute) project_path as value.
-        if workspace_path is empty, the parent's "workspace_path" is used.
-        '''
-        retval = {}
-        if workspace_path == '':
-            workspace_path = self.workspace_path
-        all_projects = self.dict_projects(workspace_path)
-        for candidate in all_projects:
-            possible_ATE_project = all_projects[candidate]
-            if is_ATE_project(possible_ATE_project):
-                retval[candidate] = possible_ATE_project
-        return retval
+    # def dict_ATE_projects(self, workspace_path=''):
+    #     '''
+    #     given a workspace_path, create a dictionary with all ATE projects as key,
+    #     and the (absolute) project_path as value.
+    #     if workspace_path is empty, the parent's "workspace_path" is used.
+    #     '''
+    #     retval = {}
+    #     if workspace_path == '':
+    #         workspace_path = self.workspace_path
+    #     all_projects = self.dict_projects(workspace_path)
+    #     for candidate in all_projects:
+    #         possible_ATE_project = all_projects[candidate]
+    #         if is_ATE_project(possible_ATE_project):
+    #             retval[candidate] = possible_ATE_project
+    #     return retval
 
     def add_hardware(self, definition, is_enabled=True):
         '''This method adds a hardware setup to the project.
@@ -707,7 +708,7 @@ class ProjectNavigation(QObject):
         type can be:
             'standard' --> standard tests
             'custom' --> custom tests
-            'all' --> standard + custom tests        
+            'all' --> standard + custom tests
         '''
 
         if test_type not in ('standard', 'custom', 'all'):
@@ -986,7 +987,6 @@ class ProjectNavigation(QObject):
 
     def get_tests_for_test_target(self, hardware, base, test):
         return self.get_available_test_targets(hardware, base, test)
-
 
     # TODO: use following arguments after fixing test behaviour (hardware, base)
     def _generate_test_target_file(self, target_name, test, hardware, base):
