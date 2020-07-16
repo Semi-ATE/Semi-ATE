@@ -26,13 +26,26 @@ class ATE(SpyderDockablePlugin):
     Breakpoint list Plugin.
     """
     NAME = 'ate'
-    REQUIRES = []
+    REQUIRES = [Plugins.Editor]
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
 
     # --- Signals
     # ------------------------------------------------------------------------
+    sig_edit_goto_requested = Signal(str, int, str)
+    """
+    This signal will request to open a file in a given row and column
+    using a code editor.
+    Parameters
+    ----------
+    path: str
+        Path to file.
+    row: int
+        Cursor starting row position.
+    word: str
+        Word to select on given row.
+    """
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -48,6 +61,9 @@ class ATE(SpyderDockablePlugin):
     def register(self):
         widget = self.get_widget()
 
+        # Expose widget signals on the plugin
+        widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+
         # Add toolbar
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
         widget.toolbar.hide()
@@ -56,6 +72,11 @@ class ATE(SpyderDockablePlugin):
         # TODO: Temporal fix
         projects = self._main._PLUGINS["project_explorer"]
         projects.register_project_type(ATEProject)
+
+        # Register editor connection
+        # TODO: Temporal fix
+        editor = self._main._PLUGINS["editor"]
+        self.sig_edit_goto_requested.connect(editor.load)
 
         # Register a new action to create consoles on the IPythonConsole
         # TODO: Temporal fix

@@ -8,7 +8,7 @@ import sys
 
 # Third party imports
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QTreeView
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, Signal
 
 # Local imports
 from spyder.api.translations import get_translation
@@ -31,6 +31,19 @@ class ATEWidget(PluginMainWidget):
 
     # --- Signals
     # ------------------------------------------------------------------------
+    sig_edit_goto_requested = Signal(str, int, str)
+    """
+    This signal will request to open a file in a given row and column
+    using a code editor.
+    Parameters
+    ----------
+    path: str
+        Path to file.
+    row: int
+        Cursor starting row position.
+    word: str
+        Word to select on given row.
+    """
 
     def __init__(self, name=None, plugin=None, parent=None,
                  options=DEFAULT_OPTIONS):
