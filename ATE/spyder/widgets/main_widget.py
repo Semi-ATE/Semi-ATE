@@ -147,16 +147,25 @@ class ATEWidget(PluginMainWidget):
 
     def create_project(self, project_path):
         print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
-
-        new_project_name, new_project_quality = NewProjectDialog(self, os.path.basename(project_path), self.project_info)
-        if not new_project_name:
-            return
-
-        self.toolbar(self.project_info)
-        self.set_tree()
+        
+        status, data = NewProjectDialog(self, os.path.basename(project_path))
+        if status:  # OK button pressed
+            self.project_info(project_path, data['quality'])
+            #self.toolbar(self.project_info)
+            self.set_tree()
+        else:  # Cancel button pressed
+            pass
 
     def open_project(self, project_path):
         print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
 
     def close_project(self):
-        print(f"main_widget : Closing ATE project '{os.path.basename(project_path)}'")
+        print(f"main_widget : Closing ATE project '{os.path.basename(self.project_path)}'")
+
+    def delete_test(self, path):
+        selected_file = os.path.basename(path)
+        index = self._get_tab_index(selected_file)
+        if index == -1:
+            return
+
+        self.close_tab(index)

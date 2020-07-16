@@ -93,7 +93,7 @@ class ProjectNavigation(QObject):
             self.active_target = ''
             self.active_hardware = ''
             self.active_base = ''
-            self.project_name = os.path.split(self.project_directory)[-1]
+            self.project_name = os.path.split(os.path.basename(self.project_directory))
 
             self.db_file = os.path.join(project_directory, f"{self.project_name}.sqlite3")
 

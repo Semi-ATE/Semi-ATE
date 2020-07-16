@@ -320,7 +320,9 @@ class TreeModel(QtGui.QStandardItemModel):
 # Also: Check if it is really needed. The added value basically none
 class SectionItem(BaseItem):
     def __init__(self, project_info, name, parent=None):
-        super().__init__(project_info, name, parent)
+
+        print(f"type(name)={type(name)} & name = {name}")
+        super().__init__(project_info, name[1], parent)
         self.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
     def insert_item(self, item):
