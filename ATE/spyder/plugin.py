@@ -10,7 +10,7 @@ from qtpy.QtCore import Signal
 from qtpy.QtGui import QIcon
 
 # Local imports
-from spyder.api.plugins import ApplicationMenus, Plugins, SpyderDockablePlugin
+from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
 from ATE.spyder.project import ATEProject
 from ATE.spyder.widgets.main_widget import ATEWidget
@@ -26,13 +26,12 @@ class ATE(SpyderDockablePlugin):
     Breakpoint list Plugin.
     """
     NAME = 'ate'
-    REQUIRES = []
+    REQUIRES = []   # TODO: fix crash  (Plugins.Editor)
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
 
-    # --- Signals
-    # ------------------------------------------------------------------------
+    sig_edit_goto_requested = Signal(str, int, str)
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -48,6 +47,8 @@ class ATE(SpyderDockablePlugin):
     def register(self):
         widget = self.get_widget()
 
+        widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+
         # Add toolbar
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
         widget.toolbar.hide()
@@ -56,6 +57,9 @@ class ATE(SpyderDockablePlugin):
         # TODO: Temporal fix
         projects = self._main._PLUGINS["project_explorer"]
         projects.register_project_type(ATEProject)
+
+        editor = self._main._PLUGINS["editor"]
+        self.sig_edit_goto_requested.connect(editor.load)
 
         # Register a new action to create consoles on the IPythonConsole
         # TODO: Temporal fix

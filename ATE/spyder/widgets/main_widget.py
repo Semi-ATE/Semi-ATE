@@ -9,6 +9,8 @@ import sys
 # Third party imports
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QTreeView
 from qtpy.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
+from qtpy.QtCore import Signal
 
 # Local imports
 from spyder.api.translations import get_translation
@@ -17,6 +19,7 @@ from spyder.api.widgets.toolbars import ApplicationToolBar
 
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import NewProjectDialog
+from ATE.spyder.widgets.toolbar_original import ToolBar
 
 # Localization
 _ = get_translation('spyder')
@@ -29,8 +32,21 @@ class ATEWidget(PluginMainWidget):
 
     DEFAULT_OPTIONS = {}
 
-    # --- Signals
-    # ------------------------------------------------------------------------
+    sig_edit_goto_requested = Signal(str, int, str)
+
+    # The parameter contains the type of the dbchange (i.e. which table was altered)
+    database_changed = pyqtSignal(int)
+    toolbar_changed = pyqtSignal(str, str, str)
+    active_project_changed = pyqtSignal()
+    hardware_added = pyqtSignal(str)
+    hardware_activated = pyqtSignal(str)
+    hardware_removed = pyqtSignal(str)
+    update_target = pyqtSignal()
+    select_target = pyqtSignal(str)
+    select_base = pyqtSignal(str)
+    select_hardware = pyqtSignal(str)
+    update_settings = pyqtSignal(str, str, str)
+    test_target_deleted = pyqtSignal(str, str)
 
     def __init__(self, name=None, plugin=None, parent=None,
                  options=DEFAULT_OPTIONS):
@@ -42,21 +58,10 @@ class ATEWidget(PluginMainWidget):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.context_menu_manager)
 
-        self.toolbar = ApplicationToolBar(self, "ATE Plugin toolbar")
-        self.label_hardware = QLabel("Hardware")
-        self.label_base = QLabel("Base")
-        self.label_target = QLabel("Target")
-        self.combo_hardware = QComboBox(parent=self)
-        self.combo_base = QComboBox(parent=self)
-        self.combo_target = QComboBox(parent=self)
-
         # TODO: simplify the navigator to get ride of 'workspace_path'
-        self.project_info = ProjectNavigation('', '')
+        self.project_info = ProjectNavigation('', self)
 
-        # TODO: Temporary workaround
-        self.label_hardware.setStyleSheet("background-color: transparent;")
-        self.label_base.setStyleSheet("background-color: transparent;")
-        self.label_target.setStyleSheet("background-color: transparent;")
+        self.toolbar = ToolBar(self.project_info, self, "ATE Plugin toolbar")
 
         # Layout
         layout = QVBoxLayout()
@@ -74,23 +79,7 @@ class ATEWidget(PluginMainWidget):
         return self.tree
 
     def setup(self, options):
-
-        run_action = self.create_action(
-            name="run_ate",
-            text="Run",
-            icon=self.create_icon("run"),
-            triggered=self.run_ate_project,
-        )
-
-        # Add items to toolbar
-        for item in [run_action, self.label_hardware,
-                     self.combo_hardware, self.label_base, self.combo_base,
-                     self.label_target, self.combo_target]:
-            self.add_item_to_toolbar(
-                item,
-                self.toolbar,
-                "run",
-            )
+        return
 
     def on_option_update(self, option, value):
         pass
@@ -143,21 +132,23 @@ class ATEWidget(PluginMainWidget):
     def edit_test(self, path):
         """This method is called from ATE, and calls Spyder to open the file
         given by path"""
-        print("implement call to spyder API")
+        self.sig_edit_goto_requested.emit(path, 1, "")
 
     def create_project(self, project_path):
         print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
-        
         status, data = NewProjectDialog(self, os.path.basename(project_path))
         if status:  # OK button pressed
             self.project_info(project_path, data['quality'])
-            #self.toolbar(self.project_info)
             self.set_tree()
+            #self.toolbar(self.project_info)
         else:  # Cancel button pressed
             pass
 
     def open_project(self, project_path):
         print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
+        self.project_info(project_path, self)
+        self.toolbar(self.project_info)
+        self.set_tree()
 
     def close_project(self):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_path)}'")

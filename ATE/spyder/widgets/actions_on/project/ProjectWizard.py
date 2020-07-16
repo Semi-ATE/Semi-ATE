@@ -39,7 +39,6 @@ class ProjectWizard(QtWidgets.QDialog):
 
         self.show()
 
-
     def OKButtonPressed(self):
         self.accept()
 

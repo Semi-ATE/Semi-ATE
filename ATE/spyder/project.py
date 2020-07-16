@@ -37,6 +37,6 @@ class ATEProject(BaseProjectType):
     def close_project(self):
         print("Project : Closing ATE project '{os.path.basename(self.root_path)}'")
         ate_plugin = self.get_plugin("ate")
-        ate_plugin.close_project(self.root_path)
+        ate_plugin.close_project()
         ate_plugin.get_widget().toolbar.hide()
         ate_plugin.toggle_view(False)

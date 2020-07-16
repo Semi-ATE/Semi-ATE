@@ -34,7 +34,7 @@ class TreeModel(QtGui.QStandardItemModel):
 
         hardware, base, target = self.project_info.load_project_settings()
         # hack: trigger signal to update the toolbar components
-        self.project_info.update_settings.emit(hardware, base, target)
+        self.parent.update_settings.emit(hardware, base, target)
 
         self.update(hardware, base, target)
 
@@ -53,7 +53,7 @@ class TreeModel(QtGui.QStandardItemModel):
 
         if table_id == TableIds.Die() or \
            table_id == TableIds.Device():
-            self.project_info.update_target.emit()
+            self.project_info.parent.update_target.emit()
 
         # Note: This will basically rebuild the complete "definitions"
         # subtree. We might get performance problems here, if we ever
@@ -70,12 +70,12 @@ class TreeModel(QtGui.QStandardItemModel):
 
     def _connect_action_handler(self):
         self.itemChanged.connect(lambda item: self._update(item, self.hardware, self.base, self.target))
-        self.project_info.database_changed.connect(self.on_db_change)
-        self.project_info.toolbar_changed.connect(self.apply_toolbar_change)
-        self.project_info.select_target.connect(self._update_test_items)
-        self.project_info.select_base.connect(self._update_test_section)
-        self.project_info.select_hardware.connect(self._update_test_items_hw_changed)
-        self.project_info.test_target_deleted.connect(self._remove_test_target_item)
+        self.parent.database_changed.connect(self.on_db_change)
+        self.parent.toolbar_changed.connect(self.apply_toolbar_change)
+        self.parent.select_target.connect(self._update_test_items)
+        self.parent.select_base.connect(self._update_test_section)
+        self.parent.select_hardware.connect(self._update_test_items_hw_changed)
+        self.parent.test_target_deleted.connect(self._remove_test_target_item)
 
     @QtCore.pyqtSlot(str)
     def _update_test_section(self, base):
@@ -320,9 +320,7 @@ class TreeModel(QtGui.QStandardItemModel):
 # Also: Check if it is really needed. The added value basically none
 class SectionItem(BaseItem):
     def __init__(self, project_info, name, parent=None):
-
-        print(f"type(name)={type(name)} & name = {name}")
-        super().__init__(project_info, name[1], parent)
+        super().__init__(project_info, name, parent)
         self.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
     def insert_item(self, item):

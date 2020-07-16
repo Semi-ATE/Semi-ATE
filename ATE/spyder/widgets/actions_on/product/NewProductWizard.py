@@ -215,7 +215,7 @@ class NewProductWizard(BaseDialog):
         at the parent level is also changed and that the new device list
         (for the new hardware) is loaded.
         '''
-        self.project_info.hardware_activated.emit(hardware)
+        self.parent.hardware_activated.emit(hardware)
 
         self._update_device_list()
 

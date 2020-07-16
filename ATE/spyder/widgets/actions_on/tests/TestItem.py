@@ -263,7 +263,7 @@ class TestItemChildTarget(TestBaseItem):
         pass
 
     def select_target_item(self):
-        self.project_info.select_target.emit(self.text().split('_')[0])
+        self.parent.select_target.emit(self.text().split('_')[0])
 
     def _disabled_item_menu(self):
         return [MenuActionTypes.Select()]

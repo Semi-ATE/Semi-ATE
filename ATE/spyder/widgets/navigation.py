@@ -43,23 +43,11 @@ class ProjectNavigation(QObject):
     This class takes care of the project creation/navigation/evolution.
     '''
     # The parameter contains the type of the dbchange (i.e. which table was altered)
-    database_changed = pyqtSignal(int)
-    toolbar_changed = pyqtSignal(str, str, str)
-    active_project_changed = pyqtSignal()
-    hardware_added = pyqtSignal(str)
-    hardware_activated = pyqtSignal(str)
-    hardware_removed = pyqtSignal(str)
-    update_target = pyqtSignal()
-    select_target = pyqtSignal(str)
-    select_base = pyqtSignal(str)
-    select_hardware = pyqtSignal(str)
-    update_settings = pyqtSignal(str, str, str)
-    test_target_deleted = pyqtSignal(str, str)
-
     verbose = True
 
-    def __init__(self, project_directory, project_quality=''):
+    def __init__(self, project_directory, parent, project_quality=''):
         super().__init__()
+        self.parent = parent
         # self.workspace_path = workspace_path
         self.__call__(project_directory, project_quality)
 
@@ -93,7 +81,7 @@ class ProjectNavigation(QObject):
             self.active_target = ''
             self.active_hardware = ''
             self.active_base = ''
-            self.project_name = os.path.split(os.path.basename(self.project_directory))
+            self.project_name = os.path.basename(self.project_directory)
 
             self.db_file = os.path.join(project_directory, f"{self.project_name}.sqlite3")
 
@@ -138,11 +126,11 @@ class ProjectNavigation(QObject):
         self.active_base = active_base
         self.active_target = active_target
         self._store_settings()
-        self.toolbar_changed.emit(self.active_hardware, self.active_base, self.active_target)
+        self.parent.toolbar_changed.emit(self.active_hardware, self.active_base, self.active_target)
 
     def update_active_hardware(self, hardware):
         self.active_hardware = hardware
-        self.hardware_activated.emit(hardware)
+        self.parent.hardware_activated.emit(hardware)
 
     def _set_folder_structure(self):
         # make sure that the doc structure is obtained
@@ -229,8 +217,9 @@ class ProjectNavigation(QObject):
         '''
         awaited_name = self.get_next_hardware()
         new_hardware = definition['hardware']
-        if not awaited_name == new_hardware:
-            raise Exception(f"something wrong with the name !!! '{awaited_name}'<->'{new_hardware}'")
+        # TODO: fix me!!!!!!!!!!!!!!!
+        # if not awaited_name == new_hardware:
+        #     raise Exception(f"something wrong with the name !!! '{awaited_name}'<->'{new_hardware}'")
 
         try:  # make the directory structure
             from ATE.spyder.widgets.coding.generators import hardware_generator
@@ -246,8 +235,8 @@ class ProjectNavigation(QObject):
         Hardware.add(self.get_session(), new_hardware, definition, is_enabled)
 
         # let ATE.spyder.widgets know that we have new hardware
-        self.hardware_added.emit(new_hardware)
-        self.database_changed.emit(TableId.Hardware())
+        self.parent.hardware_added.emit(new_hardware)
+        self.parent.database_changed.emit(TableId.Hardware())
 
     def update_hardware(self, hardware, definition):
         '''
@@ -308,7 +297,7 @@ class ProjectNavigation(QObject):
 
     def remove_hardware(self, name):
         Hardware.remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Hardware())
+        self.parent.database_changed.emit(TableId.Hardware())
 
     def add_maskset(self, name, customer, definition, is_enabled=True):
         '''
@@ -317,7 +306,7 @@ class ProjectNavigation(QObject):
         it will trow a KeyError
         '''
         Maskset.add(self.get_session(), name, customer, definition, is_enabled)
-        self.database_changed.emit(TableId.Maskset())
+        self.parent.database_changed.emit(TableId.Maskset())
 
     def update_maskset(self, name, definition):
         '''
@@ -372,7 +361,7 @@ class ProjectNavigation(QObject):
 
     def remove_maskset(self, name):
         Maskset.remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Maskset())
+        self.parent.database_changed.emit(TableId.Maskset())
 
     def add_die(self, name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled=True):
         '''
@@ -386,7 +375,7 @@ class ProjectNavigation(QObject):
         '''
         Die.add(self.get_session(), name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled)
 
-        self.database_changed.emit(TableId.Die())
+        self.parent.database_changed.emit(TableId.Die())
 
     def update_die(self, name, hardware, maskset, grade, grade_reference, quality, type, customer, is_enabled=True):
         '''
@@ -437,7 +426,7 @@ class ProjectNavigation(QObject):
 
     def remove_die(self, name):
         Die.remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Die())
+        self.parent.database_changed.emit(TableId.Die())
 
 # Packages
 
@@ -449,7 +438,7 @@ class ProjectNavigation(QObject):
         '''
         Package.add(self.get_session(), name, leads, is_naked_die, is_enabled)
 
-        self.database_changed.emit(TableId.Package())
+        self.parent.database_changed.emit(TableId.Package())
 
     def update_package(self, name, leads, is_naked_die, is_enabled=True):
         Package.update(self.get_session(), name, leads, is_naked_die, is_enabled)
@@ -492,7 +481,7 @@ class ProjectNavigation(QObject):
         if 'package' doesn't exist, a KeyError is raised
         '''
         Device.add(self.get_session(), name, hardware, package, definition, is_enabled)
-        self.database_changed.emit(TableId.Device())
+        self.parent.database_changed.emit(TableId.Device())
 
     def update_device(self, name, hardware, package, definition):
         Device.update(self.get_session(), name, hardware, package, definition)
@@ -538,7 +527,7 @@ class ProjectNavigation(QObject):
 
     def remove_device(self, name):
         Device.remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Device())
+        self.parent.database_changed.emit(TableId.Device())
 
     def add_product(self, name, device, hardware, quality, grade, grade_reference, type, customer, is_enabled=True):
         '''
@@ -548,7 +537,7 @@ class ProjectNavigation(QObject):
         '''
         session = self.get_session()
         Product.add(session, name, device, hardware, quality, grade, grade_reference, type, customer, is_enabled)
-        self.database_changed.emit(TableId.Product())
+        self.parent.database_changed.emit(TableId.Product())
 
     def update_product(self, name, device, hardware, quality, grade, grade_reference, type, customer):
         Product.update(self.get_session(), name, device, hardware, quality, grade, grade_reference, type, customer)
@@ -576,7 +565,7 @@ class ProjectNavigation(QObject):
 
     def remove_product(self, name):
         Product.remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Product())
+        self.parent.database_changed.emit(TableId.Product())
 
     def tests_get_standard_tests(self, hardware, base):
         '''
@@ -651,11 +640,11 @@ class ProjectNavigation(QObject):
         definition.pop('type')
         Test.add(self.get_session(), name, hardware, base, test_type, definition, is_enabled)
 
-        self.database_changed.emit(TableId.NewTest())
+        self.parent.database_changed.emit(TableId.NewTest())
 
     def update_custom_test(self, name, hardware, base, type, definition, is_enabled=True):
         Test.update(self.get_session(), name, hardware, base, type, definition, is_enabled)
-        self.database_changed.emit(TableId.Test())
+        self.parent.database_changed.emit(TableId.Test())
 
     def get_tests_from_files(self, hardware, base, test_type='all'):
         '''
@@ -720,12 +709,12 @@ class ProjectNavigation(QObject):
         Test.remove(self.get_session(), name)
 
         Sequence.remove_test_from_sequence(self.get_session(), name)
-        self.database_changed.emit(TableId.Test())
+        self.parent.database_changed.emit(TableId.Test())
 
     # ToDo Seems to be unused!
     def delete_test_from_program(self, test_name):
         Sequence.remove_test_from_sequence(self.get_session(), test_name)
-        self.database_changed.emit(TableId.Test())
+        self.parent.database_changed.emit(TableId.Test())
 
     def get_data_for_qualification_flow(self, quali_flow_type, product):
         return QualificationFlowDatum.get_data_for_flow(self.get_session(), quali_flow_type, product)
@@ -753,11 +742,11 @@ class ProjectNavigation(QObject):
             that we expect a "type" field to be present.
         '''
         QualificationFlowDatum.add_or_update_qualification_flow_data(self.get_session(), quali_flow_data)
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def delete_qualification_flow_instance(self, quali_flow_data):
         QualificationFlowDatum.remove(self.get_session(), quali_flow_data)
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target):
         for index, test in enumerate(definition['sequence']):
@@ -767,7 +756,7 @@ class ProjectNavigation(QObject):
         Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target)
         self._insert_sequence_informations(owner_name, name, definition)
 
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def _insert_sequence_informations(self, owner_name, prog_name, definition):
         for index, test in enumerate(definition['sequence']):
@@ -782,7 +771,7 @@ class ProjectNavigation(QObject):
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
 
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def _get_tests_for_target(self, hardware, base, test_target):
         return [test.test for test in TestTarget.get_tests(self.get_session(), hardware, base, test_target)]
@@ -826,7 +815,7 @@ class ProjectNavigation(QObject):
             name = self._generate_program_name(program_name, index + 1)
             Sequence.update_progname(self.get_session(), name, owner_name, new_name)
 
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def _remove_test_targets_for_test_program(self, prog_name):
         tests = set([seq.test for seq in Sequence.get_for_program(self.get_session(), prog_name)])
@@ -834,7 +823,7 @@ class ProjectNavigation(QObject):
         TestTarget.remove_for_test_program(self.get_session(), prog_name)
 
         for target, test in zip(targets, tests):
-            self.test_target_deleted.emit(target, test)
+            self.parent.test_target_deleted.emit(target, test)
 
     def move_program(self, program_name, owner_name, program_order, is_up):
         session = self.get_session()
@@ -854,7 +843,7 @@ class ProjectNavigation(QObject):
 
         self._update_elements(program_name, owner_name, order, prev, prog_id)
 
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def _get_program_ids_from_sequence(self, prog_name, owner_name):
         return Sequence.get_for_program(self.get_session(), prog_name)
@@ -869,7 +858,7 @@ class ProjectNavigation(QObject):
         self._update_program_name_for_sequence(new_prog_name, owner_name, prog_ids)
         self._update_program_name_for_sequence(prog_name, owner_name, new_prog_ids)
 
-        self.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Flow())
 
     def _get_test_program_name(self, prog_order, owner_name):
         return Program.get_by_order_and_owner(self.get_session(), prog_order, owner_name).prog_name
@@ -960,18 +949,18 @@ class ProjectNavigation(QObject):
             return
 
         TestTarget.add(self.get_session(), name, prog_name, hardware, base, test, is_default, is_enabled)
-        self.database_changed.emit(TableId.Test())
+        self.parent.database_changed.emit(TableId.Test())
 
     def remove_test_target(self, name, test, hardware, base):
         TestTarget.remove(self.get_session(), name, test, hardware, base)
-        self.test_target_deleted.emit(name, test)
+        self.parent.test_target_deleted.emit(name, test)
 
     def set_test_target_default_state(self, name, hardware, base, test, is_default):
         if not is_default:
             self._generate_test_target_file(name, test, hardware, base)
 
         TestTarget.set_default_state(self.get_session(), name, hardware, base, test, is_default)
-        self.database_changed.emit(TableId.TestItem())
+        self.parent.database_changed.emit(TableId.TestItem())
 
     def set_test_target_state(self, name, hardware, base, test, is_enabled):
         TestTarget.toggle(self.get_session(), name, hardware, base, test, is_enabled)
@@ -1104,9 +1093,9 @@ class ProjectNavigation(QObject):
     def update_hardware_state(self, name, state):
         self._update_state(name, state, 'hardwares')
         if not state:
-            self.hardware_removed.emit(name)
+            self.parent.hardware_removed.emit(name)
         else:
-            self.hardware_added.emit(name)
+            self.parent.hardware_changed.emit(name)
 
     def get_maskset_state(self, name):
         return Maskset.get(self.get_session(), name).is_enabled
@@ -1119,7 +1108,7 @@ class ProjectNavigation(QObject):
 
     def update_die_state(self, name, state):
         self._update_state(name, state, 'dies')
-        self.update_target.emit()
+        self.parent.update_target.emit()
 
     def get_package_state(self, name):
         return self._get_state(name, 'packages')
@@ -1132,7 +1121,7 @@ class ProjectNavigation(QObject):
 
     def update_device_state(self, name, state):
         self._update_state(name, state, 'devices')
-        self.update_target.emit()
+        self.parent.update_target.emit()
 
     def get_product_state(self, name):
         return Product.get(self.get_session(), name).is_enabled
@@ -1157,7 +1146,7 @@ class ProjectNavigation(QObject):
 
     def delete_item(self, type, name):
         tables[type].remove(self.get_session(), name)
-        self.database_changed.emit(TableId.Definition())
+        self.parent.database_changed.emit(TableId.Definition())
 
     def last_project_setting(self):
         return os.path.join(self.project_directory, '.lastsettings')

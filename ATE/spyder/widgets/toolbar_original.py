@@ -4,14 +4,16 @@ Created on Tue Apr  7 18:18:33 2020
 
 @author: hoeren
 """
-from ATE.testers import SCT_testers
+# from ATE.testers import SCT_testers
 from PyQt5 import QtWidgets, QtCore
 import qtawesome as qta
+from spyder.api.widgets.toolbars import ApplicationToolBar
 
 
-class ToolBar(QtWidgets.QToolBar):
-    def __init__(self, project_info, parent=None):
-        super().__init__(parent)
+class ToolBar(ApplicationToolBar):
+    def __init__(self, project_info, parent, identifier):
+        super().__init__(parent, identifier)
+        self.parent = parent
         self.setMovable(False)
         self.active_tester = ''
         self.active_hardware = ''
@@ -20,6 +22,8 @@ class ToolBar(QtWidgets.QToolBar):
         self.project_info = project_info
 
         self._setup()
+        self.init_toolbar_items()
+        self._connect_event_handler()
 
     def __call__(self, project_info):
         self.project_info = project_info
@@ -28,6 +32,24 @@ class ToolBar(QtWidgets.QToolBar):
         self._update_target()
 
         self._connect_event_handler()
+
+    def init_toolbar_items(self):
+        run_action = self.parent.create_action(
+            name="rune",
+            text="RunE",
+            icon=self.parent.create_icon("run"),
+            triggered=self.parent.run_ate_project,
+        )
+
+        # Add items to toolbar
+        for item in [run_action, self.hardware_label,
+                     self.hardware_combo, self.base_label, self.base_combo,
+                     self.target_label, self.target_combo]:
+            self.parent.add_item_to_toolbar(
+                item,
+                self,
+                "run",
+            )
 
     def _setup(self):
         self._setup_test()
@@ -40,26 +62,27 @@ class ToolBar(QtWidgets.QToolBar):
         tester_label.setStyleSheet("background-color: rgba(0,0,0,0%)")
         self.addWidget(tester_label)
 
-        self.tester_combo = QtWidgets.QComboBox()
-        self.testers = SCT_testers()
-        self.tester_combo.addItems([''] + self.testers.report())
-        self.tester_combo.setCurrentText('')
-        width = self.tester_combo.minimumSizeHint().width()
-        self.tester_combo.setMinimumWidth(width)
-        self.addWidget(self.tester_combo)
+        # TODO: uncomment this if needed
+        # self.tester_combo = QtWidgets.QComboBox()
+        # self.testers = SCT_testers()
+        # self.tester_combo.addItems([''] + self.testers.report())
+        # self.tester_combo.setCurrentText('')
+        # width = self.tester_combo.minimumSizeHint().width()
+        # self.tester_combo.setMinimumWidth(width)
+        # self.addWidget(self.tester_combo)
 
-        self.tester_mode_combo = QtWidgets.QComboBox()
-        tester_modes = ['Direct Mode', 'Interactive Mode']
-        self.tester_mode_combo.addItems(tester_modes)
-        self.tester_mode_combo.setCurrentText('Direct Mode')
-        width = self.tester_mode_combo.minimumSizeHint().width()
-        self.tester_mode_combo.setMinimumWidth(width)
-        self.addWidget(self.tester_mode_combo)
+        # self.tester_mode_combo = QtWidgets.QComboBox()
+        # tester_modes = ['Direct Mode', 'Interactive Mode']
+        # self.tester_mode_combo.addItems(tester_modes)
+        # self.tester_mode_combo.setCurrentText('Direct Mode')
+        # width = self.tester_mode_combo.minimumSizeHint().width()
+        # self.tester_mode_combo.setMinimumWidth(width)
+        # self.addWidget(self.tester_mode_combo)
 
-        self.refresh_testers = QtWidgets.QAction(qta.icon('mdi.refresh', color='orange'), "Refresh Testers", self)
-        self.refresh_testers.setStatusTip("Refresh the tester list")
-        self.refresh_testers.setCheckable(False)
-        self.addAction(self.refresh_testers)
+        # self.refresh_testers = QtWidgets.QAction(qta.icon('mdi.refresh', color='orange'), "Refresh Testers", self)
+        # self.refresh_testers.setStatusTip("Refresh the tester list")
+        # self.refresh_testers.setCheckable(False)
+        # self.addAction(self.refresh_testers)
 
         self.run_action = QtWidgets.QAction(qta.icon('mdi.play-circle-outline', color='orange'), "Run", self)
         self.run_action.setStatusTip("Run active module")
@@ -68,12 +91,12 @@ class ToolBar(QtWidgets.QToolBar):
 
     def _setup_hardware(self):
         self.hardware_label = QtWidgets.QLabel("Hardware:")
-        self.hardware_label.setStyleSheet("background-color: rgba(0,0,0,0%)")
-        self.addWidget(self.hardware_label)
+        self.hardware_label.setStyleSheet("background-color: transparent;")
+        # self.addWidget(self.hardware_label)
         self.hardware_combo = QtWidgets.QComboBox()
         self.hardware_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.hardware_combo.setCurrentText(self.active_hardware)
-        self.addWidget(self.hardware_combo)
+        # self.addWidget(self.hardware_combo)
 
     def _init_hardware(self):
         self.hardware_combo.clear()
@@ -86,24 +109,24 @@ class ToolBar(QtWidgets.QToolBar):
 
     def _setup_base(self):
         self.base_label = QtWidgets.QLabel("Base:")
-        self.base_label.setStyleSheet("background-color: rgba(0,0,0,0%)")
-        self.addWidget(self.base_label)
+        self.base_label.setStyleSheet("background-color: transparent;")
+        # self.addWidget(self.base_label)
 
         self.base_combo = QtWidgets.QComboBox()
         self.base_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.base_combo.addItems(['', 'PR', 'FT'])
-        self.addWidget(self.base_combo)
+        # self.addWidget(self.base_combo)
 
     def _setup_target(self):
         self.target_label = QtWidgets.QLabel("Target:")
-        self.target_label.setStyleSheet("background-color: rgba(0,0,0,0%)")
-        self.addWidget(self.target_label)
+        self.target_label.setStyleSheet("background-color: transparent;")
+        # self.addWidget(self.target_label)
 
         self.target_combo = QtWidgets.QComboBox()
         self.target_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.target_combo.addItems([''])
         self.target_combo.setCurrentText(self.active_target)
-        self.addWidget(self.target_combo)
+        # self.addWidget(self.target_combo)
 
         self.info_action = QtWidgets.QAction(qta.icon('mdi.information-outline', color='orange'), "Information", self)
         self.info_action.setStatusTip("print current information")
@@ -116,20 +139,21 @@ class ToolBar(QtWidgets.QToolBar):
         self.addAction(self.settings_action)
 
     def _connect_event_handler(self):
-        self.tester_combo.currentTextChanged.connect(self._tester_changed)
         self.hardware_combo.currentTextChanged.connect(self._hardware_changed)
         self.base_combo.currentTextChanged.connect(self._base_changed)
         self.target_combo.currentTextChanged.connect(self._target_changed)
-        self.refresh_testers.triggered.connect(self._rescan_testers)
-        self.run_action.triggered.connect(self.on_run)
-        self.settings_action.triggered.connect(self.setting_pressed)
-        self.info_action.triggered.connect(self.info_pressed)
-        self.project_info.hardware_added.connect(self._add_new_hardware)
-        self.project_info.hardware_activated.connect(self._update_hardware)
-        self.project_info.hardware_removed.connect(self._remove_hardware)
-        self.project_info.update_target.connect(self._target_update)
-        self.project_info.select_target.connect(self._target_selected)
-        self.project_info.update_settings.connect(self._settings_update)
+        self.parent.hardware_added.connect(self._add_new_hardware)
+        self.parent.hardware_removed.connect(self._remove_hardware)
+        self.parent.update_target.connect(self._target_update)
+        self.parent.select_target.connect(self._target_selected)
+        self.parent.update_settings.connect(self._settings_update)
+        self.parent.hardware_activated.connect(self._update_hardware)
+        # TODO: uncomment if needed
+        # self.tester_combo.currentTextChanged.connect(self._tester_changed)
+        # self.refresh_testers.triggered.connect(self._rescan_testers)
+        # self.run_action.triggered.connect(self.on_run)
+        # self.settings_action.triggered.connect(self.setting_pressed)
+        # self.info_action.triggered.connect(self.info_pressed)
 
     @QtCore.pyqtSlot(str)
     def _target_selected(self, target):
@@ -144,6 +168,7 @@ class ToolBar(QtWidgets.QToolBar):
 
     @QtCore.pyqtSlot(str)
     def _add_new_hardware(self, hardware):
+        print(hardware)
         self.hardware_combo.addItem(hardware)
         self.hardware_combo.setCurrentText(hardware)
 
@@ -184,7 +209,7 @@ class ToolBar(QtWidgets.QToolBar):
         self.project_info.active_hardware = selected_hardware
         self._update_target()
         self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
-        self.project_info.select_hardware.emit(selected_hardware)
+        self.parent.select_hardware.emit(selected_hardware)
 
     @QtCore.pyqtSlot(str)
     def _base_changed(self, selected_base):
@@ -194,7 +219,7 @@ class ToolBar(QtWidgets.QToolBar):
         self.project_info.active_base = selected_base
         self._update_target()
 
-        self.project_info.select_base.emit(selected_base)
+        self.parent.select_base.emit(selected_base)
         self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
 
     @QtCore.pyqtSlot(str)
@@ -202,7 +227,7 @@ class ToolBar(QtWidgets.QToolBar):
         # the fact that we have a target to change to, means that there is a navigator ... no?
         self.active_target = selected_target
         self.project_info.active_target = selected_target
-        self.project_info.select_target.emit(selected_target)
+        self.parent.select_target.emit(selected_target)
 
         if self.active_target in self.project_info.get_active_device_names_for_hardware(self.active_hardware):
             self.base_combo.blockSignals(True)
