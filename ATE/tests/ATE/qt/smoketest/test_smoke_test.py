@@ -1,17 +1,17 @@
-from ATE.org.navigation import ProjectNavigation
-from ATE.org.toolbar import ToolBar
-from ATE.org.actions_on.model.TreeModel import TreeModel
+from ATE.spyder.widgets.navigation import ProjectNavigation
+from ATE.spyder.widgets.toolbar import ToolBar
+from ATE.spyder.widgets.actions_on.model.TreeModel import TreeModel
 
-from ATE.org.actions_on.project.ProjectWizard import ProjectWizard
-from ATE.org.actions_on.hardwaresetup.HardwareWizard import HardwareWizard
-from ATE.org.actions_on.maskset.NewMasksetWizard import NewMasksetWizard
-from ATE.org.actions_on.die.DieWizard import DieWizard
-from ATE.org.actions_on.package.NewPackageWizard import NewPackageWizard
-from ATE.org.actions_on.device.NewDeviceWizard import NewDeviceWizard
-from ATE.org.actions_on.product.NewProductWizard import NewProductWizard
-from ATE.org.actions_on.flow.HTOL.htolwizard import HTOLWizard
-from ATE.org.actions_on.tests.TestWizard import TestWizard
-from ATE.org.actions_on.program.TestProgramWizard import TestProgramWizard
+from ATE.spyder.widgets.actions_on.project.ProjectWizard import ProjectWizard
+from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import HardwareWizard
+from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import NewMasksetWizard
+from ATE.spyder.widgets.actions_on.die.DieWizard import DieWizard
+from ATE.spyder.widgets.actions_on.package.NewPackageWizard import NewPackageWizard
+from ATE.spyder.widgets.actions_on.device.NewDeviceWizard import NewDeviceWizard
+from ATE.spyder.widgets.actions_on.product.NewProductWizard import NewProductWizard
+from ATE.spyder.widgets.actions_on.flow.HTOL.htolwizard import HTOLWizard
+from ATE.spyder.widgets.actions_on.tests.TestWizard import TestWizard
+from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 
 from tests.qt.qualification_wizard import mock_db_object
 

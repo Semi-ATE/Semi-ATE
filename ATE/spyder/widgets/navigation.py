@@ -86,7 +86,8 @@ class ProjectNavigation(QObject):
             self.db_file = os.path.join(project_directory, f"{self.project_name}.sqlite3")
 
             project_quality_file = os.path.join(self.project_directory, 'project_quality.pickle')
-            if not os.path.exists(self.project_directory):  # brand new project, initialize it.
+            
+            if not os.path.exists(self.db_file):  # brand new project, initialize it.
                 self.create_project_structure()
                 self.project_quality = project_quality
                 if project_quality != '':
@@ -140,14 +141,10 @@ class ProjectNavigation(QObject):
 
     def create_project_structure(self):
         '''
-        this method creates a new project (self.project_directroy must *not*
-        exist yet, otherwhise an exception will be raised)
+        this method creates a new project `self.project_directroy` *MUST* exist
         '''
-        if os.path.exists(self.project_directory):
-            raise Exception(f"project directory '{self.project_directory}' already exists.")
-        else:
-            from ATE.spyder.widgets.coding.generators import project_generator
-            project_generator(self.project_directory)
+        from ATE.spyder.widgets.coding.generators import project_generator
+        project_generator(self.project_directory)
 
     def add_project(self, project_name, project_quality=''):
         project_directory = os.path.join(self.workspace_path, project_name)

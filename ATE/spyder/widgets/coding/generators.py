@@ -43,7 +43,6 @@ def project_generator(project_path):
     src__init__generator(project_path)
     src_common_generator(project_path)
     project_doc_generator(project_path)
-    project_spyder_generator(project_path)
 
 
 def hardware_generator(project_path, hardware):
@@ -604,10 +603,9 @@ class test__init__generator(BaseTestGenerator):
 def project_root_generator(project_path):
     """This function will create the base project structure.
 
-    Here we put all the **FILES** that live in ther project root.
+    Here we put everything that live in ther project root.
     """
 
-    os.makedirs(project_path)
     project__main__generator(project_path)
     project__init__generator(project_path)
     project_gitignore_generator(project_path)
@@ -625,19 +623,6 @@ def project_doc_generator(project_path):
     doc_dst_path = os.path.join(project_path, 'doc')
 
     copydir(doc_src_path, doc_dst_path)
-
-
-def project_spyder_generator(project_path):
-    """This function will create and populate the project with spyder config files.
-
-    This generator should be called **ONCE** upon the creation of a new project.
-    """
-
-    template_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
-    spyder_src_path = os.path.join(template_path, 'spyder')
-    spyder_dst_path = os.path.join(project_path, '.spyproject')
-
-    copydir(spyder_src_path, spyder_dst_path)
 
 
 class BaseGenerator:

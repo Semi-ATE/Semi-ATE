@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
-from ATE.org.actions_on.flow.qualificationwizardbase import wizardbase
-from ATE.org.actions_on.flow.qualificationwizardbase.writeoncetextparam import WriteOnceTextParam
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.writeoncetextparam import WriteOnceTextParam
 from mock_db_object import MockDBObject
 
 

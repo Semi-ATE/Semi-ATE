@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
-import ATE.org.actions_on.flow.qualificationwizardbase.wizardbase
-from ATE.org.actions_on.flow.qualificationwizardbase import wizardbase
-from ATE.org.actions_on.flow.qualificationwizardbase.optionparam import OptionParam
+import ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.wizardbase
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.optionparam import OptionParam
 from mock_db_object import MockDBObject
 
 
