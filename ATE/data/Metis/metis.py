@@ -26,6 +26,9 @@ class Metis(object):
     def __init__(self):
         self.df = None
 
+    def __call__(self, FileName, progress=True):
+        self.import_stdf(FileName, progress)
+
     def import_stdf(self, FileName, progress=True):
         '''
         This method will add FileName to this Metis object.
@@ -232,7 +235,7 @@ class Metis(object):
 
     def pull_in(self, what=''):
         '''
-        this method will pull in 'what' to the data-frame.
+        this method will pull in 'what' to the dynamic data-frame.
         '''
 
 

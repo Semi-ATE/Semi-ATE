@@ -9,7 +9,7 @@ import sys
 # Third party imports
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QTreeView
 from qtpy.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal
+#from PyQt5.QtCore import pyqtSignal
 from qtpy.QtCore import Signal
 
 # Local imports
@@ -31,22 +31,23 @@ class ATEWidget(PluginMainWidget):
     """
 
     DEFAULT_OPTIONS = {}
-
+    
+    # --- Signals
+    # ------------------------------------------------------------------------
     sig_edit_goto_requested = Signal(str, int, str)
 
-    # The parameter contains the type of the dbchange (i.e. which table was altered)
-    database_changed = pyqtSignal(int)
-    toolbar_changed = pyqtSignal(str, str, str)
-    active_project_changed = pyqtSignal()
-    hardware_added = pyqtSignal(str)
-    hardware_activated = pyqtSignal(str)
-    hardware_removed = pyqtSignal(str)
-    update_target = pyqtSignal()
-    select_target = pyqtSignal(str)
-    select_base = pyqtSignal(str)
-    select_hardware = pyqtSignal(str)
-    update_settings = pyqtSignal(str, str, str)
-    test_target_deleted = pyqtSignal(str, str)
+    database_changed = Signal(int)
+    toolbar_changed = Signal(str, str, str)
+    active_project_changed = Signal()
+    hardware_added = Signal(str)
+    hardware_activated = Signal(str)
+    hardware_removed = Signal(str)
+    update_target = Signal()
+    select_target = Signal(str)
+    select_base = Signal(str)
+    select_hardware = Signal(str)
+    update_settings = Signal(str, str, str)
+    test_target_deleted = Signal(str, str)
 
     def __init__(self, name=None, plugin=None, parent=None,
                  options=DEFAULT_OPTIONS):
@@ -151,8 +152,8 @@ class ATEWidget(PluginMainWidget):
         self.set_tree()
 
     def close_project(self):
-        print(f"main_widget : Closing ATE project '{os.path.basename(self.project_path)}'")
-
+        print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
+        
     def delete_test(self, path):
         selected_file = os.path.basename(path)
         index = self._get_tab_index(selected_file)

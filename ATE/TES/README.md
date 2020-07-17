@@ -1,3 +1,3 @@
 # TES (Test Executive Software)
 
---> what is called 'master' now
+--> what is formarly known as the 'master app' now
