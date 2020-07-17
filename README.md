@@ -8,5 +8,5 @@ organizing semiconductor testing in such a way that **all** use- (and special) c
 
 The `Semi-ATE` package is writen purely in Python (noarch) and provides besides libraries also a plugin to the [Spyder](https://www.spyder-ide.org/) IDE.
 
-Still interested? Visit the [wiki]().
+Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
