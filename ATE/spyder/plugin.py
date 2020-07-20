@@ -56,7 +56,7 @@ class ATE(SpyderDockablePlugin):
         # Register a new project type
         # TODO: Temporal fix
         projects = self._main._PLUGINS["project_explorer"]
-        projects.register_project_type(ATEProject)
+        projects.register_project_type(self, ATEProject)
 
         editor = self._main._PLUGINS["editor"]
         self.sig_edit_goto_requested.connect(editor.load)
