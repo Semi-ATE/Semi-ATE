@@ -1,0 +1,63 @@
+name: Linux tests
+
+on:
+  push:
+    branches:
+      - "*"
+
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    name: Py${{ matrix.PYTHON_VERSION }}
+    runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+      OS: 'linux'
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+    strategy:
+      fail-fast: false 
+      matrix:
+        PYTHON_VERSION: ['3.7', '3.8']
+    steps:
+      - name: Checkout Pull Requests
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
+      - name: Install Conda
+        uses: goanpeca/setup-miniconda@v1
+        with:
+          activate-environment: test
+          auto-update-conda: false
+          auto-activate-base: false
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          use-only-tar-bz2: true
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          conda install --file requirements/run.txt -c conda-forge -y -q
+          conda install --file requirements/test.txt -c conda-forge -y -q
+      - name: Install package
+        shell: bash -l {0}
+        run: |
+          pip install -e .
+      - name: Show test environment
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+      - name: Run manifest checks
+        shell: bash -l {0}
+        run: check-manifest
+      - name: Run style checks
+        shell: bash -l {0}
+        run: | 
+          pre-commit run -a
+      - name: Run tests
+        shell: bash -l {0}
+        run: xvfb-run --auto-servernum pytest tests --cov=ATE

@@ -10,6 +10,7 @@ setup(
     license="GPL2",
     keywords="",
     packages=find_packages(),
+    include_package_data=True,
     entry_points={
         "spyder.plugins": [
             "ate = ATE.spyder.plugin:ATE",
