@@ -19,24 +19,28 @@ class ATEProject(BaseProjectType):
     def get_name():
         return "Python ATE Project"
 
+    @staticmethod
+    def validate_name(path, name):
+        return True, ""
+
     def create_project(self):
         """ This method is the entry point for creating an 'ATE project'."""
         print(f"Project : Creating ATE project '{os.path.basename(self.root_path)}'")
-        ate_plugin = self.get_plugin("ate")
-        ate_plugin.create_project(self.root_path)
-        ate_plugin.get_widget().toolbar.show()
-        ate_plugin.toggle_view(True)
+        self.plugin.create_project(self.root_path)
+        self.plugin.get_widget().toolbar.show()
+        self.plugin.toggle_view(True)
+        return True, ""
 
     def open_project(self):
         print(f"Project : Opening ATE project '{os.path.basename(self.root_path)}'")
-        ate_plugin = self.get_plugin("ate")
-        ate_plugin.open_project(self.root_path)
-        ate_plugin.get_widget().toolbar.show()
-        ate_plugin.toggle_view(True)
+        self.plugin.open_project(self.root_path)
+        self.plugin.get_widget().toolbar.show()
+        self.plugin.toggle_view(True)
+        return True, ""
 
     def close_project(self):
         print("Project : Closing ATE project '{os.path.basename(self.root_path)}'")
-        ate_plugin = self.get_plugin("ate")
-        ate_plugin.close_project()
-        ate_plugin.get_widget().toolbar.hide()
-        ate_plugin.toggle_view(False)
+        self.plugin.close_project()
+        self.plugin.get_widget().toolbar.hide()
+        self.plugin.toggle_view(False)
+        return True, ""
