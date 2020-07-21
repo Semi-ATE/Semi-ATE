@@ -17,7 +17,7 @@ class ATEProject(BaseProjectType):
 
     @staticmethod
     def get_name():
-        return "Python ATE Project"
+        return "ATE-test Project"
 
     @staticmethod
     def validate_name(path, name):
