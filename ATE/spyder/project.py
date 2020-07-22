@@ -1,5 +1,5 @@
 """
-ATE Project Type.
+Semi-ATE Project Types
 """
 
 import os
@@ -9,38 +9,67 @@ from spyder.plugins.projects.api import BaseProjectType
 
 
 class ATEProject(BaseProjectType):
-    ID = "ate-project"
-
-    # Available info
-    # self.root_path ➜ str, path to the root of the project
-    # self.projects_plugin ➜ ?
+    ID = "Semi-ATE Project"
 
     @staticmethod
     def get_name():
-        return "ATE-test Project"
+        return "Semi-ATE Project"
 
     @staticmethod
     def validate_name(path, name):
+        print(path, name)
         return True, ""
 
     def create_project(self):
-        """ This method is the entry point for creating an 'ATE project'."""
-        print(f"Project : Creating ATE project '{os.path.basename(self.root_path)}'")
+        print(f"Project : Creating Semi-ATE Project '{os.path.basename(self.root_path)}'")
         self.plugin.create_project(self.root_path)
         self.plugin.get_widget().toolbar.show()
         self.plugin.toggle_view(True)
         return True, ""
 
     def open_project(self):
-        print(f"Project : Opening ATE project '{os.path.basename(self.root_path)}'")
+        print(f"Project : Opening Semi-ATE Project '{os.path.basename(self.root_path)}'")
         self.plugin.open_project(self.root_path)
         self.plugin.get_widget().toolbar.show()
         self.plugin.toggle_view(True)
         return True, ""
 
     def close_project(self):
-        print("Project : Closing ATE project '{os.path.basename(self.root_path)}'")
+        print("Project : Closing Semi-ATE Project '{os.path.basename(self.root_path)}'")
         self.plugin.close_project()
         self.plugin.get_widget().toolbar.hide()
         self.plugin.toggle_view(False)
+        return True, ""
+
+class ATEPluginProject(BaseProjectType):
+    ID = "Semi-ATE Plugin Project"
+
+    @staticmethod
+    def get_name():
+        return "Semi-ATE Plugin Project"
+
+    @staticmethod
+    def validate_name(path, name):
+        return True, ""
+
+    def create_project(self):
+        print(f"Project : Creating Semi-ATE Plugin Project '{os.path.basename(self.root_path)}'")
+        from ATE.spyder.widgets.plugins.New_Semi_ATE_Plugin_Wizard import New_Semi_ATE_Plugin_Dialog
+
+        self.plugin.get_widget().toolbar.hide()
+        # TODO: how to hide the ATE navigator ? 
+
+        status, retval = New_Semi_ATE_Plugin_Dialog(self.plugin.get_widget(), self.root_path)
+        if status:  # OK
+            print("project created !!!!")
+            return True, ""
+        else:
+            return False, "Project Creation Canceled."
+
+    def open_project(self):
+        print(f"Project : Opening Semi-ATE Plugin Project '{os.path.basename(self.root_path)}'")
+        return True, ""
+
+    def close_project(self):
+        print("Project : Closing Semi-ATE Plugin Project '{os.path.basename(self.root_path)}'")
         return True, ""

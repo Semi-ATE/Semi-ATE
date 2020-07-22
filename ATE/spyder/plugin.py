@@ -12,7 +12,7 @@ from qtpy.QtGui import QIcon
 # Local imports
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
-from ATE.spyder.project import ATEProject
+from ATE.spyder.project import ATEProject, ATEPluginProject
 from ATE.spyder.widgets.main_widget import ATEWidget
 
 # Localization
@@ -57,19 +57,20 @@ class ATE(SpyderDockablePlugin):
         # TODO: Temporal fix
         projects = self._main._PLUGINS["project_explorer"]
         projects.register_project_type(self, ATEProject)
+        projects.register_project_type(self, ATEPluginProject)
 
         editor = self._main._PLUGINS["editor"]
         self.sig_edit_goto_requested.connect(editor.load)
 
         # Register a new action to create consoles on the IPythonConsole
         # TODO: Temporal fix
-        zconf_action = self.create_action(
-            name="show_zconf_dialog",
-            text="Select kernel from Zero Conf",
-            tip="",
-            icon=self.create_icon("run"),
-            triggered=self.show_zero_conf_dialog,
-        )
+        # zconf_action = self.create_action(
+        #     name="show_zconf_dialog",
+        #     text="Select kernel from Zero Conf",
+        #     tip="",
+        #     icon=self.create_icon("run"),
+        #     triggered=self.show_zero_conf_dialog,
+        # )
         ipython = self._main._PLUGINS["ipython_console"]
         # menu = ipython.get_main_menu()
         # self.add_item_to_menu(
@@ -94,8 +95,5 @@ class ATE(SpyderDockablePlugin):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
 
-    def show_zero_conf_dialog(self):
-        print("something!")
 
-    def trial(self):
-        print("this way!")
+
