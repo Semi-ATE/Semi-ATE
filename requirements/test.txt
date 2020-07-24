@@ -1,6 +1,7 @@
 coverage
 check-manifest
 mock
+pre-commit
 pytest
 pytest-cov
 pytest-mock
