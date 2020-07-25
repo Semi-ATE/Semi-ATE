@@ -8,4 +8,4 @@ repos:
     -   id: check-yaml
     -   id: requirements-txt-fixer
     -   id: mixed-line-ending
-    -   id: check-added-large-files
+#    -   id: check-added-large-files
