@@ -54,10 +54,10 @@ jobs:
       - name: Run manifest checks
         shell: bash -l {0}
         run: check-manifest
-      - name: Run style checks
-        shell: bash -l {0}
-        run: |
-          pre-commit run -a
+#      - name: Run style checks
+#        shell: bash -l {0}
+#        run: |
+#          pre-commit run -a
       - name: Run tests
         shell: bash -l {0}
         run: xvfb-run --auto-servernum pytest tests --cov=ATE
