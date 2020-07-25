@@ -3,14 +3,9 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.1.0
     hooks:
-    -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-json
     -   id: check-yaml
     -   id: requirements-txt-fixer
     -   id: mixed-line-ending
     -   id: check-added-large-files
-#-   repo: https://github.com/asottile/reorder_python_imports
-#    rev: v1.7.0
-#    hooks:
-#    - id: reorder-python-imports
