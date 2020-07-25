@@ -4,14 +4,15 @@ Created on Mon May  4 18:13:59 2020
 
 @author: hoeren
 """
-
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-
 import qdarkstyle
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 
 class TestRunner(QtWidgets.QDialog):
-    
+
     def __init__(self, test):
         super().__init__()
 

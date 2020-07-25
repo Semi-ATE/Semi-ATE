@@ -1,4 +1,3 @@
 """
 ATE Project Type.
 """
-

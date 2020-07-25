@@ -3,7 +3,7 @@
 This directory holds the goods when it comes to plugins for Semi-ATE itself. (not to be confused with the plugin for spyder)
 
 The template is comming is comming from : [ate-org/Semi-ATE-Plugin-cookiecutter](https://github.com/ate-org/Semi-ATE-Plugin-cookiecutter)
-which itself is a fork from `audreyr/cookiecutter-pypackage`. We de-couple it so that 
+which itself is a fork from `audreyr/cookiecutter-pypackage`. We de-couple it so that
 fine-tuning doesn't require new releases of `Semi-ATE` itself!
 
 The `Semi_ATE_Plugin_Wizard.ui` & `Semi_ATE_Plugin_Wizard.py` define the 'parameters'.
@@ -43,7 +43,7 @@ data = {
 
 with open(json_path, 'w') as fd:
 	json.dump(data, fd)
-	
+
 project_dir = cookiecutter(source)
 
 

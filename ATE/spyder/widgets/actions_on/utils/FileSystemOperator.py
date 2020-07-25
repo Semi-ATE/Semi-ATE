@@ -1,8 +1,12 @@
-from ATE.spyder.widgets.actions_on.utils.MenuDialog import DeleteFileDialog, DeleteDirDialog, RenameDialog, AddDirectoryDialog
-from PyQt5 import QtWidgets
-
 import os
 import shutil
+
+from PyQt5 import QtWidgets
+
+from ATE.spyder.widgets.actions_on.utils.MenuDialog import AddDirectoryDialog
+from ATE.spyder.widgets.actions_on.utils.MenuDialog import DeleteDirDialog
+from ATE.spyder.widgets.actions_on.utils.MenuDialog import DeleteFileDialog
+from ATE.spyder.widgets.actions_on.utils.MenuDialog import RenameDialog
 
 
 class FileSystemOperator(QtWidgets.QFileDialog):

@@ -16,11 +16,11 @@
 - [ ] implement the __call__ further so it takes:
       - a bytes type :
         - if the byte array starts with a '{' (and ends with a '}'?) it is a JSON
-        - if not, it is an STDF 
+        - if not, it is an STDF
       - a string type : it is an ATDF
 - [ ] add tests for JSON/ATDF
 - [ ] move `self.info` to docstring of the class (info availabe in editors)
-- [ ] implement 'FPE' for all applicable records (cfr PTR) 
+- [ ] implement 'FPE' for all applicable records (cfr PTR)
 - [ ] re-enable the DT !!! (I didn't put it there for nothing!!!)
 - [ ] re-enable the magic numbers !!! (I didn't put it there for nothing!!!)
 - [ ] make sure that `from ATE.data import STDF` imports everything we need to work with STDF.
@@ -31,4 +31,4 @@
       - one that checks that reinstantination with __repr__ equals the original
       - one that checks that to_json & reinstantination with that equals the original
       - one that checks that to_ATDF & reinstantination with that equals the original
-- [ ] test that the 3 supported zippings work 
+- [ ] test that the 3 supported zippings work

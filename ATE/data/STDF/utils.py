@@ -9,17 +9,14 @@ import struct
 import sys
 
 from ATE.data.STDF.records import *
-from ATE.utils.compression import (
-    default_compression,
-    get_deflated_file_size,
-    supported_compressions,
-    supported_compressions_extensions
-)
-from ATE.utils.magicnumber import (
-    extension_from_magic_number_in_file,
-    is_compressed_file
-)
-from ATE.utils.varia import os_is_case_sensitive, path_is_writeable_by_me
+from ATE.utils.compression import default_compression
+from ATE.utils.compression import get_deflated_file_size
+from ATE.utils.compression import supported_compressions
+from ATE.utils.compression import supported_compressions_extensions
+from ATE.utils.magicnumber import extension_from_magic_number_in_file
+from ATE.utils.magicnumber import is_compressed_file
+from ATE.utils.varia import os_is_case_sensitive
+from ATE.utils.varia import path_is_writeable_by_me
 
 # def stdfopen(FileName, mode='rb'):
 #     '''

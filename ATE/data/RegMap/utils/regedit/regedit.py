@@ -8,14 +8,18 @@ import os
 
 import qdarkstyle
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+
 from ATE.Data.Formats.register_map.utils.regedit.MainWindow import Ui_mainWindow
-from ATE.Data.Formats.register_map.utils.varia import (
-    register_map_load,
-    register_map_save,
-    register_maps_in_directory
-)
-from ATE.Data.utils.varia import is_binar, is_decimal, is_hexadecimal, is_octal
-from PyQt5 import QtCore, QtGui, QtWidgets
+from ATE.Data.Formats.register_map.utils.varia import register_map_load
+from ATE.Data.Formats.register_map.utils.varia import register_map_save
+from ATE.Data.Formats.register_map.utils.varia import register_maps_in_directory
+from ATE.Data.utils.varia import is_binar
+from ATE.Data.utils.varia import is_decimal
+from ATE.Data.utils.varia import is_hexadecimal
+from ATE.Data.utils.varia import is_octal
 
 style = qdarkstyle.load_stylesheet_pyqt5()
 

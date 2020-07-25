@@ -1,6 +1,8 @@
-from PyQt5 import QtWidgets
-from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 import os
+
+from PyQt5 import QtWidgets
+
+from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 
 class ItemTrace(BaseDialog):

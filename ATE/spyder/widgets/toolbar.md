@@ -42,7 +42,7 @@ Note : Skip the '**s**' at the end, I know it makes sense as we also have 'defin
 
 The tree view under `documentation` follows the structure under project_root\documentation.
 
-If on `spyder|project|open` we see that the project has no `documentation` subdirectory, we call the function `ATE.org.templates.documentation_templating(project_root)`, 
+If on `spyder|project|open` we see that the project has no `documentation` subdirectory, we call the function `ATE.org.templates.documentation_templating(project_root)`,
 this function is part of the `spyder|new|project` suit of functions that create a **new project**.
 In our usecase this function is 'touching up' a project that lost his documentation directory. :smirk:
 
@@ -50,7 +50,7 @@ In our usecase this function is 'touching up' a project that lost his documentat
 
 The `definitions` section in the project tree structure **ONLY** looks at the `hardware` of the toolbar !
 
-- `hardwaresetups` is **ALWAYS** enabled for the context menu 
+- `hardwaresetups` is **ALWAYS** enabled for the context menu
 - `masksets` is **ALWAYS** enabled for the context menu
 - `dies` is **ONLY** available for the context menu if (for the selected hardware in the toolbar) there is at least one `maskset` defined.
 - `packages` is **ALWAYS** available for the context menu
@@ -62,7 +62,7 @@ The `definitions` section in the project tree structure **ONLY** looks at the `h
 The `flows` section is **directly** related to a `Target`.
 As long as no `Target` is selected, the `flows` will be disabled for the context menu.
 
-- `flows` in case `Target` = '' 
+- `flows` in case `Target` = ''
 
     `flows` is not enabled for the context menu
 
@@ -71,11 +71,11 @@ As long as no `Target` is selected, the `flows` will be disabled for the context
     `flows` is enabled for the context menu, but there is **NO** `qualification` section !
     Ah, yes, we do `qualification` only on what we sell, and we only sell `products` !
     We do however have the `production`, `engineering`, `validation`, and `characterisation` flows !
-    
+
 - `flows` in case `Target` is selected and `Base` is 'FT'
 
     `flows` is enabled for the context menu **AND** the `qualification` section is available, however
-    based on the `package` that is associated to the `Target` (over `device`) we have a slightly 
+    based on the `package` that is associated to the `Target` (over `device`) we have a slightly
     different outline of the `qualification` section:
 
 1. The `device` of the selected `Target` is associated with the 'naked die' `package`
@@ -86,7 +86,7 @@ As long as no `Target` is selected, the `flows` will be disabled for the context
 
 2. The `device` of the selected `Target` is **not** associated with the 'naked die' `package`
 
-    So, we have a real package, and thus the full `qualification` section is available.     
+    So, we have a real package, and thus the full `qualification` section is available.
 
 
 ### flows/production
@@ -128,7 +128,7 @@ The context menu on the `tests` is as follows:
 - 'New Standard Test'
 - 'Import Test'
 
-## context menu on the items under 'tests' 
+## context menu on the items under 'tests'
 
 The context menu on the individual `test` is as follows:
 
@@ -137,5 +137,3 @@ The context menu on the individual `test` is as follows:
 - 'Trace' --> see where this test is used (flows/testprograms)
 - 'Delete' --> delete the `.py` file, and the info from the database, as well as
 removing the tests from the testprograms that use them !!!
-
-

@@ -18,7 +18,7 @@ class TCWizard(wizardbase.wizardbase):
                 intparam.IntParam("Temperature (lowerbound) (°C)", 0, 0, 100),
                 intparam.IntParam("Temperature (upperbound) (°C)", 0, 0, 100),
                 intparam.IntParam("Duration (Days)", 0, 0, 365)]
-    
+
     # This function shall return a list of testprogram slots
     # Note: We expect a list of TextBoxParams here
     def _get_wizard_testprogram_slots(self) -> list:

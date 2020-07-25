@@ -1,4 +1,6 @@
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 
 
 class BaseDialog(QtWidgets.QDialog):

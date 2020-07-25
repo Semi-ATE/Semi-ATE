@@ -19,7 +19,7 @@ my_name = '.'.join(os.path.basename(__file__).split('.')[:-1])
 
 def generator(project_path, hardware, base):
     print(project_path, hardware, base)
-    
+
 class Wizard(object):
     pass
 

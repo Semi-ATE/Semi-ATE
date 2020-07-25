@@ -1,7 +1,10 @@
-from PyQt5 import QtCore, QtWidgets
 from enum import Enum
 
-from ATE.spyder.widgets.actions_on.maskset.constants import PAD_INFO, DEFINITION
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+
+from ATE.spyder.widgets.actions_on.maskset.constants import DEFINITION
+from ATE.spyder.widgets.actions_on.maskset.constants import PAD_INFO
 from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import NewMasksetWizard
 
 

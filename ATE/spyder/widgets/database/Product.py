@@ -1,5 +1,9 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Text
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import Text
 from sqlalchemy.orm import relationship
+
 from ATE.spyder.widgets.database.ORM import Base
 
 
@@ -73,4 +77,3 @@ class Product(Base):
     @staticmethod
     def get_all_for_hardware(session, hardware):
         return session.query(Product).filter(Product.hardware == hardware).all()
-

@@ -11,21 +11,22 @@ References:
 """
 import os
 import re
+
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-
-from ATE.spyder.widgets.validation import (
-    is_valid_test_name,
-
-    valid_test_parameter_name_regex,
-    valid_test_name_regex,
-
-    valid_min_float_regex,
-    valid_default_float_regex,
-    valid_max_float_regex,
-    valid_fmt_regex)
+from ATE.spyder.widgets.validation import is_valid_test_name
+from ATE.spyder.widgets.validation import valid_default_float_regex
+from ATE.spyder.widgets.validation import valid_fmt_regex
+from ATE.spyder.widgets.validation import valid_max_float_regex
+from ATE.spyder.widgets.validation import valid_min_float_regex
+from ATE.spyder.widgets.validation import valid_test_name_regex
+from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
 
 minimal_docstring_length = 80
 

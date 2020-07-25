@@ -1,10 +1,12 @@
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
-from ATE.spyder.widgets.actions_on.model.Actions import ACTIONS
-from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-from ATE.spyder.widgets.actions_on.documentation.BaseDocumentationItem import BaseDocumentationItem
 import os
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+
+from ATE.spyder.widgets.actions_on.documentation.BaseDocumentationItem import BaseDocumentationItem
+from ATE.spyder.widgets.actions_on.model.Actions import ACTIONS
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
+from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 
 
 class DocumentationItem(BaseDocumentationItem):

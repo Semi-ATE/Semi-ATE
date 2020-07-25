@@ -1,7 +1,7 @@
+from PyQt5 import QtCore
+
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
-
-from PyQt5 import QtCore
 
 
 class StateItem(BaseItem):

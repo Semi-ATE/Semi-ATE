@@ -12,7 +12,7 @@ The API Design in this document tries to take into account the way the IDE is st
 * Extensibility
 
 ## Identification
-We use the "identification" functions to discover the functionality provided by a given plugin. The plugin shall provide a number of functions, that allow us to query that functionality. 
+We use the "identification" functions to discover the functionality provided by a given plugin. The plugin shall provide a number of functions, that allow us to query that functionality.
 
 ### Plugin
 ```
@@ -63,7 +63,7 @@ An equipment object is used to access the specific functionality of prober or ha
 ```
 
 #### Devicepin Importer
-A devicepin importer is used to import the pinset, that is accessible for a given device. 
+A devicepin importer is used to import the pinset, that is accessible for a given device.
 ```
     get_devicepin_importer_names() -> []
 ```
@@ -94,7 +94,7 @@ An instrument is a piece of hardware, that is used to measure a given aspect of 
 ```
 
 ## Instances
-All hooks that deal with the instanciation of objects are provided the name of the plugin that should actually create the instance. The reason is, that pluggy will call each hook for all registered plugins, so a call to "get_importer" will be executed for each plugin, using the same parameter. Since we want to avoid nameclashes of objects we must uniquely identify the actual type of object we want created. See the section on object names for this. 
+All hooks that deal with the instanciation of objects are provided the name of the plugin that should actually create the instance. The reason is, that pluggy will call each hook for all registered plugins, so a call to "get_importer" will be executed for each plugin, using the same parameter. Since we want to avoid nameclashes of objects we must uniquely identify the actual type of object we want created. See the section on object names for this.
 
 A note on dependencies:
 Importers and exporters are allowed to depend on PyQt to provide their own UI, if necessary. Actuators, Instruments and Equiments should not depend on PyQt - these objects are created by testcases and usually used in a headless environment (i.e. the tester itself!)
@@ -119,7 +119,7 @@ The importer shall show it's own import dialog (which may well be just a file ch
 ```
 get_exporter(exporter_name) -> Exporter
 ```
-This hook shall return an instance of an exporter with the given name. 
+This hook shall return an instance of an exporter with the given name.
 
 An importer is expected to have the following interface:
 ```
@@ -216,7 +216,7 @@ class ThePlugin(object):
     @hookspec.ate.hookimpl
     def get_plugin_identification() -> dict:
         return {}
-    
+
     @hookspec.ate.hookimpl
     def get_importer_names() -> []:
         return []
@@ -256,7 +256,7 @@ class ThePlugin(object):
     @hookspec.ate.hookimpl
     def get_devicepin_importer(importer_name) -> Importer:
         throw NotImplementedError
-    
+
     @hookspec.ate.hookimpl
     def get_actuator(required_capability) -> ActuatorInstance:
         throw NotImplementedError
@@ -280,10 +280,10 @@ Plugins are installed by means of setuptools (Pluggy supports plugin discovery t
 __File__: PluginSrc\setup.py
 ```
 from setuptools import setup
-setup( 
-    name="SomeAtePlugin", 
-    install_requires="ate.org", 
-    entry_points={"ate.org": ["plug = PluginB:ThePlugin"]}, 
+setup(
+    name="SomeAtePlugin",
+    install_requires="ate.org",
+    entry_points={"ate.org": ["plug = PluginB:ThePlugin"]},
     py_modules=["PluginB"],
 )
 ```

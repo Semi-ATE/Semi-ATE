@@ -1,8 +1,6 @@
-from enum import Enum
-
 import os
 import re
-
+from enum import Enum
 
 from ATE.spyder.widgets.actions_on.hardwaresetup.constants import DEFINITION
 from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import HardwareWizard

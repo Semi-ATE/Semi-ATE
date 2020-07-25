@@ -1,7 +1,8 @@
+import os
+import re
+
 from ATE.spyder.widgets.actions_on.die.DieWizard import DieWizard
 from ATE.spyder.widgets.actions_on.die.ViewDieWizard import ViewDieWizard
-import re
-import os
 
 
 class EditDieWizard(DieWizard):

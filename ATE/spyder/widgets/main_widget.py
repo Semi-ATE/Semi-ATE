@@ -1,25 +1,27 @@
 """
 ATE widget.
 """
-
 # Standard library imports
 import os
 import sys
 
-# Third party imports
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QTreeView
 from qtpy.QtCore import Qt
-#from PyQt5.QtCore import pyqtSignal
 from qtpy.QtCore import Signal
-
-# Local imports
+from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QTreeView
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 from spyder.api.translations import get_translation
 from spyder.api.widgets import PluginMainWidget
 from spyder.api.widgets.toolbars import ApplicationToolBar
 
-from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import NewProjectDialog
+from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.toolbar_original import ToolBar
+# Third party imports
+#from PyQt5.QtCore import pyqtSignal
+# Local imports
 
 # Localization
 _ = get_translation('spyder')
@@ -31,7 +33,7 @@ class ATEWidget(PluginMainWidget):
     """
 
     DEFAULT_OPTIONS = {}
-    
+
     # --- Signals
     # ------------------------------------------------------------------------
     sig_edit_goto_requested = Signal(str, int, str)
@@ -153,7 +155,7 @@ class ATEWidget(PluginMainWidget):
 
     def close_project(self):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
-        
+
     def delete_test(self, path):
         selected_file = os.path.basename(path)
         index = self._get_tab_index(selected_file)

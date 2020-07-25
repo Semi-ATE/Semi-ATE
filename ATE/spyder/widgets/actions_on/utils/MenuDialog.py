@@ -1,7 +1,10 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
 import os
 import shutil
+
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 

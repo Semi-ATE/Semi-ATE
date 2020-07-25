@@ -21,13 +21,15 @@ all other generators are called by these 4 'top level' generators.
 
 
 """
-
+import getpass
 import os
 import shutil
+
 import numpy as np
+from jinja2 import Environment
+from jinja2 import FileSystemLoader
+
 from ATE.utils.DT import DT
-import getpass
-from jinja2 import FileSystemLoader, Environment
 
 
 def project_generator(project_path):
@@ -1006,4 +1008,3 @@ class test_program_generator(BaseGenerator):
 
     def _render(self, template, render_data):
         pass
-    

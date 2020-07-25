@@ -3,29 +3,28 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
-
 import os
+import pickle
 import platform
 import sqlite3
-import pickle
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject
 
 from ATE.spyder.widgets.constants import TableIds as TableId
-from ATE.spyder.widgets.validation import is_ATE_project
 from ATE.spyder.widgets.database import ORM
-
 from ATE.spyder.widgets.database.Device import Device
-from ATE.spyder.widgets.database.Hardware import Hardware
-from ATE.spyder.widgets.database.Package import Package
 from ATE.spyder.widgets.database.Die import Die
+from ATE.spyder.widgets.database.Hardware import Hardware
 from ATE.spyder.widgets.database.Maskset import Maskset
+from ATE.spyder.widgets.database.Package import Package
 from ATE.spyder.widgets.database.Product import Product
 from ATE.spyder.widgets.database.Program import Program
 from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
 from ATE.spyder.widgets.database.Sequence import Sequence
 from ATE.spyder.widgets.database.Test import Test
 from ATE.spyder.widgets.database.TestTarget import TestTarget
+from ATE.spyder.widgets.validation import is_ATE_project
 
 
 tables = {'hardwares': Hardware,
@@ -86,7 +85,7 @@ class ProjectNavigation(QObject):
             self.db_file = os.path.join(project_directory, f"{self.project_name}.sqlite3")
 
             project_quality_file = os.path.join(self.project_directory, 'project_quality.pickle')
-            
+
             if not os.path.exists(self.db_file):  # brand new project, initialize it.
                 self.create_project_structure()
                 self.project_quality = project_quality

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import optionparam
-
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
 from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
-
-
-from PyQt5 import QtCore, QtGui, QtWidgets
 
 quali_flow_name = "qualification_HTOL_flow"
 quali_flow_listentry_name = "HTOL"

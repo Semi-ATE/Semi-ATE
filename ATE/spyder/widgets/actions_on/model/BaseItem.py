@@ -1,4 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 
 class BaseItem(QtGui.QStandardItem):
@@ -113,7 +115,7 @@ class BaseItem(QtGui.QStandardItem):
     def has_children(self):
         # ToDo: _get_children_names queries all items
         # of a given type resulting in the fact, that
-        # we actually have to use a nameproperty of 
+        # we actually have to use a nameproperty of
         # the culd here -> fix this. Also:
         # check if _get_children_names ever returns
         # none objects.

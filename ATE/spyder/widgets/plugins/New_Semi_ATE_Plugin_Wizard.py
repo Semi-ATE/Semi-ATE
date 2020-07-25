@@ -9,11 +9,11 @@ import os
 from qtpy import QtCore, QtGui, QtWidgets, uic
 
 class New_Semi_ATE_Plugin_Wizard(QtWidgets.QDialog):
-    
+
     def __init__(self, parent, project_root, title=None):
         super().__init__(parent)
         self.parent = parent
-        
+
         my_ui = __file__.replace('.py', '.ui')
         if not os.path.exists(my_ui):
             raise Exception(f"can not find {my_ui}")
@@ -33,24 +33,24 @@ class New_Semi_ATE_Plugin_Wizard(QtWidgets.QDialog):
             tmp += '@' + os.environ['USERDNSDOMAIN'].lower()
         self.email.setText(tmp)
         self.projectRepoName.clear()
-        
+
         # GitHub Tab
-        
+
         # Plugin/Importers Tab
-        
+
         # Plugin/Exporters Tab
-        
+
         # Plugin/Instruments Tab
-        
+
         # Plugin/Tester Tab
-        
+
         # Plugin/Equipment Tab
-        
+
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
 
         self.show()
-        
+
     def OKButtonPressed(self):
         self.accept()
 

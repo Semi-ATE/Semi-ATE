@@ -4,7 +4,6 @@ Created on Mon Apr  6 12:35:07 2020
 
 @author: hoeren
 """
-
 import os
 
 from ATE.spyder.widgets.coding import test_generator

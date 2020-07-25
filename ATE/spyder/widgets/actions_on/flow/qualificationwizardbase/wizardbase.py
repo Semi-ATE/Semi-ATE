@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
+
 from PyQt5 import QtWidgets
+
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 

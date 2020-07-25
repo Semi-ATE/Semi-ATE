@@ -5,14 +5,16 @@ Created on 24 Oct 2016
 @author: tho
 
 '''
-
-import inspect, imp
-import logging
-import os, sys, re
-import copy
-import random
-import hashlib
 import abc.ABC
+import copy
+import hashlib
+import imp
+import inspect
+import logging
+import os
+import random
+import re
+import sys
 
 Pass = 1
 Fail = 0

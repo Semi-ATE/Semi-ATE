@@ -6,7 +6,7 @@ import .common
 #
     mqtt = mqtt()
 	K2000 = pm.hook.create_proxy("k2000", mqtt)
-	
+
 #
 
 class fubar(testABC):

@@ -1,6 +1,6 @@
 # The STDF (<ins>S</ins>tandard <ins>T</ins>est <ins>D</ins>ata <ins>F</ins>ormat)  library
 
-### This library is NOT intended to be the <ins>fastes in the world</ins>! 
+### This library is NOT intended to be the <ins>fastes in the world</ins>!
 
 Often people are searching for 'the fastest' STDF parser. If this is what you are after, [keep on looking](https://en.wikipedia.org/wiki/Standard_Test_Data_Format) and by all means, hit the wall later on, and at that point you might consider to return! 🤣
 
@@ -12,7 +12,7 @@ A `good` parser is written in a higher level language (like [Python](https://www
 
 The point is that STDF data should be converted to a useable format like [pandas](https://pandas.pydata.org/) ([numpy](https://numpy.org/) alone will not do as plenty of data is not numerical) **WHILE** the data is being generated, <ins>preferrably not</ins> post-factum and <ins>definitely not</ins> pre-usage!
 
-Think of it like this: STDF is a very good format from the point of view of the ATE, because if a test program is crashing, we lost virtually no data! Also, in STDF <ins>everything</ins> conserning an ATE <ins>has his defined place</ins>! (as opposed to [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) or similar ... naaah, you can not call it a 'format' can you?) Anyway, STDF is an un-usable format from the point of view of data analysis! Therefore we need to convert the data to a format that **is** usable. (and if now you are thinking '[SQL](https://en.wikipedia.org/wiki/SQL)', then I can confirm that you are a die-hard masochist that still lives in the last millennium because you are clearly not up to speed when it comes to [data science](https://en.wikipedia.org/wiki/Data_science)! 🧐)   
+Think of it like this: STDF is a very good format from the point of view of the ATE, because if a test program is crashing, we lost virtually no data! Also, in STDF <ins>everything</ins> conserning an ATE <ins>has his defined place</ins>! (as opposed to [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) or similar ... naaah, you can not call it a 'format' can you?) Anyway, STDF is an un-usable format from the point of view of data analysis! Therefore we need to convert the data to a format that **is** usable. (and if now you are thinking '[SQL](https://en.wikipedia.org/wiki/SQL)', then I can confirm that you are a die-hard masochist that still lives in the last millennium because you are clearly not up to speed when it comes to [data science](https://en.wikipedia.org/wiki/Data_science)! 🧐)
 
 Anyway, I did put `pandas` forward, because the rest of `ATE.org` is Python (>=3.6) based, but to be fair one could [also go the SAS- or the R way](https://www.analyticsvidhya.com/blog/2017/09/sas-vs-vs-python-tool-learn/) but those make less sense in the `ATE.org` concept.
 
@@ -20,7 +20,7 @@ In any case, `ATE.org` is **ONLY** outputting STDF data, so whatever (legacy) sy
 
 The `ATE.org` [Metis](/src/ATE/data/Metis/README.md) library builds on **STDF**/[numpy](https://numpy.org/)/[scipy](https://www.scipy.org/)/[pandas](https://pandas.pydata.org/)/[HDF5](https://www.hdfgroup.org/solutions/hdf5/)/[matplotlib](https://matplotlib.org/) to deliver data analysis tailored to the semiconductor test industry ... in open source!
 
-Eat that Mentor! For years you took [money-for-nothing](https://www.youtube.com/watch?v=wTP2RUD_cL0), and in the end you still screwed your customers (cfr. `PAT`). [My-silver-lining](https://www.youtube.com/watch?v=DKL4X0PZz7M): now we will do some screwing! See how that feels! 😋 
+Eat that Mentor! For years you took [money-for-nothing](https://www.youtube.com/watch?v=wTP2RUD_cL0), and in the end you still screwed your customers (cfr. `PAT`). [My-silver-lining](https://www.youtube.com/watch?v=DKL4X0PZz7M): now we will do some screwing! See how that feels! 😋
 
 ### It is also <ins>NOT just a parser</ins>!
 

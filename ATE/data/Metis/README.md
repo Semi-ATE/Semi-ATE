@@ -7,12 +7,9 @@ By the era of Greek philosophy in the 5th century BC, Metis had become the <ins>
 
 ## Description
 
-In ONE STDF file ther is a lot of data that is static over all the devices. Therefore, making a pandas data-frame from ONE STDF file will yield 
+In ONE STDF file ther is a lot of data that is static over all the devices. Therefore, making a pandas data-frame from ONE STDF file will yield
 a lot of columns that contain identical info over the rows, and thus ends up consuming unnecessary memory space.
 The Metis object thus has 2 data frames, one `static` and one `dynamic` data frame.
 On a Metis object, one can:
   - `pull-in` : one or more columns from the static dataframe in the dynamic dataframe.
   - `push-out` : selected columns (or all) from the dynamic dataframe into the static dataframe (if all entries are identical!)
-
-  
-   

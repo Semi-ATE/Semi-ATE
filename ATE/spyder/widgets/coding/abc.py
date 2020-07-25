@@ -5,17 +5,17 @@ Created on 24 Oct 2016
 @author: tho
 
 '''
-
-import inspect
+import abc.ABC
+import copy
+import hashlib
 import imp
+import inspect
 import logging
 import os
-import sys
-import re
-import copy
 import random
-import hashlib
-import abc.ABC
+import re
+import sys
+
 import numpy as np
 
 

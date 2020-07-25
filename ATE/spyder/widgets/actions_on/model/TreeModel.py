@@ -1,7 +1,8 @@
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
-from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.model import FlowItem as FlowItem
+from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.tests.TestItem import TestItem
 from ATE.spyder.widgets.constants import TableIds
 from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager

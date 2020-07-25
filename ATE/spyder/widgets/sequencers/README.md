@@ -4,7 +4,7 @@
 The sequencer is a piece of software that controls how a given set of tests ("testprogram") is executed within the ATE runtime. The sequencer serves as the entrypoint into the ATE testharness, i.e. it synchronizes with the other members of the system.
 
 ## API as seen by the ATE Runtime
-The sequencer is visible to two parts of the ATE Runtime: Control and Master. 
+The sequencer is visible to two parts of the ATE Runtime: Control and Master.
 
 ### Control
 Control will launch the testprogram (and with that the sequencer) using the following commandline options:
@@ -40,7 +40,7 @@ Each and every instrument/actuator is either controlled by the TCC or the master
 ### Proxies/Shims
 All additional devices will usually be either controlled by the master or by an instance even higher up in the hierarchy. This means, that the testprogram will usually not be able to directly influence the behavior of such a device, instead it will have to send requests to the master which will - depending on the peripheral in question - either control the peripheral or relay the request to the next higher instance (i.e. TCC). In order to provide a readable and ergonomic interface for the test each peripheralimplementation shall come in two flavours:
 * A proxy class that provides an easy to use interface for the test, but will - in the background - translate methodcalls to mqtt requests and block until the request has been fulfilled
-* A concrete implementation, that will actually implement the interface to the peripheral. 
+* A concrete implementation, that will actually implement the interface to the peripheral.
 
 The proxy will be instanciated for each testprogramm (common.py), whereas the actual implementation will run on the master.
 
@@ -96,7 +96,7 @@ get_instrument_proxy(plugin_name, instrument_name) -> InstrumentProxy
 ```
 
 The get_xx_proxy implementations shall be used by the testprogram to obtain a proxy implementation, whereas the get_xx implementations shall be used by the controlling instance (i.e. the master) to obtain actual implementations when the testprogram sends a request by proxy.
-Note: Structuring the hookspec this way allows use to also use concrete implementations of actuators/instruments in the tests, should the need arise. In fact, one could go as far as to only generate testcode that uses proxies for hardwaresetups where parallelism is > 1. 
+Note: Structuring the hookspec this way allows use to also use concrete implementations of actuators/instruments in the tests, should the need arise. In fact, one could go as far as to only generate testcode that uses proxies for hardwaresetups where parallelism is > 1.
 
 ### Testresults & Testend
 The sequencer is free to send testresult as fragments at any time during a testrun. Sending a testresult is archieved by posting an mqtt message to "ate/\<device-id>/TestApp/stdf/sitesite\<site-id>" containing the STDF data encoded as Base64 string.

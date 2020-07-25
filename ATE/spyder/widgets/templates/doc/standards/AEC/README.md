@@ -63,6 +63,3 @@ This is a council that formulates guidelines for [different aspects]( http://www
 - [AEC-Q200-005-Rev-A](AEC-Q200-005-Rev-A.pdf) : Board Flex / Terminal Bond Strength Test
 - [AEC-Q200-006-Rev-A](AEC-Q200-006-Rev-A.pdf) : Terminal Strength (SMD) / Shear Stress Test
 - [AEC-Q200-007-Rev-A](AEC-Q200-007-Rev-A.pdf) : Voltage Surge Test
-
-
-

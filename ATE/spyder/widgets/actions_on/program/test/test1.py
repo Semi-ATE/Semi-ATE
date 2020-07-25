@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-
 # from ATE.spyder.widgets.Testing import testABC
-
 from ATE.spyder.widgets.actions.new.program.test.testABC import testABC
 
 

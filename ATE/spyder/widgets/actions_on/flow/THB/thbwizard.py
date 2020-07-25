@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 
 quali_flow_name = "qualification_thb_flow"
 quali_flow_listentry_name = "THB"

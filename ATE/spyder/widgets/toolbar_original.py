@@ -5,8 +5,9 @@ Created on Tue Apr  7 18:18:33 2020
 @author: hoeren
 """
 # from ATE.testers import SCT_testers
-from PyQt5 import QtWidgets, QtCore
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 from spyder.api.widgets.toolbars import ApplicationToolBar
 
 

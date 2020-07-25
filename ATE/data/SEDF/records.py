@@ -4,12 +4,14 @@ Created on 16 Aug 2019
 
 @author: tho
 '''
-
 import struct
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from zlib import adler32
 
-from ATE.Data.Formats.STDF.records import hexify, sys_cpu, sys_endian
+from ATE.Data.Formats.STDF.records import hexify
+from ATE.Data.Formats.STDF.records import sys_cpu
+from ATE.Data.Formats.STDF.records import sys_endian
 from ATE.utils.DT import DT
 
 __latest_SEDF_version__ = 1 # will be casted to unsigned byte

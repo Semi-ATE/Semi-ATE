@@ -1,9 +1,18 @@
 # coding: utf-8
-from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Integer, LargeBinary, Table, Text, create_engine
-from sqlalchemy.sql.sqltypes import NullType
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean
+from sqlalchemy import CheckConstraint
+from sqlalchemy import Column
+from sqlalchemy import create_engine
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import LargeBinary
+from sqlalchemy import Table
+from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.sqltypes import NullType
 
 
 Base = declarative_base()

@@ -8,6 +8,7 @@ import os
 import re
 
 from PyQt5 import QtGui
+
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 

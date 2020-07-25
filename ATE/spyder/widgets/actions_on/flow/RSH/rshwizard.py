@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import optionparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import optionparam
-
 from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
 
 

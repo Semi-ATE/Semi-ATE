@@ -1,8 +1,8 @@
-from ATE.spyder.widgets.actions_on.package.NewPackageWizard import NewPackageWizard
-from enum import Enum
-
 import os
 import re
+from enum import Enum
+
+from ATE.spyder.widgets.actions_on.package.NewPackageWizard import NewPackageWizard
 
 
 class ViewPackageWizard(NewPackageWizard):

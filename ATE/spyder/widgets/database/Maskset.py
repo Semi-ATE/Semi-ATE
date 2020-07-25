@@ -1,7 +1,11 @@
-from sqlalchemy import Boolean, Column, LargeBinary, Text
-from ATE.spyder.widgets.database.ORM import Base
-
 import pickle
+
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import LargeBinary
+from sqlalchemy import Text
+
+from ATE.spyder.widgets.database.ORM import Base
 
 
 class Maskset(Base):

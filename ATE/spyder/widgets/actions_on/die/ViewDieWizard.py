@@ -1,8 +1,8 @@
-from ATE.spyder.widgets.actions_on.die.DieWizard import DieWizard
-from enum import Enum
-
 import os
 import re
+from enum import Enum
+
+from ATE.spyder.widgets.actions_on.die.DieWizard import DieWizard
 
 
 class ErrorMessage(Enum):

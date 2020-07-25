@@ -1,9 +1,19 @@
-from sqlalchemy import CheckConstraint, Column, ForeignKey, Integer, LargeBinary, Text, asc, or_, and_
+import pickle
+
+from sqlalchemy import and_
+from sqlalchemy import asc
+from sqlalchemy import CheckConstraint
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import LargeBinary
+from sqlalchemy import or_
+from sqlalchemy import Text
 from sqlalchemy.orm import relationship
+
+from ATE.spyder.widgets.database.Hardware import Hardware
 from ATE.spyder.widgets.database.ORM import Base
 from ATE.spyder.widgets.database.TestTarget import TestTarget
-from ATE.spyder.widgets.database.Hardware import Hardware
-import pickle
 
 
 class Program(Base):

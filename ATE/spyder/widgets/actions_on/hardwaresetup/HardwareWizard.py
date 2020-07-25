@@ -4,16 +4,18 @@ Created on Thu Apr  2 09:52:27 2020
 
 @author: hoeren
 """
-
 import os
 import re
 
-from ATE.spyder.widgets.validation import valid_pcb_name_regex
-from PyQt5 import QtCore, QtGui, QtWidgets
+import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+
+from ATE.spyder.widgets.actions_on.hardwaresetup.InstrumentListItem import InstrumentListItem
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
-from ATE.spyder.widgets.actions_on.hardwaresetup.InstrumentListItem import InstrumentListItem
-import qtawesome as qta
+from ATE.spyder.widgets.validation import valid_pcb_name_regex
 
 
 PR = 'PR'

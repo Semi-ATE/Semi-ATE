@@ -18,8 +18,8 @@ def entry_is_a_standard_test(name):
 for entry in os.listdir(standard_tests_directory):
     if entry_is_a_standard_test(entry):
         names[entry] = os.path.join(standard_tests_directory, entry, f'{entry}.py')
-        
-        
+
+
 if __name__ == '__main__':
     for index, name in enumerate(names):
         print(f"{index+1}) {name} : {names[name]}")

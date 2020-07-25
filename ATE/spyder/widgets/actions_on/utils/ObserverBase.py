@@ -1,12 +1,14 @@
-from watchdog.observers import Observer
-
 from PyQt5 import QtCore
-
+from watchdog.events import DirCreatedEvent
+from watchdog.events import DirDeletedEvent
+from watchdog.events import DirModifiedEvent
+from watchdog.events import DirMovedEvent
+from watchdog.events import FileCreatedEvent
+from watchdog.events import FileDeletedEvent
+from watchdog.events import FileModifiedEvent
+from watchdog.events import FileMovedEvent
 from watchdog.events import PatternMatchingEventHandler
-from watchdog.events import FileMovedEvent, DirMovedEvent
-from watchdog.events import FileModifiedEvent, DirModifiedEvent
-from watchdog.events import FileCreatedEvent, DirCreatedEvent
-from watchdog.events import FileDeletedEvent, DirDeletedEvent
+from watchdog.observers import Observer
 
 
 class EventHandlerBase(PatternMatchingEventHandler, QtCore.QObject):

@@ -1,7 +1,8 @@
+import os
+import re
+
 from ATE.spyder.widgets.actions_on.device.NewDeviceWizard import NewDeviceWizard
 from ATE.spyder.widgets.actions_on.device.ViewDeviceWizard import ViewDeviceWizard
-import re
-import os
 
 
 class EditDeviceWizard(NewDeviceWizard):

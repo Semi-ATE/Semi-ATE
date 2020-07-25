@@ -15,4 +15,3 @@ libraries when it comes to measurments.
 The ideal case would be that if we do 'print(a)', python would produce
 the for example : (__str__) "51.38 μA ± 10 ηA" note that the main value is
 truncated on the error msd (any more after comma position are bullshit anyway)
-

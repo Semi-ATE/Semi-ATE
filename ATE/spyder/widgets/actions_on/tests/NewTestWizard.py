@@ -7,9 +7,14 @@ Created on Mon Dec  2 18:56:05 2019
 import os
 import re
 
-from ATE.spyder.widgets.validation import is_valid_test_name, is_valid_python_class_name, valid_python_class_name_regex
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from ATE.spyder.widgets.validation import is_valid_python_class_name
+from ATE.spyder.widgets.validation import is_valid_test_name
+from ATE.spyder.widgets.validation import valid_python_class_name_regex
 
 
 minimal_description_length = 80
@@ -69,17 +74,17 @@ class NewTestWizard(QtWidgets.QDialog):
         #TODO: add user, time and such to the description by default ?!?
         self.description_length = 0
         self.description.textChanged.connect(self.setDescriptionLength)
-        
+
     # InputParametersTab
         self.inputParameterMoveUp.setIcon(qta.icon('mdi.arrow-up-bold-box-outline', color='orange'))
         self.inputParameterMoveUp.clicked.connect(self.moveInputParameterUp)
-        
+
         self.inputParameterMoveDown.setIcon(qta.icon('mdi.arrow-down-bold-box-outline', color='orange'))
         self.inputParameterMoveDown.clicked.connect(self.moveInputParameterDown)
-        
+
         self.inputParameterAdd.setIcon(qta.icon('mdi.plus-box-outline', color='orange'))
         self.inputParameterAdd.clicked.connect(self.addInputParameter)
-        
+
         self.inputParameterDelete.setIcon(qta.icon('mdi.minus-box-outline', color='orange'))
         self.inputParameterDelete.clicked.connect(self.deleteInputParameter)
 
@@ -124,7 +129,7 @@ class NewTestWizard(QtWidgets.QDialog):
         self.inputParameterTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.inputParameterTable.customContextMenuRequested.connect(self.input_parameters_context_menu_manager)
         self.inputParameterTable.cellChanged.connect(self.inputParameterCellChanged)
-        
+
         #Idea: limit the number of input parameters to 3, as shmoo-ing on 3 parameters is still
         #      manageable for a human (3D), but more is not ...
 
@@ -150,7 +155,7 @@ class NewTestWizard(QtWidgets.QDialog):
     def input_parameters_context_menu_manager(self, point):
         '''
         here we select which context menu (for input_parameters) we need,
-        based on the column where we activated the context menu on, and 
+        based on the column where we activated the context menu on, and
         dispatch to the appropriate context menu.
         '''
         self.index = self.inputParameterTable.indexAt(point)
@@ -177,7 +182,7 @@ class NewTestWizard(QtWidgets.QDialog):
                     item = menu.addAction(unit[0])
                     item.triggered.connect(unit[1])
                 menu.addSeparator()
-    
+
                 derived_units = [
                     ('rad (plane angle - radian = m/m)', self.setUnitRadian),
                     ('sr (solid angle - steradian = m²/m²)', self.setUnitSteradian),
@@ -204,7 +209,7 @@ class NewTestWizard(QtWidgets.QDialog):
                     item = menu.addAction(unit[0])
                     item.triggered.connect(unit[1])
                 menu.addSeparator()
-    
+
                 alternative_units = [
                     ('°C (temperature - degree Celcius = K - 273.15)', self.setUnitCelcius),
                     ('Gs (magnetic flux density - gauss = 10⁻⁴ Tesla)', self.setUnitGauss),
@@ -212,9 +217,9 @@ class NewTestWizard(QtWidgets.QDialog):
                 for unit in alternative_units:
                     item = menu.addAction(unit[0])
                     item.triggered.connect(unit[1])
-                
+
                 menu.exec_(QtGui.QCursor.pos())
-                
+
         elif self.col == 4: # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
             if self.row != 0: # temperature
                 menu = QtWidgets.QMenu(self)
@@ -244,41 +249,41 @@ class NewTestWizard(QtWidgets.QDialog):
                     item = menu.addAction(multiplier[0])
                     item.triggered.connect(multiplier[1])
                 menu.addSeparator()
-    
+
                 dimensionless_multipliers = [
                     ('ppm (parts per million=ᴺ/₁․₀₀₀․₀₀₀)', self.setMultiplierPPM),
                     ('‰ (promille=ᴺ/₁․₀₀₀)', self.setMultiplierPromille),
                     ('% (percent=ᴺ/₁₀₀)', self.setMultiplierPercent),
-                    ('dB (decibel=10·log[P/Pref])', self.setMultiplierdB), 
+                    ('dB (decibel=10·log[P/Pref])', self.setMultiplierdB),
                     ('dBV (decibel=20·log[V/Vref])', self.setMultiplierdBV)]
                 for multiplier in dimensionless_multipliers:
                     item = menu.addAction(multiplier[0])
                     item.triggered.connect(multiplier[1])
 
-                
-                
-                
-                
-                
-                
-                
-                
+
+
+
+
+
+
+
+
                 menu.exec_(QtGui.QCursor.pos())
-            
+
         elif self.col >= 1 and self.col <= 3: # Min, Default, Max
             if self.row != 0: # not for temperature
                 menu = QtWidgets.QMenu(self)
-    
+
                 special_values = [
-                    ('+∞', self.setValuePlusInfinite), 
-                    ('<clear>', self.setValueClear), 
+                    ('+∞', self.setValuePlusInfinite),
+                    ('<clear>', self.setValueClear),
                     ('-∞', self.setValueMinusInfinite)]
                 for special_value in special_values:
                     item = menu.addAction(special_value[0])
                     item.triggered.connect(special_value[1])
-    
+
                 menu.exec_(QtGui.QCursor.pos())
-            
+
         else: # Name
             if self.row != 0: # not for temperature
                 menu = QtWidgets.QMenu(self)
@@ -289,19 +294,19 @@ class NewTestWizard(QtWidgets.QDialog):
                     ("Integer (Hexadecimal - '0xFE...')", self.setParameterHexadecimal),
                     ("Integer (Octal - '0o87...')", self.setParameterOctal),
                     ("Integer (Binary - '0b10...')", self.setParameterBinary)]
-                
+
                 check = qta.icon('mdi.check', color='orange')
-                
+
                 parameter = self.inputParameterTable.item(self.row, self.col)
                 parameter_type = parameter.toolTip()
-                
+
                 for type_option in parameter_types:
                     if type_option[0] == parameter_type:
                         item = menu.addAction(check, type_option[0])
                     else:
                         item = menu.addAction(type_option[0])
                     item.triggered.connect(type_option[1])
-    
+
                 menu.exec_(QtGui.QCursor.pos())
 
 # units
@@ -314,10 +319,10 @@ class NewTestWizard(QtWidgets.QDialog):
 # base units
     def setUnitSecond(self):
         self.setUnit('s', 'time - second')
-        
+
     def setUnitMeter(self):
         self.setUnit('m', 'length - meter')
-        
+
     def setUnitKilogram(self):
         self.setUnit('kg', 'mass - kilogram')
 
@@ -336,26 +341,26 @@ class NewTestWizard(QtWidgets.QDialog):
 # derived units
     def setUnitRadian(self):
         self.setUnit('rad', 'plane angle - radian = m/m')
-        
-    def setUnitSteradian(self):        
+
+    def setUnitSteradian(self):
         self.setUnit('sr', 'solid angle - steradian = m²/m²')
-        
+
     def setUnitHertz(self):
         self.setUnit('Hz', 'frequency - hertz = s⁻¹')
-    
-    def setUnitNewton(self):            
+
+    def setUnitNewton(self):
         self.setUnit('N', 'force, weight - newton = kg⋅m⋅s⁻²')
 
-    def setUnitPascal(self):            
+    def setUnitPascal(self):
         self.setUnit('Pa', ' pressure, stress - pascal = kg⋅m⁻¹⋅s⁻²')
 
-    def setUnitJoule(self):            
+    def setUnitJoule(self):
         self.setUnit('J', 'energy, work, heat - joule = kg⋅m²⋅s⁻² = N⋅m = Pa⋅m³')
-        
-    def setUnitWatt(self):           
+
+    def setUnitWatt(self):
         self.setUnit('W', 'power, radiant flux - watt = kg⋅m²⋅s⁻³ = J/s')
- 
-    def setUnitCoulomb(self):           
+
+    def setUnitCoulomb(self):
         self.setUnit('C', 'electric charge - coulomb = s⋅A')
 
     def setUnitVolt(self):
@@ -366,41 +371,41 @@ class NewTestWizard(QtWidgets.QDialog):
 
     def setUnitOhm(self):
         self.setUnit('Ω', 'electric resistance, impedance, reactance - ohm = kg⋅m²⋅s⁻³⋅A⁻² = V/A')
-    
+
     def setUnitSiemens(self):
         self.setUnit('S', 'electric conductance - siemens = kg⁻¹⋅m⁻²⋅s³⋅A² = Ω⁻¹')
-    
+
     def setUnitWeber(self):
         self.setUnit('Wb', 'magnetic flux - weber = kg⋅m²⋅s⁻²⋅A⁻¹ = V⋅s')
-    
+
     def setUnitTesla(self):
         self.setUnit('T', 'magnetic flux density - tesla = kg⋅s⁻²⋅A⁻¹ = Wb/m²')
-    
+
     def setUnitHenry(self):
         self.setUnit('H', 'electric inductance - henry = kg⋅m²⋅s⁻²⋅A⁻² = Wb/A')
-    
+
     def setUnitLumen(self):
         self.setUnit('lm', 'luminous flux - lumen = cd⋅sr')
-    
+
     def setUnitLux(self):
         self.setUnit('lx', 'illuminance - lux = m⁻²⋅cd = lm/m²')
-    
+
     def setUnitBecquerel(self):
         self.setUnit('Bq', 'radioactivity - Becquerel = s⁻¹')
-    
+
     def setUnitGray(self):
         self.setUnit('Gy', 'absorbed dose - gray = m²⋅s⁻² = J/kg')
-    
+
     def setUnitSievert(self):
         self.setUnit('Sv', 'equivalent dose - sievert = m²⋅s⁻² = J/kg')
-    
+
     def setUnitKatal(self):
         self.setUnit('kat', 'catalytic activity - katal = mol⋅s⁻¹')
-            
+
 # alternative units
     def setUnitCelcius(self):
         self.setUnit('°C', 'temperature - degree Celcius = K - 273.15')
-        
+
     def setUnitGauss(self):
         self.setUnit('Gs', 'magnetic flux density - gauss = 10⁻⁴ Tesla')
 
@@ -420,31 +425,31 @@ class NewTestWizard(QtWidgets.QDialog):
             if item.column() == 4:
                 item.setText(text)
                 item.setToolTip(tooltip)
-                
+
     def setMultiplierYocto(self):
-        self.setMultiplier('y', 'yocto=10⁻²⁴')                
+        self.setMultiplier('y', 'yocto=10⁻²⁴')
 
     def setMultiplierZepto(self):
-        self.setMultiplier('z', 'zepto=10⁻²¹')                 
+        self.setMultiplier('z', 'zepto=10⁻²¹')
 
     def setMultiplierAtto(self):
-        self.setMultiplier('a', 'atto=10⁻¹⁸')               
+        self.setMultiplier('a', 'atto=10⁻¹⁸')
 
     def setMultiplierFemto(self):
         self.setMultiplier('f', 'femto=10⁻¹⁵')
 
     def setMultiplierPico(self):
-        self.setMultiplier('p', 'pico=10⁻¹²')                
+        self.setMultiplier('p', 'pico=10⁻¹²')
 
     def setMultiplierNano(self):
-        self.setMultiplier('η', 'nano=10⁻⁹')         
+        self.setMultiplier('η', 'nano=10⁻⁹')
 
     def setMultiplierMicro(self):
-        self.setMultiplier('μ', 'micro=10⁻⁶')                
+        self.setMultiplier('μ', 'micro=10⁻⁶')
 
     def setMultiplierPPM(self):
         #TODO: remove the unit, as PPM is dimensionless
-        self.setMultiplier('ppm', 'parts per million=ᴺ/₁․₀₀₀․₀₀₀')                
+        self.setMultiplier('ppm', 'parts per million=ᴺ/₁․₀₀₀․₀₀₀')
 
     def setMultiplierMili(self):
         self.setMultiplier('m', 'mili=10⁻³')
@@ -464,7 +469,7 @@ class NewTestWizard(QtWidgets.QDialog):
         self.setMultiplier('d', 'deci=10⁻¹')
 
     def setMultiplierNone(self):
-        self.setMultiplier('', 'no scaling=10⁰') 
+        self.setMultiplier('', 'no scaling=10⁰')
 
     def setMultiplierDeca(self):
         self.setMultiplier('㍲', 'deca=10¹')
@@ -491,16 +496,16 @@ class NewTestWizard(QtWidgets.QDialog):
         self.setMultiplier('E', 'exa=10¹⁸')
 
     def setMultiplierZetta(self):
-        self.setMultiplier('Z', 'zetta=10²¹') 
+        self.setMultiplier('Z', 'zetta=10²¹')
 
     def setMultiplierYotta(self):
-        self.setMultiplier('ϒ', 'yotta=10²⁴')     
+        self.setMultiplier('ϒ', 'yotta=10²⁴')
 
     def setMultiplierdB(self):
         print(f"{self.row}, {self.col}")
         self.setMultiplier('dB', 'decibel=10·log[P/Pref]')
-        self.setUnit('W', 'power, radiant flux - watt = kg⋅m²⋅s⁻³ = J/s')        
-        
+        self.setUnit('W', 'power, radiant flux - watt = kg⋅m²⋅s⁻³ = J/s')
+
     def setMultiplierdBV(self):
         self.setMultiplier('dBV', 'decibel=20·log[V/Vref]')
         self.setUnit('V', 'electric potential, emf - volt = kg⋅m²⋅s⁻³⋅A⁻¹ = W/A = J/C')
@@ -514,7 +519,7 @@ class NewTestWizard(QtWidgets.QDialog):
         for item in self.inputParameterTable.selectedItems():
             if item.column() in [1,2,3] and item.row()!=0: # values can be cleared in bulk, but not for temperature
                 item.setText('')
-                
+
     def setValueMinusInfinite(self):
         for item in self.inputParameterTable.selectedItems():
             if item.column()==1 and item.row()!=0: # the only the minimum value can be set to -Inf, but not the temperature!
@@ -532,7 +537,7 @@ class NewTestWizard(QtWidgets.QDialog):
 
     def setParameterDecimal(self):
         print("self.setParameterDecimal")
-        
+
     def setParameterHexadecimal(self):
         print("self.setParameterHexadecimal")
 
@@ -541,7 +546,7 @@ class NewTestWizard(QtWidgets.QDialog):
 
     def setParameterBinary(self):
         print("self.setParameterBinary")
-  
+
 
 
 
@@ -579,14 +584,14 @@ class NewTestWizard(QtWidgets.QDialog):
             elif selected_row == last_row:
                 pname = self.inputParameterTable.item(selected_row, 0).text()
                 print(f"Can not move-down '{pname}' any further!")
-            else: 
+            else:
                 print(f"move row {selected_row} one place up")
         else:
             print(f"Can move-down only one row at a time.")
 
     def addInputParameter(self):
         new_row = self.inputParameterTable.rowCount()
-        
+
         existing_parameters = []
         for item_row in range(new_row):
             item = self.inputParameterTable.item(item_row, 0)
@@ -602,42 +607,42 @@ class NewTestWizard(QtWidgets.QDialog):
         if len(existing_parameter_indexes) == 0:
             new_parameter_index = 1
         else:
-            new_parameter_index = max(existing_parameter_indexes)+1            
+            new_parameter_index = max(existing_parameter_indexes)+1
 
         reply = QtWidgets.QMessageBox.Yes
         if new_row >= 3:
             reply = QtWidgets.QMessageBox.question(
-                self, 
-                'Warning', 
-                'It is not advisable to have more than 3 input parameters,\nbecause shmooing will become a nightmare.\n\ndo you still want to continue?', 
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, 
+                self,
+                'Warning',
+                'It is not advisable to have more than 3 input parameters,\nbecause shmooing will become a nightmare.\n\ndo you still want to continue?',
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                 QtWidgets.QMessageBox.No)
-        
+
         if reply == QtWidgets.QMessageBox.Yes:
             self.inputParameterTable.insertRow(new_row)
-        
+
             item_name = QtWidgets.QTableWidgetItem(f"new_parameter{new_parameter_index}")
             item_name.setFlags(item_name.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
             item_name.setToolTip("Real")
             self.inputParameterTable.setItem(new_row, 0, item_name)
-    
+
             item_min = QtWidgets.QTableWidgetItem("-∞")
             item_min.setTextAlignment(QtCore.Qt.AlignCenter)
             self.inputParameterTable.setItem(new_row, 1, item_min)
-    
+
             item_default = QtWidgets.QTableWidgetItem("0")
             item_default.setTextAlignment(QtCore.Qt.AlignCenter)
             self.inputParameterTable.setItem(new_row, 2, item_default)
-    
+
             item_max = QtWidgets.QTableWidgetItem("+∞")
             item_max.setTextAlignment(QtCore.Qt.AlignCenter)
             self.inputParameterTable.setItem(new_row, 3, item_max)
-    
+
             item_multiplier = QtWidgets.QTableWidgetItem('')
             item_multiplier.setFlags(item_multiplier.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
             item_multiplier.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self.inputParameterTable.setItem(new_row, 4, item_multiplier)
-    
+
             item_unit = QtWidgets.QTableWidgetItem("?")
             item_unit.setFlags(item_unit.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
             item_unit.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
@@ -679,36 +684,36 @@ class NewTestWizard(QtWidgets.QDialog):
         # 1. Check that we have a hardware selected
         if self.ForHardwareSetup.currentText() == '':
             self.Feedback.setText("Select a 'hardware'")
-        
+
         # 2. Check that we have a base selected
         if self.Feedback.text() == "":
             if self.WithBase.currentText() == '':
                 self.Feedback.setText("Select a 'base'")
-        
+
         # 3. Check if we have a test name
         if self.Feedback.text() == "":
             if self.TestName.text() == '':
                 self.Feedback.setText("Supply a name for the test")
-                
+
         # 4. Check if the test name is a valid python class name (covered by LineEdit, but it doesn't hurt)
         if self.Feedback.text() == "":
             if not is_valid_python_class_name(self.TestName.text()):
                 fb = f"The test name '{self.TestName.text()}' is not a valid python class name. "
                 fb += "(It doesn't comply to RegEx '{valid_python_class_name_regex}'"
                 self.Feedback.setText(fb)
-            
+
         # 5. Check if the test name holds an underscore (useless, as covered by the LineEdit, but it doesn't hurt)
         if self.Feedback.text() == "":
             if '_' in self.TestName.text():
                 fb = f"The usage of underscore(s) is disallowed!"
                 self.Feedback.setText(fb)
-                
+
         # 6. Check if the test name holds the word 'Test' in any form
         if self.Feedback.text() == "":
             if not is_valid_test_name(self.TestName.text()):
                 fb = "The test name can not contain the word 'TEST' in any form!"
                 self.Feedback.setText(fb)
-        
+
         # 7. Check if the test name already exists
         if self.Feedback.text() == "":
             existing_tests = self.project_info.get_tests_from_files(
@@ -722,15 +727,15 @@ class NewTestWizard(QtWidgets.QDialog):
             self.description_length = len(self.description.toPlainText().replace(' ','').replace('\n', '').replace('\t', ''))
             if self.description_length < minimal_description_length:
                 self.Feedback.setText(f"Describe the test in at least {minimal_description_length} characters (spaces don't count, you have {self.description_length} characters)")
-        
+
         # 9. Check the input parameters
         if self.Feedback.text() == "":
             pass
-        
+
         # 10. Check the output parameters
         if self.Feedback.text() == "":
             pass
-        
+
         # 11. Enable/disable the OKButton
         if self.Feedback.text() == "":
             self.OKButton.setEnabled(True)

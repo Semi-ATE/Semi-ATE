@@ -4,11 +4,11 @@ Created on Wed Jul 22 14:39:41 2020
 
 @author: hoeren
 """
-
-import os
 import json
+import os
 import shutil
 import tempfile
+
 from cookiecutter.main import cookiecutter
 
 
@@ -46,7 +46,7 @@ data = {
 
 with open(json_path, 'w') as fd:
 	json.dump(data, fd)
-	
+
 project_dir = cookiecutter(source)
 
 print(f"created project in '{project_dir}'")
@@ -88,7 +88,7 @@ data = {
 
 with open(json_path, 'w') as fd:
 	json.dump(data, fd)
-	
+
 project_dir = cookiecutter(source)
 
 print(f"created project in '{project_dir}'")

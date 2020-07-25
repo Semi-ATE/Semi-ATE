@@ -1,9 +1,8 @@
 from ATE.spyder.widgets.actions_on.die.DieWizard import new_die_dialog
 from ATE.spyder.widgets.actions_on.die.EditDieWizard import edit_die_dialog
 from ATE.spyder.widgets.actions_on.die.ViewDieWizard import display_die_settings_dialog
-
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
 

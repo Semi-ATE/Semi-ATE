@@ -12,7 +12,7 @@ It extends the base float type with :
       does : https://pypi.org/project/uncertainties/
     - it adds unit conversion to the measurement variable
       as does :
-          Numericalunits : 
+          Numericalunits :
               https://pypi.org/project/numericalunits/
               https://github.com/sbyrnes321/numericalunits
           Pint :
@@ -23,13 +23,13 @@ It extends the base float type with :
               https://pypi.org/project/units/
           si-units:
               https://github.com/unitsofmeasurement/si-units
-      
+
     - it must be possible to 'cast' a measurement variable to an STDF:PTR or STDF:MPR record.
     - it must be possible to 'inject' a mesaurement variable to a metis object :-)
     - this library is PYTHON3 *ONLY*
-        
-The idea is that all measurements from the SCT tester, come ready with 
-the error on the measurement (real time calculated when the measurement is 
+
+The idea is that all measurements from the SCT tester, come ready with
+the error on the measurement (real time calculated when the measurement is
 done, as at that moment we know the value, ant the type, and we know the range
 so why not trow away this valuable infrmation ?!?
 
@@ -40,5 +40,4 @@ the calculated value, but the propagated error and the resulting unit too !!!
 The idea is that this is invisible to the user (unless he wants to look at it)
 but the results end up in the data loggings :-)
 """
-
 #TODO: complete the list of 'similar' python libraries, go trugh them to see what is usefull and what is shit.

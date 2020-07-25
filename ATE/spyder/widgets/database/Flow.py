@@ -1,4 +1,8 @@
-from sqlalchemy import Boolean, CheckConstraint, Column, Text
+from sqlalchemy import Boolean
+from sqlalchemy import CheckConstraint
+from sqlalchemy import Column
+from sqlalchemy import Text
+
 from ATE.spyder.widgets.database.ORM import Base
 
 

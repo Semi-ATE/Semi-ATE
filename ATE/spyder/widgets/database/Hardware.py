@@ -1,8 +1,12 @@
-from sqlalchemy import Boolean, Column, LargeBinary, Text
+import pickle
+
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import LargeBinary
+from sqlalchemy import Text
+
 from ATE.spyder.widgets.database.Die import Die
 from ATE.spyder.widgets.database.ORM import Base
-
-import pickle
 
 
 class Hardware(Base):

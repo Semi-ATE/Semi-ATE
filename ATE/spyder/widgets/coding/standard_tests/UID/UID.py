@@ -6,9 +6,14 @@ Created on Mon Apr  6 16:44:18 2020
 """
 import os
 
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 
-from ATE.spyder.widgets.coding.test_generator import tippprint, toppprint, tdpprint
+from ATE.spyder.widgets.coding.test_generator import tdpprint
+from ATE.spyder.widgets.coding.test_generator import tippprint
+from ATE.spyder.widgets.coding.test_generator import toppprint
 
 def generator(parent, definition):
     if definition != {}:
@@ -17,9 +22,9 @@ def generator(parent, definition):
         project_path = parent.active_project_path
         hardware = parent.active_hardware
         base = parent.active_base
-        
+
         my_name = '.'.join(os.path.basename(__file__).split('.')[:-1])
-    
+
         return test_generator(project_path, my_name, hardware, base, definition, Type='standard')
 
 class Wizard(QtWidgets.QDialog):
@@ -34,18 +39,18 @@ class Wizard(QtWidgets.QDialog):
         uic.loadUi(my_ui, self)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self._setupUI()
-        
-        
+
+
     def _setupUI(self):
         self.setWindowTitle('UID')
         self.base = self.parent.active_base
         self.hardware = self.parent.active_hardware
-        
+
         if self.base == 'FT':
             my_target = 'device'
         else:
             my_target = 'die'
-        
+
         self.definition = {
             'doc_string' : [
                 f'The UID (Unique IDentification) test will read out the UID from the {my_target}',
@@ -57,20 +62,20 @@ class Wizard(QtWidgets.QDialog):
             'output_parameters' : {},
             'data' : {}
         }
-        
+
         self.OKButton.clicked.connect(self.OKButtonPressed)
-        
-        
-        
+
+
+
         self.show()
-        
+
     def verify(self):
         self.feedback.setText("")
 
     def OKButtonPressed(self):
         print(f"hardware = '{self.hardware}', base='{self.base}'")
-        
-        
+
+
         self.accept()
         return self.definition
 
@@ -88,6 +93,6 @@ def dialog(parent):
 if __name__ == "__main__":
     pass
     # from ATE.spyder.widgets.navigation import ProjectNavigation, run_dummy_main
-    
+
     # project_info = ProjectNavigation(r'C:\Users\hoeren\__spyder_workspace__\BROL')
     # run_dummy_main(project_info, DieWizard)

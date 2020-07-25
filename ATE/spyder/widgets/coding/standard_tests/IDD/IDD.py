@@ -4,7 +4,6 @@ Created on Mon Apr  6 12:33:42 2020
 
 @author: hoeren
 """
-
 import os
 
 from ATE.spyder.widgets.coding import test_generator
@@ -26,5 +25,3 @@ class Wizard(object):
 
 def dialog():
     pass
-
-

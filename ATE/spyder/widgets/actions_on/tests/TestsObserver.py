@@ -1,7 +1,7 @@
-from ATE.spyder.widgets.actions_on.utils.ObserverBase import ObserverBase
-from ATE.spyder.widgets.actions_on.utils.ObserverBase import EventHandlerBase
-
 import os
+
+from ATE.spyder.widgets.actions_on.utils.ObserverBase import EventHandlerBase
+from ATE.spyder.widgets.actions_on.utils.ObserverBase import ObserverBase
 
 
 class EventHandler(EventHandlerBase):

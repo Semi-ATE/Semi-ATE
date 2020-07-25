@@ -1,8 +1,12 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
-import sys
 import os
 import re
+import sys
 from enum import Enum
+
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 

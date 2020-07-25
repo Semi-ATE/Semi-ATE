@@ -1,8 +1,13 @@
-from sqlalchemy import Column, ForeignKey, LargeBinary, Text, and_
-from sqlalchemy.orm import relationship
-from ATE.spyder.widgets.database.ORM import Base
-
 import pickle
+
+from sqlalchemy import and_
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import LargeBinary
+from sqlalchemy import Text
+from sqlalchemy.orm import relationship
+
+from ATE.spyder.widgets.database.ORM import Base
 
 
 class QualificationFlowDatum(Base):

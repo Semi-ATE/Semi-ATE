@@ -7,10 +7,11 @@ Created on Tue Nov 26 14:32:40 2019
 import os
 import re
 
-from ATE.spyder.widgets.validation import valid_die_name_regex
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.validation import valid_die_name_regex
 
 
 class DieWizard(BaseDialog):

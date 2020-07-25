@@ -1,9 +1,8 @@
-from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import new_hardwaresetup_dialog
 from ATE.spyder.widgets.actions_on.hardwaresetup.EditHardwaresetupWizard import edit_hardwaresetup_dialog
+from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import new_hardwaresetup_dialog
 from ATE.spyder.widgets.actions_on.hardwaresetup.ViewHardwaresetupSettings import display_hardware_settings_dialog
-
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
 

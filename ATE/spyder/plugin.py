@@ -1,19 +1,20 @@
 """
 ATE Plugin.
 """
-
 # Standard library imports
 import os
 
-# Third party imports
 from qtpy.QtCore import Signal
 from qtpy.QtGui import QIcon
-
-# Local imports
-from spyder.api.plugins import Plugins, SpyderDockablePlugin
+from spyder.api.plugins import Plugins
+from spyder.api.plugins import SpyderDockablePlugin
 from spyder.api.translations import get_translation
-from ATE.spyder.project import ATEProject, ATEPluginProject
+
+from ATE.spyder.project import ATEPluginProject
+from ATE.spyder.project import ATEProject
 from ATE.spyder.widgets.main_widget import ATEWidget
+# Third party imports
+# Local imports
 
 # Localization
 _ = get_translation('spyder')
@@ -94,6 +95,3 @@ class ATE(SpyderDockablePlugin):
     def close_project(self):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
-
-
-

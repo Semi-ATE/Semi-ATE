@@ -1,5 +1,6 @@
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 import qtawesome as qta
+
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
 
 ACTIONS = {MenuActionTypes.Edit(): (qta.icon('mdi.lead-pencil', color='orange'), "Edit"),

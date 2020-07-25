@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 
 quali_flow_name = "qualification_LU_flows"
 quali_flow_listentry_name = "LU"
@@ -29,4 +28,3 @@ def edit_item(storage, product: str):
     dialog = LUWizard(data, storage)
     dialog.exec_()
     del(dialog)
-

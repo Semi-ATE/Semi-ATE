@@ -3,12 +3,16 @@ Created on Nov 18, 2019
 
 @author: hoeren
 '''
-
 import os
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-import qtawesome as qta
 
-from ATE.spyder.widgets.validation import is_valid_project_name, valid_project_name_regex
+import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+
+from ATE.spyder.widgets.validation import is_valid_project_name
+from ATE.spyder.widgets.validation import valid_project_name_regex
 
 
 class ProjectWizard(QtWidgets.QDialog):

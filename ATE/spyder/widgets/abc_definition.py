@@ -5,19 +5,19 @@ Created on Fri Apr 24 16:40:44 2020
 @author: hoeren
 """
 import abc
-import inspect
 import hashlib
+import inspect
 
 class testABC(abc.ABC):
-    
+
     def __init__(self):
         self.do_you_know = 'FUBAR'
         self.me_myself_and_I = __file__
-    
+
     @abc.abstractmethod
     def do(self):
         pass
-            
+
     def _get_method_info(self, obj):
         '''
         this method returns a tuple (source_file, source_lines, line_number, doc_string) of obj.
@@ -72,16 +72,16 @@ class testABC(abc.ABC):
                         pure_ascii_code += source_lines[index].encode('ascii', 'ignore')
             if my_doc_string == '':
                 my_doc_string = None
-                
-                
-                
+
+
+
             print(source_lines[0].strip())
             print('-'*len(source_lines[0].strip()))
             print(my_doc_string)
             print('='*100)
             print(doc_string)
             print('-'*99, '>', my_doc_string == doc_string)
-                
+
 
 
 
@@ -91,7 +91,7 @@ class testABC(abc.ABC):
             if len(pure_ascii_code)>block_size:
                 pure_ascii_code_chunks = [pure_ascii_code[i*block_size:(i+1)*block_size] for i in range(int(len(pure_ascii_code)/block_size))]
                 if len(pure_ascii_code)%block_size!=0:
-                    pure_ascii_code_chunks+=[pure_ascii_code[int(len(pure_ascii_code)/block_size):]]    
+                    pure_ascii_code_chunks+=[pure_ascii_code[int(len(pure_ascii_code)/block_size):]]
             else:
                 pure_ascii_code_chunks = [pure_ascii_code]
             return pure_ascii_code_chunks
@@ -105,7 +105,7 @@ class testABC(abc.ABC):
     def _get_targets(self):
         '''
         this method returns a dictionary with as key the 'do' and 'do_' methods defined,
-        and as value a tuple (method_code_hash, default, source_file_name, line_number) 
+        and as value a tuple (method_code_hash, default, source_file_name, line_number)
         where default indicates if the 'do' function is called (directly) or not.
         line_number is the line number on which the method is defined.
         Notes
@@ -144,24 +144,24 @@ class A(testABC):
     def do(self):
         # foo
         pass
-    
-    
+
+
     def do_target1(self):
         '''
         docstring
         '''
         retval = {}
         return retval
-                
+
     def do_target2(self):
         # some comment
         return self.do()
-    
+
     def do_target3(self):
         return self.do()
 
 if __name__ == '__main__':
-    
+
     a = A()
     targets = a._get_targets()
     print(targets)

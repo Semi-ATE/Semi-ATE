@@ -6,5 +6,3 @@ This directory contains the 'data' libaries of the `ATE.org` framework.
   - [RegMap](./RegMap/README.md): **Reg**ister **Map**
   - [Measurements](./Measurements/README.md)
   - [Metis](./Metis/README.md): 🧙
-  
-  

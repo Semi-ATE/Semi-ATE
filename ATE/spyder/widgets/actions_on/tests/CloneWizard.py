@@ -5,33 +5,29 @@ Created on Mon Dec  2 18:56:05 2019
 @author: hoeren
 
 """
+import getpass
 import os
 import re
 
 import numpy as np
-
-from ATE.spyder.widgets.navigation import ProjectNavigation
-
-from ATE.spyder.widgets.validation import (is_valid_test_name,
-                                is_valid_python_class_name,
-
-                                valid_test_parameter_name_regex,
-                                valid_test_name_regex,
-
-                                valid_min_float_regex,
-                                valid_default_float_regex,
-                                valid_max_float_regex,
-                                valid_fmt_regex)
-
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-
 import qdarkstyle
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
 
 from ATE.spyder.widgets.coding.test_generator import generator
+from ATE.spyder.widgets.navigation import ProjectNavigation
+from ATE.spyder.widgets.validation import is_valid_python_class_name
+from ATE.spyder.widgets.validation import is_valid_test_name
+from ATE.spyder.widgets.validation import valid_default_float_regex
+from ATE.spyder.widgets.validation import valid_fmt_regex
+from ATE.spyder.widgets.validation import valid_max_float_regex
+from ATE.spyder.widgets.validation import valid_min_float_regex
+from ATE.spyder.widgets.validation import valid_test_name_regex
+from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
 from ATE.utils.DT import DT
-
-import getpass
 
 minimal_docstring_length = 80
 
@@ -48,7 +44,7 @@ class Delegator(QtWidgets.QStyledItemDelegate):
 
 class CloneWizard(QtWidgets.QDialog):
 
-    def __init__(self, parent, navigator, fromDefinition=None, toDefinition=None):        
+    def __init__(self, parent, navigator, fromDefinition=None, toDefinition=None):
         super().__init__(parent)
         if not isinstance(navigator, ProjectNavigation):
             raise Exception("I didn't get a navigator of type 'ProjectNavigation'")
@@ -70,7 +66,7 @@ class CloneWizard(QtWidgets.QDialog):
         self.Feedback.setStyleSheet('color: orange')
 
     # From
-    
+
     # To
         TestName_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_test_name_regex), self)
         self.TestName.setText("")
@@ -260,8 +256,8 @@ class CloneWizard(QtWidgets.QDialog):
         self.show()
         self.resize(735, 400)
         self.verify()
-        
-        
+
+
 
 
     def verify(self):

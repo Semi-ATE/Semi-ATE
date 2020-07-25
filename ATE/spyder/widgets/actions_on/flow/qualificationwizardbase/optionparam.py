@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.parameter import parameter
-from PyQt5 import QtCore, QtWidgets
 
 
 # The option parameter represents a parameter with a name and

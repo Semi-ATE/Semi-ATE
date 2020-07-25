@@ -60,4 +60,3 @@ class Device(Base):
     @staticmethod
     def get_all_for_hardware(session, hardware):
         return session.query(Device).filter(Device.hardware == hardware).all()
-

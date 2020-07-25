@@ -7,12 +7,13 @@ This Library implements Date and Time manipulations in a convenient way.
 
 License : GPL
 '''
-
 import datetime
 import os
 import time
 
-from PyQt5.QtCore import QDate, QDateTime, QTime
+from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QDateTime
+from PyQt5.QtCore import QTime
 
 
 def is_date(stamp):

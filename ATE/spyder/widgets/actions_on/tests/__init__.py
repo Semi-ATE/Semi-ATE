@@ -2,10 +2,10 @@
 
 standard_test_names = ['', # first item must be an empty string
                        'Contact', # aka Open/Short Test
-                       
+
                        'IDD',  # IDD is the measure of total current that flow`s into the power supply pin (device in idle mode - for example after POR) (page 88)
                        # maybe IDDs & IDDd ?!?!
-                       'IDDq', # 
+                       'IDDq', #
 
                        'VOH',  # The worst case (min) voltage at the output that drives a logical 1 (page 81)
                        'VOL',  # The worst case (max) voltage at the output that drives a logical 0 (page 81)
@@ -21,11 +21,11 @@ standard_test_names = ['', # first item must be an empty string
                        'IOS',  # Output Short Circuit Current
                        'IOLMAX',
                        'IOHMAX',
-                       
+
                        'TDR', # Time Domain Reflectometry ?!?
-                       
+
                        'Tr',  # RiseTime
                        'Tf',  # Fall Time
                        # maybe replace by Srr & Srf (slew rate rise & slew rate fall) ???
-                       
+
                        ]

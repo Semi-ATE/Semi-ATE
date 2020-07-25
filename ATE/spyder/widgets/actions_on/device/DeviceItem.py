@@ -1,9 +1,8 @@
-from ATE.spyder.widgets.actions_on.device.NewDeviceWizard import new_device_dialog
 from ATE.spyder.widgets.actions_on.device.EditDeviceWizard import edit_device_dialog
+from ATE.spyder.widgets.actions_on.device.NewDeviceWizard import new_device_dialog
 from ATE.spyder.widgets.actions_on.device.ViewDeviceWizard import display_device_settings_dialog
-
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
 

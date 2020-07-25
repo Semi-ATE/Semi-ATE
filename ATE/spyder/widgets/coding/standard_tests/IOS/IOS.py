@@ -18,6 +18,6 @@ my_name = '.'.join(os.path.basename(__file__).split('.')[:-1])
 
 def generator(project_path, hardware, base):
     from ATE.spyder.widgets.coding import test_generator
-    
+
     print(f"{project_path} {my_name} {hardware} {base} {my_definition}")
     return test_generator(project_path, my_name, hardware, base, my_definition, Type='standard')

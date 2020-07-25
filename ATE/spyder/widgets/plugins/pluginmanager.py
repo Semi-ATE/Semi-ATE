@@ -1,6 +1,6 @@
-from ATE.spyder.widgets.plugins.hookspec import ATEPlugin
-
 import pluggy
+
+from ATE.spyder.widgets.plugins.hookspec import ATEPlugin
 
 
 def get_plugin_manager():

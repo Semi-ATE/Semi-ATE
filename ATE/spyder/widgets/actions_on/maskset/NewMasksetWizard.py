@@ -3,20 +3,22 @@ Created on Nov 20, 2019
 
 @author: hoeren
 '''
-
 import os
 import re
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-
 import qtawesome as qta
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
-from ATE.spyder.widgets.validation import is_valid_maskset_name
-
-from ATE.spyder.widgets.actions_on.maskset.constants import PAD_INFO, DEFAULT_ROW, PadType, PadDirection, PadStandardSize
-
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.spyder.widgets.actions_on.maskset.constants import DEFAULT_ROW
+from ATE.spyder.widgets.actions_on.maskset.constants import PAD_INFO
+from ATE.spyder.widgets.actions_on.maskset.constants import PadDirection
+from ATE.spyder.widgets.actions_on.maskset.constants import PadStandardSize
+from ATE.spyder.widgets.actions_on.maskset.constants import PadType
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.spyder.widgets.validation import is_valid_maskset_name
 
 standard_flat_height = 7  # mm
 standard_scribe = 100  # um
@@ -376,7 +378,7 @@ class NewMasksetWizard(BaseDialog):
         if not self.is_table_enabled:
             return
         item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
- 
+
     @property
     def rows(self):
         return self.bondpadTable.rowCount()

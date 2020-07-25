@@ -1,8 +1,8 @@
+import os
+import re
+
 from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import NewMasksetWizard
 from ATE.spyder.widgets.actions_on.maskset.ViewMasksetSettings import ViewMasksetSettings
-
-import re
-import os
 
 
 UI_FILE = "MasksetWizard.ui"

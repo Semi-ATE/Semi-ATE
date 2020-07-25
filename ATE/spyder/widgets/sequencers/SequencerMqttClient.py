@@ -431,7 +431,7 @@ class SequencerMqttClient(Harness.Harness):
     def apply_parameters(self, params: TheTestAppParameters, sequencer_instance):
         self.params = params if params is not None else TheTestAppParameters()
         self._sequencer_instance = sequencer_instance
-        if self._sequencer_instance is not None: 
+        if self._sequencer_instance is not None:
             self._sequencer_instance.set_harness(self)
         self.params = params
 

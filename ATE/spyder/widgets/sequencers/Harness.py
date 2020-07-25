@@ -13,4 +13,3 @@ class Harness:
 
     def send_testresult(self, passfail, sbin, stdfdata):
         pass
-    

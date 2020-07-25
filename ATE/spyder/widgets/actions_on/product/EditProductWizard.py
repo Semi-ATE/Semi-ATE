@@ -1,7 +1,8 @@
+import os
+import re
+
 from ATE.spyder.widgets.actions_on.product.NewProductWizard import NewProductWizard
 from ATE.spyder.widgets.actions_on.product.ViewProductWizard import ViewProductWizard
-import re
-import os
 
 
 class EditProductWizard(NewProductWizard):

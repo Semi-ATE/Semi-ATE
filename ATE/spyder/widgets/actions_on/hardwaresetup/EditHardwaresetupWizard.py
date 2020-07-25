@@ -1,7 +1,8 @@
+import os
+import re
+
 from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import HardwareWizard
 from ATE.spyder.widgets.actions_on.hardwaresetup.ViewHardwaresetupSettings import ViewHardwaresetupSettings
-import re
-import os
 
 
 class EditHardwaresetupWizard(HardwareWizard):

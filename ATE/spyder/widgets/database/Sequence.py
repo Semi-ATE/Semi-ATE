@@ -1,7 +1,12 @@
-from sqlalchemy import Column, Integer, LargeBinary, Text, and_
-from ATE.spyder.widgets.database.ORM import Base
-
 import pickle
+
+from sqlalchemy import and_
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import LargeBinary
+from sqlalchemy import Text
+
+from ATE.spyder.widgets.database.ORM import Base
 
 
 class Sequence(Base):

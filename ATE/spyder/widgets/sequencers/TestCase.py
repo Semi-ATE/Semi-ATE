@@ -17,4 +17,3 @@ class TestCaseBase(TestCaseABC):
         #self.limits = limits
         self.sbins = sbins
         self.active_hardware = active_hardware
- 

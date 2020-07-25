@@ -1,9 +1,8 @@
-from ATE.spyder.widgets.actions_on.product.NewProductWizard import new_product_dialog
-from ATE.spyder.widgets.actions_on.product.EditProductWizard import edit_product_dialog
-from ATE.spyder.widgets.actions_on.product.ViewProductWizard import display_product_settings_dialog
-
-from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
+from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
+from ATE.spyder.widgets.actions_on.product.EditProductWizard import edit_product_dialog
+from ATE.spyder.widgets.actions_on.product.NewProductWizard import new_product_dialog
+from ATE.spyder.widgets.actions_on.product.ViewProductWizard import display_product_settings_dialog
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
 

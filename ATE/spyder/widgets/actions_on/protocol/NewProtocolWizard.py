@@ -7,10 +7,14 @@ Created on Mon Nov 25 15:18:15 2019
 import os
 import re
 
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+
 from ATE.spyder.widgets.actions import Create_new_maskset
 from ATE.spyder.widgets.listings import list_masksets
 from ATE.spyder.widgets.validation import is_valid_maskset_name
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 
 class NewProtocolWizard(QtWidgets.QDialog):

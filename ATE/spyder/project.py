@@ -1,11 +1,10 @@
 """
 Semi-ATE Project Types
 """
-
 import os
 
-# Third party imports
 from spyder.plugins.projects.api import BaseProjectType
+# Third party imports
 
 
 class ATEProject(BaseProjectType):
@@ -57,7 +56,7 @@ class ATEPluginProject(BaseProjectType):
         from ATE.spyder.widgets.plugins.New_Semi_ATE_Plugin_Wizard import New_Semi_ATE_Plugin_Dialog
 
         self.plugin.get_widget().toolbar.hide()
-        # TODO: how to hide the ATE navigator ? 
+        # TODO: how to hide the ATE navigator ?
 
         status, retval = New_Semi_ATE_Plugin_Dialog(self.plugin.get_widget(), self.root_path)
         if status:  # OK

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
-from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
+from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
-
 from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
 
 
@@ -25,7 +23,7 @@ class ACWizard(wizardbase.wizardbase):
                 intparam.IntParam("Soak relative humidity (%)", 0, 0, 100),
                 intparam.IntParam("Num Reflows", 0, 0, 500),
                 intparam.IntParam("Reflow Temperature (°C)", 12, 0, 500)]
-    
+
     # This function shall return a list of testprogram slots
     # Note: We expect a list of TextBoxParams here
     def _get_wizard_testprogram_slots(self) -> list:
