@@ -1,0 +1,15 @@
+include *.rst
+include *.txt
+include *.yaml
+recursive-include ATE *.jinja2
+recursive-include ATE *.md
+recursive-include ATE *.pdf
+recursive-include ATE *.png
+recursive-include ATE *.py
+recursive-include ATE *.regmap
+recursive-include ATE *.ui
+recursive-include ATE *.xcf
+recursive-include ATE *.xlsx
+recursive-include ATE *.pptx
+recursive-include requirements *.txt
+recursive-include tests *.py
