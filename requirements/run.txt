@@ -1,3 +1,3 @@
 numpy
-spyder # >=5
+# spyder
 sqlalchemy
