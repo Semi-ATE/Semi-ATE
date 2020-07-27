@@ -1,6 +1,7 @@
 include *.rst
 include *.txt
 include *.yaml
+include *.md
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.pdf
