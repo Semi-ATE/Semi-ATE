@@ -1,0 +1,10 @@
+import sys, os, pickle
+
+project = r'C:\Users\hoeren\eclipse-workspace\ATE\src'
+sys.path.insert(0, project)
+
+
+FN1 = r'C:\Users\hoeren\eclipse-workspace\ATE\resources\stdf\Micronas\HVCF\IFLEX-14_1_XEHVCF4310WTJ3_272_F1N_R_806265.000_1_jul24_03_01.stdf'
+FN2 = r'C:\Users\hoeren\eclipse-workspace\ATE\resources\stdf\Micronas\HVCF\FLEX10_1_IDHVCF4910W_270_P3N_C_806576.000_14_jul31_22_10.stdf'
+
+from ATE.Data.Formats.STDF import load_STDF, save_STDF_index
