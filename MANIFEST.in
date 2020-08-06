@@ -14,6 +14,8 @@ recursive-include docs *.pptm
 recursive-include docs *.ppt
 recursive-include docs *.jpg
 recursive-include docs *.xml
+recursive-include docs *.txt
+recursive-include docs *.docx
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.pdf
