@@ -3,10 +3,22 @@ include *.rst
 include *.txt
 include *.yaml
 include *.md
+recursive-include docs *.md
+recursive-include docs *.pdf
+recursive-include docs *.png
+recursive-include docs *.xcf
+recursive-include docs *.xlsx
+recursive-include docs *.pptx
+recursive-include docs *.odt
+recursive-include docs *.pptm
+recursive-include docs *.ppt
+recursive-include docs *.jpg
+recursive-include docs *.xml
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.pdf
 recursive-include ATE *.png
+recursive-include ATE *.jpg
 recursive-include ATE *.py
 recursive-include ATE *.regmap
 recursive-include ATE *.ui
