@@ -7,6 +7,9 @@ from ATE.spyder.widgets.actions_on.tests.TestWizard import edit_test_dialog
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 from ATE.spyder.widgets.actions_on.tests.TestsObserver import TestsObserver
 
+from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+                                                                  ExceptionTypes)
+
 from PyQt5 import QtCore
 import os
 
@@ -17,7 +20,7 @@ class TestItem(BaseItem):
         super().__init__(project_info, name, parent)
         self._is_enabled = False
         self.set_children_hidden(True)
-        self.file_system_operator = FileSystemOperator(path)
+        self.file_system_operator = FileSystemOperator(path, project_info.parent)
 
     def _append_children(self):
         active_hardware = self.project_info.active_hardware
@@ -38,7 +41,9 @@ class TestItem(BaseItem):
         self.appendRow(child)
 
     def new_item(self):
-        new_test_dialog(self.project_info)
+        handle_excpetions(self.project_info.parent,
+                          lambda: new_test_dialog(self.project_info),
+                          ExceptionTypes.Test())
 
     # TODO: implement me !
     def import_item(self):
@@ -68,7 +73,7 @@ class TestItem(BaseItem):
     def _get_available_tests(self, active_hardware, active_base):
         from os import walk, path
 
-        test_directory = path.join(self.project_info.project_directory, 'src',
+        test_directory = path.join(self.project_info.project_directory.replace("/", "\\"), 'src',
                                    active_hardware, active_base)
 
         file_names = []
@@ -79,7 +84,9 @@ class TestItem(BaseItem):
         return file_names, test_directory
 
     def add_standard_test_item(self):
-        new_standard_test_dialog(self.project_info)
+        handle_excpetions(self.project_info.parent,
+                          lambda: new_standard_test_dialog(self.project_info),
+                          ExceptionTypes.Test())
 
     def _get_menu_items(self):
         return [MenuActionTypes.Add(),
@@ -110,7 +117,7 @@ class TestItemChild(TestBaseItem):
     def __init__(self, name, path, parent, project_info):
         super().__init__(project_info, name, parent)
         self.path = os.path.join(path, name, name + '.py')
-        self.file_system_operator = FileSystemOperator(self.path)
+        self.file_system_operator = FileSystemOperator(self.path, self.project_info.parent)
         self._set_icon(False)
 
         self.add_target_items()
@@ -119,15 +126,17 @@ class TestItemChild(TestBaseItem):
         name = os.path.basename(os.path.splitext(path)[0])
         self.path = path
         self.setText(name)
-        self.file_system_operator = FileSystemOperator(self.path)
+        self.file_system_operator = FileSystemOperator(self.path, self.project_info.parent)
 
     def edit_item(self):
+        self.model().edit_test_params.emit(self.path)
         test_content = self.project_info.get_test_table_content(self.text(), self.project_info.active_hardware, self.project_info.active_base)
-        edit_test_dialog(self.project_info, test_content)
+        handle_excpetions(self.project_info.parent,
+                          lambda: edit_test_dialog(self.project_info, test_content),
+                          ExceptionTypes.Maskset())
 
     def open_file_item(self):
         path = os.path.dirname(self.path)
-        dirname, _ = os.path.splitext(os.path.basename(self.path))
         filename = os.path.basename(self.path)
         path = os.path.join(path, filename)
 
@@ -135,7 +144,7 @@ class TestItemChild(TestBaseItem):
 
     def delete_item(self):
         from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
-        if not ItemTrace(self.dependency_list, self.text(), message=f"Are you sure you want to delete ?").exec_():
+        if not ItemTrace(self.dependency_list, self.text(), self.project_info.parent, message=f"Are you sure you want to delete ?").exec_():
             return
 
         # emit event to update tab view
@@ -147,24 +156,17 @@ class TestItemChild(TestBaseItem):
 
     @property
     def dependency_list(self):
-        # hack each used test must start with a 1 as index
         return self.project_info.get_dependant_objects_for_test(self.text())
 
     def is_enabled(self):
-        return self.project_info.get_test_state(self.text(), self.project_info.active_hardware, self.project_info.active_base)
+        return True
 
     def _update_db_state(self, enabled):
-        self.project_info.update_test_state(self.text(), enabled)
+        pass
 
     def _are_dependencies_fulfilled(self):
         dependency_list = {}
         active_hardware = self.project_info.active_hardware
-        # active_base = self.project_info.active_base
-
-        # hw = self.project_info.get_test_hardware(self.text(), active_hardware, active_base)
-        # if not hw:
-        #     return dependency_list
-
         hw_enabled = self.project_info.get_hardware_state(active_hardware)
 
         if not hw_enabled:
@@ -173,11 +175,17 @@ class TestItemChild(TestBaseItem):
         return dependency_list
 
     def _enabled_item_menu(self):
-        return [MenuActionTypes.OpenFile(),
+        menu = [MenuActionTypes.OpenFile(),
                 MenuActionTypes.Edit(),
-                MenuActionTypes.Trace(),
-                None,
-                MenuActionTypes.Delete()]
+                MenuActionTypes.Trace()]
+
+        delete_menu_option = [None,
+                              MenuActionTypes.Delete()]
+
+        if not self.dependency_list:
+            menu += delete_menu_option
+
+        return menu
 
     def add_target_items(self):
         for target in self.get_available_test_targets():
@@ -213,13 +221,16 @@ class TestItemChildTarget(TestBaseItem):
     def is_enabled(self):
         return self._is_enabled
 
-    def open_file_item(self):
+    def get_path(self):
         if self._is_default:
             filename = os.path.join(self.path, self.parent.text() + '.py')
         else:
             filename = os.path.join(self.path, self.text() + '.py')
 
-        path = os.path.join(self.path, filename)
+        return filename
+        
+    def open_file_item(self):
+        path = os.path.join(self.path, self.get_path())
 
         self.model().edit_file.emit(path)
 
@@ -263,7 +274,7 @@ class TestItemChildTarget(TestBaseItem):
         pass
 
     def select_target_item(self):
-        self.parent.select_target.emit(self.text().split('_')[0])
+        self.project_info.parent.select_target.emit(self.text().split('_')[0])
 
     def _disabled_item_menu(self):
         return [MenuActionTypes.Select()]

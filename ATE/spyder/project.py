@@ -34,7 +34,7 @@ class ATEProject(BaseProjectType):
         return True, ""
 
     def close_project(self):
-        print("Project : Closing Semi-ATE Project '{os.path.basename(self.root_path)}'")
+        print(f"Project : Closing Semi-ATE Project '{os.path.basename(self.root_path)}'")
         self.plugin.close_project()
         self.plugin.get_widget().toolbar.hide()
         self.plugin.toggle_view(False)

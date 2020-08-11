@@ -1,0 +1,13 @@
+@import "../../../styles.scss";
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  &:hover {
+    opacity: 0.6;
+  }
+}

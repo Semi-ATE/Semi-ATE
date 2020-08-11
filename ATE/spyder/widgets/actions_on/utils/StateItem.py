@@ -39,11 +39,11 @@ class StateItem(BaseItem):
         self._set_state(enabled)
         if not enabled:
             from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
-            ItemTrace(dependencies, self.text(), 'item depends on the elemnt(s) \nabove which is(are) disabled').exec_()
+            ItemTrace(dependencies, self.text(), self.project_info.parent, message='item depends on the elemnt(s) \nabove which is(are) disabled').exec_()
 
     def trace_item(self):
         from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
-        ItemTrace(self.dependency_list, self.text()).exec_()
+        ItemTrace(self.dependency_list, self.text(), self.project_info.parent).exec_()
 
     def _are_dependencies_fulfilled(self):
         return {}

@@ -13,11 +13,11 @@ class DocumentationItem(BaseDocumentationItem):
     '''
     DocumentationItem is the presentation of a folder
     '''
-    def __init__(self, name, path, parent=None, is_editable=True, project_info=None):
+    def __init__(self, name, path, project_info, parent=None, is_editable=True):
         self._is_editable = is_editable
-        super().__init__(name, path, parent)
+        super().__init__(name, path, parent, project_info=project_info)
         self._set_icon()
-        self.file_system_operator = FileSystemOperator(self.path)
+        self.file_system_operator = FileSystemOperator(self.path, self.project_info.parent)
 
     def update_item(self, path):
         self.path = path
@@ -32,14 +32,14 @@ class DocumentationItem(BaseDocumentationItem):
         if name in ('audits', 'exports'):
             is_editable = False
 
-        item = DocumentationItem(name, path, parent=self, is_editable=is_editable)
+        item = DocumentationItem(name, path, self.project_info, parent=self, is_editable=is_editable)
         self.insertRow(index, item)
 
     def add_file_item(self, name, path, index=0):
         if self._does_item_already_exist(name):
             return
 
-        item = DocumentationItemChild(name, path, self)
+        item = DocumentationItemChild(name, path, self, self.project_info)
         self.insertRow(index, item)
 
     # copying directories recursively (import) does fire _on_file_created and _on_dir_created event multiple times
@@ -87,7 +87,7 @@ class DocumentationItem(BaseDocumentationItem):
                 MenuActionTypes.DeleteFile()]
 
     def exec_context_menu(self):
-        self.menu = QtWidgets.QMenu()
+        self.menu = QtWidgets.QMenu(self.project_info.parent)
         self.menu.addMenu(self._generate_new_menu_actions(self.menu))
         self.menu.addMenu(self._generate_import_menu_actions(self.menu))
 
@@ -146,11 +146,11 @@ class DocumentationItemChild(BaseDocumentationItem):
     '''
     DocumentationItemChild is the presentation of a file
     '''
-    def __init__(self, name, path, parent, is_editable=True, project_info=None):
+    def __init__(self, name, path, parent, project_info, is_editable=True):
         super().__init__(name, path, parent)
         _, extension = os.path.splitext(name)
         self._set_icon(extension)
-        self.file_system_operator = FileSystemOperator(self.path)
+        self.file_system_operator = FileSystemOperator(self.path, project_info.parent)
 
     def update_item(self, path):
         self.path = path

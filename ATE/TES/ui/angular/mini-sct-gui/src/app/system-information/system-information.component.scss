@@ -1,0 +1,58 @@
+@import "../../styles.scss";
+
+.error {
+  background-color: $red;
+  color: $white;
+  text-align: center;
+  margin: 15px;
+  height: 200px;
+}
+
+h3 {
+  text-align: center;
+  padding-top: 90px;
+}
+
+.btn-close {
+  margin-left: 15px;
+  padding: 5px;
+  color: #0046AD;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+    :hover {
+    color: $black;
+  }
+}
+
+.warn {
+  padding: 20px;
+  background-color: $warn;
+  text-align: center;
+  animation-name: blinkingText;
+  animation-iteration-count: infinite;
+  animation-duration: 1.2s;
+}
+
+@keyframes blinkingText {
+  0% {
+    color: $black;
+  }
+  49% {
+    color: $black;
+  }
+  60% {
+    color: transparent;
+  }
+  99% {
+    color: transparent;
+  }
+  100% {
+    color: $black;
+  }
+}
+
+

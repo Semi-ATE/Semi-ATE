@@ -89,10 +89,3 @@ def dialog(parent):
     definition = wizard.exec_()
     del(wizard)
     generator(parent, definition)
-
-if __name__ == "__main__":
-    pass
-    # from ATE.spyder.widgets.navigation import ProjectNavigation, run_dummy_main
-
-    # project_info = ProjectNavigation(r'C:\Users\hoeren\__spyder_workspace__\BROL')
-    # run_dummy_main(project_info, DieWizard)

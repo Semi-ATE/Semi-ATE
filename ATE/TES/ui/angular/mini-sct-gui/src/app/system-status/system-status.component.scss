@@ -1,0 +1,43 @@
+@import "../../styles.scss";
+
+.systemStatusContainer {
+  display: block;
+  position: fixed;
+  /* top: 291px; */
+  top: 244px;
+  right: 0;
+  width: auto;
+  height: auto;
+  background-color: beige;
+  text-align: left;
+  padding: 10px;
+}
+
+h2 {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+span {
+  @include solidBorder(1px, beige);
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  float: left;
+}
+
+.green {
+  background-color: green;
+}
+.yellow {
+  background-color: #FFBC58;
+}
+.red {
+  background-color: red;
+}
+
+@media screen and (max-width: 600px) {
+  .systemStatusContainer {
+      top: 270px;
+  }
+}

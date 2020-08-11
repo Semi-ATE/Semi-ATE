@@ -1,0 +1,202 @@
+import pytest
+
+from ATE.spyder.widgets.sequencers import SequencerBase
+from ATE.spyder.widgets.sequencers.ExecutionPolicy import SingleShotExecutionPolicy, ExecutionPolicyABC
+from ATE.spyder.widgets.sequencers.Harness import Harness
+from ATE.spyder.widgets.sequencers.DutTestCaseABC import DutTestCaseABC
+from ATE.spyder.widgets.sequencers.Result import Result
+
+
+class dummy_execution_policy(ExecutionPolicyABC):
+    def run(self, sequencer_instance):
+        self.run_called = True
+
+
+class dummy_harness(Harness):
+    def __init__(self):
+        self.status_sequence = []
+
+    def send_status(self, status):
+        self.status_sequence.append(status)
+
+    def send_testresult(self, stdfdata):
+        pass
+
+
+class dummy_test_case(DutTestCaseABC):
+    def __init__(self, result=Result.Pass()):
+        self.result = result
+        self.has_run = False
+
+    def run(self):
+        self.has_run = True
+        return (self.result, 0, [])
+
+    def aggregate_test_result(self):
+        pass
+
+    def do(self):
+        pass
+
+
+@pytest.fixture
+def sequencer():
+    return SequencerBase(None)
+
+
+def test_can_create_sequener(sequencer):
+    assert(sequencer is not None)
+
+
+def test_can_call_run(sequencer):
+    policy = dummy_execution_policy()
+    sequencer.run(policy)
+    assert(policy.run_called)
+
+
+# not happy path
+def test_run_throws_if_called_with_none(sequencer):
+    pass
+
+
+# not happy path
+def test_run_throws_if_called_with_bad_policy(sequencer):
+    pass
+
+
+def test_can_register_test(sequencer):
+    sequencer.register_test(dummy_test_case())
+
+
+class testTypeA(DutTestCaseABC):
+    def run(self):
+        return (True, 0, [])
+
+    def aggregate_test_result(self):
+        pass
+
+    def do(self):
+        pass
+
+
+class testTypeB(DutTestCaseABC):
+    def run(self):
+        return (True, 0, [])
+
+    def aggregate_test_result(self):
+        pass
+
+    def do(self):
+        pass
+
+
+def test_sets_instance_number_for_each_type(sequencer):
+    testA1 = testTypeA()
+    testA2 = testTypeA()
+    testB1 = testTypeB()
+    testB2 = testTypeB()
+    sequencer.register_test(testA1)
+    sequencer.register_test(testA2)
+    sequencer.register_test(testB1)
+    sequencer.register_test(testB2)
+    assert(testA1.instance_number == 0)
+    assert(testA2.instance_number == 1)
+    assert(testB2.instance_number == 1)
+
+
+# not happy path
+def test_cannot_register_None_test(sequencer):
+    pass
+
+
+def test_sends_idle_on_set_testharness(sequencer):
+    h = dummy_harness()
+    sequencer.set_harness(h)
+    assert(h.status_sequence[0] == "IDLE")
+
+
+def test_sends_testing_and_idle_when_testing(sequencer):
+    h = dummy_harness()
+    sequencer.set_harness(h)
+    assert(h.status_sequence[0] == "IDLE")
+    sequencer.run(SingleShotExecutionPolicy())
+    assert(h.status_sequence[1] == "TESTING")
+    assert(h.status_sequence[2] == "IDLE")
+
+
+class TriggerOut:
+    def __init__(self):
+        self.was_triggered = False
+        self.pulse_width = 0
+        self.num_pulses = 0
+
+    def pulse_trigger_out(self, pulse_width_ms):
+        self.was_triggered = True
+        self.pulse_width = pulse_width_ms
+        self.num_pulses = self.num_pulses + 1
+
+
+def test_trigger_on_test_will_pulse_triggerout(sequencer):
+    trigger = TriggerOut()
+    sequencer.set_tester_instance(trigger)
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": 2})
+    assert(trigger.was_triggered)
+    assert(trigger.num_pulses == 1)
+    assert(trigger.pulse_width == 250)
+
+
+def test_trigger_on_test_will_not_pulse_triggerout_if_testindex_is_not_available(sequencer):
+    trigger = TriggerOut()
+    sequencer.set_tester_instance(trigger)
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": 7})
+    assert(trigger.was_triggered is False)
+    assert(trigger.num_pulses == 0)
+    assert(trigger.pulse_width == 0)
+
+
+def test_trigger_on_test_will_not_crash_if_trigger_on_test_is_set_but_no_triggerout(sequencer):
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": 1})
+
+
+def test_trigger_on_fail_will_pulse_trigger_out_on_testfail(sequencer):
+    trigger = TriggerOut()
+    sequencer.set_tester_instance(trigger)
+    sequencer.register_test(dummy_test_case(Result.Fail()))
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case())
+    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_fail": True})
+    assert(trigger.was_triggered is True)
+    assert(trigger.num_pulses == 1)
+    assert(trigger.pulse_width == 250)
+
+
+def test_trigger_on_fail_will_pulse_trigger_out_multiple_times(sequencer):
+    trigger = TriggerOut()
+    sequencer.set_tester_instance(trigger)
+    sequencer.register_test(dummy_test_case(Result.Fail()))
+    sequencer.register_test(dummy_test_case())
+    sequencer.register_test(dummy_test_case(Result.Fail()))
+    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_fail": True, "stop_on_fail": False})
+    assert(trigger.was_triggered is True)
+    assert(trigger.num_pulses == 2)
+    assert(trigger.pulse_width == 250)
+
+
+def test_stop_on_fail_stop_on_failure(sequencer):
+    t1 = dummy_test_case(Result.Fail())
+    t2 = dummy_test_case()
+    sequencer.register_test(t1)
+    sequencer.register_test(t2)
+
+    sequencer.run(SingleShotExecutionPolicy(), {"stop_on_fail": True})
+    assert(t1.has_run is True)
+    assert(t2.has_run is False)

@@ -130,3 +130,5 @@ dmypy.json
 
 .DS_Store
 *~
+tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/
+tests/ATE/TES/apps/le306426001.xml

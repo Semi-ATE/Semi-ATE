@@ -11,5 +11,8 @@ class Harness:
     def send_status(self, status):
         pass
 
-    def send_testresult(self, passfail, sbin, stdfdata):
+    def send_testresult(self, stdfdata):
+        pass
+
+    def send_summary(self, summary):
         pass

@@ -138,6 +138,9 @@ class TopicFactory:
     def test_result_topic(self):
         return f'ate/{self._device_id}/TestApp/testresult/site{self._site_id}'
 
+    def tests_summary_topic(self):
+        return f'ate/{self._device_id}/TestApp/testsummary/site{self._site_id}'
+
     def test_stdf_topic(self):
         return f'ate/{self._device_id}/TestApp/stdf/site{self._site_id}'
 
@@ -152,11 +155,10 @@ class TopicFactory:
             "test_version": "N/A"
         }
 
-    def test_result_payload(self, ispass: bool, testdata: object):
+    def test_result_payload(self, testdata: object):
         return {
             "type": "testresult",
-            "pass": 1 if ispass else 0,
-            "testdata": testdata  # any json serializable thing for now
+            "payload": testdata
         }
 
     def test_resource_payload(self, resource_id: str, config: dict) -> dict:
@@ -269,12 +271,21 @@ class TheTestAppMqttClient():
             qos=2,
             retain=False)
 
-    def publish_result(self, ispass: bool, testdata: object) -> mqtt.MQTTMessageInfo:
+    def publish_result(self, testdata: object) -> mqtt.MQTTMessageInfo:
         _topic = self._topic_factory.test_result_topic()
-        _payload = json.dumps(self._topic_factory.test_result_payload(ispass, testdata))
+        _payload = json.dumps(self._topic_factory.test_result_payload(testdata))
         return self._client.publish(
             topic=_topic,
-            payload= _payload,
+            payload=_payload,
+            qos=2,
+            retain=False)
+
+    def publish_tests_summary(self, tests_summary: object) -> mqtt.MQTTMessageInfo:
+        _topic = self._topic_factory.tests_summary_topic()
+        _payload = json.dumps(self._topic_factory.test_result_payload(tests_summary))
+        return self._client.publish(
+            topic=_topic,
+            payload=_payload,
             qos=2,
             retain=False)
 
@@ -427,6 +438,10 @@ class SequencerMqttClient(Harness.Harness):
         self._sequencer_instance = sequencer_instance
         if self._sequencer_instance is not None:
             self._sequencer_instance.set_harness(self)
+
+        # TODO: execution policy should not be hard coded
+        self._execution_policy = SingleShotExecutionPolicy()
+
 
     def apply_parameters(self, params: TheTestAppParameters, sequencer_instance):
         self.params = params if params is not None else TheTestAppParameters()
@@ -584,11 +599,14 @@ class SequencerMqttClient(Harness.Harness):
             self._execute_cmd_next(payload.get('job_data'))
             self._statemachine.cmd_done()
         elif cmd == 'terminate':
+            self._execute_cmd_terminate()
             self._thetestzip_teardown()
             self._statemachine.cmd_terminate()
-            self._execute_cmd_terminate()
         else:
             raise Exception(f'invalid command: "{cmd}"')
+
+    def _thetestzip_teardown(self):
+        logger.info('unloading thetestzip')
 
     def _execute_cmd_init(self):
         logger.debug('COMMAND: init')
@@ -606,11 +624,13 @@ class SequencerMqttClient(Harness.Harness):
     def _execute_cmd_next(self, job_data: Optional[dict]):
         logger.debug('COMMAND: next')
         # ToDo: job_data should be passed to the sequencer as well.
-        self._sequencer_instance.run(SingleShotExecutionPolicy(), job_data)
+        self._sequencer_instance.run(self._execution_policy, job_data)
 
-    def send_testresult(self, passfail, sbin, stdfdata):
-        # ToDo: Publish sbin as well!
-        self._mqtt.publish_result(passfail, stdfdata)
+    def send_testresult(self, stdfdata):
+        self._mqtt.publish_result(stdfdata)
+
+    def send_summary(self, summary):
+        self._mqtt.publish_tests_summary(summary)
 
     def send_status(self, status):
         # ToDo: This is done automatically by the statemachine here,
@@ -619,6 +639,7 @@ class SequencerMqttClient(Harness.Harness):
 
     def _execute_cmd_terminate(self):
         logger.debug('COMMAND: terminate')
+        self._sequencer_instance.aggregate_tests_summary()
 
         # TODO: code commented: this is currently done in state matching
         # logger.info('publishing shutdown status...')

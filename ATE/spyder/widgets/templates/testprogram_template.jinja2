@@ -10,10 +10,13 @@ from {{testinstance.test_module}} import {{testinstance.test_class}}
 sequencer = SequencerBase(None)
 
 {% for testinstance in test_list %}
-{{ testinstance.instance_name }} = {{ testinstance.test_class }}({{testinstance.input_parameters}}, { {% for op in testinstance.output_parameters %}'{{op}}': {'LTL': {{testinstance.output_parameters[op]['LTL']}}, 'UTL': {{testinstance.output_parameters[op]['UTL']}}},{% endfor %} })
-sequencer.register_test({{ testinstance.instance_name }})
-
+_ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}({{testinstance.input_parameters}}, { {% for op in testinstance.output_parameters %}'{{op}}': {'id': {{testinstance.output_parameters[op]['id']}}, 'LTL': {{testinstance.output_parameters[op]['LTL']}}, 'UTL': {{testinstance.output_parameters[op]['UTL']}}, 'bin': {{testinstance.output_parameters[op]['Binning']['bin']}}, 'bin_result': {{testinstance.output_parameters[op]['Binning']['result']}}},{% endfor %} }, '{{ testinstance.instance_name }}')
+sequencer.register_test(_ate_var_{{ testinstance.instance_name }})
 {% endfor %}
+
+sequencer.set_tester_instance(common.tester_instance)
+
+
 if __name__ == '__main__':
     # Assumptions:
     # * common.mqtt contains an already constructed SequencerMqttClient

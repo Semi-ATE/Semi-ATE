@@ -12,8 +12,7 @@ from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 class wizardbase(BaseDialog):
 
     def __init__(self, datasource, storage):
-        super().__init__(__file__)
-
+        super().__init__(__file__, storage.parent if storage else None)
         # The dialog always works on a given set of data.
         # This can be either new data (in this case datasource
         # is an empty dict), or data from the database (in this

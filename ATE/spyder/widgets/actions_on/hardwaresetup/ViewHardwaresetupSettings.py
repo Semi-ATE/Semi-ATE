@@ -51,19 +51,8 @@ class ViewHardwaresetupSettings(HardwareWizard):
         self.feedback.setText("")
 
     @staticmethod
-    def is_valid_configuration(hw_configuration):
-        if not hw_configuration.keys() == DEFINITION.keys():
-            return False
-
-        return True
-
-    @staticmethod
     def _setup_dialog_fields(dialog, hw_name):
         hw_configuration = dialog.project_info.get_hardware_definition(hw_name)
-        if not ViewHardwaresetupSettings.is_valid_configuration(hw_configuration):
-            dialog.feedback.setText(ErrorMessage.InvalidConfigurationElements())
-            dialog.feedback.setStyleSheet('color: red')
-            return
 
         dialog.feedback.setText('')
         dialog.feedback.setStyleSheet('')
@@ -78,6 +67,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog._available_pattern = hw_configuration["Parallelism"]
         dialog.populate_selected_instruments(hw_configuration["Instruments"])
         dialog.populate_selected_actuators(hw_configuration["Actuator"])
+        dialog.select_tester(hw_configuration["tester"])
         ViewHardwaresetupSettings._update_available_pattern_list(dialog)
 
     @staticmethod

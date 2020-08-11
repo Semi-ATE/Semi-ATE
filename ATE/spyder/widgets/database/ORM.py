@@ -26,6 +26,9 @@ class ORM:
         self._session = sessionmaker(bind=self._db_engine)
         self._scoped_session = scoped_session(self._session)
 
+    def __del__(self):
+        self.session().close()
+
     def init_database(self):
         self.metadata.create_all(self._db_engine)
 

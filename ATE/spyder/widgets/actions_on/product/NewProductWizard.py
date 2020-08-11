@@ -13,7 +13,7 @@ from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 class NewProductWizard(BaseDialog):
     def __init__(self, project_info, read_only=False):
-        super().__init__(__file__)
+        super().__init__(__file__, project_info.parent)
         self.read_only = read_only
         self.project_info = project_info
         self._setup()

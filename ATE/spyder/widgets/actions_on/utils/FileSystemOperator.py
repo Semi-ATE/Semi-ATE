@@ -10,8 +10,9 @@ from ATE.spyder.widgets.actions_on.utils.MenuDialog import RenameDialog
 
 
 class FileSystemOperator(QtWidgets.QFileDialog):
-    def __init__(self, path):
+    def __init__(self, path, parent):
         super().__init__()
+        self.parent = parent
         self.path = path
 
     def __call__(self, path):
@@ -26,7 +27,7 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         open(selected, 'w').close()
 
     def add_dir(self):
-        add_dir = AddDirectoryDialog(self.path, "Folder name")
+        add_dir = AddDirectoryDialog(self.path, "Folder name", self.parent)
         add_dir.show()
 
     def import_file(self):
@@ -62,13 +63,13 @@ class FileSystemOperator(QtWidgets.QFileDialog):
             print("file exists already", e)
 
     def delete_file(self):
-        delete = DeleteFileDialog(self.path, "Remove")
+        delete = DeleteFileDialog(self.path, "Remove", self.parent)
         return delete.show()
 
     def delete_dir(self):
-        delete = DeleteDirDialog(self.path, "Remove")
+        delete = DeleteDirDialog(self.path, "Remove", self.parent)
         delete.show()
 
     def rename(self):
-        rename = RenameDialog(self.path, "Rename")
+        rename = RenameDialog(self.path, "Rename", self.parent)
         rename.show()

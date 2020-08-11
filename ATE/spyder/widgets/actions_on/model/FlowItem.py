@@ -1,6 +1,12 @@
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem as BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
+from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+                                                                  ExceptionTypes)
+
+from PyQt5 import QtGui, QtCore
+
+
 flows = ['checker', 'maintenance', 'production', 'engineering', 'validation', 'quality']
 
 
@@ -35,12 +41,14 @@ def append_test_program_nodes(item):
 
     programs = item.project_info.get_programs_for_owner(owner_name)
     for index, program in enumerate(programs):
-        item.appendRow(TestprogramTreeItem(item.project_info, program, owner_name, index))
+        item.appendRow(TestprogramTreeItem(item.project_info, program, owner_name, index, len(programs) == 1))
 
 
 def add_testprogram_impl(project_info, item):
     import ATE.spyder.widgets.actions_on.program.TestProgramWizard as new_prog
-    new_prog.new_program_dialog(project_info, get_prefix(item), None)
+    handle_excpetions(project_info.parent,
+                      lambda: new_prog.new_program_dialog(project_info, get_prefix(item), item),
+                      ExceptionTypes.Program())
 
 
 class FlowItem(BaseItem):
@@ -78,11 +86,7 @@ class SimpleFlowItem(FlowItem):
         return self.project_info.get_programs_for_owner(generate_item_name(self))
 
     def _append_children(self):
-        owner_name = generate_item_name(self)
-
-        programs = self.project_info.get_programs_for_owner(owner_name)
-        for index, program in enumerate(programs):
-            self.appendRow(TestprogramTreeItem(self.project_info, program, owner_name, index))
+        append_test_program_nodes(self)
 
     def add_testprogram(self):
         add_testprogram_impl(self.project_info, self)
@@ -183,10 +187,17 @@ class QualiFlowSubitemInstance(BaseItem):
         edit_func(self.project_info, self.data)
 
     def delete_item(self):
-        constraint_func = getattr(self.mod, "check_delete_constraints")
+        constraint_func = getattr(self.mod, "check_delete_constraints", None)
         if constraint_func is not None:
             if constraint_func(self.project_info, self.data) is False:
                 return
+
+        for child_index in range(self.rowCount()):
+            item = self.child(child_index)
+            # do not update the tree to prevent reinstantiation of qualification flow items
+            # therefore self do not point to the same item any more !!
+            item.delete_program(emit_event=False)
+
         self.project_info.delete_qualification_flow_instance(self.data)
 
     def add_testprogram(self):
@@ -197,32 +208,57 @@ class QualiFlowSubitemInstance(BaseItem):
 
 
 class TestprogramTreeItem(BaseItem):
-    def __init__(self, project_info, program, owner, order):
-        super().__init__(project_info, program.prog_name, None)
+    def __init__(self, project_info, program, owner, order, is_single):
+        self.program_name = program.prog_name
+        super().__init__(project_info, self.program_name, None)
         self.owner = owner
         self.order = order
+        self.is_single = is_single
+
+        if not self._is_test_program_valid():
+            self.setData(QtGui.QColor(255, 0, 0), QtCore.Qt.ForegroundRole)
 
     def _get_menu_items(self):
-        return [MenuActionTypes.Edit(),
+        menu = [MenuActionTypes.Edit(),
                 MenuActionTypes.View(),
-                MenuActionTypes.MoveUp(),
-                MenuActionTypes.MoveDown(),
                 None,
                 MenuActionTypes.Delete()]
 
+        if not self.is_single:
+            menu.insert(2, MenuActionTypes.MoveDown())
+            menu.insert(2, MenuActionTypes.MoveUp())
+
+        return menu
+
     def edit_item(self):
         import ATE.spyder.widgets.actions_on.program.EditTestProgramWizard as edit
-        edit.edit_program_dialog(self.text(), self.project_info, self.owner)
+        handle_excpetions(self.project_info.parent,
+                          lambda: edit.edit_program_dialog(self.text(), self.project_info, self.owner),
+                          ExceptionTypes.Program())
 
     def display_item(self):
         import ATE.spyder.widgets.actions_on.program.ViewTestProgramWizard as view
-        view.view_program_dialog(self.text(), self.project_info, self.owner)
+        handle_excpetions(self.project_info.parent,
+                          lambda: view.view_program_dialog(self.text(), self.project_info, self.owner),
+                          ExceptionTypes.Program())
+
+    def delete_program(self, emit_event=True):
+        from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
+
+        targets = self.project_info.get_depandant_test_target_for_program(self.text())
+        if not ItemTrace(targets, self.text(), self.project_info.parent, message=f"the above target(s) are going to be\ndeleted !").exec_():
+            return 
+
+        self.project_info.delete_program(self.text(), self.owner, self.order, emit_event)
 
     def delete_item(self):
-        self.project_info.delete_program(self.text(), self.owner, self.order)
+        self.delete_program()
 
     def move_up_item(self):
         self.project_info.move_program(self.text(), self.owner, self.order, True)
 
     def move_down_item(self):
         self.project_info.move_program(self.text(), self.owner, self.order, False)
+
+    def _is_test_program_valid(self):
+        return self.project_info.is_test_program_valid(self.text())

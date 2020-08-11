@@ -1,5 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5 import QtGui
+from qtpy import QtCore
+from qtpy import QtGui
+from qtpy.QtCore import Signal
 
 from ATE.spyder.widgets.actions_on.model import FlowItem as FlowItem
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
@@ -9,8 +10,9 @@ from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
 
 
 class TreeModel(QtGui.QStandardItemModel):
-    edit_file = QtCore.pyqtSignal(["QString"])
-    delete_file = QtCore.pyqtSignal(["QString"])
+    edit_file = Signal(str)
+    delete_file = Signal(str)
+    edit_test_params = Signal(str)
 
     def __init__(self, project_info, parent=None):
         super().__init__(parent)
@@ -34,17 +36,17 @@ class TreeModel(QtGui.QStandardItemModel):
         self._connect_action_handler()
 
         hardware, base, target = self.project_info.load_project_settings()
-        # hack: trigger signal to update the toolbar components
+        self.project_info.update_toolbar_elements(hardware, base, target)
         self.parent.update_settings.emit(hardware, base, target)
 
         self.update(hardware, base, target)
 
-    @QtCore.pyqtSlot(int)
+    @QtCore.Slot(int)
     def on_db_change(self, table_id):
         if table_id == TableIds.Flow():
             self.flows.update()
 
-        # TODO: update the test section musst be done differently to prevent collapsing
+        # TODO: update the test section must be done differently to prevent collapsing
         #       child-items
         if table_id == TableIds.NewTest():
             self.tests_section.update()
@@ -78,11 +80,11 @@ class TreeModel(QtGui.QStandardItemModel):
         self.parent.select_hardware.connect(self._update_test_items_hw_changed)
         self.parent.test_target_deleted.connect(self._remove_test_target_item)
 
-    @QtCore.pyqtSlot(str)
+    @QtCore.Slot(str)
     def _update_test_section(self, base):
         self.tests_section.update()
 
-    @QtCore.pyqtSlot(str, str, str)
+    @QtCore.Slot(str, str, str)
     def apply_toolbar_change(self, hardware, base, target):
         rebuild_flows = self.target != target
         self.hardware = hardware
@@ -99,6 +101,7 @@ class TreeModel(QtGui.QStandardItemModel):
         project_name = self.project_info.project_name
         if project_name is None or '':
             project_name = "No Project"
+            return
 
         self.root_item = SectionItem(self.project_info, project_name)
         self._setup_definitions()
@@ -174,7 +177,7 @@ class TreeModel(QtGui.QStandardItemModel):
         from ATE.spyder.widgets.actions_on.documentation.DocumentationObserver import DocumentationObserver
         from ATE.spyder.widgets.actions_on.documentation.DocumentationItem import DocumentationItem
         # TODO: do we need a sorting-order (alphabetic, etc...) ?
-        self.documentation_section = DocumentationItem("documentation", self.doc_path, is_editable=False)
+        self.documentation_section = DocumentationItem("documentation", self.doc_path, self.project_info, is_editable=False)
         self.doc_observer = DocumentationObserver(self.doc_path, self.documentation_section)
         self.doc_observer.start_observer()
 
@@ -264,11 +267,12 @@ class TreeModel(QtGui.QStandardItemModel):
 
         self._update_test_items(self.project_info.active_target)
 
-    @QtCore.pyqtSlot(str)
+    @QtCore.Slot(str)
     def _update_test_items(self, text):
         for index in range(self.tests_section.rowCount()):
             item = self.tests_section.child(index)
 
+            item._set_tree_state(True)
             available_test_targets_for_current_test_item = item.get_available_test_targets()
             actual_test_targets_for_current_test_item = item.get_children()
             new_items = list(set(available_test_targets_for_current_test_item) - set(actual_test_targets_for_current_test_item))
@@ -283,7 +287,7 @@ class TreeModel(QtGui.QStandardItemModel):
 
                 test_target_item.update_state(text)
 
-    @QtCore.pyqtSlot(str, str)
+    @QtCore.Slot(str, str)
     def _remove_test_target_item(self, target_name, test_name):
         for index in range(self.tests_section.rowCount()):
             test_item = self.tests_section.child(index)
@@ -298,7 +302,7 @@ class TreeModel(QtGui.QStandardItemModel):
                 test_target_item.clean_up()
                 test_item.removeRow(test_target_index)
 
-    @QtCore.pyqtSlot(str)
+    @QtCore.Slot(str)
     def _update_test_items_hw_changed(self, hardware):
         for index in range(self.tests_section.rowCount()):
             self.tests_section.takeChild(index)
@@ -316,7 +320,16 @@ class TreeModel(QtGui.QStandardItemModel):
             if key == 'programs':
                 pass
 
+    def clean_up(self):
+        self.doc_observer.stop_observer()
+        self.tests_section.observer.stop_observer()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.clean_up()
+    
 # ToDo: Move this class to its own file.
 # Also: Check if it is really needed. The added value basically none
 class SectionItem(BaseItem):

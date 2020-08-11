@@ -66,6 +66,11 @@ def test_generator(project_path, definition):
     test__init__generator(project_path, definition)
 
 
+def test_update(project_path, definition):
+    test_base_generator(project_path, definition)
+    test_proper_generator(project_path, definition, do_update=True)
+
+
 def program_generator(definition):
     pass
 
@@ -474,18 +479,22 @@ class BaseTestGenerator:
         template_name = template_name.replace('generator', 'template') + '.jinja2'
         template = env.get_template(template_name)
         self.definition = definition
+        self.project_path = project_path
 
         rel_path_to_dir = self._generate_relative_path()
-        abs_path_to_dir = os.path.join(project_path, rel_path_to_dir)
-        abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
+        abs_path_to_dir = os.path.join(self.project_path, rel_path_to_dir)
+        self.abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
+        if not os.path.exists(abs_path_to_dir):
+            os.makedirs(abs_path_to_dir)
 
         render_data = self._generate_render_data(abs_path_to_dir)
         msg = self._render(template, render_data)
 
-        if not os.path.exists(abs_path_to_dir):
-            os.makedirs(abs_path_to_dir)
+        self._generate(self.abs_path_to_file, msg)
 
-        with open(abs_path_to_file, 'w', encoding='utf-8') as f:
+    @staticmethod
+    def _generate(path, msg):
+        with open(path, 'w', encoding='utf-8') as f:
             f.write(msg)
 
     def _generate_relative_path(self):
@@ -501,9 +510,13 @@ class BaseTestGenerator:
 class test_proper_generator(BaseTestGenerator):
     """Generator for the Test Class."""
 
-    def __init__(self, project_path, definition):
-        file_name = f"{definition['name']}.py"
-        super().__init__(project_path, definition, file_name)
+    do_not_touch_start = '<do_not_touch>'
+    do_not_touch_end = '</do_not_touch>'
+
+    def __init__(self, project_path, definition, do_update=False):
+        self.file_name = f"{definition['name']}.py"
+        self.do_update = do_update
+        super().__init__(project_path, definition, self.file_name)
 
     def _generate_relative_path(self):
         hardware = self.definition['hardware']
@@ -514,16 +527,72 @@ class test_proper_generator(BaseTestGenerator):
 
     def _generate_render_data(self, abs_path=''):
         return {'module_doc_string': prepare_module_docstring(),
-                'input_parameter_table': prepare_input_parameters_table(self.definition['input_parameters']),
-                'output_parameter_table': prepare_output_parameters_table(self.definition['output_parameters']),
+                'do_not_touch_section': self._generate_do_not_touch_section(),
                 'definition': self.definition}
 
     def _render(self, template, render_data):
-        return template.render(module_doc_string=render_data['module_doc_string'],
-                               input_parameter_table=render_data['input_parameter_table'],
-                               output_parameter_table=render_data['output_parameter_table'],
+        return template.render(do_not_touch_section=render_data['do_not_touch_section'],
+                               module_doc_string=render_data['module_doc_string'],
                                definition=self.definition)
 
+    def _generate_do_not_touch_section(self):
+        input_table_content = prepare_input_parameters_table(self.definition['input_parameters'])
+        output_table_content = prepare_output_parameters_table(self.definition['output_parameters'])
+        sec = '    ' + self.do_not_touch_start + '\n'
+
+        for doc in self.definition['docstring'][0].split('\n'):
+            sec += '    ' + doc + '\n'
+
+        sec += '\n\n'
+        sec += self._stringify_table(input_table_content)
+        sec += '\n'
+        sec += self._stringify_table(output_table_content)
+        sec += '    ' + self.do_not_touch_end + '\n'
+        return sec
+
+    @staticmethod
+    def _stringify_table(table_content):
+        table_str = ''
+        for content in table_content:
+            table_str += '    '
+            table_str += content
+            table_str += '\n'
+
+        return table_str
+
+    def _update_test_file(self):
+        with open(self.abs_path_to_file, 'r') as f:
+            content = f.readlines()
+
+        start, end = self._find_do_not_touch_section(content)
+        if start is None or end is None:
+            # if do_no_touch section is missing !!!
+            # TODO: should we raise an exception in this case ?
+            return
+
+        del content[start:end + 1]
+
+        content.insert(start, self._generate_do_not_touch_section())
+        with open(self.abs_path_to_file, 'w', encoding='utf-8') as f:
+            for line in content:
+                f.write(line)
+
+    def _find_do_not_touch_section(self, contents):
+        start, end = None, None
+        for index, lines in enumerate(contents):
+            if self.do_not_touch_start in lines:
+                start = index
+
+            if self.do_not_touch_end in lines:
+                end = index
+
+        return (start, end)
+
+    def _generate(self, path, msg):
+        if not self.do_update:
+            super()._generate(path, msg)
+        else:
+            self._update_test_file()
 
 class test_base_generator(BaseTestGenerator):
     """Generator for the Test Base Class."""
@@ -897,8 +966,8 @@ if __name__ == '__main__':
 class test_target_generator(test_proper_generator):
     """Generator for the Test Class."""
 
-    def __init__(self, project_path, definition):
-        super().__init__(project_path, definition)
+    def __init__(self, project_path, definition, do_update=False):
+        super().__init__(project_path, definition, do_update=do_update)
 
     def _generate_relative_path(self):
         hardware = self.definition['hardware']
@@ -906,18 +975,6 @@ class test_target_generator(test_proper_generator):
         base_class = self.definition['base_class']
 
         return os.path.join('src', hardware, base, base_class)
-
-    def _generate_render_data(self, abs_path=''):
-        return {'module_doc_string': prepare_module_docstring(),
-                'input_parameter_table': prepare_input_parameters_table(self.definition['input_parameters']),
-                'output_parameter_table': prepare_output_parameters_table(self.definition['output_parameters']),
-                'definition': self.definition}
-
-    def _render(self, template, render_data):
-        return template.render(module_doc_string=render_data['module_doc_string'],
-                               input_parameter_table=render_data['input_parameter_table'],
-                               output_parameter_table=render_data['output_parameter_table'],
-                               definition=self.definition)
 
 
 class test_program_generator(BaseGenerator):
@@ -928,6 +985,7 @@ class test_program_generator(BaseGenerator):
     def __init__(self, prog_name, owner, datasource):
         self.datasource = datasource
         self.last_index = 0
+        self.current_param_id = 0
         template_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
         file_loader = FileSystemLoader(template_path)
         env = Environment(loader=file_loader)
@@ -944,24 +1002,25 @@ class test_program_generator(BaseGenerator):
 
         rel_path_to_dir = self._generate_relative_path()
         abs_path_to_dir = os.path.join(datasource.project_directory, rel_path_to_dir)
-        abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
+        self.abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
 
         if not os.path.exists(abs_path_to_dir):
             os.makedirs(abs_path_to_dir)
 
-        if os.path.exists(abs_path_to_file):
-            os.remove(abs_path_to_file)
+        if os.path.exists(self.abs_path_to_file):
+            os.remove(self.abs_path_to_file)
 
         test_list = self.build_test_entry_list(datasource, owner, prog_name)
 
         output = template.render(test_list=test_list)
 
-        with open(abs_path_to_file, 'w', encoding='utf-8') as fd:
+        with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
 
     def build_test_entry_list(self, datasource, owner, prog_name):
         # step 1: Get tests and test params in sequence
         tests_in_program = datasource.get_tests_for_program(prog_name, owner)
+
         # step 2: Get all testtargets for progname
         test_targets = datasource.get_test_targets_for_program(prog_name)
 
@@ -973,6 +1032,11 @@ class test_program_generator(BaseGenerator):
 
             import pickle
             params = pickle.loads(program_entry.definition)
+
+            for op in params['output_parameters']:
+                params['output_parameters'][op]['id'] = self.current_param_id
+                self.current_param_id += 1
+
             test_list.append({"test_name": program_entry.test,
                               "test_class": test_class,
                               "test_module": test_module,
@@ -1008,3 +1072,11 @@ class test_program_generator(BaseGenerator):
 
     def _render(self, template, render_data):
         pass
+
+    @staticmethod
+    def append_exception_code(prog_path: str):
+        msg = "raise Exception('test program is invalid')\n"
+        with open(prog_path, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(msg + content)

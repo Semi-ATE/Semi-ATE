@@ -5,6 +5,9 @@ from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
+from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+                                                                  ExceptionTypes)
+
 
 class DeviceItem(BaseItem):
     def __init__(self, project_info, name, parent=None):
@@ -21,7 +24,9 @@ class DeviceItem(BaseItem):
         return [MenuActionTypes.Add()]
 
     def new_item(self):
-        new_device_dialog(self.project_info)
+        handle_excpetions(self.project_info.parent,
+                          lambda: new_device_dialog(self.project_info),
+                          ExceptionTypes.Device())
 
 
 class DeviceItemChild(StateItem):
@@ -29,10 +34,14 @@ class DeviceItemChild(StateItem):
         super().__init__(project_info, name, parent=parent)
 
     def edit_item(self):
-        edit_device_dialog(self.project_info, self.text())
+        handle_excpetions(self.project_info.parent,
+                          lambda: edit_device_dialog(self.project_info, self.text()),
+                          ExceptionTypes.Device())
 
     def display_item(self):
-        display_device_settings_dialog(self.text(), self.project_info)
+        handle_excpetions(self.project_info.parent,
+                          lambda: display_device_settings_dialog(self.text(), self.project_info),
+                          ExceptionTypes.Device())
 
     def is_enabled(self):
         return self.project_info.get_device_state(self.text())
@@ -75,3 +84,6 @@ class DeviceItemChild(StateItem):
             dependency_list.update({'packages': [package]})
 
         return dependency_list
+
+    def delete_item(self):
+        self.project_info.remove_device(self.text())

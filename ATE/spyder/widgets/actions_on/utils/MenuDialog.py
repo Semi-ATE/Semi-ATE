@@ -14,9 +14,9 @@ RENAME_DIALOG = 'Rename.ui'
 
 
 class MenuDialog(BaseDialog):
-    def __init__(self, ui_name, action):
+    def __init__(self, ui_name, action, parent):
         ui_file = os.path.join(os.path.dirname(__file__), ui_name)
-        super().__init__(ui_file)
+        super().__init__(ui_file, parent)
         self.action = action
         for _ in self._steps():
             pass
@@ -47,8 +47,8 @@ class MenuDialog(BaseDialog):
 
 
 class DeleteFileDialog(MenuDialog):
-    def __init__(self, path, action):
-        super().__init__(DELETE_DIALOG, action)
+    def __init__(self, path, action, parent):
+        super().__init__(DELETE_DIALOG, action, parent)
         self.path = path
         self.icon_label.setPixmap(qta.icon('mdi.alert-outline', color='orange').pixmap(50, 50))
         font = QtGui.QFont()
@@ -63,8 +63,8 @@ class DeleteFileDialog(MenuDialog):
 
 
 class DeleteDirDialog(DeleteFileDialog):
-    def __init__(self, path, action):
-        super().__init__(path, action)
+    def __init__(self, path, action, parent):
+        super().__init__(path, action, parent)
 
     def _accept(self):
         shutil.rmtree(self.path)
@@ -72,8 +72,8 @@ class DeleteDirDialog(DeleteFileDialog):
 
 
 class RenameDialog(MenuDialog):
-    def __init__(self, path, action):
-        super().__init__(RENAME_DIALOG, action)
+    def __init__(self, path, action, parent):
+        super().__init__(RENAME_DIALOG, action, parent)
         self.path = path
         self.fileName.setText(os.path.basename(self.path))
         self.fileName.textChanged.connect(self.validate)
@@ -95,8 +95,8 @@ class RenameDialog(MenuDialog):
 
 
 class AddDirectoryDialog(RenameDialog):
-    def __init__(self, path, action):
-        super().__init__(RENAME_DIALOG, action)
+    def __init__(self, path, action, parent):
+        super().__init__(RENAME_DIALOG, action, parent)
         self.path = path
         self.fileName.setText('')
 

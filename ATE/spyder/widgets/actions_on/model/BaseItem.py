@@ -18,7 +18,7 @@ class BaseItem(QtGui.QStandardItem):
         self._append_children()
 
     def exec_context_menu(self):
-        self.menu = QtWidgets.QMenu()
+        self.menu = QtWidgets.QMenu(self.project_info.parent)
         from ATE.spyder.widgets.actions_on.model.Actions import ACTIONS
 
         menu_items = self._get_menu_items()

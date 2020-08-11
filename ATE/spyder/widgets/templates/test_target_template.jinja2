@@ -15,13 +15,7 @@ class {{ definition['name'] }}({{ definition['base_class'] }}):
     {{ definition['doc_string'][i] }}
     {% endfor %}
 
-    {% for line in input_parameter_table %}
-    {{ line }}
-    {% endfor%}
-
-    {% for line in output_parameter_table %}
-    {{ line }}
-    {% endfor %}
+{{ do_not_touch_section }}
     '''
 
     def do(self, ip, op):

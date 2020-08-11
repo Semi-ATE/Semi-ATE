@@ -26,7 +26,7 @@ standard_scribe = 100  # um
 
 class NewMasksetWizard(BaseDialog):
     def __init__(self, project_info, read_only=False):
-        super().__init__(__file__)
+        super().__init__(__file__, project_info.parent)
         self.plugin_manager = get_plugin_manager()
         self.plugin_names = []
         self.prev_item = None
@@ -314,7 +314,7 @@ class NewMasksetWizard(BaseDialog):
 
         elif column in (PAD_INFO.PAD_SIZE_X_COLUMN(), PAD_INFO.PAD_SIZE_Y_COLUMN()):
             success = self._validate_pads_size_references(checkable_widget, row, column)
-
+            success = success and self._are_coordinates_valid(row, column)
         self._update_row(row)
 
         if success:
@@ -325,29 +325,56 @@ class NewMasksetWizard(BaseDialog):
         success = True
         if column == PAD_INFO.PAD_POS_X_COLUMN():
             success = self._validate_pads_position_references(checkable_widget, row, column, self.dieSizeX.text())
-            item_x = checkable_widget.text()
-            item_y = self.bondpadTable.item(row, PAD_INFO.PAD_POS_Y_COLUMN()).text()
 
         if column == PAD_INFO.PAD_POS_Y_COLUMN():
             success = self._validate_pads_position_references(checkable_widget, row, column, self.dieSizeY.text())
-            item_x = self.bondpadTable.item(row, PAD_INFO.PAD_POS_X_COLUMN()).text()
-            item_y = checkable_widget.text()
 
         if success:
-            success = self._are_coordinates_valid(item_x, item_y, row, column)
+            success = self._are_coordinates_valid(row, column)
 
         if not success:
             checkable_widget.clear()
 
         return success
 
-    def _are_coordinates_valid(self, item_x, item_y, current_row, current_col):
+    def _make_bondpad_bounding_box(self, row):
+        try:
+            x = int(self.bondpadTable.item(row, PAD_INFO.PAD_POS_X_COLUMN()).text())
+            y = int(self.bondpadTable.item(row, PAD_INFO.PAD_POS_Y_COLUMN()).text())
+            w = int(self.bondpadTable.item(row, PAD_INFO.PAD_SIZE_X_COLUMN()).text())
+            h = int(self.bondpadTable.item(row, PAD_INFO.PAD_SIZE_Y_COLUMN()).text())
+            return (x, y, x + w, y + h)
+        except Exception:
+            return None
+
+    def _is_point_in_rect(self, x, y, rect):
+        if x >= rect[0] and x <= rect[2]:
+            if y >= rect[1] and y <= rect[3]:
+                return True
+        return False
+
+    def _do_recangles_intersect(self, rect1, rect2):
+        if rect1 is None or rect2 is None:
+            return False
+
+        if self._is_point_in_rect(rect1[0], rect1[2], rect2) \
+           or self._is_point_in_rect(rect1[2], rect1[1], rect2) \
+           or self._is_point_in_rect(rect1[2], rect1[3], rect2) \
+           or self._is_point_in_rect(rect1[0], rect1[1], rect2) \
+           or self._is_point_in_rect(rect2[0], rect2[1], rect1) \
+           or self._is_point_in_rect(rect2[0], rect2[2], rect1) \
+           or self._is_point_in_rect(rect2[2], rect2[1], rect1) \
+           or self._is_point_in_rect(rect2[2], rect2[3], rect1):
+            return True
+        return False
+
+    def _are_coordinates_valid(self, current_row, current_col):
+        rect1 = self._make_bondpad_bounding_box(current_row)
         for row in range(self.rows):
             if current_row == row:
                 continue
-            if self.bondpadTable.item(row, PAD_INFO.PAD_POS_X_COLUMN()).text() == item_x and \
-               self.bondpadTable.item(row, PAD_INFO.PAD_POS_Y_COLUMN()).text() == item_y:
-                self.bondpadTable.item(current_row, current_col).setText('')
+            rect2 = self._make_bondpad_bounding_box(row)
+            if self._do_recangles_intersect(rect1, rect2):
                 self.feedback.setText("coordinates are already occupied")
                 return False
 
@@ -601,12 +628,12 @@ class NewMasksetWizard(BaseDialog):
         if MaskSetName == '':
             MaskSetName = self.masksetName.text()
         if MaskSetName == '':
-            self.feedback.setText("Supply a MaskSet name")
+            self.feedback.setText("Supply a Maskset name")
         else:
             if not self.read_only and MaskSetName in self.existing_masksets:
-                self.feedback.setText("MaskSet name already defined")
+                self.feedback.setText("Maskset name already defined")
             if not is_valid_maskset_name(MaskSetName):
-                self.feedback.setText("Invalid MaskSet name")
+                self.feedback.setText("Invalid Maskset name")
         # DieSizeX
         if self.feedback.text() == '':
             if self.dieSizeX.text() == '':

@@ -1,0 +1,3 @@
+# Spyder Plugin Cookiecutter
+
+TODO:

@@ -1,0 +1,3 @@
+<div>
+    <button type="button" [ngStyle]="{'color': buttonConfig.textColor, 'background-color': buttonConfig.backgroundColor}" (click)="onClickButton()" [attr.disabled]="buttonConfig.disabled ? '' : null">{{buttonConfig.labelText}}</button>
+</div>

@@ -1,0 +1,16 @@
+<input type="{{inputConfig.type}}" placeholder="{{inputConfig.placeholder}}" (focus)="resetErrorMsg()" [(ngModel)]="inputConfig.value" (change)="inputChangeEvent.emit(inputConfig.value)" [ngStyle]="{'color': inputConfig.textColor}" [attr.disabled]="inputConfig.disabled ? '' : null" />
+
+<div style="color: red;">
+  <span *ngIf="(inputConfig.errorMsg !== '')">{{inputConfig.errorMsg}}</span>
+</div>
+
+
+
+
+
+
+
+
+
+
+
