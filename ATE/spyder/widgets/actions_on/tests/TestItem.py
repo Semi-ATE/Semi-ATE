@@ -75,7 +75,7 @@ class TestItem(BaseItem):
 
         test_directory = path.join(self.project_info.project_directory.replace("/", "\\"), 'src',
                                    active_hardware, active_base)
-        test_directory = test_directory.replace("/", "\\")
+        test_directory = test_directory.replace("\\", "/")
 
         file_names = []
         for _, directories, _ in walk(test_directory):
