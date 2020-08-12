@@ -102,5 +102,6 @@ class ObserverBase:
         self.observer.start()
 
     def stop_observer(self):
-        self.observer.stop()
-        self.observer.join()
+        if self.observer.is_alive():
+            self.observer.stop()
+            self.observer.join()
