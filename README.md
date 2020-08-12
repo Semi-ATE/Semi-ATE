@@ -10,3 +10,7 @@ The `Semi-ATE` package is writen purely in Python (noarch) and provides besides 
 
 
 Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki). 
+
+Yours,
+
+Tom
