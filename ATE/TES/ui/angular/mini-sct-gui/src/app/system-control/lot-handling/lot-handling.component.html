@@ -1,0 +1,9 @@
+<app-card [cardConfiguration]="lotCardConfiguration">
+    <div class="inputButton">
+        <app-input [inputConfig]="lotNumberInputConfig"></app-input>
+        <app-button [buttonConfig]="loadLotButtonConfig" (buttonClickEvent)="loadLot()"></app-button>
+    </div>
+    <div class="unloadLotBtn">
+    <app-button [buttonConfig]="unloadLotButtonConfig" (buttonClickEvent)="unloadLot()"></app-button>
+  </div>
+</app-card>

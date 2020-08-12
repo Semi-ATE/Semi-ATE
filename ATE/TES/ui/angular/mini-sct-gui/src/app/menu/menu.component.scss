@@ -1,0 +1,38 @@
+@import "../../styles.scss";
+
+nav {
+  width: 100vw;
+  background-color: $micronasBlue;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+li {
+  list-style-type: none;
+  margin: 0.5vh 2vw;
+  font-size: 2.5vh;
+  a {
+    color: white;
+    padding: 1vh;
+    cursor: pointer;
+    &:hover {
+      background-color: #003399;
+    }
+    &.active{
+      font-weight: bold;
+      background-color: #003399;
+    }
+  }
+  &.disabled {
+    cursor: not-allowed;
+    a {
+      opacity: 0.6;
+      color: black;
+      pointer-events: none;
+    }
+  }
+}

@@ -33,6 +33,9 @@ class ATE(SpyderDockablePlugin):
     CONF_SECTION = NAME
 
     sig_edit_goto_requested = Signal(str, int, str)
+    sig_close_file = Signal(str)
+    sig_save_all = Signal()
+    sig_exception_occurred = Signal(dict)
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -49,6 +52,8 @@ class ATE(SpyderDockablePlugin):
         widget = self.get_widget()
 
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+        widget.sig_close_file.connect(self.sig_close_file)
+        widget.sig_exception_occurred.connect(self.sig_exception_occurred)
 
         # Add toolbar
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
@@ -62,6 +67,8 @@ class ATE(SpyderDockablePlugin):
 
         editor = self._main._PLUGINS["editor"]
         self.sig_edit_goto_requested.connect(editor.load)
+        self.sig_close_file.connect(lambda path: self.close_file(path, editor))
+        widget.sig_save_all.connect(editor.save_all)
 
         # Register a new action to create consoles on the IPythonConsole
         # TODO: Temporal fix
@@ -95,3 +102,10 @@ class ATE(SpyderDockablePlugin):
     def close_project(self):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
+
+    @staticmethod
+    def close_file(path, editor):
+        if not editor.is_file_opened(path):
+            return
+
+        editor.close_file_in_all_editorstacks(str(id(editor)), path)

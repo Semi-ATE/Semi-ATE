@@ -7,7 +7,7 @@ from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import LargeBinary
-from sqlalchemy import or_
+from sqlalchemy import Boolean
 from sqlalchemy import Text
 from sqlalchemy.orm import relationship
 
@@ -32,13 +32,14 @@ class Program(Base):
     usertext = Column(Text, nullable=False)
     sequencer_type = Column(Text, nullable=False)
     temperature = Column(LargeBinary, nullable=False)
+    is_valid = Column(Boolean)
 
     hardware1 = relationship('Hardware')
     test_target = relationship('TestTarget')
 
     @staticmethod
     def add(session, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target):
-        prog = Program(prog_name=name, hardware=hardware, base=base, target=target, usertext=usertext, sequencer_type=sequencer_typ, temperature=pickle.dumps(temperature), owner_name=owner_name, prog_order=order)
+        prog = Program(prog_name=name, hardware=hardware, base=base, target=target, usertext=usertext, sequencer_type=sequencer_typ, temperature=pickle.dumps(temperature), owner_name=owner_name, prog_order=order, is_valid=True)
         session.add(prog)
         session.commit()
 
@@ -112,3 +113,9 @@ class Program(Base):
     @staticmethod
     def get_programs_for_target(session, target_name):
         return session.query(Program).filter(and_(Program.target == target_name)).all()
+
+    @staticmethod
+    def set_program_validity(session, name, is_valid):
+        program = Program.get(session, name)
+        program.is_valid = is_valid
+        session.commit()

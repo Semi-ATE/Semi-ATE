@@ -1,0 +1,223 @@
+/*
+======================================================
+=          Reset default Browser CSS Styles          =
+======================================================
+*/
+
+
+/* Remove default margin and padding for all */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+     :before,
+     :after {
+        box-sizing: inherit;
+    }
+     :focus {
+        outline: none;
+    }
+}
+
+
+/* set body defaults */
+
+$fontFamily: Arial,
+Helvetica,
+sans-serif;
+$lineHeight: 1.5;
+body {
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    text-rendering: optimizeSpeed;
+    display: block;
+    line-height: $lineHeight;
+    font-family: $fontFamily;
+    /* reset html5 display-role for old browsers */
+    footer,
+    header,
+    menu,
+    nav,
+    main,
+    section,
+    article,
+    aside,
+    details,
+    figcaption,
+    figure,
+    hgroup {
+        display: block;
+    }
+    a {
+        text-decoration: none;
+    }
+    /* remove list styles on ul and ol */
+    ul,
+    ol {
+        list-style: none;
+        list-style-type: none;
+    }
+    /* set default image style */
+    img {
+        max-width: 100%;
+        display: block;
+    }
+    /* inherit fonts */
+    input,
+    button,
+    textarea,
+    select {
+        font: inherit;
+    }
+}
+
+
+/*
+======================================================
+=       END OF Reset default Browser CSS Styles       =
+=======================================================
+*/
+
+
+/* set default value for colors*/
+
+$micronasBlue: #0046AD;
+$skyBlue: #008ADC;
+$hoverBlue: #C1CFFF;
+$grey: #AAAABC;
+$darkGrey: #767687;
+$black:#454555;
+$white: #FFFFFF;
+$whiteSmoke: whitesmoke;
+$beige: #F9F8FF;
+$red: #DF4758;
+$warn: #FFBC58;
+$colorFooter: #F0F4F5;
+$borderColor: #74AEAC;
+$green: ("darkGreen": #008A65, "hellGreen": #6CFBCE, "middleGreen": #1FC198, "btnGreen": #01A860);
+// @debug map-get($green, "darkGreen");
+
+/* Mixin border-borded */
+
+@mixin solidBorder($width, $color) {
+    border: $width solid $color;
+}
+
+@mixin blueDivider {
+    margin-bottom: 0;
+    padding-bottom: 5px;
+    background-color: $micronasBlue;
+}
+
+
+/* divider */
+
+hr {
+    @include solidBorder(5px, $whiteSmoke);
+    clear: both;
+}
+
+h2 {
+    color: $micronasBlue;
+}
+
+
+/*common style from Grid View content */
+
+.row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px;
+    width: 100%;
+}
+
+
+/*left column */
+
+.side {
+    -ms-flex: 10%;
+    flex-direction: row;
+    flex: 10%;
+    background-color: $beige;
+    padding: 30px;
+    width: 20%;
+    min-width: 300px;
+}
+
+
+/* Main column */
+
+.main {
+    -ms-flex: 70%;
+    /* IE10 */
+    flex: 70%;
+    background-color: white;
+    padding:30px;
+    min-width: 600px;
+    width: 40%;
+    height: 650px;
+    overflow: auto;
+}
+
+
+/* Table */
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 20px;
+    td,
+    th {
+        @include solidBorder(1px, $white);
+        text-align: center;
+        padding: 15px;
+    }
+    th {
+        width: 210px;
+    }
+    tr:nth-child(even) {
+        background-color: $beige;
+    }
+}
+
+
+/* select */
+
+label {
+    font-size: 1rem;
+    padding: 10px;
+}
+
+select {
+    @include solidBorder(1px, $micronasBlue);
+    border-radius: 15px;
+    margin-top: 30px;
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 5px;
+    color: white;
+    background-color: $micronasBlue;
+}
+
+option {
+    font-weight: bold;
+    padding: 13px;
+    border-bottom: 2px solid $white;
+}
+
+@media screen and (max-width: 900px) {
+    .row {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+.blueDivider {
+  @include blueDivider;
+}
+

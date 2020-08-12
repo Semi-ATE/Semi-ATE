@@ -13,6 +13,7 @@ import os
 import re
 
 import numpy as np
+import keyword
 import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -67,10 +68,11 @@ class TestWizard(BaseDialog):
     """Wizard to work with 'Test' definition."""
 
     def __init__(self, project_info, test_content=None, read_only=False):
-        super().__init__(__file__)
+        super().__init__(__file__, parent=project_info.parent)
 
         self.read_only = read_only
         self.project_info = project_info
+        self.test_content = test_content
 
         if test_content is None:
             test_content = make_blank_definition(project_info)
@@ -79,6 +81,7 @@ class TestWizard(BaseDialog):
             self.TestName.setEnabled(False)
 
         self.Feedback.setStyleSheet('color: orange')
+        self.edit_feedback.setStyleSheet('color: orange')
 
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
@@ -1469,6 +1472,19 @@ class TestWizard(BaseDialog):
 
     def verify(self):
         self.Feedback.setText("")
+        if self.read_only:
+            dependant_programs = self.project_info.get_dependant_objects_for_test(self.TestName.text())
+            # we don't care if the test not used yet !
+            if len(dependant_programs):
+                text = "edit test can invalidate the following test-program(s):\n"
+                for _, programs in dependant_programs.items():
+                    for program in programs:
+                        text += f"{ program }"
+
+                    text += ", "
+
+                self.edit_feedback.setText(text)
+
         # 1. Check that we have a hardware selected
         if self.ForHardwareSetup.text() == '':
             self.Feedback.setText("Select a 'hardware'")
@@ -1490,19 +1506,16 @@ class TestWizard(BaseDialog):
                 fb = "The test name can not contain the word 'TEST' in any form!"
                 self.Feedback.setText(fb)
 
+            # 7. Check if the test name already exists
             if not self.read_only and self._does_test_exist(test_name):
                 fb = "test name exists already"
                 self.Feedback.setText(fb)
 
-        # TODO: Enable again
-        # 7. Check if the test name already exists
-        # if self.Feedback.text() == "":
-        #     existing_tests = self.project_info.get_tests_from_files(
-        #         self.ForHardwareSetup.currentText(),
-        #         self.WithBase.currentText())
-        #     if self.TestName.text() in existing_tests:
-        #         self.Feedback.setText("Test already exists!")
+            if keyword.iskeyword(test_name):
+                fb = "python keyword should not be used as test name"
+                self.Feedback.setText(fb)
 
+        # TODO: Enable again
         # 8. see if we have at least XX characters in the description.
         # if self.Feedback.text() == "":
         #     docstring_length = self.descriptionLength()
@@ -1519,36 +1532,62 @@ class TestWizard(BaseDialog):
             self.OKButton.setEnabled(False)
 
     def _does_test_exist(self, test_name):
-        tests = self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())
+        tests = [test.name for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
         if test_name in tests:
             return True
 
         return False
 
     def CancelButtonPressed(self):
-        self.test_content = {}
         self.reject()
 
     def OKButtonPressed(self):
-        self.test_content = {}
-        self.test_content['name'] = self.TestName.text()
-        self.test_content['type'] = "custom"
-        self.test_content['hardware'] = self.ForHardwareSetup.text()
-        self.test_content['base'] = self.WithBase.text()
-        self.test_content['docstring'] = self.description.toPlainText().split('\n')
-        self.test_content['input_parameters'] = self.getInputParameters()
-        self.test_content['output_parameters'] = self.getOutputParameters()
-        self.test_content['dependencies'] = {}  # TODO: implement this
-        self.blob_test_content = {}
-        self.blob_test_content.update({'input_parameters': self.test_content['input_parameters']})
-        self.blob_test_content.update({'output_parameters': self.test_content['output_parameters']})
-        self.blob_test_content.update({'docstring': self.test_content['docstring']})
+        test_content = {}
+        test_content['name'] = self.TestName.text()
+        test_content['type'] = "custom"
+        test_content['hardware'] = self.ForHardwareSetup.text()
+        test_content['base'] = self.WithBase.text()
+        test_content['docstring'] = self.description.toPlainText().split('\n')
+        test_content['input_parameters'] = self.getInputParameters()
+        test_content['output_parameters'] = self.getOutputParameters()
+        test_content['dependencies'] = {}  # TODO: implement this
+        blob_test_content = {}
+        blob_test_content.update({'input_parameters': test_content['input_parameters']})
+        blob_test_content.update({'output_parameters': test_content['output_parameters']})
+        blob_test_content.update({'docstring': test_content['docstring']})
         if not self.read_only:
-            self.project_info.add_custom_test(self.test_content)
+            self.project_info.add_custom_test(test_content)
         else:
-            self.project_info.update_custom_test(self.test_content['name'], self.test_content['hardware'], self.test_content['base'],
-                                                 self.test_content['type'], self.blob_test_content)
+            if not self._does_paramters_changed(test_content):
+                self.reject()
+                return
+
+            self.project_info.update_custom_test(test_content)
+
         self.accept()
+
+    def _does_paramters_changed(self, content):
+        if len(content['input_parameters']) != len(self.test_content['input_parameters']) \
+           or len(content['output_parameters']) != len(self.test_content['output_parameters']):
+            return True
+
+        if self._check_content(self.test_content['input_parameters'], content['input_parameters']) \
+           or self._check_content(self.test_content['output_parameters'], content['output_parameters']):
+            return True
+
+        return False
+
+    @staticmethod
+    def _check_content(old_data, new_data):
+        for key, value in old_data.items():
+            if not new_data.get(key):
+                return True
+
+            for k, v in new_data[key].items():
+                if str(value[k]) != str(v):
+                    return True
+
+        return False
 
 
 def make_blank_definition(project_info):

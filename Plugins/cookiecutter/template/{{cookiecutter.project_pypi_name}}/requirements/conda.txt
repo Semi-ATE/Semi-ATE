@@ -1,0 +1,4 @@
+qtawesome
+qtpy
+setuptools
+

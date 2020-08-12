@@ -29,3 +29,14 @@ recursive-include ATE *.xlsx
 recursive-include ATE *.pptx
 recursive-include requirements *.txt
 recursive-include tests *.py
+recursive-include ATE/TES *.*
+recursive-include Plugins *.*
+include .flake8
+include .gitlab-ci.yml
+
+include ATE/TES/ui/angular/mini-sct-gui/browserslist
+include Plugins/cookiecutter/template/{{cookiecutter.project_pypi_name}}/Makefile
+include Plugins/cookiecutter/template/{{cookiecutter.project_pypi_name}}/docs/Makefile
+include pax_global_header
+recursive-include tests *.json
+recursive-include tests *.xml

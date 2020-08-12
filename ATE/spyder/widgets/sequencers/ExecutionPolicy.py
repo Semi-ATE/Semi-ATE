@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import time
 
 
 class ExecutionPolicyABC(ABC):
@@ -8,23 +9,32 @@ class ExecutionPolicyABC(ABC):
         raise Exception("Cannot use base execution policy directly")
 
 
-class LoopCylceExecutionPolicy(ExecutionPolicyABC):
+class LoopCycleExecutionPolicy(ExecutionPolicyABC):
     def __init__(self, num_cycles):
         self.num_cycles = num_cycles
 
     def run(self, sequencer_instance):
-        for i in range(self.num_cycles):
+        for _ in range(self.num_cycles):
             test_index = 0
+            start = time.time()
+            sequencer_instance.pre_cycle_cb()
             for test_case in sequencer_instance.test_cases:
                 result = test_case.run()
+
                 # Push result back to sequencer, abort testing if sequencer
                 # returns false
-                if sequencer_instance.after_test_cb(test_case, test_index, result) is False:
-                    return
+                if not sequencer_instance.after_test_cb(test_index, result):
+                    end = time.time()
+                    break
+
                 test_index += 1
-            sequencer_instance.after_cycle_cb(i)
+
+            end = time.time()
+            execution_time = int(end - start)
+
+            sequencer_instance.after_cycle_cb(execution_time, test_index)
 
 
-class SingleShotExecutionPolicy(LoopCylceExecutionPolicy):
+class SingleShotExecutionPolicy(LoopCycleExecutionPolicy):
     def __init__(self):
         super().__init__(1)

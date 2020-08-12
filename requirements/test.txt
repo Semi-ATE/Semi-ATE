@@ -1,8 +1,8 @@
-coverage
-check-manifest
 mock
-pre-commit
+pytest-qt
 pytest
 pytest-cov
 pytest-mock
-pytest-qt
+coverage
+check-manifest
+pre-commit

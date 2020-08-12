@@ -5,6 +5,9 @@ from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.utils.StateItem import StateItem
 
+from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+                                                                  ExceptionTypes)
+
 
 class MasksetItem(BaseItem):
     def __init__(self, project_info, name, parent=None):
@@ -18,7 +21,9 @@ class MasksetItem(BaseItem):
         return MasksetItemChild(self.project_info, name, parent)
 
     def new_item(self):
-        new_maskset_dialog(self.project_info)
+        handle_excpetions(self.project_info.parent,
+                         lambda: new_maskset_dialog(self.project_info),
+                         ExceptionTypes.Maskset())
 
     def _get_menu_items(self):
         return [MenuActionTypes.Add()]
@@ -27,7 +32,6 @@ class MasksetItem(BaseItem):
 class MasksetItemChild(StateItem):
     def __init__(self, project_info, maskset, parent=None):
         super().__init__(project_info, maskset.name, parent=parent)
-        self.definition = self._get_definition()
 
     @property
     def type(self):
@@ -38,17 +42,17 @@ class MasksetItemChild(StateItem):
         return self.project_info.get_dependant_objects_for_maskset(self.text())
 
     def edit_item(self):
-        edit_maskset_dialog(self.project_info, self.text())
+        handle_excpetions(self.project_info.parent,
+                         lambda: edit_maskset_dialog(self.project_info, self.text()),
+                         ExceptionTypes.Maskset())
 
     def display_item(self):
-        configuration = self._get_definition()
-        display_maskset_settings_dialog(self.project_info, configuration, self.text())
+        handle_excpetions(self.project_info.parent,
+                          lambda: display_maskset_settings_dialog(self.project_info, self.text()),
+                          ExceptionTypes.Maskset())
 
     def is_enabled(self):
         return self.project_info.get_maskset_state(self.text())
-
-    def _get_definition(self):
-        return self.project_info.get_maskset_definition(self.text())
 
     def _update_item_state(self, enabled):
         self.project_info.update_maskset_state(self.text(), enabled)

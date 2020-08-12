@@ -52,6 +52,10 @@ class TestTarget(Base):
         return session.query(TestTarget).filter(TestTarget.prog_name == prog_name).all()
 
     @staticmethod
+    def get_for_test(session, test_name):
+        return session.query(TestTarget).filter(TestTarget.test == test_name).all()
+
+    @staticmethod
     def exists(session, name, hardware, base, test, prog_name):
         num_items = session.query(TestTarget).filter(and_(TestTarget.name == name, TestTarget.prog_name == prog_name, TestTarget.hardware == hardware, TestTarget.base == base, TestTarget.test == test)).count()
         return num_items != 0
@@ -77,3 +81,10 @@ class TestTarget(Base):
         test_target = TestTarget.get(session, name, hardware, base, test)
         test_target.is_enabled = enable
         session.commit()
+
+    @staticmethod
+    def update_program_name(session, prog_name, new_prog_name):
+        test_targets = TestTarget.get_for_program(session, prog_name)
+        for test_target in test_targets:
+            test_target.prog_name = new_prog_name
+            session.commit()

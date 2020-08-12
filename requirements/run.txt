@@ -1,3 +1,16 @@
+qtawesome
+qdarkstyle
+watchdog
 numpy
-# spyder
-sqlalchemy
+Jinja2
+paho-mqtt
+xmltodict
+transitions
+async-timeout
+pytest-asyncio
+mypy
+SQLAlchemy
+hypothesis
+aiohttp
+aiomqtt
+pyqt

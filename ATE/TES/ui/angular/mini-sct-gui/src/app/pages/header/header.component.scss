@@ -1,0 +1,75 @@
+/* import styles */
+
+@import '../../../styles.scss';
+
+/* Header/logo */
+
+.header {
+    padding: 80px;
+    vertical-align: center;
+    background-color: $micronasBlue;
+    color: $white;
+    * {
+        display: inline-block;
+    }
+    h1 {
+        /* Increase the font size of the heading */
+        text-align: left;
+        font-size: 60px;
+    }
+    img {
+        float: right;
+        height: auto;
+        width: 300px;
+        margin-top: 15px;
+    }
+}
+
+
+/* Sticky navbar */
+
+.navbar {
+    overflow: auto;
+    background-color: $micronasBlue;
+    position: sticky;
+    top: 0;
+    @include solidBorder(1px, $white);
+    /* Style the navigation bar links */
+    a {
+        float: left;
+        width: 16.66%;
+        padding: 25px;
+        color: $white;
+        text-align: center;
+        font-size: 18px;
+        display: block;
+    }
+    .right {
+        float: right;
+    }
+    a:hover {
+        background-color: $hoverBlue;
+        color: $black;
+    }
+    a.active {
+        background-color: $skyBlue;
+        color: $white;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    .navbar a {
+        float: none;
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    .header img {
+        float: none;
+        width: 100%;
+    }
+}
+
+.pane {
+    padding: 1em;
+}

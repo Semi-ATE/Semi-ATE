@@ -7,18 +7,15 @@ import sys
 
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QComboBox
-from qtpy.QtWidgets import QLabel
 from qtpy.QtWidgets import QTreeView
 from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
 from spyder.api.translations import get_translation
 from spyder.api.widgets import PluginMainWidget
-from spyder.api.widgets.toolbars import ApplicationToolBar
 
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import NewProjectDialog
 from ATE.spyder.widgets.navigation import ProjectNavigation
-from ATE.spyder.widgets.toolbar_original import ToolBar
+from ATE.spyder.widgets.toolbar import ToolBar
+from ATE.spyder.widgets.actions_on.tests.TestItem import (TestItemChild, TestItemChildTarget)
 # Third party imports
 #from PyQt5.QtCore import pyqtSignal
 # Local imports
@@ -37,6 +34,9 @@ class ATEWidget(PluginMainWidget):
     # --- Signals
     # ------------------------------------------------------------------------
     sig_edit_goto_requested = Signal(str, int, str)
+    sig_close_file = Signal(str)
+    sig_save_all = Signal()
+    sig_exception_occurred = Signal(dict)
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -62,7 +62,8 @@ class ATEWidget(PluginMainWidget):
         self.tree.customContextMenuRequested.connect(self.context_menu_manager)
 
         # TODO: simplify the navigator to get ride of 'workspace_path'
-        self.project_info = ProjectNavigation('', self)
+        homedir = os.path.expanduser("~")
+        self.project_info = ProjectNavigation('', homedir, self)
 
         self.toolbar = ToolBar(self.project_info, self, "ATE Plugin toolbar")
 
@@ -116,8 +117,9 @@ class ATEWidget(PluginMainWidget):
     def set_tree(self):
         from ATE.spyder.widgets.actions_on.model.TreeModel import TreeModel
         self.model = TreeModel(self.project_info, parent=self)
-        self.model.edit_file.connect(self.edit_test)
+        self.model.edit_file.connect(self.open_test_file)
         self.model.delete_file.connect(self.delete_test)
+        self.model.edit_test_params.connect(self.edit_test)
         self.tree.setModel(self.model)
         self.tree.doubleClicked.connect(self.item_double_clicked)
 
@@ -128,14 +130,21 @@ class ATEWidget(PluginMainWidget):
             return
 
         model_item = item.model().itemFromIndex(index)
-        from ATE.spyder.widgets.actions_on.tests.TestItem import TestItemChild
         if isinstance(model_item, TestItemChild):
-            self.edit_test(model_item.path)
+            self.open_test_file(model_item.path)
 
-    def edit_test(self, path):
+        if isinstance(model_item, TestItemChildTarget):
+            self.open_test_file(model_item.get_path())
+
+    def open_test_file(self, path):
         """This method is called from ATE, and calls Spyder to open the file
         given by path"""
         self.sig_edit_goto_requested.emit(path, 1, "")
+
+    def edit_test(self):
+        # save all pending changes before editing any test, it doesn't matter if it is open !
+        # to make sure that any changes provoke new code generation do not override the own code
+        self.sig_save_all.emit()
 
     def create_project(self, project_path):
         print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
@@ -149,17 +158,15 @@ class ATEWidget(PluginMainWidget):
 
     def open_project(self, project_path):
         print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
-        self.project_info(project_path, self)
+        self.project_info(project_path)
         self.toolbar(self.project_info)
         self.set_tree()
 
     def close_project(self):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
+        self.toolbar.clean_up()
+        self.project_info.project_name = ''
+        self.tree.setModel(None)
 
     def delete_test(self, path):
-        selected_file = os.path.basename(path)
-        index = self._get_tab_index(selected_file)
-        if index == -1:
-            return
-
-        self.close_tab(index)
+        self.sig_close_file.emit(path)

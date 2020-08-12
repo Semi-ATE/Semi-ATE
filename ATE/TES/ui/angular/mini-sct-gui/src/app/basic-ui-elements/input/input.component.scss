@@ -1,0 +1,29 @@
+@import "../../../styles.scss";
+
+span {
+    float:none;
+    text-align: left;
+}
+
+input {
+    text-align: left;
+    padding: 15px;
+    background-color: $white;
+    @include solidBorder(2px, $micronasBlue);
+    border-radius: 10px;
+    width: 100%;
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #aaa;
+      color: grey;
+      border-color: $grey;
+    }
+    &:active {
+        opacity: 0;
+        color: $white;
+      }
+    &:hover {
+      opacity: 0.6;
+    }
+  }

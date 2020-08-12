@@ -34,7 +34,7 @@ class EventHandler(EventHandlerBase):
         self.section_root.remove_child(os.path.splitext(file_name)[0])
 
     def _on_moved(self, path, dest_path):
-        # TODO: wordaround
+        # TODO: workaround
 
         self._on_file_created(dest_path, modify=True)
 

@@ -24,7 +24,7 @@ FT = 'FT'
 
 class HardwareWizard(BaseDialog):
     def __init__(self, project_info):
-        super().__init__(__file__)
+        super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self._site = None
         self._pattern_type = None
@@ -34,9 +34,7 @@ class HardwareWizard(BaseDialog):
         self._selected_available_item = ''
         self._plugin_manager = get_plugin_manager()
 
-        # These lists store the unique names of
-        # plugin based instruments and actuators
-        self._availableInstruments = []
+        self._availableTesters = {}
         self.is_active = True
 
         self._setup()
@@ -78,10 +76,6 @@ class HardwareWizard(BaseDialog):
         self.maxParallelism.setCurrentText('1')
 
     # Instruments
-        self.tester.clear()
-        self.tester.addItems([''] + self.project_info.get_available_testers())
-        self.tester.setCurrentText('')
-
         # At this point instruments will be displayed as a plain list
         # -> in the prototype the instruments where grouped as tree
         # using the manufacterer of the respective Instrument.
@@ -91,6 +85,15 @@ class HardwareWizard(BaseDialog):
         for instrument_list in instrument_lists:
             for instrument in instrument_list:
                 self._append_instrument_to_manufacturer(instrument)
+
+    # Testers
+        self.tester.clear()
+        for tester_list in self._plugin_manager.hook.get_tester_names():
+            for tester_type in tester_list:
+                self.tester.addItem(tester_type["display_name"])
+                self._availableTesters[self.tester.count() - 1] = tester_type["name"]
+
+        self.tester.setCurrentText('')
 
     # Parallelism
         self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
@@ -442,6 +445,9 @@ class HardwareWizard(BaseDialog):
             if not self._single_site_loadboard_value:
                 self.feedback.setText("no singlesite_loadboard is specified")
 
+            if self.tester.currentIndex() < 0:
+                self.feedback.setTest("no tester selected")
+
             # TODO: do we need to check this case
             # if self._single_site_dib_value == self._single_site_dib_value:
             #     self.feedback.setText("no singlesite_loadboard is specified")
@@ -569,6 +575,10 @@ class HardwareWizard(BaseDialog):
         return retVal
 
     def _get_current_configuration(self):
+        testername = ""
+        if self.tester.currentIndex() >= 0:
+            testername = self._availableTesters[self.tester.currentIndex()]
+
         return {'hardware': self.hardware.text(),
                 'PCB':
                 {'SingleSiteLoadboard': self.singlesiteLoadboard.text(),
@@ -581,7 +591,7 @@ class HardwareWizard(BaseDialog):
                  'MultiSiteProbeCard': self.multisiteProbecard.text(),
                  'MaxParallelism': int(self.maxParallelism.currentText())},
                 'Parallelism': self._available_pattern,
-                'tester': self.tester.currentText(),
+                'tester': testername,
                 'Actuator': self._collect_actuators(),
                 'Instruments': self._collect_instruments()}
 
@@ -655,6 +665,12 @@ class HardwareWizard(BaseDialog):
     def checkActuatorUsage(self):
         print("check Actuator Usage")
 
+    def select_tester(self, tester_name):
+        for (index, available_tester_name) in self._availableTesters.items():
+            if available_tester_name == tester_name:
+                self.tester.setCurrentIndex(index)
+                return
+
 # Parallelism
 # General
     def CancelButtonPressed(self):
@@ -669,9 +685,3 @@ def new_hardwaresetup_dialog(project_info):
     newHardwaresetupWizard = HardwareWizard(project_info)
     newHardwaresetupWizard.exec_()
     del(newHardwaresetupWizard)
-
-
-if __name__ == '__main__':
-    from ATE.spyder.widgets.navigation import ProjectNavigation, run_dummy_main
-    project_info = ProjectNavigation(r'C:\Users\hoeren\__spyder_workspace__\CTCA')
-    run_dummy_main(project_info, HardwareWizard)

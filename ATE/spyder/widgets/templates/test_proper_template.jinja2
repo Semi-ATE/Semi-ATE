@@ -9,29 +9,23 @@ from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['
 
 
 class {{ definition['name'] }}({{ definition['name'] }}_BC):
-    '''{{ definition['docstring'][0] }}
-    {% for i in range(1, definition['doc_string'].__len__()) %}
-    {{ definition['doc_string'][i] }}
-    {% endfor %}
-
-    {% for line in input_parameter_table %}
-    {{ line }}
-    {% endfor%}
-
-    {% for line in output_parameter_table %}
-    {{ line }}
-    {% endfor %}
+    '''
+{{ do_not_touch_section }}
     '''
 
     def do(self):
         """Default implementation for the '{{ definition['name'] }}' test."""
-
         {% for input_parameter in definition['input_parameters'] %}
-        print(self.ip.{{ input_parameter }})
+        print(self.ip.i_{{ input_parameter }})
         {% endfor %}
 
+        # sleep used only for test puposes (CI build), without provoking sleep the test-app's state change from ready to testing could not be detected 
+        # must be removed when start implementing the test !!
+        import time
+        time.sleep(2)
+
         {% for output_parameter in definition['output_parameters'] %}
-        self.op.{{ output_parameter }}.randn()
+        self.op.o_{{ output_parameter }}.randn()
         {% endfor %}
 
 
@@ -44,3 +38,4 @@ if __name__ == '__main__':
     else:  # 'INTERACTIVE'
         from ATE.org import TestRunner
         testRunner = TestRunner(__file__)
+

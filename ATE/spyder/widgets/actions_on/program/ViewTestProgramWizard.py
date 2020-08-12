@@ -3,7 +3,7 @@ from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramW
 
 class ViewTestProgramWizard(TestProgramWizard):
     def __init__(self, name, project_info, owner):
-        super().__init__(project_info, owner, read_only=True, edit_on=False)
+        super().__init__(project_info, owner, read_only=True, enable_edit=False)
         self._setup_view()
         ViewTestProgramWizard.setup_view(self, name)
 
@@ -27,6 +27,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.moveTestDown.setEnabled(False)
         self.testAdd.setEnabled(False)
         self.testRemove.setEnabled(False)
+        self.binning_tree.setEnabled(False)
 
     @staticmethod
     def setup_view(dialog, name):
@@ -34,6 +35,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         #     dialog.selectedTests.addItem(test)
 
         dialog.selected_tests = dialog.project_info.get_program_test_configuration(name, dialog.owner)
+        dialog._format_selected_list()
         dialog._update_test_list_table()
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         # TODO: can we edit any of the following property

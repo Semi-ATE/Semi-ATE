@@ -6,9 +6,9 @@ from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 
 
 class ItemTrace(BaseDialog):
-    def __init__(self, dependency_list, name, message=''):
+    def __init__(self, dependency_list, name, parent, message=''):
         ui_file = '.'.join(os.path.realpath(__file__).split('.')[:-1]) + '.ui'
-        super().__init__(ui_file)
+        super().__init__(ui_file, parent)
         self.dependency_list = dependency_list
         self.name = name
         self.message = message

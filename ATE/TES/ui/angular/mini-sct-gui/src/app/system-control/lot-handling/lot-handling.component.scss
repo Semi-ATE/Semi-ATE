@@ -1,0 +1,16 @@
+.inputButton {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  margin-bottom: 10px;
+  & app-input {
+    width: 65%;
+    margin-right: 5px;
+  }
+  & app-button {
+    width: 30%;
+  }
+}
+.unloadLotBtn {
+  width: 45%;
+} 

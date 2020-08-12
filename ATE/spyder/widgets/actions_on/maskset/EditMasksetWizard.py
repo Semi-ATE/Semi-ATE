@@ -13,11 +13,11 @@ class EditMasksetWizard(NewMasksetWizard):
         super().__init__(project_info, read_only=True)
 
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
-        ViewMasksetSettings._setup_dialog_fields(self, self.project_info.get_maskset_definition(maskset_name), maskset_name)
+        ViewMasksetSettings._setup_dialog_fields(self, maskset_name, enable_edit=True)
         self._validate_table()
 
     def OKButtonPressed(self):
-        self.project_info.update_maskset(self.masksetName.text(), self._get_maskset_definition())
+        self.project_info.update_maskset(self.masksetName.text(), self._get_maskset_definition(), self._get_maskset_customer())
         self.accept()
 
 
