@@ -108,7 +108,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         'sites': sites,
         'webui_port': webui_port,
         "skip_jobdata_verification": False,
-        "filesystemdatasource.path": ".\\tests\\ATE\\TES\\apps\\",
+        "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": None  # explicitly disable persistent user settings, so we don't create or use config files
     }
