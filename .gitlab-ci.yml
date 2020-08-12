@@ -43,8 +43,7 @@ before_script:
 
         python -m pip install -U pip setuptools wheel
         python -m pip install --ignore-installed -e .
-        python -m pip install --ignore-installed -r requirements\run.txt
-        python -m pip install --ignore-installed -r requirements\test.txt
+        python -m pip install --ignore-installed -r requirements.txt
     }
   - >
     function Install-Plugins {

@@ -106,6 +106,7 @@ class ErrorMessage(Enum):
     TemperatureNotValidated = 'temperature(s) could not be validated'
     SbinInvalid = 'sbin is invalid'
     TestInvalid = 'test(s) is(are) invalid'
+    TestDescriptionNotUnique = 'test description must be unique'
 
     def __call__(self):
         return self.value
@@ -115,7 +116,7 @@ DEFAULT_TEMPERATURE = '25'
 
 
 class TestProgramWizard(BaseDialog):
-    def __init__(self, project_info, owner, parent=None, read_only=False, edit_on=True, prog_name=''):
+    def __init__(self, project_info, owner, parent=None, read_only=False, enable_edit=True, prog_name=''):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self.owner = owner
@@ -123,7 +124,7 @@ class TestProgramWizard(BaseDialog):
         self.available_tests = []
         self.selected_tests = []
         self.read_only = read_only
-        self.edit_on = edit_on
+        self.enable_edit = enable_edit
         self.prog_name = prog_name
 
         self.current_selected_test = None
@@ -131,6 +132,7 @@ class TestProgramWizard(BaseDialog):
         self._is_dynamic_range_valid = True
         self.bin_counter = 10
         self.cell_size = 0
+        self.is_valid_temperature = True
 
         self._setup()
         self._view()
@@ -177,6 +179,7 @@ class TestProgramWizard(BaseDialog):
 
     def _connect_event_handler(self):
         self.availableTests.itemClicked.connect(self._available_test_selected)
+        self.availableTests.itemSelectionChanged.connect(self._available_table_clicked)
 
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
         self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
@@ -284,17 +287,13 @@ class TestProgramWizard(BaseDialog):
                 value['Binning']['result'] = Result.Pass()[1] if params[1] == Result.Pass()[0] else Result.Fail()[1]
                 value['Binning']['context'] = params[2]
 
-    def _set_feedback_message(self, text):
-        self.Feedback.setStyleSheet(ORANGE_LABEL)
-        self.Feedback.setText(text)
-
     def _update_binning_table(self, item):
         binning = self._get_binning_structure(item)
-        self._set_feedback_message('')
+        self._update_feedback('')
 
         if not self._is_bin_valid(item.text(1)):
             self._update_binning_tree(binning['bin'], item, BinningColumns.Grade())
-            self._set_feedback_message(ErrorMessage.SbinInvalid())
+            self._update_feedback(ErrorMessage.SbinInvalid())
             return
 
         if not self._is_pass(item.text(1)):
@@ -384,6 +383,8 @@ class TestProgramWizard(BaseDialog):
         if len(self.selectedTests.selectedItems()):
             return
 
+        self.parametersInput.setRowCount(0)
+        self.parametersOutput.setRowCount(0)
         self._update_test_list_table()
 
     def _double_click_handler(self, item):
@@ -498,6 +499,13 @@ class TestProgramWizard(BaseDialog):
         self.parametersOutput.setEnabled(False)
 
         self._update_tables_with_standard_values(item.text(), item.text())
+
+    @QtCore.pyqtSlot()
+    def _available_table_clicked(self):
+        self.parametersInput.setEnabled(False)
+        self.parametersOutput.setEnabled(False)
+        self.parametersInput.setRowCount(0)
+        self.parametersOutput.setRowCount(0)
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _test_selected(self, item):
@@ -839,15 +847,18 @@ class TestProgramWizard(BaseDialog):
 
         for test in self.selected_tests:
             parameters = self._get_test_parameters(test['name'])
-            self._verify_input_parameters(test['input_parameters'], parameters)
-            self._verify_output_parameters(test['output_parameters'], parameters)
+            if not self._verify_input_parameters(test['input_parameters'], parameters) \
+               or not self._verify_output_parameters(test['output_parameters'], parameters):
+               return
 
     def _verify_input_parameters(self, input_parameters, parameters):
         for param, val, in input_parameters.items():
             if not self._is_input_limit_valid(param, val['Value'], parameters):
                 self._update_feedback(f'input parameter, {param} is not valid')
                 self.OKButton.setEnabled(False)
-                return
+                return False
+
+        return True
 
     def _verify_output_parameters(self, output_parameters, parameters):
         for param, val in output_parameters.items():
@@ -855,13 +866,15 @@ class TestProgramWizard(BaseDialog):
                or not self._is_output_limit_valid(param, val['UTL'], 'UTL', parameters):
                 self._update_feedback(f'output parameter, {param} is not valid')
                 self.OKButton.setEnabled(False)
-                return
+                return False
+
+        return True
 
     def _is_valid_temperature(self):
         if self.sequencer_type == Sequencer.Dynamic():
             return self._get_dynamic_temp(self.temperature.text())
         else:
-            return self.temperature.text()
+            return self.temperature.text() and self.is_valid_temperature
 
     @property
     def program_name(self):
@@ -872,13 +885,10 @@ class TestProgramWizard(BaseDialog):
         return self.sequencerType.currentText()
 
     def _update_feedback(self, message):
-        if not len(message) == 0:
+        if message:
             self.Feedback.setText(message)
-            self.Feedback.setStyleSheet(ORANGE_LABEL)
-            return
-
-        self.Feedback.setStyleSheet('')
-        self.Feedback.setText('')
+        else:
+            self.Feedback.setText('')
 
     # ToDo Encapsulate temperature range into class
     def _is_temperature_in_range(self, test, temps):
@@ -893,6 +903,7 @@ class TestProgramWizard(BaseDialog):
         if len(in_range_list) == len(temps):
             return Range.In_Range()
         elif not len(in_range_list):
+            self.is_valid_temperature = False
             return Range.Out_Of_Range()
         else:
             return Range.Limited_Range()
@@ -1122,10 +1133,12 @@ class TestProgramWizard(BaseDialog):
 
         parameter_table.setColumnWidth(cell, self.cell_size)
 
+    @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_input_param(self, item):
         test_name = self.selectedTests.item(self.selectedTests.currentRow(), 0).text()
         self._create_checkable_cell(test_name, self.parametersInput, 'input', item, self.positive_float_validator)
 
+    @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_output_param(self, item):
         test_name = self.selectedTests.item(self.selectedTests.currentRow(), 0).text()
         self._create_checkable_cell(test_name, self.parametersOutput, 'output', item, self.positive_float_validator)
@@ -1146,19 +1159,44 @@ class TestProgramWizard(BaseDialog):
 
     def _edit_cell_done(self, test_name, table, table_type, checkable_widget, row, column):
         if table_type == 'description':
-            self.selectedTests.item(row, column).setText(str(checkable_widget.text()))
-            self._update_test_description(row, checkable_widget.text())
+            description = checkable_widget.text()
+            if self._is_description_valid(table, description):
+                self.selectedTests.item(row, column).setText(str(checkable_widget.text()))
+                self._update_test_description(row, checkable_widget.text())
+            else:
+                self._update_feedback(ErrorMessage.TestDescriptionNotUnique())
+
             self._update_row(row)
+            if not self.selectedTests.selectedItems():
+                self.parametersInput.setRowCount(0)
+                self.parametersOutput.setRowCount(0)
+
         else:
             param_type = table.item(row, 0).text()
             value = float(checkable_widget.text())
             if table_type == 'input':
-                self._validate_input_parameter(test_name, value, param_type)
+                if not self._validate_input_parameter(test_name, value, param_type):
+                    return
             else:
-                self._validate_output_parameter(test_name, value, param_type, column)
+                if not self._validate_output_parameter(test_name, value, param_type, column):
+                    return
 
-        self._verify_tests()
+            self._verify_tests()
 
+    @staticmethod
+    def _is_description_valid(table, description):
+        for row in range(table.rowCount()):
+            item = table.item(row, 1)
+            if not item:
+                continue
+
+            if item.text() != description:
+                continue
+
+            return False
+
+        return True
+        
     def _update_test_description(self, test_row, new_description):
         self.selected_tests[test_row]['description'] = new_description
 
@@ -1166,9 +1204,11 @@ class TestProgramWizard(BaseDialog):
         test_name = self.selectedTests.item(row, 0).text()
         test_description = self.selectedTests.item(row, 1).text()
 
+        self.selectedTests.blockSignals(True)
         self.selectedTests.removeRow(row)
         self.selectedTests.insertRow(row)
         self._insert_test_tuple_items(row, test_name, test_description)
+        self.selectedTests.blockSignals(False)
 
     def _validate_output_parameter(self, test_name, value, param_type, column):
         limits = (self.output_parameters[param_type]['LSL'], self.output_parameters[param_type]['USL'])
@@ -1178,7 +1218,7 @@ class TestProgramWizard(BaseDialog):
            not self._is_valid_output_value(value, param_type, limit):
             self._fill_output_parameter_table()
             self._update_feedback(ErrorMessage.OutOfRange())
-            return
+            return False
 
         self._verify()
         self.output_parameters[param_type][limit] = value
@@ -1187,6 +1227,7 @@ class TestProgramWizard(BaseDialog):
                                                value,
                                                limit)
         self._fill_output_parameter_table()
+        return True
 
     def _is_valid_output_value(self, value, param_type, limit):
         import numpy as np
@@ -1201,12 +1242,14 @@ class TestProgramWizard(BaseDialog):
         if limit == 'UTL':
             return self.output_parameters[param_type]['LTL'] < value
 
+        return False
+
     def _validate_input_parameter(self, test_name, value, param_type):
         limits = (self.input_parameters[param_type]['Min'], self.input_parameters[param_type]['Max'])
         if not self._is_valid_value(value, limits):
             self._fill_input_parameter_table()
             self._update_feedback(ErrorMessage.OutOfRange())
-            return
+            return False
 
         self._verify()
         self.input_parameters[param_type]['Default']['Value'] = value
@@ -1214,6 +1257,7 @@ class TestProgramWizard(BaseDialog):
                                                param_type,
                                                value)
         self._fill_input_parameter_table()
+        return True
 
     def _is_valid_value(self, value, limits):
         left_limit = limits[0]
@@ -1382,6 +1426,7 @@ class TestProgramWizard(BaseDialog):
         return input_struct
 
     def _update_test_list_table(self):
+        self.is_valid_temperature = True
         self._clear_test_list_table()
         self.selectedTests.setRowCount(len(self.selected_tests))
         count = 0
@@ -1581,7 +1626,7 @@ class TestProgramWizard(BaseDialog):
         if configuration is None:
             return
 
-        if not self.read_only and self.edit_on:
+        if not self.read_only and self.enable_edit:
             owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner}"
             count = self.project_info.get_program_owner_element_count(owner) + 1
             self.prog_name = f'{os.path.basename(self.project_info.project_directory)}_{owner}_{count}'

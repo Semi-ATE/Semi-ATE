@@ -17,12 +17,11 @@ class ErrorMessage(Enum):
 
 
 class ViewMasksetSettings(NewMasksetWizard):
-    def __init__(self, project_info, maskset_configuration, maskset_name):
+    def __init__(self, project_info, maskset_name):
         super().__init__(project_info, read_only=True)
-        self.maskset_configuration = maskset_configuration
         self.maskset_name = maskset_name
         self._setup_item(self.maskset_name)
-        ViewMasksetSettings._setup_dialog_fields(self, self.maskset_configuration, self.maskset_name)
+        ViewMasksetSettings._setup_dialog_fields(self, self.maskset_name)
 
     def _setup_item(self, maskset_name):
         self.setWindowTitle("Maskset Setting")
@@ -45,30 +44,38 @@ class ViewMasksetSettings(NewMasksetWizard):
         self.importFor.setEnabled(False)
         self.XYFlipButton.setEnabled(False)
         self.viewDieButton.setEnabled(False)
+        self.customer.setEnabled(False)
 
-        self.bondpadTable.setRowCount(len(self.maskset_configuration["BondpadTable"]))
-        row = self.bondpadTable.rowCount()
-        column = self.bondpadTable.columnCount()
+
+    @staticmethod
+    def _init_table(dialog, table_size, enable_edit):
+        dialog.bondpadTable.setRowCount(table_size)
+        row = dialog.bondpadTable.rowCount()
+        column = dialog.bondpadTable.columnCount()
         for r in range(row):
             for c in range(column):
                 item = QtWidgets.QTableWidgetItem('')
-                self.bondpadTable.setItem(r, c, item)
+                dialog.bondpadTable.setItem(r, c, item)
                 item.setFlags(QtCore.Qt.NoItemFlags)
+                if c == 0:
+                    item.setTextAlignment(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter))
+                else:
+                    item.setTextAlignment(int(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter))
 
         # resize cell columns
-        for c in range(self.bondpadTable.columnCount()):
+        for c in range(dialog.bondpadTable.columnCount()):
             if c == PAD_INFO.PAD_NAME_COLUMN():
-                self.bondpadTable.setColumnWidth(c, PAD_INFO.NAME_COL_SIZE())
+                dialog.bondpadTable.setColumnWidth(c, PAD_INFO.NAME_COL_SIZE())
 
             elif c in (PAD_INFO.PAD_POS_X_COLUMN(), PAD_INFO.PAD_POS_Y_COLUMN(), PAD_INFO.PAD_SIZE_X_COLUMN(), PAD_INFO.PAD_SIZE_Y_COLUMN(), PAD_INFO.PAD_TYPE_COLUMN()):
-                self.bondpadTable.setColumnWidth(c, PAD_INFO.REF_COL_SIZE())
+                dialog.bondpadTable.setColumnWidth(c, PAD_INFO.REF_COL_SIZE())
 
             elif c == PAD_INFO.PAD_DIRECTION_COLUMN():
-                self.bondpadTable.setColumnWidth(c, PAD_INFO.DIR_COL_SIZE())
+                dialog.bondpadTable.setColumnWidth(c, PAD_INFO.DIR_COL_SIZE())
 
-        self.bondpadTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
-        self.bondpadTable.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
-        self.bondpadTable.setEnabled(False)
+        dialog.bondpadTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        dialog.bondpadTable.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        dialog.bondpadTable.setEnabled(enable_edit)
 
     @staticmethod
     def is_valid_configuration(maskset_configuration):
@@ -78,11 +85,21 @@ class ViewMasksetSettings(NewMasksetWizard):
         return True
 
     @staticmethod
-    def _setup_dialog_fields(dialog, maskset_configuration, maskset_name):
+    def _setup_dialog_fields(dialog, maskset_name, enable_edit=False):
+        maskset_configuration = dialog.project_info.get_maskset_definition(maskset_name)
+        maskset_customer = dialog.project_info.get_maskset_customer(maskset_name)
         if not ViewMasksetSettings.is_valid_configuration(maskset_configuration):
             dialog.feedback.setText(ErrorMessage.InvalidConfigurationElements())
             dialog.feedback.setStyleSheet('color: orange')
             return
+
+        ViewMasksetSettings._init_table(dialog, len(maskset_configuration['BondpadTable']), enable_edit)
+
+        if maskset_customer:
+            dialog.Type.setCurrentIndex(1)
+            dialog.customer.setText(maskset_customer)
+        else:
+            dialog.Type.setCurrentIndex(0)
 
         dialog.feedback.setText('')
 
@@ -119,12 +136,13 @@ class ViewMasksetSettings(NewMasksetWizard):
                 dialog.bondpadTable.item(r, c).setText(str(table_infos[r + 1][c]))
 
         dialog.OKButton.setEnabled(True)
+        dialog._validate_table()
 
     def OKButtonPressed(self):
         self.accept()
 
 
-def display_maskset_settings_dialog(project_info, maskset_configuration, maskset_name):
-    maskset_wizard = ViewMasksetSettings(project_info, maskset_configuration, maskset_name)
+def display_maskset_settings_dialog(project_info, maskset_name):
+    maskset_wizard = ViewMasksetSettings(project_info, maskset_name)
     maskset_wizard.exec_()
     del(maskset_wizard)

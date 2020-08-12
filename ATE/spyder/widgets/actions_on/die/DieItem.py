@@ -51,9 +51,6 @@ class DieItemChild(StateItem):
     def dependency_list(self):
         return self.project_info.get_dependant_objects_for_die(self.text())
 
-    def _get_definition(self):
-        return self.project_info.get_die(self.text())
-
     def is_enabled(self):
         return self.project_info.get_die_state(self.text())
 

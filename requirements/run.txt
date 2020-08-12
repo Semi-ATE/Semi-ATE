@@ -14,4 +14,3 @@ hypothesis
 aiohttp
 aiomqtt
 pyqt
-spyder=<5

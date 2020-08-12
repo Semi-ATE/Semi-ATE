@@ -36,8 +36,7 @@ class Maskset(Base):
         blob = pickle.dumps(definition, 4)
         maskset = Maskset.get(session, name)
         maskset.definition = blob
-        # TODO: update customer
-        # maskset.customer = customer
+        maskset.customer = customer
         session.commit()
 
     @staticmethod

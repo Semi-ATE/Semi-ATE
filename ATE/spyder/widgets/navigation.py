@@ -300,11 +300,11 @@ class ProjectNavigation(QObject):
         Maskset.add(self.get_session(), name, customer, definition, is_enabled)
         self.parent.database_changed.emit(TableId.Maskset())
 
-    def update_maskset(self, name, definition):
+    def update_maskset(self, name, definition, customer):
         '''
         this method will update the definition of maskset 'name' to 'definition'
         '''
-        Maskset.update(self.get_session(), name, '', definition)
+        Maskset.update(self.get_session(), name, customer, definition)
 
     def get_masksets(self):
         '''

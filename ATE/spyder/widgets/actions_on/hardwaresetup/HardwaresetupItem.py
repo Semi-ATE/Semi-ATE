@@ -34,7 +34,6 @@ class HardwaresetupItem(BaseItem):
 class HardwaresetupItemChild(StateItem):
     def __init__(self, project_info, hwrecord, parent):
         super().__init__(project_info, hwrecord, parent=parent)
-        self.definition = self._get_definition()
 
     @property
     def type(self):
@@ -59,9 +58,6 @@ class HardwaresetupItemChild(StateItem):
 
     def is_enabled(self):
         return self.project_info.get_hardware_state(self.text())
-
-    def _get_definition(self):
-        return self.project_info.get_hardware_definition(self.text())
 
     def _update_item_state(self, enabled):
         self.project_info.update_hardware_state(self.text(), enabled)

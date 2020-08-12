@@ -208,6 +208,8 @@ class NewMasksetWizard(BaseDialog):
             self.bondpadTable.removeRow(self.rows)
             self.bondpadTable.setRowCount(Bondpads)
 
+        self.validate()
+
     def _context_menu(self, point):
         if not self.is_table_enabled:
             return
@@ -396,9 +398,11 @@ class NewMasksetWizard(BaseDialog):
             for c in range(self.columns):
                 item = self.table_item(r, c)
                 if item.text() == '':
+                    self.feedback.setText('table is not completely configured')
                     self.OKButton.setEnabled(False)
                     return
 
+        self.feedback.setText('')
         self.OKButton.setEnabled(True)
 
     def _select_item(self, item):
@@ -737,6 +741,13 @@ class NewMasksetWizard(BaseDialog):
                              }  # implement wafermap
                 }
 
+    def _get_maskset_customer(self):
+        customer = ''
+        if not self.Type.currentText() == 'ASSP':
+            customer = self.customer.text()
+
+        return customer
+
     def OKButtonPressed(self):
         if self.OKButton.text() == "Import":
             if self.importFor.currentIndex() < 1:
@@ -764,11 +775,7 @@ class NewMasksetWizard(BaseDialog):
                 self.validate()
         else:
             name = self.masksetName.text()
-            if self.Type.currentText() == 'ASSP':
-                customer = ''
-            else:  # 'ASIC' so need a customer !
-                customer = self.customer.text()
-            self.project_info.add_maskset(name, customer, self._get_maskset_definition())
+            self.project_info.add_maskset(name, self._get_maskset_customer(), self._get_maskset_definition())
             self.accept()
 
     def CancelButtonPressed(self):

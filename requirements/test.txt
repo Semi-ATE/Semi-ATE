@@ -3,6 +3,6 @@ pytest-qt
 pytest
 pytest-cov
 pytest-mock
-# coverage
-# check-manifest
-# pre-commit
+coverage
+check-manifest
+pre-commit

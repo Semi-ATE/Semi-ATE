@@ -3,7 +3,7 @@ from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramW
 
 class ViewTestProgramWizard(TestProgramWizard):
     def __init__(self, name, project_info, owner):
-        super().__init__(project_info, owner, read_only=True, edit_on=False)
+        super().__init__(project_info, owner, read_only=True, enable_edit=False)
         self._setup_view()
         ViewTestProgramWizard.setup_view(self, name)
 
