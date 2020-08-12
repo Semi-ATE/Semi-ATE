@@ -5,9 +5,9 @@ import xml.etree.ElementTree as tree
 
 
 DEVICE_ID = 'SCT-81'
-BASE_PATH = '.\\tests\\ATE\\TES\\apps'
-XML_PATH = '.\\tests\\ATE\\TES\\apps\\le306426001_template.xml'
-XML_PATH_NEW = '.\\tests\\ATE\\TES\\apps\\le306426001.xml'
+BASE_PATH = './tests/ATE/TES/apps'
+XML_PATH = './tests/ATE/TES/apps/le306426001_template.xml'
+XML_PATH_NEW = './tests/ATE/TES/apps/le306426001.xml'
 
 
 def create_xml_file(device_id):
