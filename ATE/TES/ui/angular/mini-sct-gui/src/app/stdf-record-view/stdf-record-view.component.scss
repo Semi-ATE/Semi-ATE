@@ -1,0 +1,66 @@
+@import 'src/app/basic-ui-elements/checkbox/checkbox.component.scss';
+
+#refresh {
+  width: 200px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.recordView {
+  display: block;
+}
+
+.recordsContent {
+  text-align: center;
+  width: 370px;
+  float: left;
+  border: 0.3px #767687 solid;
+  border-radius: 5px;
+}
+
+.multipleChoice {
+  display: block;
+  border: 0.3px #767687 solid;
+  border-radius: 5px;
+  float: left;
+  width: 47%;
+  padding: 15px 0 0 20px;
+  height: auto;
+  margin-left: 10px;
+  .listLabel {
+    margin-top: 15px;
+    margin-bottom: 35px;
+  }
+  .stdfTypes {
+    width: 138.22px !important;
+    float: left;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    height: auto;
+  }
+}
+
+.autoScrollAndButtons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  margin-top: 15px;
+  & app-checkbox {
+    margin-left: 16px;
+  }
+}
+
+.recordNavigation {
+  display: flex;
+  flex-direction: row wrap;
+  text-align: center;
+  justify-content: space-between;
+}
+
+
+

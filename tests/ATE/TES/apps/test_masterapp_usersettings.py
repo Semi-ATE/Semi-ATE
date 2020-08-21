@@ -27,10 +27,10 @@ class TestApplication:
         return UserSettings.get_defaults()
 
     def customized_UserSettings(self):
-        return {
-            'duttest.stop_on_fail': False,
-            'customkey': 'customvalue'
-        }
+        return [{'name': 'stop_on_fail',
+                 'active': True,
+                 'value': -1},
+                ]
 
     def test_masterapp_usersettings_persistent_config_disabled_without_filepath(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')
@@ -66,7 +66,7 @@ class TestApplication:
 
         mocker.patch.object(UserSettings, 'load_from_file')
         custom_usersettings = self.default_UserSettings()  # UserSettings.load_from_file includes all default settings
-        custom_usersettings.update(self.customized_UserSettings())
+        custom_usersettings.update(self.customized_UserSettings()[0])
         UserSettings.load_from_file.return_value = custom_usersettings
 
         cfg = self.default_configuration_with_persistent_user_settings()
@@ -78,34 +78,6 @@ class TestApplication:
 
         UserSettings.load_from_file.assert_called_once_with(DEFAULT_USER_SETTINGS_FILE_UNITTEST)
         UserSettings.save_to_file.assert_called_once_with(DEFAULT_USER_SETTINGS_FILE_UNITTEST, custom_usersettings, add_defaults=True)
-
-    def test_masterapp_usersettings_published_after_startup(self, mocker):
-        mocker.patch.object(master_connection_handler.MasterConnectionHandler, "publish_usersettings")
-        cfg = self.default_configuration()
-        app = master_application.MasterApplication(cfg)
-        app.startup_done()
-        master_connection_handler.MasterConnectionHandler.publish_usersettings.assert_called_once_with(self.default_UserSettings())
-
-    def test_masterapp_usersettings_published_on_modify(self, mocker):
-        mocker.patch.object(master_connection_handler.MasterConnectionHandler, "publish_usersettings")
-        mocker.patch.object(UserSettings, 'save_to_file')
-        mocker.patch.object(UserSettings, 'load_from_file')
-        UserSettings.load_from_file.side_effect = FileNotFoundError()
-
-        cfg = self.default_configuration()
-        app = master_application.MasterApplication(cfg)
-
-        assert app.user_settings == self.default_UserSettings()
-
-        app.modify_user_settings(self.customized_UserSettings())
-
-        expected_usersettings = self.default_UserSettings()  # default settings will always be included
-        expected_usersettings.update(self.customized_UserSettings())
-        assert app.user_settings == expected_usersettings
-
-        master_connection_handler.MasterConnectionHandler.publish_usersettings.assert_called_once_with(expected_usersettings)
-        UserSettings.load_from_file.assert_not_called()
-        UserSettings.save_to_file.assert_not_called()
 
     def test_masterapp_usersettings_saved_on_modify(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')  # mock to avoid file creation
@@ -121,7 +93,8 @@ class TestApplication:
         app.modify_user_settings(self.customized_UserSettings())
 
         expected_usersettings = self.default_UserSettings()  # default settings will always be included
-        expected_usersettings.update(self.customized_UserSettings())
-        assert app.user_settings == expected_usersettings
+        expected_usersettings.update(app._extract_settings(self.customized_UserSettings()))
+        for expected_usersetting in expected_usersettings:
+            assert app.user_settings[expected_usersetting] == expected_usersettings[expected_usersetting]
 
         UserSettings.save_to_file.assert_called_once_with(DEFAULT_USER_SETTINGS_FILE_UNITTEST, expected_usersettings, add_defaults=True)

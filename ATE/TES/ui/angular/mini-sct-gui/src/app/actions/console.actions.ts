@@ -1,5 +1,5 @@
-import { Action } from '@ngrx/store'
-import { ConsoleEntry } from './../models/console.model'
+import { Action } from '@ngrx/store';
+import { ConsoleEntry } from './../models/console.model';
 
 // Define the different action types
 export const ADD_CONSOLE = '[CONSOLE] Add';

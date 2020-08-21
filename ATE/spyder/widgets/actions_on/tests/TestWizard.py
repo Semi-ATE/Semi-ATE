@@ -31,6 +31,20 @@ from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
 
 minimal_docstring_length = 80
 
+INPUTSHMOO_COLUMN_INDEX = 0
+INPUT_NAME_COLUMN_INDEX = 1
+INPUT_MIN_COLUMN_INDEX = 2
+INPUT_DEFAULT_COLUMN_INDEX = 3
+INPUT_MAX_COLUMN_INDEX = 4
+INPUT_MULTIPLIER_COLUMN_INDEX = 5
+INPUT_UNIT_COLUMN_INDEX = 6
+INPUT_FMT_COLUMN_INDEX = 7
+INPUT_MAX_NUM_COLUMNS = INPUT_FMT_COLUMN_INDEX + 1  # Adjust this to match the highest column index, if columns are added!
+
+
+# ToDo: Use constants for all accesses to the output table.
+OUTPUT_NAME_COLUMN_INDEX = 0
+
 
 class Delegator(QtWidgets.QStyledItemDelegate):
     """General Custom Delegator Class that works with regex."""
@@ -139,7 +153,7 @@ class TestWizard(BaseDialog):
         self.inputParameterDelete.setIcon(qta.icon('mdi.minus-box-outline', color='orange'))
         self.inputParameterDelete.setToolTip('Delete selected parameter')
 
-        inputParameterHeaderLabels = ['Name', 'Min', 'Default', 'Max', '10ᵡ', 'Unit', 'fmt']
+        inputParameterHeaderLabels = ['Shmoo', 'Name', 'Min', 'Default', 'Max', '10ᵡ', 'Unit', 'fmt']
         self.inputParameterModel = QtGui.QStandardItemModel()
         self.inputParameterModel.setObjectName('inputParameters')
         self.inputParameterModel.setHorizontalHeaderLabels(inputParameterHeaderLabels)
@@ -151,11 +165,11 @@ class TestWizard(BaseDialog):
         self.inputParameterView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionMode-enum
         self.inputParameterView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
 
-        self.inputParameterView.setItemDelegateForColumn(0, self.nameDelegator)
-        self.inputParameterView.setItemDelegateForColumn(1, self.minDelegator)
-        self.inputParameterView.setItemDelegateForColumn(2, self.defaultDelegator)
-        self.inputParameterView.setItemDelegateForColumn(3, self.maxDelegator)
-        self.inputParameterView.setItemDelegateForColumn(6, self.fmtDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_NAME_COLUMN_INDEX, self.nameDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_MIN_COLUMN_INDEX, self.minDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_DEFAULT_COLUMN_INDEX, self.defaultDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_MAX_COLUMN_INDEX, self.maxDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_FMT_COLUMN_INDEX, self.fmtDelegator)
 
         self.setInputpParameters(test_content['input_parameters'])
         self.inputParameterView.setColumnHidden(6, True)
@@ -245,9 +259,9 @@ class TestWizard(BaseDialog):
     def testTabChanged(self, activatedTabIndex):
         """Slot for when the Tab is changed."""
         if activatedTabIndex == self.testTabs.indexOf(self.inputParametersTab):
-            self.tableAdjust(self.inputParameterView)
+            self.tableAdjust(self.inputParameterView, INPUT_NAME_COLUMN_INDEX)
         elif activatedTabIndex == self.testTabs.indexOf(self.outputParametersTab):
-            self.tableAdjust(self.outputParameterView)
+            self.tableAdjust(self.outputParameterView, OUTPUT_NAME_COLUMN_INDEX)
         else:
             pass
 
@@ -255,20 +269,20 @@ class TestWizard(BaseDialog):
         """Overload of Slot for when the Wizard is resized."""
 
         QtWidgets.QWidget.resizeEvent(self, event)
-        self.tableAdjust(self.inputParameterView)
-        self.tableAdjust(self.outputParameterView)
+        self.tableAdjust(self.inputParameterView, INPUT_NAME_COLUMN_INDEX)
+        self.tableAdjust(self.outputParameterView, OUTPUT_NAME_COLUMN_INDEX)
 
-    def tableAdjust(self, TableView):
+    def tableAdjust(self, TableView, NameColumnIndex):
         """Call that adjust the table columns in 'TableView' to the available space."""
         TableView.resizeColumnsToContents()
         autoVisibleWidth = 0
         for column in range(TableView.model().columnCount()):
-            if column != 0:
+            if column != NameColumnIndex:
                 autoVisibleWidth += TableView.columnWidth(column)
         vHeaderWidth = TableView.verticalHeader().width()
         availableWidth = TableView.geometry().width()
         nameWidth = availableWidth - vHeaderWidth - autoVisibleWidth - 6  # no clue where this '6' comes from, but it works
-        TableView.setColumnWidth(0, nameWidth)
+        TableView.setColumnWidth(NameColumnIndex, nameWidth)
 
     def unitContextMenu(self, unitSetter):
         """Deploys the 'Unit' context menu and applies selection to 'unitSetter'.
@@ -427,6 +441,9 @@ class TestWizard(BaseDialog):
             item.triggered.connect(multiplier[1])
         return menu
 
+    def __get_input_parameter_column(self, item_row, column_index):
+        return self.inputParameterModel.item(item_row, column_index)
+
     def inputParameterContextMenu(self, point):
         '''
         here we select which context menu (for input_parameters) we need,
@@ -441,7 +458,7 @@ class TestWizard(BaseDialog):
         multiplierSetter = self.setInputParameterMultiplier
         unitSetter = self.setInputParameterUnit
 
-        if col == 0 or col == 6:  # Name or format
+        if col == INPUT_NAME_COLUMN_INDEX or col == INPUT_FMT_COLUMN_INDEX:
             if row != 0:  # not for temperature
                 menu = QtWidgets.QMenu(self)
                 parameter_formats = [
@@ -456,7 +473,7 @@ class TestWizard(BaseDialog):
                     item.triggered.connect(format_option[1])
                 menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() >= 1 and index.column() <= 3:  # Min, Default, Max
+        elif index.column() in [INPUT_MIN_COLUMN_INDEX, INPUT_DEFAULT_COLUMN_INDEX, INPUT_MAX_COLUMN_INDEX]:
             if index.row() != 0:  # not for temperature
                 menu = QtWidgets.QMenu(self)
                 special_values = [
@@ -469,12 +486,12 @@ class TestWizard(BaseDialog):
                     item.triggered.connect(special_value[1])
                 menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() == 4:  # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
+        elif index.column() == INPUT_MULTIPLIER_COLUMN_INDEX:  # --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
             if index.row() != 0:  # temperature
                 menu = self.multiplierContextMenu(multiplierSetter)
                 menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() == 5:  # Unit
+        elif index.column() == INPUT_UNIT_COLUMN_INDEX:  # Unit
             if index.row() != 0:  # not temperature
                 menu = self.unitContextMenu(unitSetter)
                 menu.exec_(QtGui.QCursor.pos())
@@ -550,7 +567,7 @@ class TestWizard(BaseDialog):
 
         for index in index_selection:
             if index.row() != 0:  # not for 'Temperature'
-                fmt_item = self.inputParameterModel.item(index.row(), 6)
+                fmt_item = self.__get_input_parameter_column(index.row(), INPUT_FMT_COLUMN_INDEX)
                 fmt_item.setData(Format, QtCore.Qt.DisplayRole)
 
         self.inputParameterView.clearSelection()
@@ -566,44 +583,65 @@ class TestWizard(BaseDialog):
 
         for index in index_selection:
             item = self.inputParameterModel.itemFromIndex(index)
-            fmt_item = self.inputParameterModel.item(index.row(), 6)
+            fmt_item = self.__get_input_parameter_column(index.row(), INPUT_FMT_COLUMN_INDEX)
             Fmt = fmt_item.data(QtCore.Qt.DisplayRole)
             if np.isinf(value):
-                if np.isposinf(value):  # only for column 3 (Max)
-                    if index.column() == 3:
+                if np.isposinf(value):  # only for Max
+                    if index.column() == INPUT_MAX_COLUMN_INDEX:
                         item.setData('+∞', QtCore.Qt.DisplayRole)
-                else:  # np.isneginf(value) # only for colums 1 (Min)
-                    if index.column() == 1:
+                else:  # np.isneginf(value) # only for Min
+                    if index.column() == INPUT_MIN_COLUMN_INDEX:
                         item.setData('-∞', QtCore.Qt.DisplayRole)
             elif np.isnan(value):  # forget about it! translate
-                if index.column() == 1:  # Min --> -np.inf
+                if index.column() == INPUT_MIN_COLUMN_INDEX:  # Min --> -np.inf
                     item.setData('-∞', QtCore.Qt.DisplayRole)
-                elif index.column() == 2:  # Default --> 0.0
+                elif index.column() == INPUT_DEFAULT_COLUMN_INDEX:  # Default --> 0.0
                     item.setData(f"{0.0:{Fmt}}", QtCore.Qt.DisplayRole)
                     pass
-                elif index.column() == 3:  # Max --> np.inf
+                elif index.column() == INPUT_MAX_COLUMN_INDEX:  # Max --> np.inf
                     item.setData('-∞', QtCore.Qt.DisplayRole)
             else:  # for columns 1, 2 and 3
-                if index.column() in [1, 2, 3]:
+                if index.column() in [INPUT_MIN_COLUMN_INDEX, INPUT_DEFAULT_COLUMN_INDEX, INPUT_MAX_COLUMN_INDEX]:
                     item.setData(f"{value:{Fmt}}", QtCore.Qt.DisplayRole)
 
         self.inputParameterView.clearSelection()
 
-    def setInputParameterMultiplier(self, text, tooltip):
+    def __set_input_parameter_attribtue(self, attribute_column, text, tooltip):
         selection = self.inputParameterView.selectedIndexes()
 
         for index in selection:
-            if index.column() == 4:  # multipliers are located in column#4
+            if index.column() == attribute_column:
                 self.inputParameterModel.setData(index, text, QtCore.Qt.DisplayRole)
                 self.inputParameterModel.setData(index, tooltip, QtCore.Qt.ToolTipRole)
+
+    def setInputParameterMultiplier(self, text, tooltip):
+        self.__set_input_parameter_attribtue(INPUT_MULTIPLIER_COLUMN_INDEX, text, tooltip)
 
     def setInputParameterUnit(self, text, tooltip):
-        selection = self.inputParameterView.selectedIndexes()
+        self.__set_input_parameter_attribtue(INPUT_UNIT_COLUMN_INDEX, text, tooltip)
 
-        for index in selection:
-            if index.column() == 5:  # units are located in column#5
-                self.inputParameterModel.setData(index, text, QtCore.Qt.DisplayRole)
-                self.inputParameterModel.setData(index, tooltip, QtCore.Qt.ToolTipRole)
+    def __select_default(self, Min, Default, Max):
+        if Min == -np.inf and Max == np.inf:
+            if Default == -np.inf:
+                Default = 0
+            if Default == np.inf:
+                Default = 0
+        elif Min == -np.inf:
+            if Default > Max:
+                Default = Max
+            if Default == -np.inf:
+                Default = Max
+        elif Max == np.inf:
+            if Default < Min:
+                Default = Min
+            if Default == np.inf:
+                Default = Min
+        else:
+            if Default > Max:
+                Default = Max
+            if Default < Min:
+                Default = Min
+        return Default
 
     def setInputParameter(self, name, attributes, row=None):
         '''
@@ -628,41 +666,42 @@ class TestWizard(BaseDialog):
 
         if name == 'Temperature':  # must be at row 0, regardless what row says
             if rowCount == 0:  # make first entry
-                self.inputParameterModel.appendRow([QtGui.QStandardItem() for i in range(len(attributes))])
+                self.inputParameterModel.appendRow([QtGui.QStandardItem() for i in range(INPUT_MAX_NUM_COLUMNS)])
             item_row = 0
         else:
             if row is None:  # append
-                self.inputParameterModel.appendRow([QtGui.QStandardItem() for i in range(len(attributes))])
+                self.inputParameterModel.appendRow([QtGui.QStandardItem() for i in range(INPUT_MAX_NUM_COLUMNS)])
                 item_row = rowCount
             else:  # update
                 if row > rowCount:
                     raise Exception(f"row({row}) > rowCount({rowCount})")
                 item_row = row
 
-        name_item = self.inputParameterModel.item(item_row, 0)
-        min_item = self.inputParameterModel.item(item_row, 1)
-        default_item = self.inputParameterModel.item(item_row, 2)
-        max_item = self.inputParameterModel.item(item_row, 3)
-        multiplier_item = self.inputParameterModel.item(item_row, 4)
-        unit_item = self.inputParameterModel.item(item_row, 5)
-        fmt_item = self.inputParameterModel.item(item_row, 6)
+        shmoo_item = self.__get_input_parameter_column(item_row, INPUTSHMOO_COLUMN_INDEX)
+        name_item = self.__get_input_parameter_column(item_row, INPUT_NAME_COLUMN_INDEX)
+        min_item = self.__get_input_parameter_column(item_row, INPUT_MIN_COLUMN_INDEX)
+        default_item = self.__get_input_parameter_column(item_row, INPUT_DEFAULT_COLUMN_INDEX)
+        max_item = self.__get_input_parameter_column(item_row, INPUT_MAX_COLUMN_INDEX)
+        multiplier_item = self.__get_input_parameter_column(item_row, INPUT_MULTIPLIER_COLUMN_INDEX)
+        unit_item = self.__get_input_parameter_column(item_row, INPUT_UNIT_COLUMN_INDEX)
+        fmt_item = self.__get_input_parameter_column(item_row, INPUT_FMT_COLUMN_INDEX)
 
         self.inputParameterModel.blockSignals(True)
+        Fmt = '.0f'
 
     # fmt
         if name == 'Temperature':
             Fmt = '.0f'
-            fmt_item.setData(Fmt, QtCore.Qt.DisplayRole)
-            fmt_item.setData(int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
             fmt_item.setFlags(QtCore.Qt.NoItemFlags)
         else:
             if 'fmt' not in attributes:
                 Fmt = '.3f'
             else:
                 Fmt = attributes['fmt']
-            fmt_item.setData(Fmt, QtCore.Qt.DisplayRole)
-            fmt_item.setData(int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
             fmt_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+
+        fmt_item.setData(Fmt, QtCore.Qt.DisplayRole)
+        fmt_item.setData(int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
 
     # Min
         if name == 'Temperature':
@@ -763,26 +802,8 @@ class TestWizard(BaseDialog):
                 Default = float(attributes['Default'])
             else:
                 raise Exception("type(attribute['Default']) = {type(attribute['Default'])}, which is not (str, float or int) ... WTF?!?")
-            if Min == -np.inf and Max == np.inf:
-                if Default == -np.inf:
-                    Default = 0
-                if Default == np.inf:
-                    Default = 0
-            elif Min == -np.inf:
-                if Default > Max:
-                    Default = Max
-                if Default == -np.inf:
-                    Default = Max
-            elif Max == np.inf:
-                if Default < Min:
-                    Default = Min
-                if Default == np.inf:
-                    Default = Min
-            else:
-                if Default > Max:
-                    Default = Max
-                if Default < Min:
-                    Default = Min
+            Default = self.__select_default(Min, Default, Max)
+
         default_item.setData(f"{Default:{Fmt}}", QtCore.Qt.DisplayRole)
         default_item.setData(int(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
         default_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
@@ -790,15 +811,26 @@ class TestWizard(BaseDialog):
     # name
         name_item.setData(name, QtCore.Qt.DisplayRole)  # https://doc.qt.io/qt-5/qt.html#ItemDataRole-enum
         name_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
+
+    #shmoo
+        shmoo_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
         if name == 'Temperature':  # Shmoo is always enabled, user can not change
-            name_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)  # https://doc.qt.io/qt-5/qt.html#CheckState-enum
-            name_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)  # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
-        else:  # take Shmoo from attributes
+            shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)  # https://doc.qt.io/qt-5/qt.html#CheckState-enum
+            shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable| QtCore.Qt.ItemIsUserCheckable)  # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
+        else:
             if Min <= Default <= Max and Min != -np.Inf and Max != np.Inf:
-                name_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
+                shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
             else:
-                name_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
-                name_item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
+                shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+            #shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
+
+
+        if  attributes['Shmoo'] is True:
+            shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
+        else:
+            shmoo_item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
+
 
     # Multiplier
         if name == 'Temperature':  # fixed regardless what the attributes say
@@ -820,7 +852,7 @@ class TestWizard(BaseDialog):
             unit_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
         self.inputParameterModel.blockSignals(False)
-        self.tableAdjust(self.inputParameterView)
+        self.tableAdjust(self.inputParameterView, INPUT_NAME_COLUMN_INDEX)
 
     def setInputpParameters(self, definition):
         for name in definition:
@@ -830,24 +862,26 @@ class TestWizard(BaseDialog):
     def getInputParameter(self, row):
         attributes = {'Shmoo': None, 'Min': None, 'Default': None, 'Max': None, '10ᵡ': None, 'Unit': None, 'fmt': None}
 
-        name_item = self.inputParameterModel.item(row, 0)
+        name_item = self.__get_input_parameter_column(row, INPUT_NAME_COLUMN_INDEX)
 
         if not isinstance(name_item, QtGui.QStandardItem):
             raise Exception("WTF")
 
         name = name_item.data(QtCore.Qt.DisplayRole)
-        shmoo = name_item.data(QtCore.Qt.CheckStateRole)
+
+        shmoo_item = self.__get_input_parameter_column(row, INPUTSHMOO_COLUMN_INDEX)
+        shmoo = shmoo_item.data(QtCore.Qt.CheckStateRole)
 
         if shmoo == QtCore.Qt.Checked:
             attributes['Shmoo'] = True
         else:
             attributes['Shmoo'] = False
 
-        fmt_item = self.inputParameterModel.item(row, 6)
+        fmt_item = self.__get_input_parameter_column(row, INPUT_FMT_COLUMN_INDEX)
         Fmt = fmt_item.data(QtCore.Qt.DisplayRole)
         attributes['fmt'] = Fmt
 
-        min_item = self.inputParameterModel.item(row, 1)
+        min_item = self.__get_input_parameter_column(row, INPUT_MIN_COLUMN_INDEX)
         Min = min_item.data(QtCore.Qt.DisplayRole)
         if '∞' in Min:
             attributes['Min'] = -np.Inf
@@ -855,11 +889,11 @@ class TestWizard(BaseDialog):
             Min = float(Min)
             attributes['Min'] = float(f"{Min:{Fmt}}")
 
-        default_item = self.inputParameterModel.item(row, 2)
+        default_item = self.__get_input_parameter_column(row, INPUT_DEFAULT_COLUMN_INDEX)
         Default = float(default_item.data(QtCore.Qt.DisplayRole))
         attributes['Default'] = float(f"{Default:{Fmt}}")
 
-        max_item = self.inputParameterModel.item(row, 3)
+        max_item = self.__get_input_parameter_column(row, INPUT_MAX_COLUMN_INDEX)
         Max = max_item.data(QtCore.Qt.DisplayRole)
         if '∞' in Max:
             attributes['Max'] = np.Inf
@@ -867,11 +901,11 @@ class TestWizard(BaseDialog):
             Max = float(Max)
             attributes['Max'] = float(f"{Max:{Fmt}}")
 
-        multiplier_item = self.inputParameterModel.item(row, 4)
+        multiplier_item = self.__get_input_parameter_column(row, INPUT_MULTIPLIER_COLUMN_INDEX)
         Multiplier = multiplier_item.data(QtCore.Qt.DisplayRole)
         attributes['10ᵡ'] = Multiplier
 
-        unit_item = self.inputParameterModel.item(row, 5)
+        unit_item = self.__get_input_parameter_column(row, INPUT_UNIT_COLUMN_INDEX)
         Unit = unit_item.data(QtCore.Qt.DisplayRole)
         attributes['Unit'] = Unit
 
@@ -902,7 +936,7 @@ class TestWizard(BaseDialog):
         new_row = self.inputParameterModel.rowCount()
         existing_parameters = []
         for item_row in range(new_row):
-            item = self.inputParameterModel.item(item_row, 0)
+            item = self.__get_input_parameter_column(item_row, INPUT_NAME_COLUMN_INDEX)
             existing_parameters.append(item.text())
 
         existing_parameter_indexes = []
@@ -934,7 +968,7 @@ class TestWizard(BaseDialog):
             self.inputParameterFormatVisible = True
             self.inputParameterFormat.setToolTip('Hide parameter formats')
             self.inputParameterView.setColumnHidden(6, False)
-        self.tableAdjust(self.inputParameterView)
+        self.tableAdjust(self.inputParameterView, INPUT_NAME_COLUMN_INDEX)
 
     def deleteInputParameter(self):
         selectedIndexes = self.inputParameterView.selectedIndexes()
@@ -1306,7 +1340,7 @@ class TestWizard(BaseDialog):
         unit_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
         self.outputParameterModel.blockSignals(False)
-        self.tableAdjust(self.outputParameterView)
+        self.tableAdjust(self.outputParameterView, OUTPUT_NAME_COLUMN_INDEX)
 
     def setOutputParameters(self, definition):
         for name in definition:
@@ -1437,7 +1471,7 @@ class TestWizard(BaseDialog):
             self.outputParameterFormatVisible = True
             self.outputParameterFormat.setToolTip('Hide parameter formats')
             self.outputParameterView.setColumnHidden(8, False)
-        self.tableAdjust(self.outputParameterView)
+        self.tableAdjust(self.outputParameterView, OUTPUT_NAME_COLUMN_INDEX)
 
     def deleteOutputParameter(self, row):
         selectedIndexes = self.outputParameterView.selectedIndexes()
@@ -1551,14 +1585,10 @@ class TestWizard(BaseDialog):
         test_content['input_parameters'] = self.getInputParameters()
         test_content['output_parameters'] = self.getOutputParameters()
         test_content['dependencies'] = {}  # TODO: implement this
-        blob_test_content = {}
-        blob_test_content.update({'input_parameters': test_content['input_parameters']})
-        blob_test_content.update({'output_parameters': test_content['output_parameters']})
-        blob_test_content.update({'docstring': test_content['docstring']})
         if not self.read_only:
             self.project_info.add_custom_test(test_content)
         else:
-            if not self._does_paramters_changed(test_content):
+            if not self.__have_parameters_changed(test_content):
                 self.reject()
                 return
 
@@ -1566,7 +1596,7 @@ class TestWizard(BaseDialog):
 
         self.accept()
 
-    def _does_paramters_changed(self, content):
+    def __have_parameters_changed(self, content):
         if len(content['input_parameters']) != len(self.test_content['input_parameters']) \
            or len(content['output_parameters']) != len(self.test_content['output_parameters']):
             return True

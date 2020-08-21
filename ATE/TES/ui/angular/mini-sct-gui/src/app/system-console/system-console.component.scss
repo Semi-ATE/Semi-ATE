@@ -1,1 +1,23 @@
 @import '../../styles.scss';
+
+table {
+  table-layout: fixed;
+  th {
+    text-align: left;
+    background-color: $beige;
+  }
+
+  td {
+    text-align: left;
+  }
+
+  .time {
+    width: 15%;
+  }
+  .type {
+    width: 15p;
+  }
+  .info {
+    width: 60%;
+  }
+}

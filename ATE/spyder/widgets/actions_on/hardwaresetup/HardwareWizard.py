@@ -584,7 +584,7 @@ class HardwareWizard(BaseDialog):
                 {'SingleSiteLoadboard': self.singlesiteLoadboard.text(),
                  'SingleSiteDIB': self.singlesiteDIB.text(),
                  'SingleSiteDIBisCable': self.singleSiteDIBisCable.isChecked(),
-                 'SignleSiteProbeCard': self.singlesiteProbecard.text(),
+                 'SingleSiteProbeCard': self.singlesiteProbecard.text(),
                  'MultiSiteLoadboard': self.multisiteLoadboard.text(),
                  'MultiSiteDIB': self.multisiteDIB.text(),
                  'MultiSiteDIBisCable': self.multiSiteDIBisCable.isChecked(),

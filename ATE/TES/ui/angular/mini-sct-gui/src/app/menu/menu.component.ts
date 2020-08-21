@@ -1,37 +1,38 @@
-import { MenuItem } from 'src/app/app-routing.module';
+import { MenuItem } from 'src/app/routing-table';
 import { Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
-import { CommunicationService } from 'src/app/services/communication.service';
-import { SystemState } from 'src/app/models/status.model';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { SystemState, Status } from 'src/app/models/status.model';
+import { Subject } from 'rxjs';
+import { AppState } from '../app.state';
+import { Store, select } from '@ngrx/store';
+import { takeUntil } from 'rxjs/operators';
+import { SystemStatusComponent } from '../system-status/system-status.component';
 
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss']
 })
-export class MenuComponent implements OnInit {
-  systemState: SystemState;
+export class MenuComponent implements OnInit, OnDestroy {
+  private status: Status;
+  private readonly ngUnsubscribe: Subject<void>;
   menuItem: any;
 
-  constructor(private readonly communicationService: CommunicationService, private readonly router: Router) {
-    this.systemState = SystemState.connecting;
+  constructor(private readonly store: Store<AppState>, private readonly router: Router) {
     this.menuItem = MenuItem;
-    communicationService.message.subscribe(msg => this.handleServerMessage(msg));
-  }
-
-  private handleServerMessage(serverMessage: any) {
-    if (serverMessage && serverMessage.payload && serverMessage.payload.state) {
-      if (this.systemStateChanged(serverMessage.payload.state)) {
-        this.systemState = serverMessage.payload.state;
-      }
-    }
-  }
-
-  private systemStateChanged(state: SystemState): boolean {
-    return state !== this.systemState;
+    this.status = {} as Status;
+    this.ngUnsubscribe = new Subject<void>();
   }
 
   ngOnInit() {
+    this.store.select('systemStatus')
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe( s => this.updateStatus(s));
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   isDisabled(menuItem: MenuItem): boolean {
@@ -46,8 +47,12 @@ export class MenuComponent implements OnInit {
     }
   }
 
+  private updateStatus(status: Status) {
+    this.status = status;
+  }
+
   private resultsDisabled(): boolean {
-    switch (this.systemState) {
+    switch (this.status.state) {
       case SystemState.connecting:
       case SystemState.initialized:
       case SystemState.unloading:
@@ -58,7 +63,7 @@ export class MenuComponent implements OnInit {
   }
 
   private controlDisabled(): boolean {
-    switch (this.systemState) {
+    switch (this.status.state) {
       case SystemState.connecting:
         return true;
     }

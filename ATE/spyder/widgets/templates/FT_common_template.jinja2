@@ -3,8 +3,6 @@
 {{ definition['hardware'] }}/FT/__init__.py
 """
 
-from ATE.spyder.widgets.sequencers.SequencerMqttClient import SequencerMqttClient
-mqtt = SequencerMqttClient()
 # Tester
 from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
 tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")[0]

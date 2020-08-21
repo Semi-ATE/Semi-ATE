@@ -84,7 +84,7 @@ class FileSystemDataSource:
     def does_device_id_exist(self, param_data: dict):
         for key, value in param_data.items():
             if key == 'TESTER' or re.match(r'TESTER\d', key) is not None:
-                if self.device_id in value:
+                if self.device_id == value:
                     return True
 
         self.log.warning("tester could not be found")

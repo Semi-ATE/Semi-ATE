@@ -1,3 +1,5 @@
+import { SiteBinInformationComponent } from './site-bin-information/site-bin-information.component';
+import { SystemBinStatusComponent } from './system-bin-status/system-bin-status.component';
 import { RouterModule } from '@angular/router';
 import { CommunicationService } from './services/communication.service';
 import { WebsocketService } from './services/websocket.service';
@@ -13,7 +15,7 @@ import { AppComponent } from './app.component';
 import { SystemStatusComponent } from './system-status/system-status.component';
 import { SystemControlComponent } from './system-control/system-control.component';
 import { SystemConsoleComponent } from './system-console/system-console.component';
-import { SystemSiteComponent } from './system-site/system-site.component';
+import { ResultComponent } from './result/result.component';
 import { HeaderComponent } from './pages/header/header.component';
 import { FooterComponent } from './pages/footer/footer.component';
 import { TestOptionComponent } from './system-control/test-option/test-option.component';
@@ -27,6 +29,10 @@ import { StoreModule } from '@ngrx/store';
 import { statusReducer } from './reducers/status.reducer';
 import { resultReducer } from './reducers/result.reducer';
 import { consoleReducer } from './reducers/console.reducer';
+import { AppstateService } from './services/appstate.service';
+import { userSettingsReducer } from './reducers/usersettings.reducer';
+import { expectWaitUntil } from './test-stuff/auxillary-test-functions';
+import { MockServerService } from './services/mockserver.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -40,7 +46,7 @@ describe('AppComponent', () => {
         SystemStatusComponent,
         SystemControlComponent,
         SystemConsoleComponent,
-        SystemSiteComponent,
+        ResultComponent,
         SystemInformationComponent,
         HeaderComponent,
         FooterComponent,
@@ -54,10 +60,13 @@ describe('AppComponent', () => {
         TestExecutionComponent,
         InputComponent,
         MenuComponent,
+        SystemBinStatusComponent,
+        SiteBinInformationComponent
       ],
       providers: [
         WebsocketService,
         CommunicationService,
+        AppstateService
       ],
       imports: [
         FormsModule,
@@ -65,8 +74,9 @@ describe('AppComponent', () => {
         RouterModule,
         StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
         })
       ],
       })

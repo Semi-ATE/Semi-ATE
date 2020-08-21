@@ -16,9 +16,9 @@ export class SystemControlComponent implements OnInit, OnDestroy {
 
   systemControlCardConfiguration: CardConfiguration;
   private status: Status;
-  private ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
+  private readonly ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
 
-  constructor(private store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>) {
     this.systemControlCardConfiguration = new CardConfiguration();
     this.ngUnsubscribe = new Subject<void>();
   }
@@ -26,7 +26,7 @@ export class SystemControlComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.systemControlCardConfiguration.cardStyle = CardStyle.ROW_STYLE;
     this.systemControlCardConfiguration.labelText = 'System Control';
-    
+
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe( s => this.status = s);

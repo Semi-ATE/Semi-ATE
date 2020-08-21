@@ -90,21 +90,6 @@
            <height>22</height>
           </size>
          </property>
-         <item>
-          <property name="text">
-           <string>HW0</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HW1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HW2</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -233,16 +218,6 @@
            <height>22</height>
           </size>
          </property>
-         <item>
-          <property name="text">
-           <string/>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>123456789012345</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -477,16 +452,6 @@
            <height>22</height>
           </size>
          </property>
-         <item>
-          <property name="text">
-           <string/>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>123456789012345</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>

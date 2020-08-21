@@ -19,7 +19,7 @@ export class InformationComponent implements OnInit, OnChanges {
   ngOnChanges() {
   }
 
-  informationConfigValueType() : string {
+  informationConfigValueType(): string {
     return typeof this.informationConfig.value;
   }
 }

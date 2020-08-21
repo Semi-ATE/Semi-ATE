@@ -9,6 +9,7 @@ import re
 
 from PyQt5 import QtCore, QtGui
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.validation import valid_product_name_regex
 
 
 class NewProductWizard(BaseDialog):
@@ -23,16 +24,6 @@ class NewProductWizard(BaseDialog):
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
         self.existing_hardwares = self.project_info.get_active_hardware_names()
-        if len(self.existing_hardwares) == 0:
-            self.existing_hardwares = ['']
-
-        from ATE.spyder.widgets.validation import valid_product_name_regex
-        rxProductName = QtCore.QRegExp(valid_product_name_regex)
-        ProductName_validator = QtGui.QRegExpValidator(rxProductName, self)
-        self.ProductName.setText("")
-        self.ProductName.setValidator(ProductName_validator)
-        self.ProductName.textChanged.connect(self._verify)
-
         self.WithHardware.clear()
         for index, hardware in enumerate(self.existing_hardwares):
             self.WithHardware.addItem(hardware)
@@ -41,25 +32,72 @@ class NewProductWizard(BaseDialog):
 
         self._update_device_list()
 
+        rxProductName = QtCore.QRegExp(valid_product_name_regex)
+        ProductName_validator = QtGui.QRegExpValidator(rxProductName, self)
+        self.ProductName.setText("")
+        self.ProductName.setValidator(ProductName_validator)
+        self.ProductName.textChanged.connect(self._verify)
+
         self.Feedback.setText("No product name")
         self.Feedback.setStyleSheet('color: orange')
 
-        self.referenceGradeLabel.setDisabled(True)
+        self.Type.setCurrentText('ASSP')
+        self.isAGrade.setChecked(True)
+        self.isAGrade.setEnabled(True)
         self.referenceGradeLabel.setHidden(True)
-        self.referenceGradeLabel.setVisible(False)
-
-        referenced_products, first_free_grade, reference_products = self._generate_grade_reference()
-
-        self.referenceGrade.addItems(reference_products)
-
-        self.referenceGrade.setCurrentText('')
-        self.referenceGrade.setDisabled(True)
         self.referenceGrade.setHidden(True)
-        self.referenceGrade.setVisible(False)
-
-        self.gradeLabel.setDisabled(True)
         self.gradeLabel.setHidden(True)
-        self.gradeLabel.setVisible(False)
+        self.grade.setHidden(True)
+        self.customerLabel.setHidden(True)
+        self.customer.setHidden(True)
+        self.Feedback.setStyleSheet('color: orange')
+
+        self._verify()
+
+    def _connect_event_handler(self):
+        self.FromDevice.currentIndexChanged.connect(self._device_changed)
+        self.WithHardware.currentTextChanged.connect(self.hardware_changed)
+        self.isAGrade.toggled.connect(self._a_grade_changed)
+        self.referenceGrade.currentTextChanged.connect(self.reference_grade_changed)
+        self.Type.currentTextChanged.connect(self.type_changed)
+        self.CancelButton.clicked.connect(self.cancel_button_pressed)
+        self.OKButton.clicked.connect(self.ok_button_pressed)
+
+    @QtCore.pyqtSlot(int)
+    def _device_changed(self, _):
+        self._generate_grade_reference()
+
+    def _generate_grade_reference(self):
+        all_products = self.project_info.get_products_info()
+        reference_products = []
+        referenced_products = {i: '' for i in ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']}
+        free_grades = []
+
+        for product in all_products:
+            if product.hardware == self.WithHardware.currentText() and product.device == self.FromDevice.currentText():
+                if product.name == self.ProductName.text():
+                    continue
+
+                if product.grade == 'A':
+                    reference_products.append(product.name)
+                else:
+                    referenced_products[product.grade] = product.grade_reference
+
+        for product in referenced_products:
+            if referenced_products[product] == '':
+                free_grades.append(product)
+
+        if len(free_grades) == 0:
+            first_free_grade = ''
+        else:
+            first_free_grade = sorted(free_grades)[0]
+
+        self.referenceGrade.clear()
+        self.referenceGrade.addItems(reference_products)
+        self.referenceGrade.setCurrentText('')
+        self.referenceGrade.setHidden(False)
+
+        self.gradeLabel.setHidden(False)
 
         self.grade.clear()
         self.grade.addItems(sorted(list(referenced_products)))
@@ -68,49 +106,9 @@ class NewProductWizard(BaseDialog):
             if referenced_products[item_text] != '':
                 self.grade.model().item(index).setEnabled(False)
                 self.grade.model().item(index).setToolTip(referenced_products[item_text])
+
         self.grade.setCurrentText(first_free_grade)
-        self.grade.setDisabled(True)
-        self.grade.setHidden(True)
-        self.grade.setVisible(False)
-
-    # Type & customer
-        self.Type.setCurrentText('ASSP')
-
-        self.customerLabel.setDisabled(False)
-        self.customerLabel.setHidden(True)
-
-        self.customer.setText('')
-        self.customer.setHidden(True)
-
-    # feedback
-        self.Feedback.setStyleSheet('color: orange')
-
-    # buttons
-        self.OKButton.setEnabled(False)
-
-        self._verify()
-
-    def _generate_grade_reference(self):
-        all_products = self.project_info.get_products_info()
-        reference_products = ['']
-        referenced_products = {i: '' for i in ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']}
-        free_grades = []
-
-        for product in all_products:
-            if product.hardware == self.WithHardware.currentText() and product.device == self.FromDevice.currentText():
-                if product.grade == 'A':
-                    reference_products.append(product.name)
-                else:
-                    referenced_products[all_products[product.name]].grade = product.grade_reference
-
-        for product in referenced_products:
-            if referenced_products[product] == '':
-                free_grades.append(product)
-
-        if len(free_grades) == 0:  # nothing free anymore
-            first_free_grade = ''
-        else:
-            first_free_grade = sorted(free_grades)[0]
+        self.grade.setHidden(False)
 
         return referenced_products, first_free_grade, reference_products
 
@@ -120,103 +118,47 @@ class NewProductWizard(BaseDialog):
         self.FromDevice.clear()
         self.FromDevice.addItems(self.existing_devices)
         self.FromDevice.setCurrentText('' if not len(self.existing_devices) else self.existing_devices[0])
-        # TODO: why can't we set the first available device as default ? as below
-        # self.FromDevice.setCurrentIndex(0)  # this is the empty string in the beginning of the list!
 
-    def _connect_event_handler(self):
-        self.FromDevice.currentIndexChanged.connect(self._verify)
-        self.WithHardware.currentTextChanged.connect(self.hardware_changed)
-        self.isAGrade.toggled.connect(self._a_grade_changed)
-        self.referenceGrade.currentTextChanged.connect(self.referenceGradeChanged)
-        self.Type.currentTextChanged.connect(self.typeChanged)
-        self.CancelButton.clicked.connect(self.CancelButtonPressed)
-        self.OKButton.clicked.connect(self.OKButtonPressed)
-
-    def typeChanged(self, SelectedType):
+    @QtCore.pyqtSlot(str)
+    def type_changed(self, SelectedType):
         '''
         if the Type is 'ASIC' enable CustomerLabel and Customer
         '''
         if SelectedType == 'ASIC':
             self.customerLabel.setVisible(True)
-
-            self.customer.blockSignals(True)
             self.customer.setText("")
             self.customer.setVisible(True)
-            self.customer.blockSignals(False)
         else:
             self.customerLabel.setVisible(False)
-            self.customerLabel.setEnabled(True)
-
-            self.customer.blockSignals(True)
             self.customer.setText("")
             self.customer.setVisible(False)
-            self.customer.blockSignals(False)
 
-    def referenceGradeChanged(self):
+    @QtCore.pyqtSlot(str)
+    def reference_grade_changed(self, _):
         self._verify()
 
+    @QtCore.pyqtSlot(bool)
     def _a_grade_changed(self, is_A_grade):
         if is_A_grade:
-            self.referenceGradeLabel.setDisabled(True)
             self.referenceGradeLabel.setHidden(True)
-            self.referenceGradeLabel.setVisible(False)
-
-            self.referenceGrade.setDisabled(True)
             self.referenceGrade.setHidden(True)
-            self.referenceGrade.setVisible(False)
-
-            self.gradeLabel.setDisabled(True)
             self.gradeLabel.setHidden(True)
-            self.gradeLabel.setVisible(False)
-
-            self.grade.setDisabled(True)
             self.grade.setHidden(True)
-            self.grade.setVisible(False)
         else:
-            self.referenceGradeLabel.setDisabled(False)
             self.referenceGradeLabel.setHidden(False)
-            self.referenceGradeLabel.setVisible(True)
 
-            referenced_products, first_free_grade, reference_products = self._generate_grade_reference()
-
-            self.referenceGrade.blockSignals(True)
-            self.referenceGrade.clear()
-            self.referenceGrade.addItems(reference_products)
-            self.referenceGrade.setCurrentText('')
-            self.referenceGrade.setDisabled(False)
-            self.referenceGrade.setHidden(False)
-            self.referenceGrade.setVisible(True)
-            self.referenceGrade.blockSignals(False)
-
-            self.gradeLabel.setDisabled(False)
-            self.gradeLabel.setHidden(False)
-            self.gradeLabel.setVisible(True)
-
-            self.grade.blockSignals(True)
-            self.grade.clear()
-            self.grade.addItems(sorted(list(referenced_products)))
-            for index in range(self.grade.count()):
-                item_text = self.grade.itemText(index)
-                if referenced_products[item_text] != '':
-                    self.grade.model().item(index).setEnabled(False)
-                    self.grade.model().item(index).setToolTip(referenced_products[item_text])
-
-            self.grade.setCurrentText(first_free_grade)
-            self.grade.setDisabled(False)
-            self.grade.setHidden(False)
-            self.grade.setVisible(True)
-            self.grade.blockSignals(False)
+            self._generate_grade_reference()
 
         self._verify()
 
+    @QtCore.pyqtSlot(str)
     def hardware_changed(self, hardware):
         '''
         if the selected hardware changes, make sure the active_hardware
         at the parent level is also changed and that the new device list
         (for the new hardware) is loaded.
         '''
-        self.parent.hardware_activated.emit(hardware)
-
+        self.project_info_parent.hardware_activated.emit(hardware)
         self._update_device_list()
 
     def _verify(self):
@@ -237,11 +179,10 @@ class NewProductWizard(BaseDialog):
             if self.FromDevice.currentText() == "":
                 self.Feedback.setText("No device selected")
                 self.OKButton.setEnabled(False)
-            else:  # device selected (hardware is always selected)
+            else:
                 self.Feedback.setText("")
                 self.OKButton.setEnabled(True)
 
-        # Grade & reference grade
         if self.Feedback.text() == '':
             if not self.isAGrade.isChecked():
                 if self.referenceGrade.currentText() == '':
@@ -252,8 +193,9 @@ class NewProductWizard(BaseDialog):
             self.Feedback.setText("No product name")
             self.OKButton.setEnabled(False)
 
-    def CancelButtonPressed(self):
-        self.accept()
+    @QtCore.pyqtSlot()
+    def cancel_button_pressed(self):
+        self.reject()
 
     def _get_actual_defintion(self):
         if self.isAGrade.isChecked():
@@ -264,7 +206,7 @@ class NewProductWizard(BaseDialog):
             grade_reference = self.referenceGrade.currentText()
         if self.Type.currentText() == 'ASIC':
             customer = self.customer.text()
-        else:  # ASSP
+        else:
             customer = ''
 
         return {'name': self.ProductName.text(),
@@ -276,7 +218,8 @@ class NewProductWizard(BaseDialog):
                 'type': self.Type.currentText(),
                 'customer': customer}
 
-    def OKButtonPressed(self):
+    @QtCore.pyqtSlot()
+    def ok_button_pressed(self):
         configuration = self._get_actual_defintion()
 
         self.project_info.add_product(configuration['name'], configuration['device'],

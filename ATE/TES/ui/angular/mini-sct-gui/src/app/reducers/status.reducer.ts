@@ -1,5 +1,5 @@
-import { Status, SystemState } from 'src/app/models/status.model'
-import * as StatusActions from 'src/app/actions/status.actions'
+import { Status, SystemState } from 'src/app/models/status.model';
+import * as StatusActions from 'src/app/actions/status.actions';
 
 // define the initial state here
 const initialState: Status = {
@@ -12,6 +12,7 @@ const initialState: Status = {
   log: '',
   state: SystemState.connecting,
   reason: '',
+  lotNumber: ''
 };
 
 export function statusReducer(state: Status = initialState, action: StatusActions.Actions) {

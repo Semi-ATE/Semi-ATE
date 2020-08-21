@@ -1,5 +1,6 @@
 export interface ConsoleEntry {
   date: string;
-  topic: string;
+  type: string;
   description: string;
+  json: string;
 }

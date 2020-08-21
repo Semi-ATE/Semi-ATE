@@ -12,7 +12,7 @@ class TestConfigReader:
 
     def test_read_configuration_file_correct_config(self):
         configuration = ConfigReader(CONFIG_FILE_PATH)
-        assert (configuration.get_configuration() == {"broker_host": "10.9.1.6",
+        assert (configuration.get_configuration() == {"broker_host": "127.0.0.1",
                                                       "broker_port": 1883,
                                                       "site_id": "0",
                                                       "device_id": "device-id"})

@@ -15,6 +15,7 @@ export class CardConfiguration {
 export enum CardStyle {
   ROW_STYLE = 'rowStyle',
   COLUMN_STYLE = 'columnStyle',
+  NONE_STYLE = 'noneStyle',
   ROW_STYLE_FOR_SYSTEM = 'rowStyleForSystemSites'
 }
 

@@ -9,6 +9,7 @@ import { StoreModule } from '@ngrx/store';
 import { statusReducer } from 'src/app/reducers/status.reducer';
 import { resultReducer } from 'src/app/reducers/result.reducer';
 import { consoleReducer } from 'src/app/reducers/console.reducer';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 
 
 describe('TestExecutionComponent', () => {
@@ -23,8 +24,9 @@ describe('TestExecutionComponent', () => {
       imports: [
         StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
         })
       ]
     })
