@@ -41,7 +41,7 @@ python setup.py develop
 ## Install Reference Plugin
 
 ```Console
-cd Plugins/TDKMicrons
+cd Plugins/TDKMicronas
 python setup.py install
 ```
 
@@ -114,7 +114,7 @@ The files ```master_config_file_template.json``` and
 }
 ```
 
-:warning: Since the static file path points to a directory that is generated during the build of the web ui this path is not valid, if the UI was not built beforehand. Refer to ```../ui/angular/mini-sct-gui/src/README.md```before continuing with the next section!
+:warning: Since the static file path points to a directory that is generated during the build of the web ui this path is not valid, if the UI was not built beforehand. Refer to ```../ui/angular/mini-sct-gui/README.md```before continuing with the next section!
 
 :warning: if no mqtt broker is available, mosquitto could be installed
 https://mosquitto.org/downloadconfigure
