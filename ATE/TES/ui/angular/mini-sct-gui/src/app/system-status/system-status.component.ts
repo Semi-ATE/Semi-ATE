@@ -34,9 +34,9 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   private readonly states: Array<RenderedState>;
   private status: Status;
   renderedState: RenderedState;
-  private ngUnsubscribe : Subject<void>;
+  private readonly ngUnsubscribe: Subject<void>;
 
-  constructor(private store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>) {
     this.states = [
       {
         description: 'Connecting',
@@ -77,6 +77,11 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
         description: 'Error',
         value: SystemState.error,
         color: Colors.red
+      },
+      {
+        description: 'Softerror',
+        value: SystemState.softerror,
+        color: Colors.red
       }
     ];
 
@@ -102,5 +107,4 @@ export class SystemStatusComponent implements OnInit, OnDestroy {
   private adaptState(): void {
     this.renderedState = this.states.filter(s => s.value === this.status.state)[0];
   }
- 
 }

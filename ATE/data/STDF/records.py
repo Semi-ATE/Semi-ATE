@@ -1772,8 +1772,7 @@ class STDR(ABC):
         for field in self.fields:
             sequence[self.fields[field]['#']] = field
         return {sequence[field]: self.fields[sequence[field]]['Value']
-                for field in sequence
-                if include_missing_values or self.fields[sequence[field]]['Value'] != self.fields[sequence[field]]['Missing']}
+                for field in sequence}
 
 
 ###################################################################################################################################################

@@ -9,10 +9,11 @@ import { MockServerService } from './../services/mockserver.service';
 import * as constants from '../services/mockserver-constants';
 import { expectWaitUntil } from './../test-stuff/auxillary-test-functions';
 import { StoreModule } from '@ngrx/store';
-import { consoleReducer } from 'src/app/reducers/console.reducer'
-import { resultReducer } from 'src/app/reducers/result.reducer'
-import { statusReducer } from 'src/app/reducers/status.reducer'
+import { consoleReducer } from 'src/app/reducers/console.reducer';
+import { resultReducer } from 'src/app/reducers/result.reducer';
+import { statusReducer } from 'src/app/reducers/status.reducer';
 import { AppstateService } from '../services/appstate.service';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 
 describe('SystemInformationComponent', () => {
   let component: SystemInformationComponent;
@@ -20,18 +21,19 @@ describe('SystemInformationComponent', () => {
   let debugElement: DebugElement;
   let status: Status;
   let mockServerService: MockServerService;
-  let expectedLabelText = ['System', 'Number of Sites', 'Time', 'Environment', 'Handler'];
+  let expectedLabelTexts = ['System', 'Number of Sites', 'Time', 'Environment', 'Handler', 'Lot Number'];
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [],
-      imports: [StoreModule.forRoot(
-        {
+      imports: [
+        StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-        }
-      )],
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
+        })
+      ],
       declarations: [ SystemInformationComponent, CardComponent, InformationComponent ],
     })
     .compileComponents();
@@ -39,7 +41,7 @@ describe('SystemInformationComponent', () => {
 
   beforeEach(() => {
     mockServerService = TestBed.inject(MockServerService);
-    TestBed.inject(AppstateService);    
+    TestBed.inject(AppstateService);
     fixture = TestBed.createComponent(SystemInformationComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
@@ -53,6 +55,7 @@ describe('SystemInformationComponent', () => {
       log: 'invalid',
       state: SystemState.connecting,
       reason: 'invalid',
+      lotNumber: '',
     };
     fixture.detectChanges();
   });
@@ -109,12 +112,24 @@ describe('SystemInformationComponent', () => {
     });
   });
 
+  describe('computeTextToDisplay', () => {
+    it('should return default string if input is empty string', () => {
+      let emptyString = '';
+      let defaultString = 'default';
+      expect((component as any).computeTextToDisplay(emptyString,defaultString)).toBe(defaultString);
+    });
+    it('should return default string if input is "null"', () => {
+      let defaultString = 'default';
+      expect((component as any).computeTextToDisplay(null,defaultString)).toBe(defaultString);
+    });
+  });
+
   describe('When system state is neither ' + JSON.stringify(SystemState.connecting) + ' nor ' + JSON.stringify(SystemState.error), () => {
-    it('should contain 5 app-information tags', async () => {
+    it('should contain information for the following topics: ' + JSON.stringify(expectedLabelTexts), async () => {
 
       function foundAPPInformation(): boolean {
-        let element = debugElement.queryAll(By.css('app-information'));
-        if (element.length === 5) {
+        let element = debugElement.queryAll(By.css('app-information .information h2'));
+        if (element.length === expectedLabelTexts.length) {
           return true;
         }
         return false;
@@ -128,15 +143,20 @@ describe('SystemInformationComponent', () => {
           fixture.detectChanges();
         },
         foundAPPInformation,
-        'Did not find 5 App-Information elements');
+        'Did not find ' + expectedLabelTexts.length + ' app-information elements');
+
+      let currentTopics = debugElement.queryAll(By.css('app-information .information h2'))
+        .map(e => e.nativeElement.innerText);
+
+      expect(currentTopics).toEqual(jasmine.arrayWithExactContents(expectedLabelTexts));
     });
 
-    it('should display label texts: ' + JSON.stringify(expectedLabelText), async () => {
+    it('should display label texts: ' + JSON.stringify(expectedLabelTexts), async () => {
       expect(component.infoContentCardConfiguration.labelText).toEqual('');
 
       function foundLabeTexts(): boolean {
         let element = debugElement.queryAll(By.css('app-information'));
-        return element.length === 5;
+        return element.length === expectedLabelTexts.length;
       }
       // send initialized message
       mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_INITIALIZED]);
@@ -145,14 +165,14 @@ describe('SystemInformationComponent', () => {
           fixture.detectChanges();
         },
         foundLabeTexts,
-        'Did not find 5 app-information elements');
+        'Did not find ' + expectedLabelTexts.length + ' app-information elements');
 
       let labelElements = [];
       debugElement.queryAll(By.css('app-information h2'))
         .forEach(a => labelElements
           .push(a.nativeElement.innerText));
 
-      expect(labelElements).toEqual(jasmine.arrayWithExactContents(expectedLabelText));
+      expect(labelElements).toEqual(jasmine.arrayWithExactContents(expectedLabelTexts));
     });
 
     it('should display value of system information', async () => {
@@ -160,7 +180,7 @@ describe('SystemInformationComponent', () => {
 
       function foundLabeTexts(): boolean {
         let element = debugElement.queryAll(By.css('app-information'));
-        if (element.length === 5) {
+        if (element.length === expectedLabelTexts.length) {
           return true;
         }
         return false;
@@ -174,7 +194,7 @@ describe('SystemInformationComponent', () => {
           fixture.detectChanges();
         },
         foundLabeTexts,
-        'Did not find 5 app-information elements'
+        'Did not find ' + expectedLabelTexts.length + ' app-information elements'
       );
 
       let valueTexts = [];
@@ -186,7 +206,9 @@ describe('SystemInformationComponent', () => {
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.device_id,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.systemTime,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.env,
-        constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.handler,]);
+        constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.handler,
+        constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.lot_number
+      ]);
     });
   });
 });

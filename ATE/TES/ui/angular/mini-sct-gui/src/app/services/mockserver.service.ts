@@ -78,8 +78,6 @@ export class MockServerService {
   }
 
   private sendMsg(socket: WebSocket): any {
-    this.currentIndex++;
-
     if (this.currentIndex >= this.msgs.length) {
       if (this.repeatMessages) {
         this.currentIndex = 0;
@@ -92,6 +90,8 @@ export class MockServerService {
       this.addTimeToMsg();
       socket.send(JSON.stringify(this.msgs[this.currentIndex]));
     }
+
+    this.currentIndex++;
   }
 
   private indexValid(): boolean {
@@ -110,4 +110,6 @@ export class MockServerService {
       msg.payload.systemTime = formatDate(Date.now(), 'medium', 'en-US');
     }
   }
+
+
 }

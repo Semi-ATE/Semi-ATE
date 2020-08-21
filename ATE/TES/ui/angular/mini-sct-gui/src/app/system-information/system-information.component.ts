@@ -1,7 +1,7 @@
 import { InformationConfiguration } from './../basic-ui-elements/information/information-config';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CardConfiguration, CardStyle } from './../basic-ui-elements/card/card.component';
-import { Store } from '@ngrx/store'
+import { Store } from '@ngrx/store';
 import { AppState } from '../app.state';
 import { Status, SystemState } from './../models/status.model';
 import { Subject } from 'rxjs';
@@ -12,7 +12,8 @@ export enum systemInformationLabelText {
   sitesLabelText = 'Number of Sites',
   timeLabelText = 'Time',
   environmentLabelText = 'Environment',
-  handlerLabelText = 'Handler'
+  handlerLabelText = 'Handler',
+  lotNumberLabelText = 'Lot Number'
 }
 
 @Component({
@@ -31,11 +32,12 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
   timeInformationConfiguration: InformationConfiguration;
   environmentInformationConfiguration: InformationConfiguration;
   handlerInformationConfiguration: InformationConfiguration;
+  lotNumberInformationConfiguration: InformationConfiguration;
 
   status: Status;
-  private ngUnsubscribe: Subject<void>;
+  private readonly ngUnsubscribe: Subject<void>;
 
-  constructor(private store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>) {
     this.informationCardConfiguration = new CardConfiguration();
     this.identifyCardConfiguration = new CardConfiguration();
     this.infoContentCardConfiguration = new CardConfiguration();
@@ -45,6 +47,7 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     this.timeInformationConfiguration = new InformationConfiguration();
     this.environmentInformationConfiguration = new InformationConfiguration();
     this.handlerInformationConfiguration = new InformationConfiguration();
+    this.lotNumberInformationConfiguration = new InformationConfiguration();
     this.ngUnsubscribe = new Subject<void>();
   }
 
@@ -66,6 +69,7 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     this.timeInformationConfiguration.labelText = systemInformationLabelText.timeLabelText;
     this.environmentInformationConfiguration.labelText = systemInformationLabelText.environmentLabelText;
     this.handlerInformationConfiguration.labelText = systemInformationLabelText.handlerLabelText;
+    this.lotNumberInformationConfiguration.labelText = systemInformationLabelText.lotNumberLabelText;
 
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -73,14 +77,23 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     );
   }
 
+  private computeTextToDisplay(currentText: string, defaultText: string): string {
+    if (!currentText)
+      return defaultText;
+    if (currentText === '')
+      return defaultText;
+    return currentText;
+  }
+
   private handleSystemStatusUpdate(status: Status) {
     if (status) {
       this.status = status;
-      this.systemInformationConfiguration.value = this.status.deviceId;
+      this.systemInformationConfiguration.value = this.computeTextToDisplay(this.status.deviceId, 'unkown');
       this.numberOfSitesConfiguration.value = this.status.sites.length;
       this.timeInformationConfiguration.value = this.status.time;
-      this.environmentInformationConfiguration.value = this.status.env;
-      this.handlerInformationConfiguration.value = this.status.handler;
+      this.environmentInformationConfiguration.value = this.computeTextToDisplay(this.status.env, 'unknown');
+      this.handlerInformationConfiguration.value = this.computeTextToDisplay(this.status.handler, 'unknown');
+      this.lotNumberInformationConfiguration.value = this.computeTextToDisplay(this.status.lotNumber, 'No lot has been loaded');
     }
   }
 

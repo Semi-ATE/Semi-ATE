@@ -12,13 +12,13 @@ HANDLER_CONFIG_FILENAME = "handler_config_file.json"
 
 class Configs(Enum):
     site_id = "site"
-    device_id = "SCT-81"
-    host = "10.9.1.6"
+    device_id = "SCT-81-1F"
+    host = "127.0.0.1"
     port = 1883
     webui_host = "127.0.0.1"
     webui_port = 8081
 
-    def __str__(self):
+    def __call__(self):
         return f'{self.value}'
 
 
@@ -40,7 +40,7 @@ def create_master_config_file(sites, device_id,
               "sites": sites,
               "webui_host": Configs.webui_host.value if webui_host is None else webui_host,
               "webui_port": Configs.webui_port.value if webui_port is None else webui_port,
-              "webui_static_path": "./../UI/angular/mini-sct-gui/dist/mini-sct-gui",
+              "webui_static_path": "./ATE/TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",
               "Handler": "HTO92-20F",
               "environment": "F1",
               "jobsource": "filesystem",
@@ -63,15 +63,6 @@ def create_control_config_file(site_id, device_id, host=None, port=None):
               }
 
     dump_to_file("control", config)
-
-
-def create_handler_config_file(device_id, host=None, port=None):
-    config = {"broker_host": Configs.host.value if host is None else host,
-              "broker_port": Configs.port.value if port is None else port,
-              "device_id": device_id
-              }
-
-    dump_to_file("handler", config)
 
 
 def create_handler_config_file(device_id, host=None, port=None):
@@ -155,11 +146,12 @@ def start_apps():
 
     elif app_typ == 'control':
         for id in range(num_apps):
-            create_control_config_file(str(id), device_id, host=args.host, port=args.port)
+            print("id: ", id)
+            create_control_config_file(str(id), device_id, host=Configs.host(), port=int(Configs.port()))
             if not args.conf:
-                control = subprocess.Popen("py launch_control.py --f control_config_file.json")
+                control = subprocess.Popen("python launch_control.py")
                 pid_list.append(control)
-                time.sleep(2)
+                time.sleep(0.5)
             else:
                 run = False
 

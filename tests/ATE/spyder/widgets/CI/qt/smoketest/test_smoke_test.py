@@ -390,8 +390,3 @@ def edit_test_program(qtbot, project_navigation):
     dialog = EditTestProgramWizard(test_configruation['prog_name'], project_navigation, "HW0_PR_Die1_Production_PR")
     qtbot.addWidget(dialog)
     return dialog
-
-
-def test_edit_test_program(edit_test_program, qtbot):
-    edit_test_program.availableTests.item(0).setSelected(True)
-    qtbot.mouseClick(edit_test_program.testAdd, QtCore.Qt.LeftButton)

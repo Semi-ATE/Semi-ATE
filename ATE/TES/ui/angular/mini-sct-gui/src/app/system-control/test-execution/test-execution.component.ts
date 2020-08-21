@@ -18,9 +18,9 @@ export class TestExecutionComponent implements OnInit, OnDestroy {
   startDutTestButtonConfig: ButtonConfiguration;
 
   private status: Status;
-  private ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
+  private readonly ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
 
-  constructor(private readonly communicationService: CommunicationService, private store: Store<AppState>) {
+  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.testExecutionControlCardConfiguration = new CardConfiguration();
     this.startDutTestButtonConfig = new ButtonConfiguration();
     this.ngUnsubscribe = new Subject<void>();

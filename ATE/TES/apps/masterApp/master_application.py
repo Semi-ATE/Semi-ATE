@@ -9,8 +9,6 @@ import sys
 import os
 
 import base64
-import io
-from ATE.data.STDF.records import records_from_file
 from typing import Callable, List, Optional
 
 
@@ -22,9 +20,10 @@ from ATE.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.TES.apps.masterApp.sequence_container import SequenceContainer
 from ATE.TES.apps.masterApp.user_settings import UserSettings
 from ATE.TES.apps.masterApp.stdf_aggregator import StdfTestResultAggregator
-from ATE.TES.apps.masterApp.user_settings import UserSettings
+from ATE.TES.apps.masterApp.result_collection_handler import ResultsCollector
 
 INTERFACE_VERSION = 1
+MAX_NUM_OF_TEST_PROGRAM_RESULTS = 1000
 
 
 def assert_valid_system_mimetypes_config():
@@ -77,6 +76,7 @@ LOAD_TIMEOUT = 180
 UNLOAD_TIMEOUT = 60
 TEST_TIMEOUT = 30
 RESET_TIMEOUT = 20
+
 
 class TestingSiteMachine(Machine):
     states = ['inprogress', 'waiting_for_resource', 'waiting_for_testresult', 'waiting_for_idle', 'completed']
@@ -221,27 +221,26 @@ class MasterApplication(MultiSiteTestingModel):
 
         # TODO: properly limit source states to valid states where usersettings are allowed to be modified
         #       ATE-104 says it should not be possible while testing in case of stop-on-fail, but this constraint may not be required here and could be done in UI)
-        {'source': ['initialized', 'ready'], 'dest': '=', 'trigger': 'usersettings_command',       'after': 'on_usersettings_command_issued'},  # noqa: E241
-
-        # TODO: properly limit source states to valid states where usersettings are allowed to be modified
-        #       ATE-104 says it should not be possible while testing in case of stop-on-fail, but this constraint may not be required here and could be done in UI)
-        {'source': ['initialized', 'ready'], 'dest': '=', 'trigger': 'usersettings_command',       'after': 'on_usersettings_command_issued'},  # noqa: E241
+        {'source': ['initialized', 'ready'], 'dest': '=', 'trigger': 'usersettings_command',             'after': 'on_usersettings_command_issued'},  # noqa: E241
 
         {'source': 'ready',             'dest': 'testing',     'trigger': 'next',                        'after': 'on_next_command_issued'},        # noqa: E241
         {'source': 'ready',             'dest': 'unloading',   'trigger': 'unload',                      'after': 'on_unload_command_issued'},      # noqa: E241
         {'source': 'testing_completed', 'dest': 'ready',       'trigger': 'all_sitetests_complete',      'after': "on_allsitetestscomplete"},       # noqa: E241
         {'source': 'unloading',         'dest': 'initialized', 'trigger': 'all_siteunloads_complete',    'after': "on_allsiteunloadscomplete"},     # noqa: E241
 
+        {'source': 'ready',             'dest': '=',           'trigger': 'getresults',                  'after': 'on_getresults_command'},        # noqa: E241
+
         {'source': '*',                 'dest': 'softerror',   'trigger': 'testapp_disconnected',        'after': 'on_disconnect_error'},           # noqa: E241
         {'source': '*',                 'dest': 'softerror',   'trigger': 'timeout',                     'after': 'on_timeout'},                    # noqa: E241
-        {'source': '*',                 'dest': 'softerror',   'trigger': 'on_error',                    'after': 'on_error_occured'},              # noqa: E241
+        {'source': '*',                 'dest': 'softerror',   'trigger': 'on_error',                    'after': 'on_error_occurred'},              # noqa: E241
         {'source': 'softerror',         'dest': 'connecting',  'trigger': 'reset',                       'after': 'on_reset_received'}              # noqa: E241
     ]
 
     """ MasterApplication """
 
     def __init__(self, configuration):
-        super().__init__(configuration['sites'])
+        sites = configuration['sites']
+        super().__init__(sites)
         self.fsm = Machine(model=self,
                            states=MasterApplication.states,
                            transitions=MasterApplication.transitions,
@@ -251,15 +250,21 @@ class MasterApplication(MultiSiteTestingModel):
         self.log = Logger.get_logger()
         self.init(configuration)
 
-        self.receivedSiteTestResults = {}  # key: site_id, value: [testresult topic payload dicts]
+        self.received_site_test_results = []
+        self.received_sites_test_results = ResultsCollector(MAX_NUM_OF_TEST_PROGRAM_RESULTS)
+
         self.loaded_jobname = ""
         self.loaded_lot_number = ""
+        self._are_usersettings_required = True
+        self._are_testresults_required = False
+
+        self.summary_counter = 0
 
     def init(self, configuration: dict):
         self.__get_configuration(configuration)
         self.create_handler(self.broker_host, self.broker_port)
 
-        self.receivedSiteTestResults = {}  # key: site_id, value: [testresult topic payload dicts]
+        self.received_site_test_results = []
 
         self.error_message = ''
 
@@ -299,6 +304,9 @@ class MasterApplication(MultiSiteTestingModel):
         return self.user_settings_filepath is not None
 
     def init_user_settings(self):
+        self.user_settings = self._load_usersettings()
+
+    def _load_usersettings(self):
         if self.persistent_user_settings_enabled:
             try:
                 user_settings = UserSettings.load_from_file(self.user_settings_filepath)
@@ -310,22 +318,32 @@ class MasterApplication(MultiSiteTestingModel):
         else:
             user_settings = UserSettings.get_defaults()
 
-        self.user_settings = user_settings
+        return user_settings
 
-    def modify_user_settings(self, modified_settings):
-        self.user_settings.update(modified_settings)
-        self.publish_usersettings()
+    def modify_user_settings(self, settings):
+        self.user_settings.update(self._extract_settings(settings))
         if self.persistent_user_settings_enabled:
             UserSettings.save_to_file(self.user_settings_filepath, self.user_settings, add_defaults=True)
 
+        self._are_usersettings_required = True
+
+    def _store_user_settings(self, settings):
+        UserSettings.save_to_file(self.user_settings_filepath, settings, add_defaults=True)
+        self.user_settings = settings
+        self._are_usersettings_required = True
+
     def on_usersettings_command_issued(self, param_data: dict):
-        settings = param_data['settings']
+        settings = param_data['payload']
         self.modify_user_settings(settings)
 
-    def publish_usersettings(self):
-        self.log.info("Master usersettings are: " + str(self.user_settings))
-        self.connectionHandler.publish_usersettings(self.user_settings)
-        # TODO: notify UI of changes/initial settings. Should we send individual messages to all connected websockets or should we rely on mqtt proxy usages (UI just has to subscribe to Master/usersettings topic)?
+    @staticmethod
+    def _extract_settings(settings):
+        modified_settings = UserSettings.get_defaults()
+        for setting in settings:
+            field = {setting['name']: {'active': setting['active'], 'value': int(setting['value']) if setting.get('value') else -1}}
+            modified_settings.update(field)
+
+        return modified_settings
 
     @property
     def external_state(self):
@@ -349,7 +367,6 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_startup_done(self):
         self.repost_state_if_connecting()
-        self.publish_usersettings()
 
     def on_timeout(self, message):
         self.error_message = message
@@ -366,7 +383,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.log.warning(f"TestApp for site {site_id} reported state {state}. This state is ignored during startup.")
         self.error_message = f'TestApp for site {site_id} reported state {state}'
 
-    def on_error_occured(self, message):
+    def on_error_occurred(self, message):
         self.log.error(f"Entered state error, reason: {message}")
         self.error_message = message
 
@@ -425,11 +442,15 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
 
         self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(data))
+        self._store_user_settings(UserSettings.get_defaults())
 
-    def get_test_parameters(self, data):
+    @staticmethod
+    def get_test_parameters(data):
         # TODO: workaround until we specify the connection to the server or even mount the project locally
+        from pathlib import Path
+        import os
         return {
-            'testapp_script_path': os.path.join(os.path.basename(data['PROGRAM_DIR'])),
+            'testapp_script_path': os.path.join(os.path.basename(os.fspath(Path(data['PROGRAM_DIR'])))),
             'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
             'cwd': os.path.dirname(data['PROGRAM_DIR']),
             'XML': data                                                                 # optional/unused for now
@@ -439,19 +460,16 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
         self.disarm_timeout()
 
-        self._stdf_aggregator = StdfTestResultAggregator()
-        self._stdf_aggregator.init(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname)
+        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname)
+        self._stdf_aggregator.write_header_records()
 
     def on_next_command_issued(self, paramData: dict):
-        self.receivedSiteTestResults = {}
+        self.received_site_test_results = []
         self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TESTING, TEST_STATE_IDLE], self.configuredSites, lambda: None,
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp during test"))
         self.error_message = ''
-        job_data = {
-            'duttest.stop_on_fail': self.user_settings['duttest.stop_on_fail'],
-        }
-        self.connectionHandler.send_next_to_all_sites(job_data)
+        self.connectionHandler.send_next_to_all_sites(self.user_settings)
 
     def on_unload_command_issued(self, param_data: dict):
         self.arm_timeout(UNLOAD_TIMEOUT, lambda: self.timeout("not all sites unloaded the testprogram"))
@@ -471,9 +489,8 @@ class MasterApplication(MultiSiteTestingModel):
     def on_allsiteunloadscomplete(self):
         self.disarm_timeout()
 
-        self._stdf_aggregator.finalize()
-        self._stdf_aggregator.write_to_file('temp_final_stdf_file_on_unload.stdf')
-        self._stdf_aggregator = None
+        self.received_sites_test_results.clear()
+        self.loaded_lot_number = ''
 
     def _collect_testresults_from_completed_sites(self):
         # TODO: we do nothing with test-results until we have a specification how the results look like (json or base64 ??)
@@ -498,26 +515,31 @@ class MasterApplication(MultiSiteTestingModel):
         self._collect_testresults_from_completed_sites()
         self.handle_reset()
 
-    def on_site_test_result_received(self, site_id: str, param_data: dict):
-        # simply store testresult so it can be forwarded to UI on the next tick
-        self.receivedSiteTestResults.setdefault(site_id, []).append(param_data)
+    def on_site_test_result_received(self, site_id, param_data):
+        self._write_stdf_data(param_data['payload'])
+        self.received_site_test_results.append(param_data)
+        self.received_sites_test_results.append(param_data['payload'])
+
+    def _write_stdf_data(self, stdf_data):
+        self._stdf_aggregator.append_test_results(stdf_data)
 
     def create_handler(self, host, port):
         self.connectionHandler = MasterConnectionHandler(host, port, self.configuredSites, self.device_id, self)
 
     def on_control_status_changed(self, siteid: str, status_msg: dict):
-        print(f'control app status packet: {status_msg}')
         newstatus = status_msg['state']
 
         if(status_msg['interface_version'] != INTERFACE_VERSION):
             self.bad_interface_version({'reason': f'Bad interfaceversion on site {siteid}'})
 
-        if(self.siteStates[siteid] != newstatus):
-            self.siteStates[siteid] = newstatus
-            self.pendingTransitionsControl.trigger_transition(siteid, newstatus)
+        try:
+            if(self.siteStates[siteid] != newstatus):
+                self.siteStates[siteid] = newstatus
+                self.pendingTransitionsControl.trigger_transition(siteid, newstatus)
+        except KeyError:
+            self.on_error(f"site id received: {siteid} is not configured")
 
     def on_testapp_status_changed(self, siteid: str, status_msg: dict):
-        print(f'test app status packet: {status_msg}')
         newstatus = status_msg['state']
         if self.is_testing(allow_substates=True) and newstatus == TEST_STATE_IDLE:
             self.handle_status_idle(siteid)
@@ -530,6 +552,16 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_site_test_result_received(siteid, status_msg)
         else:
             self.on_error(f"received unexpected testresult from site {siteid}")
+
+    def on_testapp_testsummary_changed(self, status_msg: dict):
+        self._stdf_aggregator.append_test_summary(status_msg['payload'])
+        self.summary_counter += 1
+
+        if self.summary_counter == len(self.configuredSites):
+            self._stdf_aggregator.finalize()
+            self._stdf_aggregator.write_footer_records()
+            self._stdf_aggregator = None
+            self.summary_counter = 0
 
     def on_testapp_resource_changed(self, siteid: str, resource_request_msg: dict):
         self.handle_resource_request(siteid, resource_request_msg)
@@ -554,10 +586,14 @@ class MasterApplication(MultiSiteTestingModel):
                 'next': lambda param_data: self.next(param_data),
                 'unload': lambda param_data: self.unload(param_data),
                 'reset': lambda param_data: self.reset(param_data),
-                'usersettings': lambda param_data: self.usersettings_command(param_data)
+                'usersettings': lambda param_data: self.usersettings_command(param_data),
+                'getresults': lambda param_data: self.getresults(param_data)
             }[cmd](json_data)
         except Exception as e:
             self.log.error(f'Failed to execute command {cmd}: {e}')
+
+    def on_getresults_command(self, _):
+        self._are_testresults_required = True
 
     async def _mqtt_loop_ctx(self, app):
         self.connectionHandler.start()
@@ -568,76 +604,44 @@ class MasterApplication(MultiSiteTestingModel):
         app['mqtt_handler'] = None
         await self.connectionHandler.stop()
 
-    # HACK: parse testdata json to be sent to frontend: this is a quick hack to show the raw STDF data in frontend for now
-    #       * we should not pass this data as base64 for performance reasons
-    #       * the code for processing and eventually merging/aggregating stdf data from all sites should be in its own module/file
-    def _try_convert_stdf_data_in_testresult_payload_to_dict_for_json(self, testresult_payload: dict):
-        # TODO: we do nothing with test-results until we have a specification how the results look like (json or base64 ??)
-        return
-        try:
-            testdata = testresult_payload['testdata']
-            if testdata is not None:
-                stdf_blob = base64.b64decode(testdata)
-
-                # iterate records here and return record as dict (with readable record type as key and fields-dict as value)
-                with io.BytesIO(stdf_blob) as stream:
-                    return [[record.id, record.to_dict()]
-                            for _, _, _, record in records_from_file(stream, unpack=True)]
-
-        except Exception:
-            self.log.exception(f'Error while converting stdf data in testresult (this is ignored for now, no stdf data will be generated for frontend)')
-        return None
-
-    # example usage of exacting data from the stdf data reported from a dut test
-    def _try_extract_bin_from_testresults_stdf(self, testresult_payload: dict):
-        # TODO: we do nothing with test-results until we have a specification how the results look like (json or base64 ??)
-        return
-        try:
-            testdata = testresult_payload['testdata']
-            if testdata is not None:
-                stdf_blob = base64.b64decode(testdata)
-
-                with io.BytesIO(stdf_blob) as stream:
-                    prr_records = [record for _, _, _, record in records_from_file(stream, unpack=True, of_interest=['PRR'])]
-                    if len(prr_records) != 1:
-                        raise ValueError(f'stdf data in testresults does not contain exactly one PRR record (found: {len(prr_records)})')
-                    return prr_records[0].get_value('HARD_BIN')
-        except Exception:
-            self.log.exception(f'Error while extracting info from stdf data in testresult (this is ignored for now, no stdf data will be generated for frontend)')
-        return None
-
-    def _try_add_stdf_data_to_testresults_for_frontend(self):
-        for _, testresult_payloads in self.receivedSiteTestResults.items():
-            for testresult_payload in testresult_payloads:
-                stdf_data = self._try_convert_stdf_data_in_testresult_payload_to_dict_for_json(testresult_payload)
-                if stdf_data is not None:
-                    testresult_payload['stdf'] = stdf_data
-                bin_from_stdf = self._try_extract_bin_from_testresults_stdf(testresult_payload)
-                if bin_from_stdf is not None:
-                    testresult_payload['bin'] = bin_from_stdf
+    def on_new_connection(self):
+        self._are_usersettings_required = True
 
     async def _master_background_task(self, app):
         try:
             while True:
-                # push state change via ui/websocket
                 ws_comm_handler = app['ws_comm_handler']
-                if ws_comm_handler is not None:
-                    await ws_comm_handler.send_status_to_all(self.external_state, self.error_message)
+                if ws_comm_handler is None:
+                    await asyncio.sleep(1)
+                    continue
 
-                if len(self.receivedSiteTestResults) != 0:
-                    self._try_add_stdf_data_to_testresults_for_frontend()
-                    ws_comm_handler = app['ws_comm_handler']
-                    if ws_comm_handler is not None:
-                        await ws_comm_handler.send_testresults_to_all(
-                            self.receivedSiteTestResults)
-                    self.receivedSiteTestResults = {}
+                await ws_comm_handler.send_status_to_all(self.external_state, self.error_message)
+
+                for test_result in self.received_site_test_results:
+                    await ws_comm_handler.send_testresults_to_all(test_result)
+
+                self.received_site_test_results = []
+
+                if self._are_usersettings_required and self.user_settings:
+                    await ws_comm_handler.send_user_settings(self._generate_usersettings_message(self.user_settings))
+                    self._are_usersettings_required = False
+
+                if self._are_testresults_required:
+                    await ws_comm_handler.send_testresults_from_all_site(list(self.received_sites_test_results.get_data()))
+                    self._are_testresults_required = False
 
                 await asyncio.sleep(1)
 
         except asyncio.CancelledError:
-            if self.connectionHandler is not None:
-                self.connectionHandler.mqtt.publish('TEST/tick', 'dead')
-                # TODO: would we need wait for on_published here to ensure the mqqt loop is not stopped?
+            pass
+
+    @staticmethod
+    def _generate_usersettings_message(usersettings):
+        settings = []
+        for usersetting, value in usersettings.items():
+            settings.append({'name': usersetting, 'active': value['active'], 'value': int(value['value'])})
+
+        return settings
 
     async def _master_background_task_ctx(self, app):
         task = asyncio.create_task(self._master_background_task(app))

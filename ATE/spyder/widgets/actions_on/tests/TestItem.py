@@ -71,11 +71,12 @@ class TestItem(BaseItem):
         return self._is_enabled
 
     def _get_available_tests(self, active_hardware, active_base):
-        from os import walk, path
+        from os import (walk, path, fspath)
+        from pathlib import Path
 
-        test_directory = path.join(self.project_info.project_directory.replace("/", "\\"), 'src',
+        test_directory = path.join(self.project_info.project_directory, 'src',
                                    active_hardware, active_base)
-        test_directory = test_directory.replace("\\", "/")
+        test_directory = fspath(Path(test_directory))
 
         file_names = []
         for _, directories, _ in walk(test_directory):
@@ -229,7 +230,7 @@ class TestItemChildTarget(TestBaseItem):
             filename = os.path.join(self.path, self.text() + '.py')
 
         return filename
-        
+
     def open_file_item(self):
         path = os.path.join(self.path, self.get_path())
 
@@ -269,6 +270,7 @@ class TestItemChildTarget(TestBaseItem):
                                                         self.parent.text(),
                                                         is_default)
 
+        self.project_info._update_programs_state_for_test(self.parent.text())
         self._is_default = is_default
 
     def _update_db_state(self, is_enabled):

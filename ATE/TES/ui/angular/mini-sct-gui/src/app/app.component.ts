@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AppstateService} from './services/appstate.service';
 import { MockServerService } from './services/mockserver.service';
+import * as constants from './services/mockserver-constants';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,7 @@ import { MockServerService } from './services/mockserver.service';
 })
 
 export class AppComponent {
-  constructor(private stateService: AppstateService) {}
+  constructor(private readonly stateService: AppstateService) {
+  }
 }
 

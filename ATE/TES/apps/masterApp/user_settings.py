@@ -5,9 +5,15 @@ class UserSettings:
 
     @staticmethod
     def get_defaults() -> dict:
+        # TODO: do we need this
+        # 'master.disabled_site_ids': []
         return {
-            'master.disabled_site_ids': [],
-            'duttest.stop_on_fail': True,
+            'stop_on_fail': {'active': False, 'value': -1},
+            'single_step': {'active': False, 'value': -1},
+            'stop_on_test': {'active': False, 'value': -1},
+            'trigger_on_test': {'active': False, 'value': -1},
+            'trigger_on_fail': {'active': False, 'value': -1},
+            'trigger_site_specific': {'active': False, 'value': -1},
         }
 
     @staticmethod

@@ -12,8 +12,9 @@ class EditDieWizard(DieWizard):
         ViewDieWizard._setup_dialog_fields(self, name)
         self.dieName.setEnabled(False)
         self.isAGrade.setEnabled(True)
+        self.withHardware.setEnabled(False)
 
-    def OKButtonPressed(self):
+    def ok_button_pressed(self):
         configuration = self._get_current_configuration()
         self.project_info.update_die(configuration['name'], configuration['hardware'], configuration['maskset'],
                                      configuration['grade'], configuration['grade_reference'], configuration['quality'],

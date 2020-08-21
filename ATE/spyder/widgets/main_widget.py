@@ -152,8 +152,7 @@ class ATEWidget(PluginMainWidget):
         if status:  # OK button pressed
             self.project_info(project_path, data['quality'])
             self.set_tree()
-            #self.toolbar(self.project_info)
-        else:  # Cancel button pressed
+        else:
             pass
 
     def open_project(self, project_path):
@@ -169,4 +168,6 @@ class ATEWidget(PluginMainWidget):
         self.tree.setModel(None)
 
     def delete_test(self, path):
-        self.sig_close_file.emit(path)
+        from pathlib import Path
+        import os
+        self.sig_close_file.emit(os.fspath(Path(path)))

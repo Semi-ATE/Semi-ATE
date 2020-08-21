@@ -1,5 +1,5 @@
-import { Action } from '@ngrx/store'
-import { Status } from './../models/status.model'
+import { Action } from '@ngrx/store';
+import { Status } from './../models/status.model';
 
 // Define the different action types
 export const UPDATE_STATUS = '[STATUS] Update';

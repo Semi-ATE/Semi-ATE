@@ -283,15 +283,3 @@ def new_device_dialog(project_info):
     newDeviceWizard = NewDeviceWizard(project_info)
     newDeviceWizard.exec_()
     del(newDeviceWizard)
-
-
-if __name__ == '__main__':
-    import sys, qdarkstyle
-    from ATE.spyder.widgets.actions.dummy_main import DummyMainWindow
-
-    app = QtWidgets.QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    dummyMainWindow = DummyMainWindow()
-    dialog = NewDeviceWizard(dummyMainWindow)
-    dummyMainWindow.register_dialog(dialog)
-    sys.exit(app.exec_())

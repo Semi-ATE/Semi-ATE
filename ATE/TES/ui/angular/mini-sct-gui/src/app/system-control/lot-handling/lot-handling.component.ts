@@ -26,7 +26,7 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   unloadLotButtonConfig: ButtonConfiguration;
 
   private status: Status;
-  private ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
+  private readonly ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
 
   constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.lotCardConfiguration = new CardConfiguration();
@@ -86,6 +86,9 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
 
   private updateInputConfigs() {
     this.lotNumberInputConfig.disabled = this.status.state !== SystemState.initialized;
+    if (this.status.state === SystemState.ready || this.status.state === SystemState.loading || this.status.state === SystemState.paused || this.status.state === SystemState.testing) {
+      this.lotNumberInputConfig.value = this.status.lotNumber;
+    }
     this.lotNumberInputConfig = Object.assign({}, this.lotNumberInputConfig);
   }
 
@@ -100,7 +103,7 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   private validateLotNumber(errorMsg: {errorText: string}): boolean {
     let pattern = /^[1-9][0-9]{5}[.][0-9]{3}$/ ;
 
-    if (pattern.test(this.lotNumberInputConfig.value)) {
+    if (pattern.test(this.lotNumberInputConfig.value as string)) {
       errorMsg.errorText = '';
       return true;
     } else {
