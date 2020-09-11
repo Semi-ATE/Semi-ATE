@@ -1,0 +1,4 @@
+<div class="siteNumberFilter">
+  <app-checkbox id="siteNumberCheckbox" [checkboxConfig]="siteNumberCheckboxConfig" (checkboxChangeEvent)="siteNumberFilterCheckboxChanged()"></app-checkbox>
+  <app-input id="siteNumberInput" [inputConfig]="siteNumberInputConfig" (inputChangeEvent)="siteNumberFilterValueChanged($event)"></app-input>
+</div>

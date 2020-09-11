@@ -1,0 +1,16 @@
+qtawesome
+qdarkstyle
+watchdog
+numpy
+Jinja2
+paho-mqtt
+xmltodict
+transitions
+async-timeout
+pytest-asyncio
+mypy
+SQLAlchemy
+hypothesis
+aiohttp
+aiomqtt
+pyqt

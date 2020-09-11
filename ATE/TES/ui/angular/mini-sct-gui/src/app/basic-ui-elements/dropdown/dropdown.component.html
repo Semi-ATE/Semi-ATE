@@ -1,0 +1,8 @@
+<div class="dropdown">
+  <label *ngIf="dropdownConfig.labelText !== ''" for="dropdown">
+    <h3>{{dropdownConfig.labelText}}</h3>
+  </label>
+  <select #dropdown name="dropdown" (change)="dropdownChange($event)" [attr.disabled]="dropdownConfig.disabled ? '' : null">
+    <option *ngFor="let item of dropdownConfig.items; index as i" [value]="item.value" [selected]="dropdownConfig.selectedIndex===i">{{item.description}}</option>
+  </select>
+</div>

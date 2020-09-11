@@ -1,0 +1,5 @@
+{
+    "broker_host": "127.0.0.1",
+    "broker_port": 1883,
+    "device_id": "SCT-81"
+}

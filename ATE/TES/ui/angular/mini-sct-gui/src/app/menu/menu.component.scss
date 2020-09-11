@@ -1,0 +1,55 @@
+@import "../../styles.scss";
+
+nav {
+  width: 100%;
+  background-color: $micronasBlue;
+  padding-top: 10px;
+}
+
+ul {
+  height: 45px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+li {
+  list-style-type: none;
+  font-size: 1.25em;
+
+  a {
+    color: white;
+    padding: 1em;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #003399;
+    }
+    &.active {
+      font-weight: bold;
+      background-color: #003399;
+      padding-bottom: 18px;
+    }
+  }
+
+  a.space {
+    visibility: hidden;
+    font-weight: bold;
+    display:block;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    a {
+      opacity: 0.6;
+      color: black;
+      pointer-events: none;
+    }
+  }
+}
+
+.navigationContainer {
+  display: flex;
+  flex-direction: row;
+  background-color: $micronasBlue;
+}

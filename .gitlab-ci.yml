@@ -3,6 +3,7 @@ variables:
     GIT_CHECKOUT: "true"
     GIT_CLEAN_FLAGS: -f -d -x
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    ErrorActionPreference: stop
     
 cache:
   paths:
@@ -58,9 +59,9 @@ before_script:
         param($VenvPath)
 
         cd .\ATE\TES\ui\angular\mini-sct-gui
-        npm i @angular/core
+        npm i @angular/cli --prefix ./cli
         npm i tslint-eslint-rules
-        ng build
+        ./cli/ng build
     }
   - >
     function Remove-Venv {
@@ -90,8 +91,8 @@ angular_tests:
   stage: generate_build_dependencies
   script:
     - Install-AngularRequirementsAndBuild $venvPath
-    - ng lint
-    - ng test --watch false --browsers ChromeHeadless
+    - ./cli/ng lint
+    - ./cli/ng test --watch false --browsers ChromeHeadless
   tags:
     - pyt
     
@@ -120,6 +121,10 @@ pytest-CITests:
    - $env:PIPELINE_ID = $CI_PIPELINE_ID
    # TODO: use --cov-append to combine coverage stats from test and integration-test? or simply don't split these into two jobs anymore?
    - python -m pytest -v -o log_cli=true --cov=. tests\ATE\TES\integration_tests
+  artifacts:
+    paths:
+      - log
+    expire_in: 1 week
   dependencies:
    - build_venv
   tags:

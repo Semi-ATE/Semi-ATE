@@ -1,0 +1,8 @@
+<hr class="blueDivider">
+<div *ngIf="renderSystemControlComponent()">
+  <app-card id="control" [cardConfiguration]="systemControlCardConfiguration">
+    <app-lot-handling id="lothandling"></app-lot-handling>
+    <app-test-option id="option"></app-test-option>
+    <app-test-execution id="testexecution"></app-test-execution>
+  </app-card>
+</div>

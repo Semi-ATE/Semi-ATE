@@ -1,0 +1,26 @@
+@import '../../styles.scss';
+
+table {
+  font-size: 0.85em;
+  table-layout: fixed;
+  th {
+    text-align: center;
+    background-color: $beige;
+  }
+
+  td {
+    text-align: left;
+    padding: 10px;
+  }
+
+  .time {
+    width: 150px;
+  }
+  .type {
+    width: 75px;
+    text-align: center;
+  }
+  .info {
+    width: 60%;
+  }
+}

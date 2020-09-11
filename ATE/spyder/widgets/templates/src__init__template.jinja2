@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+# top level __init__.py
+
+Do **NOT** change anything in this module, as it is automatically generated thus your changes **WILL** be lost in time!
+
+If you have the need to add things, add it to the 'common.py' on the level
+of src, hardware, FT/PR or the test itself.
+
+BTW : YOU SHOULD **NOT** EVEN BE READING THIS !!!
+"""
+
+Pass = 1
+PASS = 1
+
+Fail = 0
+FAIL = 0
+
+Undetermined = -1
+Unknown = -1

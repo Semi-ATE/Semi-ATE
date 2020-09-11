@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+"""
+{{ definition['hardware'] }}/PR/__init__.py
+"""
+
+# Tester
+from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")[0]
+
+from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+{% for actuator in definition['Actuator']['PR'] %}
+{{actuator}}_instance = get_plugin_manager().hook.get_actuator_proxy(required_capability="{{actuator}}")[0]
+{% endfor %}
+
+{% for instrument in definition['Instruments'] %}
+{{definition['InstrumentNames'][instrument]}}_instance = get_plugin_manager().hook.get_instrument(instrument_name="{{instrument}}")[0]
+{% endfor %}
+
+# Add your stuff after this line.

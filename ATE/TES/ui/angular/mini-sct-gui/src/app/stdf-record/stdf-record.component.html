@@ -1,0 +1,16 @@
+<div class="stdfRecord" *ngIf="this.stdfRecord">
+  <div class="stdfRecordType">
+    <h2>{{stdfRecord.type}}<span>: </span></h2>
+    <h2 id="value">{{getLongType()}}</h2>
+  </div>
+  <span><hr class="blueDivider"></span>
+  <ul class="recordEntries">
+    <li *ngFor="let property of stdfRecord.values">
+        <div class="label">
+          {{property.key}}:
+          <span class="value">{{property.value}}</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
