@@ -1,4 +1,4 @@
-import { CardConfiguration, CardStyle } from 'src/app/basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from 'src/app/basic-ui-elements/card/card-config';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/app.state';

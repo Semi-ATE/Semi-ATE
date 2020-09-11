@@ -14,8 +14,8 @@ export enum MenuItem {
 export const MINISCT_ROUTES: Routes = [
   {path: '', redirectTo: MenuItem.Info, pathMatch: 'full'},
   {path: MenuItem.Info, component: SystemInformationComponent},
-  {path: 'control', component: SystemControlComponent},
-  {path: 'results', component: ResultComponent},
-  {path: 'logging', component: SystemConsoleComponent},
+  {path: MenuItem.Control, component: SystemControlComponent},
+  {path: MenuItem.Results, component: ResultComponent},
+  {path: MenuItem.Logging, component: SystemConsoleComponent},
   {path: '**', redirectTo: MenuItem.Info},
 ];

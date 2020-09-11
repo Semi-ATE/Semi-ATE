@@ -1,4 +1,4 @@
-import { SiteHead, StdfRecord, computeSiteHeadFromNumbers, StdfRecordType, STDF_RECORD_ATTRIBUTES, stdfGetValue, computePassedInformationForPartFlag } from 'src/app/stdf/stdf-stuff';
+import { SiteHead, StdfRecord, computeSiteHeadFromNumbers, StdfRecordType, STDF_RECORD_ATTRIBUTES, stdfGetValue, computePassedInformationForPartFlag, PrrRecord } from 'src/app/stdf/stdf-stuff';
 import { takeUntil } from 'rxjs/operators';
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { AppState } from '../app.state';
@@ -53,21 +53,15 @@ export class SiteBinInformationComponent implements OnInit, OnDestroy {
     this.ngUnSubscribe.complete();
   }
 
-  private updateView(result: Map<SiteHead, StdfRecord>) {
-    if (!result)
-      return;
+  private updateView(result: Map<SiteHead, PrrRecord>) {
     let key: SiteHead = computeSiteHeadFromNumbers(this.siteNumber, this.headNumber);
-    let record: StdfRecord = result.get(key);
+    let record: PrrRecord = result.get(key);
 
     if (record) {
-      if (record?.type === StdfRecordType.Prr) {
-        this.partId = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.PART_ID) as string;
-        this.softBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.SOFT_BIN) as number;
-        this.hardBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.HARD_BIN) as number;
-        this.passStatus = computePassedInformationForPartFlag(stdfGetValue(record, STDF_RECORD_ATTRIBUTES.PART_FLG) as number);
-      } else {
-        throw new Error('Unexpected record type');
-      }
+      this.partId = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.PART_ID) as string;
+      this.softBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.SOFT_BIN) as number;
+      this.hardBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.HARD_BIN) as number;
+      this.passStatus = computePassedInformationForPartFlag(stdfGetValue(record, STDF_RECORD_ATTRIBUTES.PART_FLG) as number);
     }
   }
 

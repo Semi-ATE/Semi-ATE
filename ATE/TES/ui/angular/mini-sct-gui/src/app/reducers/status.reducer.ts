@@ -1,5 +1,6 @@
 import { Status, SystemState } from 'src/app/models/status.model';
 import * as StatusActions from 'src/app/actions/status.actions';
+import { Action, createReducer, on } from '@ngrx/store';
 
 // define the initial state here
 const initialState: Status = {
@@ -15,13 +16,11 @@ const initialState: Status = {
   lotNumber: ''
 };
 
-export function statusReducer(state: Status = initialState, action: StatusActions.Actions) {
-  // return the new state (i.e. next state) depending on the current action type
-  // and payload
-  switch(action.type) {
-    case StatusActions.UPDATE_STATUS:
-      return action.payload;
-    default:
-      return state;
-  }
+const reducer = createReducer(
+  initialState,
+  on(StatusActions.updateStatus, (state, {status}) => status)
+);
+
+export function statusReducer(state: Status | undefined, action: Action) {
+  return reducer(state, action);
 }

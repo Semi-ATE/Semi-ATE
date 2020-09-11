@@ -51,8 +51,8 @@ describe('SystemBinStatusComponent', () => {
     fixture.detectChanges();
   });
 
-  afterAll(() => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach(() => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create system-bin-status component', () => {

@@ -21,15 +21,15 @@ class MasterConnectionHandler:
 
     def __init__(self, host, port, sites, device_id, status_consumer):
         mqtt_client_id = f'masterapp.{device_id}'
-        self.mqtt = ConnectionHandler(host, port, mqtt_client_id)
+        self.status_consumer = status_consumer
+        self.log = status_consumer.log
+        self.mqtt = ConnectionHandler(host, port, mqtt_client_id, self.log)
         self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
                                              self._on_message_handler,
                                              self._on_disconnect_handler)
         self.sites = sites
         self.device_id = device_id
-        self.log = Logger.get_logger()
         self.connected_flag = False
-        self.status_consumer = status_consumer
 
     def start(self):
         self.mqtt.set_last_will(
@@ -61,48 +61,41 @@ class MasterConnectionHandler:
             'testapp_params': testapp_params,
             'sites': self.sites,
         }
-        self.log.info("Send LoadLot to sites...")
+        self.log.log_message('info', 'Send LoadLot to sites...')
         self.mqtt.publish(topic, json.dumps(params), 0, False)
 
     def send_next_to_all_sites(self, job_data: Optional[dict] = None):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'next',
-            'sites': self.sites,
-        }
+        params = self._generate_command_message('next')
+
         if job_data is not None:
             params['job_data'] = job_data
         self.mqtt.publish(topic, json.dumps(params), 0, False)
 
     def send_terminate_to_all_sites(self):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'terminate',
-            'sites': self.sites,
-        }
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 0, False)
 
     def send_reset_to_all_sites(self):
         topic = f'ate/{self.device_id}/Control/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'reset',
-            'sites': self.sites,
-        }
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('reset')), 0, False)
+
+    def _generate_command_message(self, command):
+        return {'type': 'cmd',
+                'command': command,
+                'sites': self.sites,
+                }
 
     def send_load_command(self):
-        self.log.info("send load test command")
+        self.log.log_message('info', 'send load test command')
         return True
 
     def send_terminate_command(self):
-        self.log.info("send terminate command")
+        self.log.log_message('info', 'send terminate command')
         return True
 
     def send_start_next_test_command(self):
-        self.log.info("send start next test command")
+        self.log.log_message('info', 'send start next test command')
         return True
 
     def on_cmd_message(self, message):
@@ -110,13 +103,13 @@ class MasterConnectionHandler:
 
         to_exec_command = self.commands.get(payload.get("value"))
         if to_exec_command is None:
-            self.log.warning("received command not found")
+            self.log.log_message('warning', 'received command not found')
             return False
 
         return to_exec_command()
 
     def _on_connect_handler(self, client, userdata, flags, conect_res):
-        self.log.info("mqtt connected")
+        self.log.log_message('info', 'mqtt connected')
         self.connected_flag = True
 
         self.mqtt.subscribe(self._generate_base_topic_cmd())
@@ -128,7 +121,7 @@ class MasterConnectionHandler:
         self.status_consumer.startup_done()
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
-        self.log.info("mqtt disconnected (rc: %s)", distc_res)
+        self.log.log_message('info', f'mqtt disconnected (rc: {distc_res})')
         self.connected_flag = False
 
     def _generate_status_message(self, alive, state, statedict=None):
@@ -195,20 +188,20 @@ class MasterConnectionHandler:
     def dispatch_control_message(self, client, topic, msg):
         siteid = self.__extract_siteid_from_control_topic(topic)
         if siteid is None:
-            self.log.warning('unexpected message on control topic '
-                             + f'"{topic}": extracting siteid failed')
+            self.log.log_message('warning', 'unexpected message on control topic ' /
+                                 + f'"{topic}": extracting siteid failed')
             return
 
         if "status" in topic:
             self.status_consumer.on_control_status_changed(siteid, msg)
         else:
-            assert(False)
+            assert False
 
     def dispatch_testapp_message(self, client, topic, msg):
         siteid = self.__extract_siteid_from_testapp_topic(topic)
         if siteid is None:
-            self.log.warning('unexpected message on testapp topic ' /
-                             + f'"{topic}": extracting siteid failed')
+            self.log.log_message('warning', 'unexpected message on testapp topic ' /
+                                 + f'"{topic}": extracting siteid failed')
             return
 
         if "testresult" in topic:

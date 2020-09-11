@@ -1,5 +1,4 @@
 import json
-from ATE.TES.apps.common.logger import Logger
 import aiomqtt
 
 
@@ -7,10 +6,10 @@ class ConnectionHandler:
 
     """ handle connection """
 
-    def __init__(self, host, port, mqtt_client_id):
+    def __init__(self, host, port, mqtt_client_id, logger):
         self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         self.mqtt_client.reconnect_delay_set(10, 15)
-        self.log = Logger.get_logger()
+        self.log = logger
         self.host = host
         self.port = port
 
@@ -34,7 +33,7 @@ class ConnectionHandler:
             payload = json.loads(message.payload)
             return payload
         except json.JSONDecodeError as error:
-            self.log.error(error)
+            self.log.log_message('error', f'{error}')
 
         return None
 

@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import {
   CardConfiguration,
   CardStyle,
-} from './../basic-ui-elements/card/card.component';
+} from './../basic-ui-elements/card/card-config';
 import { Component, OnInit } from '@angular/core';
 import { AppState } from '../app.state';
 import { Status } from 'src/app/models/status.model';
@@ -26,16 +26,7 @@ export class SystemBinStatusComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.systemBinStatusCardConfiguration = {
-      shadow: false,
-      cardStyle: CardStyle.ROW_STYLE_FOR_SYSTEM,
-      labelText: 'System BIN Status',
-    };
-
-    this.siteBinInformationCardConfiguration = {
-      shadow: true,
-      cardStyle: CardStyle.COLUMN_STYLE,
-      labelText: '',
-    };
+    this.systemBinStatusCardConfiguration.initCard(false,  CardStyle.ROW_STYLE_FOR_SYSTEM, 'System BIN Status');
+    this.siteBinInformationCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, '');
   }
 }

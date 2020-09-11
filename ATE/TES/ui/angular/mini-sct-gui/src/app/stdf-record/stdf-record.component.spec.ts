@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { StdfRecordComponent } from './stdf-record.component';
-import { StdfRecord, StdfRecordType, StdfRecordLabelType, StdfRecordValueType } from 'src/app/stdf/stdf-stuff';
+import { StdfRecord, StdfRecordType, StdfRecordPropertyKey, StdfRecordPropertyValue, StdfRecordProperty } from 'src/app/stdf/stdf-stuff';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 
@@ -28,12 +28,12 @@ describe('StdfRecordComponent', () => {
   });
 
   it('should show all entries', () => {
-    let expectedEntries: [StdfRecordLabelType, StdfRecordValueType][] = [
-      ['label1', 1],
-      ['label2', 'Value'],
-      ['label3', true],
-      ['label4', 'langer Wert. Passt der noch drauf?'],
-      ['label5', 0.0027636238462363473],
+    let expectedEntries: StdfRecordProperty[] = [
+      {key: 'label1', value: 1},
+      {key: 'label2', value: 'Value'},
+      {key: 'label3', value: true},
+      {key: 'label4', value: 'langer Wert. Passt der noch drauf?'},
+      {key: 'label5', value: 0.0027636238462363473},
     ];
 
     component.stdfRecord = {
@@ -42,7 +42,7 @@ describe('StdfRecordComponent', () => {
     };
     fixture.detectChanges();
 
-    let expectedStrings = expectedEntries.map(e => e[0] + ':\n' + e[1]);
+    let expectedStrings = expectedEntries.map(e => e.key + ':\n' + e.value);
     let entries = debugElement.queryAll(By.css('.recordEntries li'));
     let currentStrings = entries?.map(e => e.nativeElement.innerText);
     expect(currentStrings).toEqual(jasmine.arrayWithExactContents(expectedStrings));

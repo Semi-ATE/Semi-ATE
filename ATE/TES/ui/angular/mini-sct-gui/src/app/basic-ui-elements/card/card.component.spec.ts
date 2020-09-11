@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CardComponent, CardStyle } from './card.component';
+import { CardComponent } from './card.component';
+import { CardStyle } from './card-config';
 import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { By } from '@angular/platform-browser';
 

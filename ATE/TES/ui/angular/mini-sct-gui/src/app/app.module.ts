@@ -33,6 +33,12 @@ import { StdfRecordComponent } from './stdf-record/stdf-record.component';
 import { StdfRecordViewComponent } from './stdf-record-view/stdf-record-view.component';
 import { ResultComponent } from './result/result.component';
 import { Router, RouterModule } from '@angular/router';
+import { StdfRecordTypeFilterComponent } from './stdf-record-filter/stdf-record-type-filter/stdf-record-type-filter.component';
+import { StdfRecordSiteNumberFilterComponent } from './stdf-record-filter/stdf-record-site-number-filter/stdf-record-site-number-filter.component';
+import { StdfRecordTestNumberFilterComponent } from './stdf-record-filter/stdf-record-test-number-filter/stdf-record-test-number-filter.component';
+import { StdfRecordTestTextFilterComponent } from './stdf-record-filter/stdf-record-test-text-filter/stdf-record-test-text-filter.component';
+import { StdfRecordPassFailFilterComponent } from './stdf-record-filter/stdf-record-pass-fail-filter/stdf-record-pass-fail-filter.component';
+import { DropdownComponent } from './basic-ui-elements/dropdown/dropdown.component';
 
 @NgModule({
   declarations: [
@@ -57,7 +63,13 @@ import { Router, RouterModule } from '@angular/router';
     SystemBinStatusComponent,
     SiteBinInformationComponent,
     StdfRecordComponent,
-    StdfRecordViewComponent
+    StdfRecordViewComponent,
+    StdfRecordTypeFilterComponent,
+    StdfRecordSiteNumberFilterComponent,
+    StdfRecordTestNumberFilterComponent,
+    StdfRecordTestTextFilterComponent,
+    StdfRecordPassFailFilterComponent,
+    DropdownComponent
   ],
   imports: [
     BrowserModule,

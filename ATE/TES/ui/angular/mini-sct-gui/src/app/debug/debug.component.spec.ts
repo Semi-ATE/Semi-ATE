@@ -1,8 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import * as constants from 'src/app/services/mockserver-constants';
 import { DebugComponent } from './debug.component';
+import { MockServerService } from '../services/mockserver.service';
 
 describe('DebugComponent', () => {
+  let mockServerService: MockServerService;
   let component: DebugComponent;
   let fixture: ComponentFixture<DebugComponent>;
 
@@ -13,14 +15,15 @@ describe('DebugComponent', () => {
     .compileComponents();
   }));
 
-  afterAll( () => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
-  });
-
   beforeEach(() => {
+    mockServerService = TestBed.inject(MockServerService);
     fixture = TestBed.createComponent(DebugComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create debug component', () => {

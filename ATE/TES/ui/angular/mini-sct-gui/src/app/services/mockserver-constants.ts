@@ -129,7 +129,7 @@ export const TEST_RESULT_SITE_0_TEST_PASSED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 0,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -152,7 +152,7 @@ export const TEST_RESULT_SITE_0_TEST_PASSED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 0,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '0'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 3.0,
       TEST_TXT: 'testIsup@3V',
@@ -224,7 +224,7 @@ export const TEST_RESULT_SITE_0_TEST_FAILED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 0,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 8,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'testIsup@3V',
@@ -273,7 +273,7 @@ export const TEST_RESULT_SITE_1_TEST_PASSED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 1,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -296,7 +296,7 @@ export const TEST_RESULT_SITE_1_TEST_PASSED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 1,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 3.0,
       TEST_TXT: 'testIsup@3V',
@@ -345,7 +345,7 @@ export const TEST_RESULT_SITE_1_TEST_FAILED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 1,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 3,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -368,7 +368,7 @@ export const TEST_RESULT_SITE_1_TEST_FAILED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 1,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'testIsup@3V',
@@ -416,8 +416,8 @@ export const TEST_RESULT_SITE_2_TEST_PASSED = {
       type: 'PTR',
       TEST_NUM: 1,
       HEAD_NUM: 0,
-      SITE_NUM: 1,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      SITE_NUM: 2,
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -440,7 +440,7 @@ export const TEST_RESULT_SITE_2_TEST_PASSED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 2,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 3.0,
       TEST_TXT: 'testIsup@3V',
@@ -489,7 +489,7 @@ export const TEST_RESULT_SITE_2_TEST_FAILED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 2,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 2,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -512,7 +512,7 @@ export const TEST_RESULT_SITE_2_TEST_FAILED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 2,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 7,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'testIsup@3V',
@@ -561,7 +561,7 @@ export const TEST_RESULT_SITE_3_TEST_PASSED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 3,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -584,7 +584,7 @@ export const TEST_RESULT_SITE_3_TEST_PASSED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 3,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 3.0,
       TEST_TXT: 'testIsup@3V',
@@ -633,7 +633,7 @@ export const TEST_RESULT_SITE_3_TEST_FAILED = {
       TEST_NUM: 1,
       HEAD_NUM: 0,
       SITE_NUM: 3,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 0,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'Isup@2.4V',
@@ -656,7 +656,7 @@ export const TEST_RESULT_SITE_3_TEST_FAILED = {
       TEST_NUM: 2,
       HEAD_NUM: 0,
       SITE_NUM: 3,
-      TEST_FLG: ['0', '1', '0', '0', '0', '0', '0', '1'],
+      TEST_FLG: 5,
       PARM_FLG: [],
       RESULT: 2.0,
       TEST_TXT: 'testIsup@3V',
@@ -881,4 +881,38 @@ export const USER_SETTINGS_FROM_SERVER = {
       value: 80
     },
   ]
+};
+
+export const LOG_ENTRIES = {
+  type: 'logs',
+  payload: [
+    {
+      date: '07/09/2020 03:30:50 PM',
+      type: 'DEBUG',
+      description: 'testprogram information: {"USERTEXT": "F1N", "TEMP": "25", "TESTERPRG": "825A", "PROGRAM_DIR": "C:/Users/abdou.AWINIA/new11/src/HW0/PR/new11_HW0_PR_fdf_P_1.py", "TESTER": "SCT-81-1F", "TESTER_ALIAS": "SCT81_1"}'
+    },
+    {
+      date: '07/09/2020 03:30:50 PM',
+      type: 'INFO',
+      description: 'Master state is loading'
+    },
+    {
+      date: '07/09/2020 03:30:50 PM',
+      type: 'INFO',
+      description: 'Control 0 state is loading'
+    },
+    {
+      date: '07/09/2020 03:30:50 PM',
+      type: 'INFO',
+      description: 'Control 0 state is busy'
+    }
+  ]
+};
+
+export const LOG_FILE = {
+  type: 'logfile',
+  payload: {
+    filename: 'test.txt',
+    content: 'das ist ein langer string | das auch ü üpsad+üaso\ndas sollte in der zweiten Zeile stehen\ndas in der dritten'
+  }
 };

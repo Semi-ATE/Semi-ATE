@@ -555,7 +555,7 @@ class SequencerMqttClient(Harness.Harness):
             self._statemachine.startup_done()
         else:
             # TODO: else is here to avoid publishing the initial idle state
-            #       twice (which howver should not be a problem eventually
+            #       twice (which however should not be a problem eventually
             #       after fixing problems in subsribers)
             self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state})
 

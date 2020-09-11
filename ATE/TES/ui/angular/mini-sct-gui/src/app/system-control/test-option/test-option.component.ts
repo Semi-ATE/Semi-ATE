@@ -2,7 +2,7 @@ import { InputConfiguration, InputType } from './../../basic-ui-elements/input/i
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CheckboxConfiguration } from './../../basic-ui-elements/checkbox/checkbox-config';
 import { ButtonConfiguration } from 'src/app/basic-ui-elements/button/button-config';
-import { CardConfiguration, CardStyle } from 'src/app/basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from 'src/app/basic-ui-elements/card/card-config';
 import { CommunicationService } from './../../services/communication.service';
 import { Subject } from 'rxjs';
 import { Status, SystemState } from 'src/app/models/status.model';
@@ -14,8 +14,8 @@ import { TestOptionType, TestOptionSetting, UserSettings } from 'src/app/models/
 export enum TestOptionLabelText {
   stopOnFail = 'Stop on Fail',
   singleStep = 'Single Step',
-  stopAtTestNumber = 'Stop at Test Number',
-  triggerForTestNumber = 'Trigger For Test Number',
+  stopAtTestNumber = 'Stop before Test Number',
+  triggerForTestNumber = 'Trigger before Test Number',
   triggerOnFailure = 'Trigger On Failure',
   triggerSiteSpecific =  'Trigger Site Specific',
 
@@ -123,11 +123,7 @@ export class TestOptionComponent implements OnInit, OnDestroy {
 
     this.resetOptionButtonConfig.labelText = TestOptionLabelText.reset;
 
-    this.testOptionCardConfiguration = {
-      shadow: true,
-      cardStyle: CardStyle.COLUMN_STYLE,
-      labelText: 'Options'
-    };
+    this.testOptionCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, 'Options');
 
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -152,9 +148,9 @@ export class TestOptionComponent implements OnInit, OnDestroy {
     userSettings.testOptions.forEach(e => {
       let option = this.testOptions.find( o => o.type === e.type);
       if (option) {
-        option.currentValue = {active: e.value.active, value: e.value.value || -1};
-        option.toBeAppliedValue = {active: e.value.active, value: e.value.value || -1};
-        option.inputConfig.value = (e.value.value || -1).toString();
+        option.currentValue = {active: e.value.active, value: e.value.value};
+        option.toBeAppliedValue = {active: e.value.active, value: e.value.value};
+        option.inputConfig.value = (e.value.value).toString();
         option.checkboxConfig.checked = e.value.active;
       }
     });
@@ -192,9 +188,9 @@ export class TestOptionComponent implements OnInit, OnDestroy {
     let dataToSend = [];
     this.testOptions.forEach(o =>
         dataToSend.push({
-          name : o.type,
-          active : o.toBeAppliedValue.active,
-          value : o.toBeAppliedValue.value || -1
+          name: o.type,
+          active: o.toBeAppliedValue.active,
+          value: o.toBeAppliedValue.value
         }));
     this.communicationService.send({
       type: 'cmd',

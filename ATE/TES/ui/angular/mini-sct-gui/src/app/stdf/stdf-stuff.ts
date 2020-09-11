@@ -69,7 +69,10 @@ export const STDF_RECORD_ATTRIBUTES = {
   PART_TXT: 'PART_TXT',
   PART_FIX: 'PART_FIX',
   CPU_TYPE: 'CPU_TYPE',
-  STDF_VER: 'STDF_VER'
+  STDF_VER: 'STDF_VER',
+  TEST_FLG: 'TEST_FLG',
+  TEST_TXT: 'TEST_TXT',
+  TEST_NUM: 'TEST_NUM'
 };
 
 export const ALL_STDF_RECORD_TYPES = [
@@ -99,23 +102,33 @@ export const ALL_STDF_RECORD_TYPES = [
   StdfRecordType.Gdr,
   StdfRecordType.Dtr,
 ];
+
+export const STDF_RESULT_RECORDS = [StdfRecordType.Ptr, StdfRecordType.Mpr, StdfRecordType.Ftr];
 export type SiteHead = string;
 
-export type StdfRecordLabelType = string;
-export type StdfRecordValueType = string | number | boolean;
-export type StdfRecordEntryType = [StdfRecordLabelType, StdfRecordValueType];
+export type StdfRecordPropertyKey = string;
+export type StdfRecordPropertyValue = string | number | boolean;
+export interface StdfRecordProperty {
+  key: StdfRecordPropertyKey;
+  value: StdfRecordPropertyValue;
+}
 export interface StdfRecord {
   type: StdfRecordType;
-  values: StdfRecordEntryType[];
+  values: StdfRecordProperty[];
+}
+
+export class PrrRecord implements StdfRecord {
+  readonly type: StdfRecordType = StdfRecordType.Prr;
+  values: StdfRecordProperty[];
 }
 
 export let getStdfRecordDescription = (record: StdfRecord): string => {
   return STDF_RECORD_TYPE_LONG_FORM[record.type] ?? '';
 };
 
-export let stdfGetValue = (record: StdfRecord, label: StdfRecordLabelType): StdfRecordValueType => {
-  return record?.values?.filter(([k, v]) => k === label)?.[0]?.[1];
-};
+export let stdfGetValue = (record: StdfRecord, key: StdfRecordPropertyKey): StdfRecordPropertyValue =>
+  record.values.find( e => e.key === key)?.value;
+
 
 export let computeSiteHeadFromRecord = (record: StdfRecord): SiteHead => {
   let siteNumber = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.SITE_NUM) as number;

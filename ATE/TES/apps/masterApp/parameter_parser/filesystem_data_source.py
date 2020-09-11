@@ -1,10 +1,9 @@
-from ATE.TES.apps.common.logger import Logger
 import os
 import re
 
 
 class FileSystemDataSource:
-    def __init__(self, jobname, configuration, parser):
+    def __init__(self, jobname, configuration, parser, logger):
         self.parser = parser
         self.configuration = configuration.get('jobformat')
         self.device_id = configuration.get('device_id')
@@ -18,12 +17,12 @@ class FileSystemDataSource:
         self.jobname = configuration['filesystemdatasource.jobpattern'].\
             replace("#jobname#", jobname)
 
-        self.log = Logger.get_logger()
+        self.log = logger
         self.fullpath = os.path.join(self.path, self.jobname)
 
     def does_file_exist(self):
         if not os.path.exists(self.fullpath):
-            self.log.error("file not found")
+            self.log.log_message('error', 'file not found')
             return False
 
         return True
@@ -41,7 +40,7 @@ class FileSystemDataSource:
         param_data = self.parser.parse(self.fullpath)
         for key, value in param_data.items():
             if value is None:
-                self.log.error(f"{key} section missing")
+                self.log.log_message('error', f'{key} section missing')
                 return None
 
         return param_data
@@ -57,7 +56,7 @@ class FileSystemDataSource:
             if self.does_device_id_exist(value):
                 return self.remove_digit_from_keys(value)
 
-        self.log.warning("device information in station section are missed")
+        self.log.log_message('warning', 'device information in station section are missed')
         return None
 
     def remove_digit_from_keys(self, data: dict):
@@ -69,14 +68,14 @@ class FileSystemDataSource:
 
     def is_lot_number_valid(self, param_data: dict, lot_number):
         if not (param_data.get("LOTNUMBER") == lot_number):
-            self.log.warning("lot number does not match")
+            self.log.log_message('warning', 'lot number does not match')
             return False
 
         return True
 
     def does_handler_id_exist(self, param_data: dict):
         if not (param_data.get("HANDLER_PROBER") == self.device_handler):
-            self.log.warning("HANDLER name does not match")
+            self.log.log_message('warning', 'HANDLER name does not match')
             return False
 
         return True
@@ -87,7 +86,7 @@ class FileSystemDataSource:
                 if self.device_id == value:
                     return True
 
-        self.log.warning("tester could not be found")
+        self.log.log_message('warning', 'tester could not be found')
         return False
 
     def is_station_valid(self, param_data: dict):
@@ -95,5 +94,5 @@ class FileSystemDataSource:
             if self.does_device_id_exist(value):
                 return True
 
-        self.log.warning("device id mismatch in station section")
+        self.log.log_message('warning', 'device id mismatch in station section')
         return False

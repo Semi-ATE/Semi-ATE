@@ -6,7 +6,6 @@ import json
 import subprocess
 
 from ATE.TES.apps.common.connection_handler import ConnectionHandler
-from ATE.TES.apps.common.logger import Logger
 
 
 DEAD = 0
@@ -21,6 +20,7 @@ class ControlAppMachine:
         self._conhandler = conhandler
         self._task = None
         self.log = conhandler.log
+        self.prev_state = ''
 
         states = ['idle', 'loading', 'busy', 'error', 'resetting']
 
@@ -37,8 +37,12 @@ class ControlAppMachine:
         self.machine = Machine(model=self, states=states, transitions=transitions, initial='idle', after_state_change=self.publish_current_state)
 
     def publish_current_state(self, info):
-        print('publish_current_state: ', self.state)
         self._conhandler.publish_state(self.state)
+
+        if self.prev_state != self.state:
+            self.log.log_message('info', f'publish_current_state: {self.state}')
+
+        self.prev_state = self.state
 
     def on_master_state_changed(self, info):
         self.publish_current_state(info)
@@ -63,11 +67,11 @@ class ControlAppMachine:
                     # '--ptvsd-wait-for-attach',  # uncomment this to enable attaching the remote debugger AND waiting for an remote debugger to be attached before initialization
                     *testapp_params.get('testapp_script_args', [])]
 
-            proc = subprocess.Popen(args, cwd=testapp_params.get('cwd'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc = subprocess.Popen(args, cwd=testapp_params.get('cwd'), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             self.testapp_active(proc.pid)
-            self.log.warning(proc.stdout.read())
-            self.log.error(proc.stderr.read())
             proc.wait()
+            self.log.log_message('info', f'Testprogram output: {proc.stdout.read().decode("ascii")}')
+            # self.log.log_message('info', f'Testprogram output: {proc.stderr.read().decode("ascii")}')
             self.testapp_exit(proc.returncode)
             return
         except (Exception, asyncio.CancelledError):
@@ -83,7 +87,7 @@ class ControlAppMachine:
             except Exception:
                 pass  # we only cleanup on best effort
         except Exception:
-            print('EXCEPTION in _run_testapp_task: ', sys.exc_info())
+            self.log.log_message('error', f'EXCEPTION in _run_testapp_task: {error_info}')
             raise
         finally:
             self._task = None
@@ -93,7 +97,7 @@ class ControlAppMachine:
         #     self.error(error_info)
 
     def before_load(self, testapp_params: dict):
-        print('load', str(testapp_params))
+        self.log.log_message('info', f'test_program parameters: {str(testapp_params)}')
         self._task = asyncio.create_task(self._run_testapp_task(testapp_params))
 
     def testapp_before_active(self, pid):
@@ -104,7 +108,7 @@ class ControlAppMachine:
         self.to_idle(returncode)
 
     def before_error(self, info):
-        print('error: ', info)
+        self.log.log_message('error', f'{info}')
 
         if self._task is not None:
             self._task.cancel()
@@ -117,14 +121,14 @@ class ControlConnectionHandler:
 
     """ handle connection """
 
-    def __init__(self, host, port, site_id, device_id):
+    def __init__(self, host, port, site_id, device_id, logger):
         self.broker_host = host
         self.broker_port = port
         self.site_id = site_id
         self.device_id = device_id
-        self.log = Logger.get_logger()
+        self.log = logger
         mqtt_client_id = f'controlapp.{device_id}.{site_id}'
-        self.mqtt = ConnectionHandler(host, port, mqtt_client_id)
+        self.mqtt = ConnectionHandler(host, port, mqtt_client_id, self.log)
         self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
                                              self._on_message_handler,
                                              self._on_disconnect_handler)
@@ -152,8 +156,7 @@ class ControlConnectionHandler:
                           retain=False)
 
     def __load_test_program(self, cmd_payload: dict):
-        print("Load Testprogram")
-        testapp_params = cmd_payload["testapp_params"]
+        testapp_params = cmd_payload['testapp_params']
         try:
             self._statemachine.load(testapp_params)
         except Exception as e:
@@ -174,13 +177,15 @@ class ControlConnectionHandler:
             cmd = data['command']
             sites = data['sites']
 
+            self.log.log_message('debug', f'received command: {cmd}')
+
             if self.site_id not in sites:
-                self.log.warning(f'ignoring TestApp cmd for other sites {sites} (current site_id is {self.site_id})')
+                self.log.log_message('warning', f'ignoring TestApp cmd for other sites {sites} (current site_id is {self.site_id})')
                 return
 
             to_exec_command = self.commands.get(cmd)
             if to_exec_command is None:
-                self.log.warning("received command not found")
+                self.log.log_message('warning', 'received command not found')
                 return
 
             to_exec_command(data)
@@ -193,7 +198,7 @@ class ControlConnectionHandler:
         return
 
     def _on_connect_handler(self, client, userdata, flags, conect_res):
-        self.log.info("mqtt connected")
+        self.log.log_message('info', 'mqtt connected')
 
         self.mqtt.subscribe(self._generate_base_topic_cmd())
         self.mqtt.subscribe(self._generate_base_topic_status_master())
@@ -211,7 +216,7 @@ class ControlConnectionHandler:
             return
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
-        self.log.info("mqtt disconnected (rc: %s)", distc_res)
+        self.log.log_message('info', f'mqtt disconnected (rc: {distc_res})')
 
     def _generate_status_message(self, alive, state, statedict=None):
         message = {

@@ -3,24 +3,26 @@
   <div class="side">
     <h2>System Console</h2>
     <app-button [buttonConfig]="clearConsoleButtonConfig" (buttonClickEvent)="clearConsole()"></app-button>
+    <app-button [buttonConfig]="reloadLogsButtonConfig" (buttonClickEvent)="reloadLogs()"></app-button>
+    <app-button [buttonConfig]="getLogFileButtonConfig" (buttonClickEvent)="getLogFile()"></app-button>
   </div>
   <div class="main">
     <div>
       <table>
         <thead>
-        <tr>
-          <th class="time">Date and Time</th>
-          <th class="type">Type</th>
-          <th class="info">Description</th>
-        </tr>
-      </thead>
-    <tbody>
-        <tr *ngFor='let entry of (consoleEntries$ | async).slice().reverse()'>
+          <tr>
+            <th class="time">Date and Time</th>
+            <th class="type">Type</th>
+            <th class="info">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor='let entry of (consoleEntries$ | async)'>
             <td class="time">{{ entry.date }}</td>
             <td class="type">{{ entry.type }}</td>
             <td class="info">{{ entry.description }}</td>
-        </tr>
-      </tbody>
+         </tr>
+        </tbody>
       </table>
     </div>
   </div>

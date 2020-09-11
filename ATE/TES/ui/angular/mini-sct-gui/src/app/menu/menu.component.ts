@@ -4,9 +4,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SystemState, Status } from 'src/app/models/status.model';
 import { Subject } from 'rxjs';
 import { AppState } from '../app.state';
-import { Store, select } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { takeUntil } from 'rxjs/operators';
-import { SystemStatusComponent } from '../system-status/system-status.component';
 
 @Component({
   selector: 'app-menu',
@@ -14,9 +13,9 @@ import { SystemStatusComponent } from '../system-status/system-status.component'
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit, OnDestroy {
+  menuItem: any;
   private status: Status;
   private readonly ngUnsubscribe: Subject<void>;
-  menuItem: any;
 
   constructor(private readonly store: Store<AppState>, private readonly router: Router) {
     this.menuItem = MenuItem;
@@ -47,8 +46,13 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
+  isActive(path: string): boolean {
+    return this.router.url === '/' + path;
+  }
+
   private updateStatus(status: Status) {
     this.status = status;
+    this.navigateToInformationIfNeeded();
   }
 
   private resultsDisabled(): boolean {
@@ -70,7 +74,12 @@ export class MenuComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  isActive(path: string): boolean {
-    return this.router.url === '/' + path;
+  private navigateToInformationIfNeeded() {
+    let currentUrl = this.router.url;
+    if (currentUrl.includes(MenuItem.Control) && this.controlDisabled()) {
+      this.router.navigateByUrl('/' + MenuItem.Info, {skipLocationChange: false});
+    } else if (currentUrl.includes(MenuItem.Results) && this.resultsDisabled()) {
+      this.router.navigateByUrl('/' + MenuItem.Info, {skipLocationChange: false});
+    }
   }
 }

@@ -54,13 +54,23 @@ export class DebugComponent implements OnInit {
     {
       description: 'Reload Results',
       value: 'ReloadResults'
+    },
+    {
+      description: 'Download Logfile',
+      value: 'Logfile'
+    },
+    {
+      description: 'Generate log entries',
+      value: 'Logentries'
     }
+
   ];
 
   constructor(private readonly mss: MockServerService) {
   }
 
   ngOnInit() {
+    this.sendMockMessage('Result');
   }
 
   sendMockMessage(messageType: string) {
@@ -92,6 +102,7 @@ export class DebugComponent implements OnInit {
       case 'Result':
         this.mss.setRepeatMessages(true);
         this.mss.setMessages([
+          constants.MESSAGE_WHEN_SYSTEM_STATUS_READY,
           constants.TEST_RESULT_SITE_0_TEST_PASSED,
           constants.TEST_RESULT_SITE_1_TEST_FAILED,
           constants.TEST_RESULT_SITE_2_TEST_PASSED,
@@ -104,17 +115,19 @@ export class DebugComponent implements OnInit {
         break;
       case 'TestOptions':
         this.mss.setRepeatMessages(false);
-        this.mss.setMessages([
-          constants.USER_SETTINGS_FROM_SERVER,
-          {}
-        ]);
+        this.mss.setMessages([constants.USER_SETTINGS_FROM_SERVER]);
         break;
       case 'ReloadResults':
         this.mss.setRepeatMessages(false);
-        this.mss.setMessages([
-          constants.TEST_RESULTS_SITE_1_AND_2,
-          {}
-        ]);
+        this.mss.setMessages([constants.TEST_RESULTS_SITE_1_AND_2]);
+        break;
+      case 'Logfile':
+        this.mss.setRepeatMessages(false);
+        this.mss.setMessages([constants.LOG_FILE]);
+        break;
+      case 'Logentries':
+        this.mss.setRepeatMessages(false);
+        this.mss.setMessages([constants.LOG_ENTRIES]);
         break;
     }
   }

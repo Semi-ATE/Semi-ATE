@@ -16,7 +16,7 @@ export class CommunicationService {
       return response;
     }
     )) as WebSocketSubject<any>);
-   }
+  }
 
   send(json: any) {
     this.wsService.send(json);

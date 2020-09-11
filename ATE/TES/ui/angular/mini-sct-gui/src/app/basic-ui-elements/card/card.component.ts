@@ -1,23 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-
-export class CardConfiguration {
-  shadow: boolean;
-  cardStyle: CardStyle;
-  labelText: string;
-
-  constructor() {
-    this.shadow = false;
-    this.cardStyle = CardStyle.ROW_STYLE;
-    this.labelText = '';
-  }
-}
-
-export enum CardStyle {
-  ROW_STYLE = 'rowStyle',
-  COLUMN_STYLE = 'columnStyle',
-  NONE_STYLE = 'noneStyle',
-  ROW_STYLE_FOR_SYSTEM = 'rowStyleForSystemSites'
-}
+import { CardConfiguration } from './card-config';
 
 @Component({
   selector: 'app-card',
