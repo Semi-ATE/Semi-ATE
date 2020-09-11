@@ -1,2 +1,0 @@
-class testABC:
-    pass

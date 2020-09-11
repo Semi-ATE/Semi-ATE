@@ -1,6 +1,0 @@
-{
-    "broker_host": "10.9.1.6",
-    "broker_port": 1883,
-    "device_id": "YourNameHere",
-    "site_id": "0"
-}

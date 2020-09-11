@@ -1,8 +1,0 @@
-mock
-pytest-qt
-pytest
-pytest-cov
-pytest-mock
-coverage
-check-manifest
-pre-commit
