@@ -6,7 +6,6 @@ import os
 import queue
 import sys
 import threading
-import time
 from enum import Enum
 from typing import Optional
 
@@ -15,6 +14,8 @@ from transitions import Machine
 
 from ATE.sequencers import Harness
 from ATE.sequencers.ExecutionPolicy import SingleShotExecutionPolicy
+
+from ATE.utils.mqtt_router import MqttRouter
 
 FRAMEWORK_VERSION = 1
 
@@ -124,7 +125,7 @@ class TopicFactory:
     def master_resource_topic(self, resource_id: Optional[str] = None):
         if resource_id is None:
             resource_id = '+'
-        return f'ate/{self._device_id}/Master/resource/{resource_id}'
+        return f'ate/{self._device_id}/Master/peripherystate/{resource_id}'
 
     def control_status_topic(self):
         return f'ate/{self._device_id}/ControlApp/status/site{self._site_id}'
@@ -145,7 +146,7 @@ class TopicFactory:
         return f'ate/{self._device_id}/TestApp/stdf/site{self._site_id}'
 
     def test_resource_topic(self, resource_id: str):
-        return f'ate/{self._device_id}/TestApp/resource/{resource_id}/site{self._site_id}'
+        return f'ate/{self._device_id}/TestApp/peripherystate/{resource_id}/site{self._site_id}/request'
 
     def test_status_payload(self, alive: TheTestAppStatusAlive):
         return {
@@ -243,6 +244,7 @@ class MqttClient():
         self._client = self._create_mqtt_client(topic_factory)
         self._client.connect_async(broker_host, int(broker_port), 60)
         self._submit_callback = submit_callback
+        self._router = MqttRouter()
 
         # mqtt callbacks, excecuted in executor
         self.on_connect = None        # on_connect()        (only called when succcesfully (re-)connected)
@@ -252,6 +254,7 @@ class MqttClient():
 
         # queue to process resource messages anywhere (without callbacks)
         self._resource_msg_queue = queue.Queue()
+        self.event = threading.Event()
 
     def loop_forever(self):
         self._client.loop_forever()
@@ -373,56 +376,31 @@ class MqttClient():
         self._submit_callback(self.on_command, cmd, data)
 
     def _on_message_resource_callback(self, client, userdata, message: mqtt.MQTTMessage):
-        logger.info(f'mqtt message for topic {message.topic}')
-
-        resource_id = message.topic.rpartition('/')[2]
-        if not resource_id:
-            logger.warning(f'ignoring unexpected Master resource message without resource_id')
-            return
-
-        # {
-        #   "type": "resource-config",
-        #   "resource_id": "myresourceid",
-        #   "config": {}
-        # }
         data = json.loads(message.payload.decode('utf-8'))
-        assert data['type'] == 'resource-config'
-        assert data['resource_id'] == resource_id
-        assert isinstance(data['config'], dict)
-        self._resource_msg_queue.put(data)
+        self.response_data = data
+        self.response_topic = message.topic
+        self.event.set()
 
-    def wait_for_resource_with_config(self, resource_id: str, config: dict, timeout=None):
-        end_time = time.time() + timeout if timeout is not None else None
-        adjusted_timeout = timeout
-        try:
-            while True:
-                data = self._resource_msg_queue.get(block=True, timeout=adjusted_timeout)
-                # TODO: we probably want a way to indicate an error, such as a resource does not even exist (which we should check earlier, but there should be a way to avoid waiting for the timeout)
-                # TODO: We might need the concept of a sparse configuration, where we e.g. send a
-                #       command for the resource and get more than the contents of config, e.g.:
-                #       we might send a measurement command consisting of only a single entry in the
-                #       dict and get a measurement result with additional fields.
-                if data['resource_id'] == resource_id and data['config'] == config:
-                    return data
-                if end_time is not None:
-                    # only timeout=None means "wait forever", <= 0 will not block
-                    adjusted_timeout = end_time - time.time()
-        except queue.Empty:
-            raise TimeoutError(f'timeout while waiting for resource "{resource_id}" with config: {config}')
+    def do_request_response(self, request_topic, response_topic, payload, timeout):
+        self.event.clear()
+        self._client.publish(request_topic, payload, 2)
+
+        while (self.event.wait(timeout)):
+            if self.response_topic == response_topic:
+                return True, self.response_data
+
+        return False, None
 
 
 class SequencerMqttClient(Harness.Harness):
     _statemachine: Optional[TheTestAppMachine]
     _mqtt: Optional[MqttClient]
 
-    def __init__(self, test_app_params, sequencer_instance):
+    def __init__(self):
         self._statemachine = None
         self._mqtt = None
         self._disconnected = False
-        self._sequencer_instance = sequencer_instance
-
-        self.apply_parameters(test_app_params)
-
+        self._sequencer_instance = None
         # TODO: execution policy should not be hard coded
         self._execution_policy = SingleShotExecutionPolicy()
 
@@ -487,8 +465,9 @@ class SequencerMqttClient(Harness.Harness):
         testApp = SequencerMqttClient(params, the_sequencer)
         testApp.run()
 
-    def run_from_command_line_with_sequencer(self, argv):
+    def run_from_command_line_with_sequencer(self, argv, sequencer):
         params = self.init_from_command_line(argv)
+        self._sequencer_instance = sequencer
         self._sequencer_instance.set_site_id(params.site_id)
         self.apply_parameters(params)
         self.run()
@@ -496,7 +475,7 @@ class SequencerMqttClient(Harness.Harness):
     def run(self):
         topic_factory = TopicFactory(self.params.device_id,
                                      self.params.site_id)
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
         def submit_callback(cb, *args, **kwargs):
             # ignore unbound callbacks
@@ -555,7 +534,7 @@ class SequencerMqttClient(Harness.Harness):
             self._statemachine.startup_done()
         else:
             # TODO: else is here to avoid publishing the initial idle state
-            #       twice (which howver should not be a problem eventually
+            #       twice (which however should not be a problem eventually
             #       after fixing problems in subsribers)
             self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state})
 
@@ -631,6 +610,32 @@ class SequencerMqttClient(Harness.Harness):
         # logger.info('shutdown status published!')
         # logger.info('disconnecting and shutting down...')
         # self._mqtt.disconnect()  # loop_forever() will return after this call
+
+    # Hack: Since we can only distribute the SequencerMqttClient to actuators, but they
+    # need access to some sort of mqtt we reimplement this method as pass through here.
+    def publish_with_reply(self, topic_base, payload, response_timeout):
+        request_topic = "ate/" + self.params.device_id + f"/TestApp/{topic_base}/site{self.params.site_id}/request"
+        response_topic = "ate/" + self.params.device_id + "/Master/" + topic_base + "/response"
+        return self._mqtt.do_request_response(request_topic, response_topic, payload, response_timeout)
+
+    def register_route(self, route, callback):
+        self.router.register_route(route, callback)
+
+    def subscribe_and_register(self, route, callback):
+        self.subscribe(route)
+        self._router.register(route, callback)
+
+    def unsubscribe(self, topic):
+        self._mqtt.unsubscribe(topic)
+
+    def unregister_route(self, route, callback):
+        self._router.unregister_route(route, callback)
+
+    def subscribe(self, topic):
+        self.mqtt_client.subscribe(topic)
+
+    def publish(self, topic, payload=None, qos=0, retain=False):
+        self.mqtt_client.publish(topic, payload, qos, retain)
 
 
 def main():

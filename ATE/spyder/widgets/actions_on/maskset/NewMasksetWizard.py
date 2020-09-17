@@ -17,7 +17,7 @@ from ATE.spyder.widgets.actions_on.maskset.constants import PadDirection
 from ATE.spyder.widgets.actions_on.maskset.constants import PadStandardSize
 from ATE.spyder.widgets.actions_on.maskset.constants import PadType
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.semiateplugins.pluginmanager import get_plugin_manager
 from ATE.spyder.widgets.validation import is_valid_maskset_name
 
 standard_flat_height = 7  # mm

@@ -19,8 +19,8 @@ describe('CommunicationService', () => {
     service = TestBed.inject(CommunicationService);
   });
 
-  afterAll( () => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create an CommunicationService instance', () => {
@@ -32,19 +32,17 @@ describe('CommunicationService', () => {
     let called = false;
 
     // first subscribe to the service for receiving messages
-    service.message.subscribe( msg => called = true);
+    let subscription = service.message.subscribe( msg => called = true);
 
     // mock some server message
     mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_READY]);
 
-    // wait until condition (all menu items are enabled)
-    let messageReceived = () => {return called;};
-
     await expectWaitUntil(
-      () => {
-      },
-      messageReceived,
+      null,
+      () => called,
       'No message has been received'
     );
+
+    subscription.unsubscribe();
   });
 });

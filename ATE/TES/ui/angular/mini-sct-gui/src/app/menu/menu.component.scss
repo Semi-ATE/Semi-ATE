@@ -1,11 +1,13 @@
 @import "../../styles.scss";
 
 nav {
-  width: 100vw;
+  width: 100%;
   background-color: $micronasBlue;
+  padding-top: 10px;
 }
 
 ul {
+  height: 45px;
   margin: 0;
   padding: 0;
   display: flex;
@@ -13,20 +15,29 @@ ul {
 
 li {
   list-style-type: none;
-  margin: 0.5vh 2vw;
-  font-size: 2.5vh;
+  font-size: 1.25em;
+
   a {
     color: white;
-    padding: 1vh;
+    padding: 1em;
     cursor: pointer;
+
     &:hover {
       background-color: #003399;
     }
-    &.active{
+    &.active {
       font-weight: bold;
       background-color: #003399;
+      padding-bottom: 18px;
     }
   }
+
+  a.space {
+    visibility: hidden;
+    font-weight: bold;
+    display:block;
+  }
+
   &.disabled {
     cursor: not-allowed;
     a {
@@ -35,4 +46,10 @@ li {
       pointer-events: none;
     }
   }
+}
+
+.navigationContainer {
+  display: flex;
+  flex-direction: row;
+  background-color: $micronasBlue;
 }

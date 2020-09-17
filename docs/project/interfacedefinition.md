@@ -111,7 +111,6 @@ Der aktuelle Peripheriestatus ist:
 ```json
 {
 	"fluxcompensator": 0,
-	"pulseout0": 0,
 	...
 }
 ```
@@ -119,37 +118,37 @@ Der aktuelle Peripheriestatus ist:
 TestApp postet:
 ```json
 {
-	type: "command",
-	command: "togglesharedperiphery",
-	peripheryType: "fluxcompensator",
-	param0: 100
+	type: "io-control-request",
+	periphery_type: "fluxcompensator",
+	ioctl_name: "set_output",
+	parameters: {
+		param0: 100,
+		timeout: 5.0
+	}
 }
 ```
 
-Nach Empfang der Nachricht der Testapp steuert der Master den Fluxkompensator an. Sobald diese geschehen ist wechselt der Peripheriestatus auf:
-```json
-{
-	"fluxcompensator": 100,
-	"pulseout0": 0,
-	...
-}
-```
+Nach Empfang der Nachricht der Testapp steuert der Master den Fluxkompensator an. 
 
-:information_source:: Der Master stellt sicher, dass die angeforderte Peripherie im korrekten Zustand ist, wenn der Vollzug meldet, d.h. etwaige Einschwingzeiten sind vom Testprogramm nicht seperat zu berücksichtigen, sondern wurden zum Zeitpunkt der Vollzugsmeldung durch den Master bereits berückstichtigt.
-
-:information_source:: Im Peripheriestatus ist immer der Zustand aller für den Master konfigurierten Peripherien zu sehen, auch solche die zuletzt nicht angesteuert werden. Es handelt sich um eine retained Message, sodass alle Applikationen im System immer in der Lage sind den letzten gültigen Peripheriestatus abzufragen.
+:information_source:: Der Master stellt sicher, dass die angeforderte Peripherie im korrekten Zustand ist, wenn der Vollzug meldet, d.h. etwaige Einschwingzeiten sind vom Testprogramm nicht seperat zu berücksichtigen, sondern wurden zum Zeitpunkt der Vollzugsmeldung durch den Master (bzw. das Plugin, welches die Ressourcensteuerung implementiert!) bereits berückstichtigt.
 
 :warning:: Wird eine Ressource angefordert, die nicht existiert, so geht der Master in den Fehlerzustand.
 
 :warning:: Erhält der Master verschiedene Befehle für die gleiche Peripherie (z.B. Site A fordert "Magnetfeld an", Site B fordert "Magnetfeld aus"), während noch eine Zustandsänderung pendent ist, so geht er in den Fehlerzustand über.
 
+:warning:: Zu einem Zeitpunkt kann nur genau eine Ressourcenanforderung aktiv sein. Werden zwei verschiedene Ressourcen angefordert, so geht der Master in den Fehlerzustand über.
+
 :warning:: Der Master synchronisiert den Zugriff auf die geteilten Peripherien derart, dass eine Änderung erst durchgeführt wird, wenn dieselbe Anfrage von allen aktiven Sites gesendet wurde. Es wird davon ausgegangen, dass auf allen Sites dasselbe Programm läuft und demnach auch immer zum gleichen Zeitpunkt während des Testablaufs von allen Sites dieselbe gemeinsame Ressource verwendet wird. Derzeit sind noch keine Timeouts für diesen Vorgang definiert.
+
+__Auflösen von geteilten Peripherien__: Der Master verwendet Pluggy um für geteilte Peripherien das richtige Businessobjekt zu ermitteln, dabei wird der Peripherytype als Aktuatorfähigkeit interpretiert. Der Master instanziert sich ein Aktuatorobjekt mit dem Call "get_actuator" aus den installierten Plugins. Er verwendet die erste Implementierung, die gemeldet wird. Das bedeutet, dass mehrere Aktuatorimplementierungen für denselben Aktuator (die durchaus aus verschiedenen Plugins kommen können!) zu unvorhersehbarem Verhalten führen.
+
 
 ### Daten die vom Masterkonsumiert werden
 Der Master konsumiert Statusinformationen aus den Topics:
 •	\<device-id>/Control/status
 •	\<device-id>/TestApp/status
 •	\<device-id>/Webserver/status
+•	\<device-id>/Periphery/status
 
 ## Control
 ### Daten die von Control erzeugt werden
@@ -256,11 +255,11 @@ Der Nextbefehl weist die Testapplikation einen neuen Testlauf zu starten. Der Te
 
 #### Terminate
 Der Terminatebefehl weist die Testapplikation an sich zu beenden.
-*Offen: Soll Terminate etwaige laufende Tests ebenfalls abbrechen?*
 
 |Feld|	Bedeutung/Zulässige Werte             |
 |----|----------------------------------------|
 |command| "terminate"                         |
+
 
 
 ## Webserver

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ButtonConfiguration } from 'src/app/basic-ui-elements/button/button-config';
-import { CardConfiguration, CardStyle } from './../../basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from './../../basic-ui-elements/card/card-config';
 import { CommunicationService } from './../../services/communication.service';
 import { AppState } from 'src/app/app.state';
 import { Status, SystemState } from 'src/app/models/status.model';
@@ -28,12 +28,7 @@ export class TestExecutionComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.startDutTestButtonConfig.labelText = 'Start DUT-Test';
-    this.testExecutionControlCardConfiguration = {
-      shadow: true,
-      cardStyle: CardStyle.COLUMN_STYLE,
-      labelText: 'Test Execution'
-    };
-
+    this.testExecutionControlCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, 'Test Execution');
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(s => this.updateStatus(s));

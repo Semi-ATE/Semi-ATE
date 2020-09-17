@@ -31,10 +31,10 @@ import { resultReducer } from './reducers/result.reducer';
 import { consoleReducer } from './reducers/console.reducer';
 import { AppstateService } from './services/appstate.service';
 import { userSettingsReducer } from './reducers/usersettings.reducer';
-import { expectWaitUntil } from './test-stuff/auxillary-test-functions';
-import { MockServerService } from './services/mockserver.service';
+import { Server } from 'mock-socket';
 
 describe('AppComponent', () => {
+  let mockServer: Server;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let debugElement: DebugElement;
@@ -84,10 +84,16 @@ describe('AppComponent', () => {
     }));
 
   beforeEach(() => {
+    mockServer = new Server(constants.BACKEND_URL_RUNNING_IN_PYTHON_MASTER_APPLICATION);
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
     fixture.detectChanges();
+  });
+
+  afterEach( () => {
+    mockServer.close();
+    mockServer.stop();
   });
 
   it('should create the miniSCT app', () => {
@@ -107,18 +113,6 @@ describe('AppComponent', () => {
   describe('Tags of the other component type', () => {
     it('should contain an app-header tag', () => {
       let componentElement = debugElement.nativeElement.querySelectorAll('app-header');
-      expect(componentElement).not.toEqual(null);
-      expect(componentElement.length).toBe(1);
-    });
-
-    it('should contain an app-system-status tag', () => {
-      let componentElement = debugElement.nativeElement.querySelectorAll('app-system-status');
-      expect(componentElement).not.toEqual(null);
-      expect(componentElement.length).toBe(1);
-    });
-
-    it('should contain an app-menu tag', () => {
-      let componentElement = debugElement.nativeElement.querySelectorAll('app-menu');
       expect(componentElement).not.toEqual(null);
       expect(componentElement.length).toBe(1);
     });

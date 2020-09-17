@@ -1,5 +1,5 @@
 from ATE.TES.apps.common.connection_handler import ConnectionHandler
-from ATE.TES.apps.common.logger import Logger
+from ATE.TES.apps.common.Utils import LogLevel
 import json
 import re
 from typing import Optional
@@ -8,7 +8,7 @@ TOPIC_COMMAND = "Master/cmd"
 TOPIC_TESTSTATUS = "TestApp/status"
 TOPIC_TESTRESULT = "TestApp/testresult"
 TOPIC_TESTSUMMARY = "TestApp/testsummary"
-TOPIC_TESTRESOURCE = "TestApp/resource"
+TOPIC_TESTRESOURCE = "TestApp/peripherystate"
 TOPIC_CONTROLSTATUS = "Control/status"
 INTERFACE_VERSION = 1
 DEAD = 0
@@ -21,15 +21,18 @@ class MasterConnectionHandler:
 
     def __init__(self, host, port, sites, device_id, status_consumer):
         mqtt_client_id = f'masterapp.{device_id}'
-        self.mqtt = ConnectionHandler(host, port, mqtt_client_id)
+        self.status_consumer = status_consumer
+        self.log = status_consumer.log
+        self.mqtt = ConnectionHandler(host, port, mqtt_client_id, self.log)
         self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
                                              self._on_message_handler,
                                              self._on_disconnect_handler)
         self.sites = sites
         self.device_id = device_id
-        self.log = Logger.get_logger()
         self.connected_flag = False
-        self.status_consumer = status_consumer
+
+        self.mqtt.register_route("Control", lambda topic, payload: self.dispatch_control_message(topic, self.mqtt.decode_payload(payload)))
+        self.mqtt.register_route("TestApp", lambda topic, payload: self.dispatch_testapp_message(topic, self.mqtt.decode_payload(payload)))
 
     def start(self):
         self.mqtt.set_last_will(
@@ -48,9 +51,9 @@ class MasterConnectionHandler:
                           False)
 
     def publish_resource_config(self, resource_id: str, config: dict):
-        self.mqtt.publish(self._generate_resource_config_topic(resource_id),
+        self.mqtt.publish(self._generate_resource_response_topic(resource_id),
                           self.mqtt.create_message(
-                              self._generate_resource_config_message(resource_id, config)),
+                              self._generate_io_control_result_message(resource_id, config)),
                           False)
 
     def send_load_test_to_all_sites(self, testapp_params):
@@ -61,65 +64,47 @@ class MasterConnectionHandler:
             'testapp_params': testapp_params,
             'sites': self.sites,
         }
-        self.log.info("Send LoadLot to sites...")
+        self.log.log_message(LogLevel.Info(), 'Send LoadLot to sites...')
         self.mqtt.publish(topic, json.dumps(params), 0, False)
 
     def send_next_to_all_sites(self, job_data: Optional[dict] = None):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'next',
-            'sites': self.sites,
-        }
+        params = self._generate_command_message('next')
+
         if job_data is not None:
             params['job_data'] = job_data
         self.mqtt.publish(topic, json.dumps(params), 0, False)
 
     def send_terminate_to_all_sites(self):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'terminate',
-            'sites': self.sites,
-        }
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 0, False)
 
     def send_reset_to_all_sites(self):
         topic = f'ate/{self.device_id}/Control/cmd'
-        params = {
-            'type': 'cmd',
-            'command': 'reset',
-            'sites': self.sites,
-        }
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('reset')), 0, False)
 
-    def send_load_command(self):
-        self.log.info("send load test command")
-        return True
-
-    def send_terminate_command(self):
-        self.log.info("send terminate command")
-        return True
-
-    def send_start_next_test_command(self):
-        self.log.info("send start next test command")
-        return True
+    def _generate_command_message(self, command):
+        return {'type': 'cmd',
+                'command': command,
+                'sites': self.sites,
+                }
 
     def on_cmd_message(self, message):
         payload = self.decode_message(message)
 
         to_exec_command = self.commands.get(payload.get("value"))
         if to_exec_command is None:
-            self.log.warning("received command not found")
+            self.log.log_message(LogLevel.Warning(), 'received command not found')
             return False
 
         return to_exec_command()
 
     def _on_connect_handler(self, client, userdata, flags, conect_res):
-        self.log.info("mqtt connected")
+        self.log.log_message(LogLevel.Info(), 'mqtt connected')
         self.connected_flag = True
 
         self.mqtt.subscribe(self._generate_base_topic_cmd())
+        self.mqtt.subscribe(self._generate_base_topic_resource())
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_CONTROLSTATUS))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTRESULT))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTSTATUS))
@@ -128,7 +113,7 @@ class MasterConnectionHandler:
         self.status_consumer.startup_done()
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
-        self.log.info("mqtt disconnected (rc: %s)", distc_res)
+        self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
         self.connected_flag = False
 
     def _generate_status_message(self, alive, state, statedict=None):
@@ -145,16 +130,16 @@ class MasterConnectionHandler:
     def _generate_base_topic_status(self):
         return "ate/" + str(self.device_id) + "/Master/status"
 
-    def _generate_resource_config_message(self, resource_id: str, config: dict):
+    def _generate_io_control_result_message(self, periphery_name: str, result: dict):
         message = {
-            'type': 'resource-config',
-            'resource_id': resource_id,
-            'config': config
+            'type': 'io-control-result',
+            'periphery_type': periphery_name,
+            'result': result
         }
         return message
 
-    def _generate_resource_config_topic(self, resource_id: str):
-        return "ate/" + str(self.device_id) + "/Master/resource/" + resource_id
+    def _generate_resource_response_topic(self, resource_id: str):
+        return self._generate_base_topic_resource + "/response"
 
     def _generate_usersettings_message(self, usersettings: dict):
         message = {
@@ -172,6 +157,9 @@ class MasterConnectionHandler:
     def _generate_base_topic_cmd(self):
         return "ate/" + str(self.device_id) + "/Master/cmd"
 
+    def _generate_base_topic_resource(self):
+        return "ate/" + str(self.device_id) + "/Master/peripherystate"
+
     def __extract_siteid_from_control_topic(self, topic):
         pat = rf'ate/{self.device_id}/{TOPIC_CONTROLSTATUS}/site(.+)$'
         m = re.match(pat, topic)
@@ -187,39 +175,40 @@ class MasterConnectionHandler:
         m = re.match(pat, topic)
         if m:
             return m.group(1)
-        pat2 = rf'ate/{self.device_id}/TestApp/resource/.+?/site(.+)$'
+        pat2 = rf'ate/{self.device_id}/TestApp/peripherystate/site(.+)/request$'
         m = re.match(pat2, topic)
         if m:
             return m.group(1)
 
-    def dispatch_control_message(self, client, topic, msg):
+    def dispatch_control_message(self, topic, msg):
         siteid = self.__extract_siteid_from_control_topic(topic)
         if siteid is None:
-            self.log.warning('unexpected message on control topic '
-                             + f'"{topic}": extracting siteid failed')
+            self.log.log_message(LogLevel.Warning(), 'unexpected message on control topic ' /
+                                 + f'"{topic}": extracting siteid failed')
             return
 
         if "status" in topic:
             self.status_consumer.on_control_status_changed(siteid, msg)
         else:
-            assert(False)
+            assert False
 
-    def dispatch_testapp_message(self, client, topic, msg):
+    def dispatch_testapp_message(self, topic, msg):
         siteid = self.__extract_siteid_from_testapp_topic(topic)
         if siteid is None:
-            self.log.warning('unexpected message on testapp topic ' /
-                             + f'"{topic}": extracting siteid failed')
+            self.log.log_message(LogLevel.Warning(), 'unexpected message on testapp topic ' /
+                                 + f'"{topic}": extracting siteid failed')
             return
 
         if "testresult" in topic:
             self.status_consumer.on_testapp_testresult_changed(siteid, msg)
         elif "testsummary" in topic:
             self.status_consumer.on_testapp_testsummary_changed(msg)
-        elif "resource" in topic:
+        elif "peripherystate" in topic:
             assert 'type' in msg
-            assert msg['type'] == 'resource-config-request'
-            assert 'resource_id' in msg
-            assert 'config' in msg
+            assert msg['type'] == 'io-control-request'
+            assert 'periphery_type' in msg
+            assert 'ioctl_name' in msg
+            assert 'parameters' in msg
             self.status_consumer.on_testapp_resource_changed(siteid, msg)
         elif "status" in topic:
             self.status_consumer.on_testapp_status_changed(siteid, msg)
@@ -227,10 +216,4 @@ class MasterConnectionHandler:
             assert False
 
     def _on_message_handler(self, client, userdata, msg):
-        payload = self.mqtt.decode_message(msg)
-        if "Control" in msg.topic:
-            self.dispatch_control_message(client, msg.topic, payload)
-        elif "TestApp" in msg.topic:
-            self.dispatch_testapp_message(client, msg.topic, payload)
-        else:
-            assert False
+        self.mqtt.router.inject_message(msg.topic, msg.payload)

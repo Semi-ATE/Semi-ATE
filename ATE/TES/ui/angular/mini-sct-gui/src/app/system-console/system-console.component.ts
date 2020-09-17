@@ -5,6 +5,7 @@ import { Store, select } from '@ngrx/store';
 import { ConsoleEntry } from '../models/console.model';
 import * as ConsoleActions from './../actions/console.actions';
 import { Observable } from 'rxjs';
+import { CommunicationService } from '../services/communication.service';
 
 @Component({
   selector: 'app-system-console',
@@ -13,21 +14,39 @@ import { Observable } from 'rxjs';
 })
 export class SystemConsoleComponent implements OnInit {
   clearConsoleButtonConfig: ButtonConfiguration;
+  reloadLogsButtonConfig: ButtonConfiguration;
+  getLogFileButtonConfig: ButtonConfiguration;
 
   consoleEntries$: Observable<ConsoleEntry[]>;
 
-  constructor(private readonly store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>, private readonly communicationService: CommunicationService) {
     this.clearConsoleButtonConfig = new ButtonConfiguration();
+    this.reloadLogsButtonConfig = new ButtonConfiguration();
+    this.getLogFileButtonConfig = new ButtonConfiguration();
     this.consoleEntries$ = store.pipe(select('consoleEntries'));
   }
 
   ngOnInit() {
     this.clearConsoleButtonConfig.labelText = 'Clear';
     this.clearConsoleButtonConfig.disabled = false;
+
+    this.reloadLogsButtonConfig.labelText = 'Load Logs';
+    this.reloadLogsButtonConfig.disabled = false;
+
+    this.getLogFileButtonConfig.labelText = 'Download Logs';
+    this.getLogFileButtonConfig.disabled = false;
   }
 
-  clearConsole() {
-    this.store.dispatch(new ConsoleActions.Clear());
+  clearConsole(): void {
+    this.store.dispatch(ConsoleActions.clearConsoleEntries());
+  }
+
+  reloadLogs(): void {
+    this.store.dispatch(ConsoleActions.clearConsoleEntries());
+    this.communicationService.send({type: 'cmd', command: 'getlogs'});
+  }
+
+  getLogFile(): void {
+    this.communicationService.send({type: 'cmd', command: 'getlogfile'});
   }
 }
-

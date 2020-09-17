@@ -1,17 +1,23 @@
-<nav>
-  <ul>
-    <li [ngClass]="{'disabled': isDisabled(menuItem.Info)}">
-      <a [ngClass]="{'active': isActive(menuItem.Info)}" routerLink="{{menuItem.Info}}">Information</a>
-    </li>
-    <li [ngClass]="{'disabled': isDisabled(menuItem.Control)}">
-      <a [ngClass]="{'active': isActive(menuItem.Control)}" routerLink="{{menuItem.Control}}">Control</a>
-    </li>
-    <li [ngClass]="{'disabled': isDisabled(menuItem.Results)}">
-      <a [ngClass]="{'active': isActive(menuItem.Results)}" routerLink="{{menuItem.Results}}">Results</a>
-    </li>
-    <li [ngClass]="{'disabled': isDisabled(menuItem.Logging)}">
-      <a [ngClass]="{'active': isActive(menuItem.Logging)}" routerLink="{{menuItem.Logging}}">Logging</a>
-    </li>
-  </ul>
-</nav>
-<router-outlet></router-outlet>
+<div class="navigationContainer">
+  <nav>
+    <ul>
+      <li [ngClass]="{'disabled': isDisabled(menuItem.Info)}">
+        <a [ngClass]="{'active': isActive(menuItem.Info)}" routerLink="{{menuItem.Info}}">Information</a>
+	    <a class='space'>Information</a>
+      </li>
+      <li [ngClass]="{'disabled': isDisabled(menuItem.Control)}">
+        <a [ngClass]="{'active': isActive(menuItem.Control)}" routerLink="{{menuItem.Control}}">Control</a>
+        <a class='space'>Control</a>
+      </li>
+      <li [ngClass]="{'disabled': isDisabled(menuItem.Results)}">
+        <a [ngClass]="{'active': isActive(menuItem.Results)}" routerLink="{{menuItem.Results}}">Results</a>
+        <a class='space'>Rseults</a>
+      </li>
+      <li [ngClass]="{'disabled': isDisabled(menuItem.Logging)}">
+        <a [ngClass]="{'active': isActive(menuItem.Logging)}" routerLink="{{menuItem.Logging}}">Logging</a>
+        <a class='space'>Logging</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+

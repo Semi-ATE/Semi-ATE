@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { SiteBinInformationComponent } from './site-bin-information.component';
-import { DebugElement } from '@angular/core';
+import { DebugElement, ANALYZE_FOR_ENTRY_COMPONENTS } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MockServerService } from '../services/mockserver.service';
 import * as constants from './../services/mockserver-constants';
@@ -46,8 +46,8 @@ describe('SiteBinInformationComponent', () => {
     fixture.detectChanges();
   });
 
-  afterAll(() => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create site-bin-information component', () => {

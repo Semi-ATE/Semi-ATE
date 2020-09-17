@@ -112,8 +112,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json"
     }
-    launch_master(log_file_name=f'{device_id}_master_log.log',
-                  config_file_path='ATE/TES/apps/master_config_file_template.json',
+    launch_master(config_file_path='ATE/TES/apps/master_config_file_template.json',
                   user_config_dict=config)
 
 
@@ -125,8 +124,7 @@ def run_control(device_id, site_id, broker_host, broker_port):
         'device_id': device_id,
         'site_id': site_id
     }
-    launch_control(log_file_name=f'{device_id}_control_{site_id}_log.log',
-                   config_file_path='ATE/TES/apps/control_config_file_template.json',
+    launch_control(config_file_path='ATE/TES/apps/control_config_file_template.json',
                    user_config_dict=config)
 
 
@@ -473,9 +471,8 @@ async def test_load_run_unload(sites, testzipmockname, process_manager, ws_conne
         assert not (set(seen_states) - {'unloading', 'initialized'})
 
         # STEP 5: kill controls
-        # TODO: commented out TEMPORARILY because it fails and we want to start with a green test (reason unclear, master has exception because of event controldisconnected)
-        # process_manager.kill_processes(*(c.proc_name for c in controls))
-        # await expect_message_with_state(ws, 'connecting', 5.0)
+        process_manager.kill_processes(*(c.proc_name for c in controls))
+        await expect_message_with_state(ws, 'softerror', 5.0)
 
 
 def create_mqtt_client():

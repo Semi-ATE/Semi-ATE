@@ -132,10 +132,24 @@ describe('InputComponent', () => {
 
     expect(component.resetErrorMsg).toHaveBeenCalled();
 
-    // 3rd check that the error message has gone
+    // 3rd check that the error message and value of input has gone
     fixture.detectChanges();
     // update span element
     span = debugElement.query(By.css('span'));
     expect(span).toBe(null);
+    expect(inputElement.textContent).toBe('');
+  });
+
+  it('should emit event when press Enter', () => {
+    let spy = spyOn(component.carriageReturnEvent, 'emit');
+
+    const input = debugElement.query(By.css('input'));
+    const inputElement = input.nativeElement;
+
+    inputElement.value = 'user input';
+    inputElement.dispatchEvent(new KeyboardEvent('keyup', {key: 'Enter'}));
+
+    expect(spy).toHaveBeenCalled();
+    expect(inputElement.value).toEqual('user input');
   });
 });

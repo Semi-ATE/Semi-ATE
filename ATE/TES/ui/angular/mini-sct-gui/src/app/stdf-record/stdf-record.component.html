@@ -5,10 +5,10 @@
   </div>
   <span><hr class="blueDivider"></span>
   <ul class="recordEntries">
-    <li *ngFor="let value of stdfRecord.values">
+    <li *ngFor="let property of stdfRecord.values">
         <div class="label">
-          {{value[0]}}:
-          <span class="value">{{value[1]}}</span>
+          {{property.key}}:
+          <span class="value">{{property.value}}</span>
       </div>
     </li>
   </ul>

@@ -7,4 +7,10 @@ export class CheckboxConfiguration {
     this.checked = false;
     this.disabled = false;
   }
+
+  initCheckBox(labelText: string, checked: boolean, disabled: boolean): void {
+    this.labelText = labelText;
+    this.checked = checked;
+    this.disabled = disabled;
+  }
 }

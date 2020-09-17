@@ -7,12 +7,13 @@ import { MockServerService } from './../services/mockserver.service';
 import * as constants from '../services/mockserver-constants';
 import { By } from '@angular/platform-browser';
 import { AppstateService } from '../services/appstate.service';
-import { StoreModule } from '@ngrx/store';
+import { StoreModule, Store, ReducerManager } from '@ngrx/store';
 import { statusReducer } from '../reducers/status.reducer';
 import { resultReducer } from '../reducers/result.reducer';
 import { consoleReducer } from '../reducers/console.reducer';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
+import { AppState } from '../app.state';
 
 describe('SystemConsoleComponent', () => {
   let msg: ConsoleEntry;
@@ -21,6 +22,7 @@ describe('SystemConsoleComponent', () => {
   let debugElement: DebugElement;
   let appStateService: AppstateService;
   let mockServerService: MockServerService;
+  let originalTimeoutIntervall: number;
 
   beforeEach(async(() => {
 
@@ -52,8 +54,8 @@ describe('SystemConsoleComponent', () => {
     fixture.detectChanges();
   });
 
-  afterAll( () => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create console component', () => {
@@ -76,21 +78,24 @@ describe('SystemConsoleComponent', () => {
   });
 
   it('should show message from server', async () => {
-    const msgFromServer = constants.MESSAGE_WHEN_SYSTEM_STATUS_READY;
+    const msgFromServer = constants.LOG_ENTRIES;
+
     const expectedEntry = [
-      'status',
-      'Entering state \'ready\'.'
+      msgFromServer.payload[0].date,
+      msgFromServer.payload[0].type,
+      msgFromServer.payload[0].description,
     ];
+
     function entryFound(row: Array<string>): boolean {
       let rows = [];
       debugElement.queryAll(By.css('tbody tr'))
         .forEach( r => {
             let rowElements = [];
-            r.queryAll(By.css('.type, .info')).forEach(e => rowElements.push(e.nativeElement.innerText));
+            r.queryAll(By.css('.time, .type, .info')).forEach(e => rowElements.push(e.nativeElement.innerText));
             rows.push(rowElements);
           }
         );
-      return rows.filter( r => JSON.stringify(r) === JSON.stringify(row)).length > 0;
+      return rows.some( r => expectedEntry.every( e => r.some( a => a === e) ));
     }
 
     expect(entryFound(expectedEntry)).toBeFalsy('At the beginning there is no entry with "status, testing"');
@@ -108,22 +113,24 @@ describe('SystemConsoleComponent', () => {
   });
 
   it('should clear all messagess if clear-button has been clicked', async () => {
+    const msgFromServer = constants.LOG_ENTRIES;
 
-    const msgFromServer = constants.MESSAGE_WHEN_SYSTEM_STATUS_READY;
     const expectedEntry = [
-      'status',
-      'Entering state \'ready\'.'
+      msgFromServer.payload[0].date,
+      msgFromServer.payload[0].type,
+      msgFromServer.payload[0].description,
     ];
+
     function entryFound(row: Array<string>): boolean {
       let rows = [];
       debugElement.queryAll(By.css('tbody tr'))
         .forEach( r => {
             let rowElements = [];
-            r.queryAll(By.css('.type, .info')).forEach(e => rowElements.push(e.nativeElement.innerText));
+            r.queryAll(By.css('.time, .type, .info')).forEach(e => rowElements.push(e.nativeElement.innerText));
             rows.push(rowElements);
           }
         );
-      return rows.filter( r => JSON.stringify(r) === JSON.stringify(row)).length > 0;
+      return rows.some( r => expectedEntry.every( e => r.some( a => a === e) ));
     }
 
     expect(entryFound(expectedEntry)).toBeFalsy('At the beginning there is no entry with "status, testing"');
@@ -136,16 +143,14 @@ describe('SystemConsoleComponent', () => {
     await expectWaitUntil(
       () => fixture.detectChanges(),
       () => entryFound(expectedEntry),
-      'No entry: "' + '" has been found',
-      200,3000);
+      'No entry: "' + '" has been found');
 
     // call clear function
     component.clearConsole();
     await expectWaitUntil(
       () => fixture.detectChanges(),
-      () => debugElement.queryAll(By.css('tbody tr')).length === 0,
-      'Console entries still show some log entry',
-      200,3000);
+      () => !entryFound(expectedEntry),
+      'Console entries still show some log entry');
   });
 });
 

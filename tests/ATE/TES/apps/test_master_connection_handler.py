@@ -1,5 +1,6 @@
 from ATE.TES.apps.masterApp.master_connection_handler import MasterConnectionHandler
 from ATE.TES.apps.common.connection_handler import ConnectionHandler
+from ATE.TES.apps.common.logger import Logger
 
 PORT = 1883
 HOST = '10.9.1.6'
@@ -19,6 +20,7 @@ class Msg:
 
 
 class TestApplication:
+    log = Logger('test')
 
     def on_control_status_changed(self, siteid, msg):
         self.controlsite = siteid

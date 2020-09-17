@@ -1,16 +1,15 @@
 import { ConsoleEntry } from './../models/console.model';
 import * as ConsoleActions from './../actions/console.actions';
+import { createReducer, on, Action } from '@ngrx/store';
 
-export function consoleReducer(state: ConsoleEntry[] = [], action: ConsoleActions.Actions) {
+export const initialState = [];
 
-  // return the new state (i.e. next state) depending on the current action type
-  // and payload
-  switch(action.type) {
-    case ConsoleActions.ADD_CONSOLE:
-        return [...state, action.payload];
-      case ConsoleActions.CLEAR_CONSOLE:
-        return [];
-    default:
-        return state;
-  }
+const reducer = createReducer(
+  initialState,
+  on(ConsoleActions.addConsoleEntry, (state, {entries}) => [...entries,...state]),
+  on(ConsoleActions.clearConsoleEntries, state => [])
+);
+
+export function consoleReducer(state: ConsoleEntry[] | undefined, action: Action) {
+  return reducer(state, action);
 }

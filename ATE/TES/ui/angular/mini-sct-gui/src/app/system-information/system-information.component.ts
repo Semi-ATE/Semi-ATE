@@ -1,6 +1,6 @@
 import { InformationConfiguration } from './../basic-ui-elements/information/information-config';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CardConfiguration, CardStyle } from './../basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from './../basic-ui-elements/card/card-config';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.state';
 import { Status, SystemState } from './../models/status.model';
@@ -55,11 +55,7 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     this.informationCardConfiguration.cardStyle = CardStyle.ROW_STYLE;
     this.informationCardConfiguration.labelText = 'System Information';
 
-    this.identifyCardConfiguration = {
-      shadow: true,
-      cardStyle: CardStyle.COLUMN_STYLE,
-      labelText: 'System Identification'
-    };
+    this.identifyCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, 'System Identification');
 
     this.infoContentCardConfiguration.cardStyle = CardStyle.COLUMN_STYLE;
     this.infoContentCardConfiguration.shadow = true;
@@ -78,23 +74,20 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
   }
 
   private computeTextToDisplay(currentText: string, defaultText: string): string {
+    // empty, null or undefined
     if (!currentText)
-      return defaultText;
-    if (currentText === '')
       return defaultText;
     return currentText;
   }
 
   private handleSystemStatusUpdate(status: Status) {
-    if (status) {
-      this.status = status;
-      this.systemInformationConfiguration.value = this.computeTextToDisplay(this.status.deviceId, 'unkown');
-      this.numberOfSitesConfiguration.value = this.status.sites.length;
-      this.timeInformationConfiguration.value = this.status.time;
-      this.environmentInformationConfiguration.value = this.computeTextToDisplay(this.status.env, 'unknown');
-      this.handlerInformationConfiguration.value = this.computeTextToDisplay(this.status.handler, 'unknown');
-      this.lotNumberInformationConfiguration.value = this.computeTextToDisplay(this.status.lotNumber, 'No lot has been loaded');
-    }
+    this.status = status;
+    this.systemInformationConfiguration.value = this.computeTextToDisplay(this.status.deviceId, 'unkown');
+    this.numberOfSitesConfiguration.value = this.status.sites.length;
+    this.timeInformationConfiguration.value = this.status.time;
+    this.environmentInformationConfiguration.value = this.computeTextToDisplay(this.status.env, 'unknown');
+    this.handlerInformationConfiguration.value = this.computeTextToDisplay(this.status.handler, 'unknown');
+    this.lotNumberInformationConfiguration.value = this.computeTextToDisplay(this.status.lotNumber, 'No lot has been loaded');
   }
 
   ngOnDestroy() {

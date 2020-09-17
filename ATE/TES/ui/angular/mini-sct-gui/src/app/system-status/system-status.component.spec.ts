@@ -44,8 +44,8 @@ describe('SystemStatusComponent', () => {
     fixture.detectChanges();
   });
 
-  afterAll( () => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create status component', () => {
@@ -69,10 +69,7 @@ describe('SystemStatusComponent', () => {
     mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_INITIALIZED]);
 
     await expectWaitUntil(
-      () => {
-        fixture.detectChanges();
-        component.ngOnInit();
-      },
+      () => fixture.detectChanges(),
       () => foundCircle('green'),
       'No green circle could be found'
     );
@@ -83,10 +80,7 @@ describe('SystemStatusComponent', () => {
     mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_ERROR]);
 
     await expectWaitUntil(
-      () => {
-        fixture.detectChanges();
-        component.ngOnInit();
-      },
+      () => fixture.detectChanges(),
       () => foundCircle('red'),
       'No red circle could be found'
     );

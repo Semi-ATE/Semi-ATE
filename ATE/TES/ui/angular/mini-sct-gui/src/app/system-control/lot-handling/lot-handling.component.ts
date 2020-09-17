@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ButtonConfiguration } from 'src/app/basic-ui-elements/button/button-config';
-import { CardConfiguration, CardStyle } from './../../basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from './../../basic-ui-elements/card/card-config';
 import { InputConfiguration } from './../../basic-ui-elements/input/input-config';
 import { CommunicationService } from './../../services/communication.service';
 import { Status, SystemState } from 'src/app/models/status.model';
@@ -8,11 +8,6 @@ import { Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/app.state';
 import { takeUntil } from 'rxjs/operators';
-
-enum ButtonTextLabel {
-  LoadLot = 'Load Lot',
-  UnloadLot = 'Unload Lot'
-}
 
 @Component({
   selector: 'app-lot-handling',
@@ -22,7 +17,6 @@ enum ButtonTextLabel {
 export class LotHandlingComponent implements OnInit, OnDestroy {
   lotCardConfiguration: CardConfiguration;
   lotNumberInputConfig: InputConfiguration;
-  loadLotButtonConfig: ButtonConfiguration;
   unloadLotButtonConfig: ButtonConfiguration;
 
   private status: Status;
@@ -31,21 +25,14 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.lotCardConfiguration = new CardConfiguration();
     this.lotNumberInputConfig = new InputConfiguration();
-    this.loadLotButtonConfig = new ButtonConfiguration();
     this.unloadLotButtonConfig = new ButtonConfiguration();
     this.ngUnsubscribe = new Subject<void>();
   }
 
   ngOnInit() {
-    this.loadLotButtonConfig.labelText = ButtonTextLabel.LoadLot;
-    this.unloadLotButtonConfig.labelText = ButtonTextLabel.UnloadLot;
+    this.unloadLotButtonConfig.labelText = 'Unload Lot';
     this.lotNumberInputConfig.placeholder = 'Enter Lot Number';
-    this.lotCardConfiguration = {
-      shadow: true,
-      cardStyle: CardStyle.COLUMN_STYLE,
-      labelText: 'Lot Handling'
-    };
-
+    this.lotCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, 'Lot Handling');
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe( s => this.updateStatus(s));
@@ -93,9 +80,6 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   }
 
   private updateButtonConfigs() {
-    this.loadLotButtonConfig.disabled = this.status.state !== SystemState.initialized;
-    this.loadLotButtonConfig = Object.assign({}, this.loadLotButtonConfig);
-
     this.unloadLotButtonConfig.disabled = this.status.state !== SystemState.ready;
     this.unloadLotButtonConfig = Object.assign({}, this.unloadLotButtonConfig);
   }

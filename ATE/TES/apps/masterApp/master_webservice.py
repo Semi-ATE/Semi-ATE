@@ -1,3 +1,4 @@
+from ATE.TES.apps.common.Utils import LogLevel
 from aiohttp import web, WSMsgType, WSCloseCode
 import json
 import time
@@ -5,14 +6,14 @@ import os
 import weakref
 from enum import Enum
 
-from ATE.TES.apps.common.logger import Logger
-
 
 class MessageTypes(Enum):
     TestResult = 'testresult'
     Status = 'status'
     UserSettings = 'usersettings'
     TestResults = 'testresults'
+    Logs = 'logs'
+    Logfile = 'logfile'
 
     def __call__(self):
         return self.value
@@ -22,7 +23,7 @@ class WebsocketCommunicationHandler:
     def __init__(self, app):
         self._app = app
         self._websockets = weakref.WeakSet()
-        self._log = Logger.get_logger()
+        self._log = app['master_app'].log
 
     def get_current_master_state(self):
         master_app = self._app['master_app']
@@ -51,6 +52,14 @@ class WebsocketCommunicationHandler:
         testresults_message = self._create_testresults_message(testresults)
         await self.send_message_to_all(testresults_message)
 
+    async def send_logs(self, logs):
+        logs_message = self._create_logs_message(logs)
+        await self.send_message_to_all(logs_message)
+
+    async def send_logfile(self, logfile_info):
+        logs_message = self._create_logfile_message(logfile_info)
+        await self.send_message_to_all(logs_message)
+
     async def send_user_settings(self, usersettings):
         testresults_message = self._create_usersettings_message(usersettings)
         await self.send_message_to_all(testresults_message)
@@ -61,6 +70,12 @@ class WebsocketCommunicationHandler:
 
     def _create_testresults_message(self, testresults):
         return self._create_message(MessageTypes.TestResults(), testresults)
+
+    def _create_logs_message(self, logs):
+        return self._create_message(MessageTypes.Logs(), logs)
+
+    def _create_logfile_message(self, logfile_info):
+        return self._create_message(MessageTypes.Logfile(), logfile_info)
 
     def _create_usersettings_message(self, user_settings):
         return self._create_message(MessageTypes.UserSettings(), user_settings)
@@ -88,7 +103,7 @@ class WebsocketCommunicationHandler:
         # master should propagate the available settings each time a page reloaded
         # or new websocket connection is required
         self.handle_new_connection()
-        self._log.debug('websocket connection opened.')
+        self._log.log_message(LogLevel.Debug(), 'websocket connection opened.')
 
         self._websockets.add(ws)
         try:
@@ -98,21 +113,24 @@ class WebsocketCommunicationHandler:
                     if response_message:
                         await ws.send_json(response_message)
                 elif msg.type == WSMsgType.ERROR:
-                    self._log.error('ws connection closed with exception: %s', ws.exception())
+                    self._log.log_message(LogLevel.Error(), f'ws connection closed with exception: {ws.exception()}')
         finally:
             self._websockets.discard(ws)
 
-        self._log.debug('websocket connection closed.')
+        self._log.log_message(LogLevel.Debug(), 'websocket connection closed.')
 
     def handle_new_connection(self):
         self._app['master_app'].on_new_connection()
 
     def handle_client_message(self, message_data: str):
         json_data = json.loads(message_data)
-        self._log.debug('Server received message %s', json_data)
+        self._log.log_message(LogLevel.Debug(), f'Server received message {json_data}')
 
         if json_data.get('type') == 'cmd':
             self._app["master_app"].dispatch_command(json_data)
+
+    def is_ws_connection_established(self):
+        return len(self._websockets) > 0
 
 
 async def index_handler(request):
@@ -124,6 +142,10 @@ async def webservice_init(app):
     static_file_path = app['static_file_path']
     ws_comm_handler = WebsocketCommunicationHandler(app)
     app.add_routes([web.get('/', index_handler),
+                    web.get('/information', index_handler),
+                    web.get('/control', index_handler),
+                    web.get('/results', index_handler),
+                    web.get('/logging', index_handler),
                     web.get('/ws', ws_comm_handler.receive)])
     # From the aiohttp documentation it is known to use
     # add_static only when developing things

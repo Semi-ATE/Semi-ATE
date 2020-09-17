@@ -39,7 +39,7 @@ class OutputParameter:
     def set_test_description(self, test_description):
         self._test_description = test_description
 
-    def _get_test_name(self):
+    def _get_PTR_test_name(self):
         return self._test_description + '.' + self._name
 
     def write(self, measurement):
@@ -84,7 +84,7 @@ class OutputParameter:
     def generate_ptr_record(self, is_pass, site_num):
         return generate_PTR_dict(test_num=self._id + 1, head_num=0, site_num=int(site_num),
                                  is_pass=is_pass == Result.Pass(), param_flag=0, measurement=self._measurement,
-                                 test_txt=self._get_test_name(), alarm_id='')
+                                 test_txt=self._get_PTR_test_name(), alarm_id='')
 
     def get_testresult(self):
         self._test_executions += 1
@@ -115,7 +115,7 @@ class OutputParameter:
         return generate_TSR_dict(head_num=head_num, site_num=site_num, test_typ='P',
                                  test_num=self._id, exec_cnt=self._test_executions, fail_cnt=self._test_failures,
                                  alarm_cnt=1, test_nam=self._test_description, seq_name='seq_name',
-                                 test_lbl=self._get_test_name(),
+                                 test_lbl=self._get_PTR_test_name(),
                                  opt_flag=['0', '0', '0', '1', '0', '0', '0', '0'],
                                  test_tim=execution_time,
                                  test_min=self._get_lowest_test_result(),
@@ -127,7 +127,7 @@ class OutputParameter:
         return generate_TSR_dict(head_num=head_num, site_num=site_num, test_typ='P',
                                  test_num=self._id, exec_cnt=self._test_executions, fail_cnt=self._test_failures,
                                  alarm_cnt=1, test_nam=self._test_description, seq_name='seq_name',
-                                 test_lbl=self._get_test_name(),
+                                 test_lbl=self._get_PTR_test_name(),
                                  opt_flag=['1', '1', '1', '1', '1', '1', '1', '1'],
                                  test_tim=execution_time,
                                  test_min=0.0,

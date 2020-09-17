@@ -25,9 +25,9 @@ export interface Status {
 
 export function statusEqual(status1: Status, status2: Status, ignoreTime: boolean = true): boolean {
   let equal = true;
-  if (status1 && !status2 ) {
+  if (status1 && !status2) {
     return false;
-  } else if (!status1 && status2 ) {
+  } else if (!status1 && status2) {
     return false;
   } else if (!status1 && !status2) {
     return true;

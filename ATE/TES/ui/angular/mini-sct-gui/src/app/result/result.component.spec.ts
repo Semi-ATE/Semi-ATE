@@ -23,6 +23,7 @@ describe('ResultComponent', () => {
   let fixture: ComponentFixture<ResultComponent>;
   let debugElement: DebugElement;
   let mockServerService: MockServerService;
+  let appstateService: AppstateService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -54,7 +55,7 @@ describe('ResultComponent', () => {
 
   beforeEach(() => {
     mockServerService = TestBed.inject(MockServerService);
-    TestBed.inject(AppstateService);
+    appstateService = TestBed.inject(AppstateService);
     fixture = TestBed.createComponent(ResultComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
@@ -62,7 +63,7 @@ describe('ResultComponent', () => {
   });
 
   afterEach(() => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID).remove();
+    mockServerService.ngOnDestroy();
   });
 
   it('should create site component', () => {

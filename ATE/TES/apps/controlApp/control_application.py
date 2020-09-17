@@ -1,5 +1,6 @@
 """ control App """
 from ATE.TES.apps.controlApp.control_connection_handler import ControlConnectionHandler
+from ATE.TES.apps.common.logger import Logger
 import sys
 import asyncio
 
@@ -25,13 +26,15 @@ class ControlApplication:
         self.broker_host = configuration["broker_host"]
         self.broker_port = configuration["broker_port"]
         self.configuration = configuration
+        self.log = Logger('control')
 
     async def _run_task(self):
         self.connection_handler = ControlConnectionHandler(
             self.broker_host,
             self.broker_port,
             self.site_id,
-            self.device_id)
+            self.device_id,
+            self.log)
         self.connection_handler.start()
         try:
             while True:

@@ -5,7 +5,7 @@
     input {
       margin: 10px;
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.3;
         cursor: not-allowed;
         background-color: #aaa;
         color: grey;
@@ -38,6 +38,10 @@
       -webkit-transform: translateX(26px);
       -ms-transform: translateX(26px);
       transform: translateX(26px);
+    }
+    &:disabled + .slider {
+      cursor: not-allowed;
+      opacity: 0.3;
     }
   }
 }

@@ -9,4 +9,9 @@ export class ButtonConfiguration {
     this.labelText =  '';
     this.disabled =  true;
   }
+
+  initButton(labelText: string, disabled: boolean): void {
+    this.labelText = labelText;
+    this.disabled = disabled;
+  }
 }

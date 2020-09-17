@@ -8,7 +8,7 @@ export async function expectWaitUntil(
   fn,
   fnCondition,
   errorMessage: string,
-  pollInterval: number = 100,
+  pollInterval: number = 50,
   timeout: number = 1500) {
   let startTime = performance.now();
   let timeoutReached = false;
@@ -48,3 +48,18 @@ export async function expectWhile(
     }
     expect(failed).toBe(false, onFailedMessage);
   }
+
+export function spyOnStoreArguments(object: any, method: string, args: Array<any>): jasmine.Spy<any> {
+  // As we need a function here we have to disable the only-arrow-functions rule here
+  // the reason is that the this context, i.e. execution context is different from function
+  // and arrow functions
+  // tslint:disable:only-arrow-functions
+  return spyOn(object, method).and.callFake(function() {
+    let idx = 0;
+    while(arguments[idx]) {
+      args.push(arguments[idx]);
+      idx++;
+    }
+  });
+  // tslint:enable:only-arrow-functions
+}
