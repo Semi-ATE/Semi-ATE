@@ -5,22 +5,17 @@
 {{ line }}
 {% endfor %}
 """
-import {{ definition['base_class'] }}
+from {{ definition['base_class'] }}.{{ definition['base_class'] }} import {{ definition['base_class'] }}
 
 
 class {{ definition['name'] }}({{ definition['base_class'] }}):
-    '''{{ definition['docstring'][0] }}
-    {% for i in range(1, definition['doc_string'].__len__()) %}
-    TDOD:  editing the test paramter must update the docstring
-    {{ definition['doc_string'][i] }}
-    {% endfor %}
-
+    '''
 {{ do_not_touch_section }}
     '''
 
-    def do(self, ip, op):
+    def do(self):
         """Default implementation for the '{{ definition['name'] }}' test."""
-        super().do(ip, op)
+        super().do()
 
 
 if __name__ == '__main__':
@@ -30,5 +25,12 @@ if __name__ == '__main__':
     if tester_mode == 'DIRECT':
         pass  # TODO: implement
     else:  # 'INTERACTIVE'
-        from ATE.org import TestRunner
-        testRunner = TestRunner(__file__)
+        from PyQt5 import QtWidgets
+        import sys
+        import qdarkstyle
+        app = QtWidgets.QApplication(sys.argv)
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        from ATE.spyder.widgets.actions_on.tests.TestRunner import TestRunner
+        testRunner = TestRunner(__file__, None)
+        testRunner.show()
+        sys.exit(app.exec_())

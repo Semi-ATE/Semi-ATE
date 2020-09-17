@@ -6,7 +6,7 @@ import { TestOptionComponent } from './../system-control/test-option/test-option
 import { TestExecutionComponent } from './../system-control/test-execution/test-execution.component';
 import { LotHandlingComponent } from './../system-control/lot-handling/lot-handling.component';
 import { CardComponent } from 'src/app/basic-ui-elements/card/card.component';
-import { SystemSiteComponent } from './../system-site/system-site.component';
+import { ResultComponent } from './../result/result.component';
 import { SystemConsoleComponent } from './../system-console/system-console.component';
 import { SystemControlComponent } from './../system-control/system-control.component';
 import { SystemInformationComponent } from './../system-information/system-information.component';
@@ -16,13 +16,19 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { SystemState } from 'src/app/models/status.model';
-import { MenuItem, routes } from '../app-routing.module';
+import { MenuItem, MINISCT_ROUTES } from '../routing-table';
 import { InformationComponent } from '../basic-ui-elements/information/information.component';
 import { Router } from '@angular/router';
 import { MockServerService } from '../services/mockserver.service';
 import * as constants from './../services/mockserver-constants';
 import { CommunicationService } from '../services/communication.service';
 import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
+import { StoreModule } from '@ngrx/store';
+import { statusReducer } from '../reducers/status.reducer';
+import { resultReducer } from '../reducers/result.reducer';
+import { consoleReducer } from '../reducers/console.reducer';
+import { AppstateService } from '../services/appstate.service';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 
 describe('MenuComponent', () => {
   let component: MenuComponent;
@@ -39,7 +45,7 @@ describe('MenuComponent', () => {
         SystemInformationComponent,
         SystemControlComponent,
         SystemConsoleComponent,
-        SystemSiteComponent,
+        ResultComponent,
         CardComponent,
         InformationComponent,
         LotHandlingComponent,
@@ -50,9 +56,15 @@ describe('MenuComponent', () => {
         CheckboxComponent
       ],
       imports: [
-        RouterTestingModule.withRoutes(routes),
-        FormsModule
-      ],
+        RouterTestingModule.withRoutes(MINISCT_ROUTES),
+        FormsModule,
+        StoreModule.forRoot({
+          systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
+        }
+      )],
       providers: [
         CommunicationService,
       ]
@@ -61,11 +73,12 @@ describe('MenuComponent', () => {
   }));
 
   beforeEach(() => {
-    mockServerService = new MockServerService();
+    mockServerService = TestBed.inject(MockServerService);
+    TestBed.inject(AppstateService);
     fixture = TestBed.createComponent(MenuComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
-    router = TestBed.get(Router);
+    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -114,7 +127,6 @@ describe('MenuComponent', () => {
 
     await expectWaitUntil(
       () => {
-        component.ngOnInit();
         fixture.detectChanges();
       },
       resultAndControlMenuItemAreDisabled,
@@ -136,7 +148,6 @@ describe('MenuComponent', () => {
 
     await expectWaitUntil(
       () => {
-        component.ngOnInit();
         fixture.detectChanges();
       },
       thereIsNoDisabledMenuItem,
@@ -160,7 +171,6 @@ describe('MenuComponent', () => {
 
     await expectWaitUntil(
       () => {
-        component.ngOnInit();
         fixture.detectChanges();
       },
       loggingIsNotDisabled,

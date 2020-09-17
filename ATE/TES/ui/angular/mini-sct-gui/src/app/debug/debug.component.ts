@@ -40,8 +40,20 @@ export class DebugComponent implements OnInit {
       value: SystemState.error
     },
     {
-      description: 'Generate Console Entry',
-      value: 'Console'
+      description: 'Softerror',
+      value: SystemState.softerror
+    },
+    {
+      description: 'Generate Test Result',
+      value: 'Result'
+    },
+    {
+      description: 'Set test options',
+      value: 'TestOptions'
+    },
+    {
+      description: 'Reload Results',
+      value: 'ReloadResults'
     }
   ];
 
@@ -71,11 +83,38 @@ export class DebugComponent implements OnInit {
       case SystemState.error:
         this.mss.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_ERROR]);
         break;
+      case SystemState.softerror:
+        this.mss.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_SOFTERROR]);
+        break;
       case SystemState.unloading:
         this.mss.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_UNLOADING]);
         break;
-      case 'Console':
-        this.mss.setMessages([constants.TEST_APP_MESSAGE_SITE_7_TESTING])
+      case 'Result':
+        this.mss.setRepeatMessages(true);
+        this.mss.setMessages([
+          constants.TEST_RESULT_SITE_0_TEST_PASSED,
+          constants.TEST_RESULT_SITE_1_TEST_FAILED,
+          constants.TEST_RESULT_SITE_2_TEST_PASSED,
+          constants.TEST_RESULT_SITE_3_TEST_FAILED,
+          constants.TEST_RESULT_SITE_0_TEST_FAILED,
+          constants.TEST_RESULT_SITE_1_TEST_PASSED,
+          constants.TEST_RESULT_SITE_2_TEST_FAILED,
+          constants.TEST_RESULT_SITE_3_TEST_PASSED,
+        ]);
+        break;
+      case 'TestOptions':
+        this.mss.setRepeatMessages(false);
+        this.mss.setMessages([
+          constants.USER_SETTINGS_FROM_SERVER,
+          {}
+        ]);
+        break;
+      case 'ReloadResults':
+        this.mss.setRepeatMessages(false);
+        this.mss.setMessages([
+          constants.TEST_RESULTS_SITE_1_AND_2,
+          {}
+        ]);
         break;
     }
   }

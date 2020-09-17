@@ -3,6 +3,8 @@ import { CardComponent, CardStyle } from './card.component';
 import { DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { By } from '@angular/platform-browser';
 
+declare var viewport: any;
+
 describe('CardComponent', () => {
   let component: CardComponent;
   let fixture: ComponentFixture<CardComponent>;
@@ -59,6 +61,12 @@ describe('CardComponent', () => {
 
   it('should support cardStyle to be rowStyle', () => {
     component.cardConfiguration.cardStyle = CardStyle.ROW_STYLE;
+
+    // we need to set a large vieport here in order to make this test
+    // pass during the CI Build were the tests are executed on a headless
+    // chrome instance
+    viewport.set(1200, 1200);
+
     fixture.detectChanges();
 
     let card = debugElement.query(By.css('.card'));

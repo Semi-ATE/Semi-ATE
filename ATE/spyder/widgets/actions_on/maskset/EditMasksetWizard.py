@@ -5,9 +5,6 @@ from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import NewMasksetWiz
 from ATE.spyder.widgets.actions_on.maskset.ViewMasksetSettings import ViewMasksetSettings
 
 
-UI_FILE = "MasksetWizard.ui"
-
-
 class EditMasksetWizard(NewMasksetWizard):
     def __init__(self, project_info, maskset_name):
         super().__init__(project_info, read_only=True)

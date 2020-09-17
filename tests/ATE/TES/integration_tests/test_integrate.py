@@ -110,7 +110,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         "skip_jobdata_verification": False,
         "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
-        "user_settings_filepath": None  # explicitly disable persistent user settings, so we don't create or use config files
+        "user_settings_filepath": "master_user_settings.json"
     }
     launch_master(log_file_name=f'{device_id}_master_log.log',
                   config_file_path='ATE/TES/apps/master_config_file_template.json',
@@ -1241,8 +1241,7 @@ async def test_standalone_testapp_resource_request(num_dut_tests_to_run, process
 
 
 # @pytest.mark.asyncio
-# @pytest.mark.parametrize('stop_on_fail_enabled', [True, False, None])  # None included for default (True)
-@pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.parametrize('stop_on_fail_enabled', [True, False, None])  # None included for default (True)
 async def test_standalone_testapp_stop_on_fail_setting(stop_on_fail_enabled, process_manager, ws_connection):
     subscriptions = [
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
@@ -1272,7 +1271,7 @@ async def test_standalone_testapp_stop_on_fail_setting(stop_on_fail_enabled, pro
         # STEP 2: run duttest
         next_cmd_payload = {'type': 'cmd', 'command': 'next', 'sites': [site_id]}
         if stop_on_fail_enabled is not None:
-            next_cmd_payload.update({'job_data': {'duttest.stop_on_fail': stop_on_fail_enabled}})
+            next_cmd_payload.update({'job_data': {'stop_on_fail': {'active': stop_on_fail_enabled, 'value': -1}}})
         mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', next_cmd_payload)
 
         # CASE 2.1: with stop-on-fail enabled the duttests will execute and return test results immedately

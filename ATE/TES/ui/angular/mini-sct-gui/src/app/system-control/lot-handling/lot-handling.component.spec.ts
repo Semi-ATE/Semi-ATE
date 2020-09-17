@@ -11,11 +11,17 @@ import { StoreModule } from '@ngrx/store';
 import { statusReducer } from 'src/app/reducers/status.reducer';
 import { resultReducer } from 'src/app/reducers/result.reducer';
 import { consoleReducer } from 'src/app/reducers/console.reducer';
+import { CommunicationService } from 'src/app/services/communication.service';
+import { MockServerService } from 'src/app/services/mockserver.service';
+import * as constants from 'src/app/services/mockserver-constants';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 
 describe('LotHandlingComponent', () => {
   let component: LotHandlingComponent;
   let fixture: ComponentFixture<LotHandlingComponent>;
   let debugElement: DebugElement;
+  let communicationService: CommunicationService;
+  let mockServerService: MockServerService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -24,8 +30,9 @@ describe('LotHandlingComponent', () => {
         FormsModule,
         StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
         })
       ],
       schemas: []
@@ -34,10 +41,16 @@ describe('LotHandlingComponent', () => {
   }));
 
   beforeEach(() => {
+    mockServerService = TestBed.inject(MockServerService);
+    communicationService = TestBed.inject(CommunicationService);
     fixture = TestBed.createComponent(LotHandlingComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
     fixture.detectChanges();
+  });
+
+  afterAll( () => {
+    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
   });
 
   it('should create lot-handling component', () => {
@@ -70,6 +83,29 @@ describe('LotHandlingComponent', () => {
     component.loadLot();
     fixture.detectChanges();
     expect(inputElement.textContent).toBe('A lot number should be in 6.3 format like \"123456.123\"');
+  });
+
+  it('should send lot number to the server', () => {
+    // we need a valid lot number, i.e. 6-point-3-format
+    const lotNumber = '123456.123';
+    component.lotNumberInputConfig.value = lotNumber;
+    fixture.detectChanges();
+
+    let communicationServiceRetrievedSendArgument: any;
+    // As we nned a function here we have to disable the only-arrow-functions rule here
+    // the reason is that the this context, i.e. execution context is different from function
+    // and arrow functions
+    // tslint:disable:only-arrow-functions
+    let sendSpy = spyOn(communicationService, 'send').and.callFake( function() {
+      communicationServiceRetrievedSendArgument = arguments[0];
+    });
+    // tslint:enable:only-arrow-functions
+
+
+    component.loadLot();
+    fixture.detectChanges();
+    expect(sendSpy).toHaveBeenCalled();
+    expect(communicationServiceRetrievedSendArgument.lot_number).toEqual(lotNumber);
   });
 
   it('load lot button should be disabled in states connecting, testing, ready and unloading but enabled in state initialized', () => {

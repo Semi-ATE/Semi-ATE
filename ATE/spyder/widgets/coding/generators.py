@@ -1010,9 +1010,9 @@ class test_program_generator(BaseGenerator):
         if os.path.exists(self.abs_path_to_file):
             os.remove(self.abs_path_to_file)
 
-        test_list = self.build_test_entry_list(datasource, owner, prog_name)
+        test_list, test_imports = self.build_test_entry_list(datasource, owner, prog_name)
 
-        output = template.render(test_list=test_list)
+        output = template.render(test_list=test_list, test_imports=test_imports)
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
@@ -1026,6 +1026,7 @@ class test_program_generator(BaseGenerator):
 
         # step 3: Augment sequences with actual classnames
         test_list = []
+        test_imports = {}
         for program_entry in tests_in_program:
             test_class = self.resolve_class_for_test(program_entry.test, test_targets)
             test_module = self.resolve_module_for_test(program_entry.test, test_targets)
@@ -1037,6 +1038,7 @@ class test_program_generator(BaseGenerator):
                 params['output_parameters'][op]['id'] = self.current_param_id
                 self.current_param_id += 1
 
+            test_imports.update({test_module: test_class})
             test_list.append({"test_name": program_entry.test,
                               "test_class": test_class,
                               "test_module": test_module,
@@ -1044,7 +1046,7 @@ class test_program_generator(BaseGenerator):
                               "output_parameters": params['output_parameters'],
                               "input_parameters": params['input_parameters']})
 
-        return test_list
+        return test_list, test_imports
 
     def resolve_class_for_test(self, test_name, test_targets):
         for target in test_targets:

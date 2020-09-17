@@ -95,7 +95,12 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/app/debug/**",
+              "src/app/test-stuff/**"
+            ]
           }
         },
         "lint": {
@@ -125,6 +130,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "mini-sct-gui"
+    }
+  },
+  "defaultProject": "mini-sct-gui",
+  "cli": {
+    "analytics": false
+  }
 }

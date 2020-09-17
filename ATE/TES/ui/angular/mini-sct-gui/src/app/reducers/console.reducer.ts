@@ -1,5 +1,5 @@
-import { ConsoleEntry } from './../models/console.model'
-import * as ConsoleActions from './../actions/console.actions'
+import { ConsoleEntry } from './../models/console.model';
+import * as ConsoleActions from './../actions/console.actions';
 
 export function consoleReducer(state: ConsoleEntry[] = [], action: ConsoleActions.Actions) {
 

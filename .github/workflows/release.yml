@@ -1,0 +1,30 @@
+
+
+#on:
+#  push:
+#    # Sequence of patterns matched against refs/heads
+#    branches:    
+#      # Push events on master branch
+#      - master
+#      # Push events to branches matching refs/heads/mona/octocat
+#      - 'mona/octocat'
+#      # Push events to branches matching refs/heads/releases/10
+#      - 'releases/**'
+#    # Sequence of patterns matched against refs/tags
+#    tags:        
+#      - v1             # Push events to v1 tag
+
+
+#- name: Pypi upload
+#  # You may pin to the exact commit or the version.
+#  # uses: ortega2247/pypi-upload-action@59f0fe9acc851779aea74d17a72d1f13eeaab052
+#  uses: ortega2247/pypi-upload-action@v1
+#  with:
+#    # PyPI user
+#    user: # optional, default is __token__
+#    # Password for your PyPI user or an access token
+#    password: 
+#    # The repository URL to use
+#    repository_url: # optional
+#    # The target directory for distribution
+#    packages_dir: # optional, default is dist

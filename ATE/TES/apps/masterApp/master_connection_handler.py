@@ -7,6 +7,7 @@ from typing import Optional
 TOPIC_COMMAND = "Master/cmd"
 TOPIC_TESTSTATUS = "TestApp/status"
 TOPIC_TESTRESULT = "TestApp/testresult"
+TOPIC_TESTSUMMARY = "TestApp/testsummary"
 TOPIC_TESTRESOURCE = "TestApp/resource"
 TOPIC_CONTROLSTATUS = "Control/status"
 INTERFACE_VERSION = 1
@@ -45,12 +46,6 @@ class MasterConnectionHandler:
                           self.mqtt.create_message(
                           self._generate_status_message(ALIVE, state, statedict)),
                           False)
-
-    def publish_usersettings(self, usersettings: dict):
-        self.mqtt.publish(self._generate_topic_usersettings(),
-                          self.mqtt.create_message(
-                              self._generate_usersettings_message(usersettings)),
-                          retain=False)
 
     def publish_resource_config(self, resource_id: str, config: dict):
         self.mqtt.publish(self._generate_resource_config_topic(resource_id),
@@ -110,9 +105,6 @@ class MasterConnectionHandler:
         self.log.info("send start next test command")
         return True
 
-    def __generate_command_message(self, topic):
-        pass
-
     def on_cmd_message(self, message):
         payload = self.decode_message(message)
 
@@ -132,6 +124,7 @@ class MasterConnectionHandler:
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTRESULT))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTSTATUS))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTRESOURCE))
+        self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTSUMMARY))
         self.status_consumer.startup_done()
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
@@ -186,6 +179,10 @@ class MasterConnectionHandler:
             return m.group(1)
 
     def __extract_siteid_from_testapp_topic(self, topic):
+        pat1 = rf'ate/{self.device_id}/TestApp/(?:status|testsummary)/site(.+)$'
+        m = re.match(pat1, topic)
+        if m:
+            return m.group(1)
         pat = rf'ate/{self.device_id}/TestApp/(?:status|testresult)/site(.+)$'
         m = re.match(pat, topic)
         if m:
@@ -210,12 +207,14 @@ class MasterConnectionHandler:
     def dispatch_testapp_message(self, client, topic, msg):
         siteid = self.__extract_siteid_from_testapp_topic(topic)
         if siteid is None:
-            self.log.warning('unexpected message on testapp topic '
+            self.log.warning('unexpected message on testapp topic ' /
                              + f'"{topic}": extracting siteid failed')
             return
 
         if "testresult" in topic:
             self.status_consumer.on_testapp_testresult_changed(siteid, msg)
+        elif "testsummary" in topic:
+            self.status_consumer.on_testapp_testsummary_changed(msg)
         elif "resource" in topic:
             assert 'type' in msg
             assert msg['type'] == 'resource-config-request'

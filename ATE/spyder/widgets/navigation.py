@@ -318,7 +318,7 @@ class ProjectNavigation(QObject):
         this method returns a DICTIONARY with as key all maskset names,
         and as value the tuple (customer, definition)
         '''
-        return self.get_masksets()
+        return [maskset.name for maskset in self.get_masksets()]
 
     def get_maskset_names(self):
         '''
@@ -624,14 +624,14 @@ class ProjectNavigation(QObject):
 
         from ATE.spyder.widgets.coding.generators import test_program_generator
         for program in programs:
+            if not Program.get(self.get_session(), program).is_valid:
+                continue
+
             Program.set_program_validity(self.get_session(), program, False)
             test_program_generator.append_exception_code(self._generate_program_path(program))
 
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
-
-    def _generate_program_path(self, prog_name):
-        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, prog_name + '.py')
 
     def _update_test_program_valid_state(self, program_name, is_valid):
         Program.set_program_state(self.get_session(), program_name, is_valid)
@@ -1035,6 +1035,7 @@ class ProjectNavigation(QObject):
         testdefinition['hardware'] = hardware
         from ATE.spyder.widgets.coding.generators import test_target_generator
         test_target_generator(self.project_directory, testdefinition, do_update)
+        self._update_programs_state_for_test(test)
 
     def get_available_testers(self):
         # TODO: implement once the pluggy stuff is in place.

@@ -1,4 +1,4 @@
-import { InputConfiguration } from './../../basic-ui-elements/input/input-config';
+import { InputConfiguration, InputType } from './../../basic-ui-elements/input/input-config';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CheckboxConfiguration } from './../../basic-ui-elements/checkbox/checkbox-config';
 import { ButtonConfiguration } from 'src/app/basic-ui-elements/button/button-config';
@@ -9,6 +9,7 @@ import { Status, SystemState } from 'src/app/models/status.model';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/app.state';
 import { takeUntil } from 'rxjs/operators';
+import { TestOptionType, TestOptionSetting, UserSettings } from 'src/app/models/usersettings.model';
 
 export enum TestOptionLabelText {
   stopOnFail = 'Stop on Fail',
@@ -22,29 +23,24 @@ export enum TestOptionLabelText {
   reset = 'Reset'
 }
 
-export class TestOptionValue {
+export interface TestOptionValue {
   active: boolean;
-  value: string;
-
-  constructor() {
-    this.active = false;
-    this.value = '';
-  }
+  value: number;
 }
 
 export class TestOption {
-  name: string;
+  type: TestOptionType;
   checkboxConfig: CheckboxConfiguration;
   inputConfig: InputConfiguration;
   currentValue: TestOptionValue;
   toBeAppliedValue: TestOptionValue;
 
-  constructor(name: string) {
-    this.name = name;
+  constructor(type: TestOptionType) {
+    this.type = type;
     this.checkboxConfig = new CheckboxConfiguration();
     this.inputConfig = new InputConfiguration();
-    this.toBeAppliedValue = new TestOptionValue();
-    this.currentValue = new TestOptionValue();
+    this.toBeAppliedValue = {active: false, value: -1};
+    this.currentValue = {active: false, value: -1};
   }
 
   onChange(checked: boolean): void {
@@ -61,7 +57,7 @@ export class TestOption {
   reset(): void {
     this.toBeAppliedValue = Object.assign({}, this.currentValue);
     this.checkboxConfig.checked = this.currentValue.active;
-    this.inputConfig.value = this.currentValue.value;
+    this.inputConfig.value = this.currentValue.value.toString();
     this.inputConfig.disabled = !this.currentValue.active;
   }
 }
@@ -74,8 +70,8 @@ export class TestOption {
 export class TestOptionComponent implements OnInit, OnDestroy {
 
   private status: Status;
-  private testOptions: Array<TestOption>;
-  private ngUnsubscribe: Subject<void>;
+  private readonly testOptions: Array<TestOption>;
+  private readonly ngUnsubscribe: Subject<void>;
 
   // Test options
   stopOnFailOption: TestOption;
@@ -88,13 +84,15 @@ export class TestOptionComponent implements OnInit, OnDestroy {
   applyTestOptionButtonConfig: ButtonConfiguration;
   resetOptionButtonConfig: ButtonConfiguration;
 
-  constructor(private readonly communicationService: CommunicationService, private store: Store<AppState>) {
-    this.stopOnFailOption = new TestOption('stop_on_fail');
-    this.singleStepOption = new TestOption('single_step');
-    this.stopAtTestNumberOption = new TestOption('stop_at_test_number');
-    this.triggerForTestNumberOption = new TestOption('trigger_for_test_number');
-    this.triggerOnFailureOption = new TestOption('trigger_on_failure');
-    this.triggerSiteSpecificOption = new TestOption('trigger_site_specific');
+  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
+    this.stopOnFailOption = new TestOption(TestOptionType.stopOnFail);
+    this.singleStepOption = new TestOption(TestOptionType.singleStep);
+    this.stopAtTestNumberOption = new TestOption(TestOptionType.stopAtTestNumber);
+    this.stopAtTestNumberOption.inputConfig.type = InputType.number;
+    this.triggerForTestNumberOption = new TestOption(TestOptionType.triggerForTestNumber);
+    this.triggerForTestNumberOption.inputConfig.type = InputType.number;
+    this.triggerOnFailureOption = new TestOption(TestOptionType.triggerOnFailure);
+    this.triggerSiteSpecificOption = new TestOption(TestOptionType.triggerSiteSpecific);
     this.testOptionCardConfiguration = new CardConfiguration();
     this.applyTestOptionButtonConfig = new ButtonConfiguration();
     this.resetOptionButtonConfig = new ButtonConfiguration();
@@ -134,6 +132,10 @@ export class TestOptionComponent implements OnInit, OnDestroy {
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(s => this.updateStatus(s));
+
+    this.store.select('userSettings')
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(e => this.updateTestOptions(e));
   }
 
   ngOnDestroy() {
@@ -144,6 +146,20 @@ export class TestOptionComponent implements OnInit, OnDestroy {
   private updateStatus(status: Status) {
     this.status = status;
     this.updateTestOptionConfigs();
+  }
+
+  private updateTestOptions(userSettings: UserSettings) {
+    userSettings.testOptions.forEach(e => {
+      let option = this.testOptions.find( o => o.type === e.type);
+      if (option) {
+        option.currentValue = {active: e.value.active, value: e.value.value || -1};
+        option.toBeAppliedValue = {active: e.value.active, value: e.value.value || -1};
+        option.inputConfig.value = (e.value.value || -1).toString();
+        option.checkboxConfig.checked = e.value.active;
+      }
+    });
+    this.applyTestOptionButtonConfig.disabled = true;
+    this.resetOptionButtonConfig.disabled = true;
   }
 
   private updateTestOptionConfigs() {
@@ -161,9 +177,6 @@ export class TestOptionComponent implements OnInit, OnDestroy {
     testOption.onChange(checkboxValue);
     this.applyTestOptionButtonConfig.disabled = !this.anyOptionChanged();
     this.resetOptionButtonConfig.disabled = this.applyTestOptionButtonConfig.disabled;
-
-    this.applyTestOptionButtonConfig = Object.assign({}, this.applyTestOptionButtonConfig);
-    this.resetOptionButtonConfig = Object.assign({}, this.resetOptionButtonConfig);
   }
 
   anyOptionChanged(): boolean {
@@ -177,16 +190,17 @@ export class TestOptionComponent implements OnInit, OnDestroy {
 
   sendOptionsToServer(): void {
     let dataToSend = [];
-    this.testOptions.forEach(o => {
-      if (o.haveToApply()) {
+    this.testOptions.forEach(o =>
         dataToSend.push({
-          name : o.name,
+          name : o.type,
           active : o.toBeAppliedValue.active,
-          value : o.toBeAppliedValue.value || ''
-        });
-      }
+          value : o.toBeAppliedValue.value || -1
+        }));
+    this.communicationService.send({
+      type: 'cmd',
+      command: 'usersettings',
+      payload: dataToSend
     });
-    this.communicationService.send(JSON.stringify(dataToSend));
   }
 
   resetTestOptions() {

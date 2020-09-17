@@ -5,7 +5,10 @@
 {{ line }}
 {% endfor %}
 """
-from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+if __name__ == '__main__':
+    from {{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+else:
+    from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['name'] }}_BC
 
 
 class {{ definition['name'] }}({{ definition['name'] }}_BC):
@@ -36,6 +39,12 @@ if __name__ == '__main__':
     if tester_mode == 'DIRECT':
         pass  # TODO: implement
     else:  # 'INTERACTIVE'
-        from ATE.org import TestRunner
-        testRunner = TestRunner(__file__)
-
+        from PyQt5 import QtWidgets
+        import sys
+        import qdarkstyle
+        app = QtWidgets.QApplication(sys.argv)
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        from ATE.spyder.widgets.actions_on.tests.TestRunner import TestRunner
+        testRunner = TestRunner(__file__, None)
+        testRunner.show()
+        sys.exit(app.exec_())

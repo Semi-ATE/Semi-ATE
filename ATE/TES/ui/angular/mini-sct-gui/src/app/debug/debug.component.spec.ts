@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import * as constants from 'src/app/services/mockserver-constants';
 import { DebugComponent } from './debug.component';
 
 describe('DebugComponent', () => {
@@ -12,6 +12,10 @@ describe('DebugComponent', () => {
     })
     .compileComponents();
   }));
+
+  afterAll( () => {
+    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DebugComponent);

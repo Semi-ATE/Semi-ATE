@@ -1,6 +1,7 @@
 {
     "extends": "tslint:recommended",
     "rules": {
+        "no-bitwise": false,
         "class-name": true,
         "leadingUnderscore": false,
         "prefer-const": false,
@@ -57,7 +58,7 @@
             "check-else",
             "check-whitespace"
         ],
-        "interface-name": true,
+        "interface-name": false,
         "max-classes-per-file": false,
         "member-access": [
             true,

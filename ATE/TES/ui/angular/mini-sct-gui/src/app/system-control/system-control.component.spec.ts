@@ -14,6 +14,7 @@ import { StoreModule } from '@ngrx/store';
 import { statusReducer } from '../reducers/status.reducer';
 import { resultReducer } from '../reducers/result.reducer';
 import { consoleReducer } from '../reducers/console.reducer';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 
 describe('SystemControlComponent', () => {
   let component: SystemControlComponent;
@@ -36,8 +37,9 @@ describe('SystemControlComponent', () => {
         FormsModule,
         StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
         })
       ],
       schemas: []

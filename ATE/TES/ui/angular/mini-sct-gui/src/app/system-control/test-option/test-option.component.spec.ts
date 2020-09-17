@@ -1,7 +1,7 @@
 import { ButtonComponent } from 'src/app/basic-ui-elements/button/button.component';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
-import { TestOptionComponent, TestOptionValue, TestOption, TestOptionLabelText } from './test-option.component';
+import { TestOptionComponent, TestOption, TestOptionLabelText } from './test-option.component';
 import { By } from '@angular/platform-browser';
 import { SystemState } from 'src/app/models/status.model';
 import { CheckboxComponent } from 'src/app/basic-ui-elements/checkbox/checkbox.component';
@@ -12,11 +12,21 @@ import { StoreModule } from '@ngrx/store';
 import { statusReducer } from 'src/app/reducers/status.reducer';
 import { resultReducer } from 'src/app/reducers/result.reducer';
 import { consoleReducer } from 'src/app/reducers/console.reducer';
+import { CommunicationService } from 'src/app/services/communication.service';
+import { TestOptionType } from 'src/app/models/usersettings.model';
+import { MockServerService } from 'src/app/services/mockserver.service';
+import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
+import * as constants from 'src/app/services/mockserver-constants';
+import { expectWaitUntil } from 'src/app/test-stuff/auxillary-test-functions';
+import { AppstateService } from 'src/app/services/appstate.service';
 
 describe('TestOptionComponent', () => {
   let component: TestOptionComponent;
   let fixture: ComponentFixture<TestOptionComponent>;
   let debugElement: DebugElement;
+  let mockServerService: MockServerService;
+  let communicationService: CommunicationService;
+  let appStateService: AppstateService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -30,8 +40,9 @@ describe('TestOptionComponent', () => {
         FormsModule,
         StoreModule.forRoot({
           systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          result: resultReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
-          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
+          consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          userSettings: userSettingsReducer // key must be equal to the key define in interface AppState, i.e. userSettings
         })
       ],
       schemas: []
@@ -40,6 +51,9 @@ describe('TestOptionComponent', () => {
   }));
 
   beforeEach(() => {
+    mockServerService = TestBed.inject(MockServerService);
+    appStateService = TestBed.inject(AppstateService);
+    communicationService = TestBed.inject(CommunicationService);
     fixture = TestBed.createComponent(TestOptionComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
@@ -50,19 +64,15 @@ describe('TestOptionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should create instance of TestOptionValue', () => {
-    expect(new TestOptionValue()).toBeTruthy();
-  });
-
   it('should create instance of TestOption', () => {
-    let name = 'Test Name';
-    expect(new TestOption(name)).toBeTruthy();
-    expect(new TestOption(name).name).toBe(name);
+    let type = TestOptionType.stopOnFail;
+    expect(new TestOption(type)).toBeTruthy();
+    expect(new TestOption(type).type).toBe(type);
   });
 
   describe('Class TestOption', () => {
     it('should change values from onChange() when checked element is true ', () => {
-      let testOption = new TestOption('Test');
+      let testOption = new TestOption(TestOptionType.stopOnFail);
       let checked = true;
       testOption.onChange(checked);
 
@@ -71,7 +81,7 @@ describe('TestOptionComponent', () => {
     });
 
     it('should get true value from haveToApply() when some change occured', () => {
-      let testOption = new TestOption('Test');
+      let testOption = new TestOption(TestOptionType.triggerOnFailure);
       let anyChanges = false;
       if (testOption.toBeAppliedValue.active !== testOption.currentValue.active) {
         anyChanges = true;
@@ -90,7 +100,7 @@ describe('TestOptionComponent', () => {
   it('should show the test options stored in array testOptions', () => {
     let checkboxLabels = debugElement
       .queryAll(By.css('app-checkbox label'))
-      .filter(e => !e.classes['toggle'])
+      .filter(e => !e.classes.toggle)
       .map(e => e.nativeElement.innerText);
     expect(checkboxLabels).toEqual(jasmine.arrayWithExactContents(((component as any).testOptions as TestOption[]).map(o => o.checkboxConfig.labelText)));
   });
@@ -125,6 +135,71 @@ describe('TestOptionComponent', () => {
     fixture.detectChanges();
 
     expect(spy).toHaveBeenCalled();
+  });
+
+  it('should update test options when received user settings from server', async () => {
+
+    function checkTestOption(testOption: TestOption, active: boolean, value?: number): boolean {
+      if( testOption.checkboxConfig.checked === active ) {
+        if (testOption.currentValue.active === active) {
+          if (value || value > 0) {
+            if (testOption.currentValue.value === value) {
+              if (testOption.inputConfig.value === value.toString()) {
+                return true;
+              }
+            }
+          } else {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    const settingsFromServer = {
+      type: 'usersettings',
+      payload: [
+        {
+          name: TestOptionType.stopOnFail,
+          active: true,
+          value: -1,
+        },
+        {
+          name: TestOptionType.stopAtTestNumber,
+          active: false,
+          value: 4
+        },
+        {
+          name: TestOptionType.triggerSiteSpecific,
+          active: true,
+          value: -1
+        },
+      ]
+    };
+
+    mockServerService.setRepeatMessages(false);
+      mockServerService.setMessages([
+        settingsFromServer,
+        {}
+      ]
+    );
+
+    await expectWaitUntil(
+      () => fixture.detectChanges(),
+      () => {
+        if (checkTestOption(component.stopAtTestNumberOption, false, 4)) {
+          if (checkTestOption(component.stopOnFailOption, true)) {
+            if (checkTestOption(component.triggerSiteSpecificOption, true)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      },
+      'Expected test option settings did not load',
+      200,
+      3000
+    );
   });
 
   describe('Option: Stop-On-Fail', () => {
@@ -203,6 +278,59 @@ describe('TestOptionComponent', () => {
 
       fixture.detectChanges();
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('should pass send options to the send function of the communication service', () => {
+      // update the status of this component
+      (component as any).updateStatus({
+        deviceId: 'MiniSCT',
+        env: 'Environment',
+        handler: 'Handler',
+        time: '1st July 2020, 19:45:03',
+        sites: ['A'],
+        program: '',
+        log: '',
+        state: SystemState.ready,
+        reason: '',
+      });
+      fixture.detectChanges();
+
+      let communicationServiceRetrievedSendArgument: any;
+
+      // configure stop on fail option
+      let checkboxes = fixture.debugElement.queryAll(By.css('app-checkbox'));
+      let checkbox = checkboxes.filter(e => e.nativeElement.innerText === 'Stop on Fail')[0].nativeElement.querySelector('.slider');
+      checkbox.click();
+      fixture.detectChanges();
+
+      // spy on send function of the communication service
+      // and store received arguments to check them later
+
+      // As we nned a function here we have to disable the only-arrow-functions rule here
+      // the reason is that the this context, i.e. execution context is different from function
+      // and arrow functions
+      // tslint:disable:only-arrow-functions
+      let sendSpy = spyOn(communicationService, 'send').and.callFake(function () {
+        communicationServiceRetrievedSendArgument = arguments[0];
+      });
+      // tslint:enable:only-arrow-functions
+
+      // apply changes
+      let buttons = fixture.debugElement.queryAll(By.css('app-button'));
+      let applyButton = buttons.filter(e => e.nativeElement.innerText === 'Apply')[0].nativeElement.querySelector('button');
+      applyButton.click();
+      fixture.detectChanges();
+
+      // check that the send function has been called
+      expect(sendSpy).toHaveBeenCalled();
+
+      // check the data that would be send to the server
+      expect(communicationServiceRetrievedSendArgument.command).toEqual('usersettings');
+      expect(communicationServiceRetrievedSendArgument.payload.length).toEqual(Object.keys(TestOptionType).length);
+      expect(communicationServiceRetrievedSendArgument.payload.some(e => e.name === TestOptionType.stopOnFail)).toBeTrue();
+      expect(communicationServiceRetrievedSendArgument
+        .payload.filter(
+          e => e.name === TestOptionType.stopOnFail)[0].active).toBeTrue();
     });
   });
 });

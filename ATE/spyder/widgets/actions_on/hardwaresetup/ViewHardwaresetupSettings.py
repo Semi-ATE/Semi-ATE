@@ -2,7 +2,6 @@ import os
 import re
 from enum import Enum
 
-from ATE.spyder.widgets.actions_on.hardwaresetup.constants import DEFINITION
 from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizard import HardwareWizard
 
 
@@ -59,7 +58,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
 
         dialog.singlesiteLoadboard.setText(hw_configuration["PCB"]["SingleSiteLoadboard"])
         dialog.singlesiteDIB.setText(hw_configuration["PCB"]["SingleSiteDIB"])
-        dialog.singlesiteProbecard.setText(hw_configuration["PCB"]["SignleSiteProbeCard"])
+        dialog.singlesiteProbecard.setText(hw_configuration["PCB"]["SingleSiteProbeCard"])
         dialog.multisiteLoadboard.setText(hw_configuration["PCB"]["MultiSiteLoadboard"])
         dialog.multisiteDIB.setText(hw_configuration["PCB"]["MultiSiteDIB"])
         dialog.multisiteProbecard.setText(hw_configuration["PCB"]["MultiSiteProbeCard"])

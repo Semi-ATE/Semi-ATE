@@ -21,12 +21,4 @@ export class CommunicationService {
   send(json: any) {
     this.wsService.send(json);
   }
-
-  mqttSubscribe(topic: string, qos: number = 0) {
-    this.wsService.send({type: 'mqtt.subscribe', payload: {topic, qos}});
-  }
-
-  mqttPublish(topic: string, payload: object, qos: number = 0, retain: boolean = true) {
-    this.wsService.send({type: 'mqtt.publish', payload: { topic, payload, retain }});
-  }
 }

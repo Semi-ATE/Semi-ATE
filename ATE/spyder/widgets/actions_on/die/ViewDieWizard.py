@@ -70,8 +70,8 @@ class ViewDieWizard(DieWizard):
         dialog.OKButton.setEnabled(True)
         dialog.isAGrade.setEnabled(False)
 
-    def _connect_event_handler(self):
-        pass
+    def ok_button_pressed(self):
+        self.accept()
 
 
 def display_die_settings_dialog(name, project_info):

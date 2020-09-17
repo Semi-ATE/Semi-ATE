@@ -7,16 +7,20 @@
   <div class="main">
     <div>
       <table>
+        <thead>
         <tr>
-          <th>Date</th>
-          <th>Topic</th>
-          <th>Description</th>
+          <th class="time">Date and Time</th>
+          <th class="type">Type</th>
+          <th class="info">Description</th>
         </tr>
+      </thead>
+    <tbody>
         <tr *ngFor='let entry of (consoleEntries$ | async).slice().reverse()'>
-            <td class="date">{{ entry.date }}</td>
-            <td class="topic">{{ entry.topic }}</td>
-            <td class="description">{{ entry.description }}</td>
+            <td class="time">{{ entry.date }}</td>
+            <td class="type">{{ entry.type }}</td>
+            <td class="info">{{ entry.description }}</td>
         </tr>
+      </tbody>
       </table>
     </div>
   </div>

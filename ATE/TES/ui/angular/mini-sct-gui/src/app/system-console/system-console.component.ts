@@ -3,7 +3,7 @@ import { ButtonConfiguration } from './../basic-ui-elements/button/button-config
 import { AppState } from '../app.state';
 import { Store, select } from '@ngrx/store';
 import { ConsoleEntry } from '../models/console.model';
-import * as ConsoleActions from './../actions/console.actions'
+import * as ConsoleActions from './../actions/console.actions';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -16,7 +16,7 @@ export class SystemConsoleComponent implements OnInit {
 
   consoleEntries$: Observable<ConsoleEntry[]>;
 
-  constructor(private store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>) {
     this.clearConsoleButtonConfig = new ButtonConfiguration();
     this.consoleEntries$ = store.pipe(select('consoleEntries'));
   }
