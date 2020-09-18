@@ -1,5 +1,5 @@
 import json
-from ATE.TES.apps.common.logger import Logger
+from ATE.utils.mqtt_router import MqttRouter
 import aiomqtt
 
 
@@ -7,12 +7,13 @@ class ConnectionHandler:
 
     """ handle connection """
 
-    def __init__(self, host, port, mqtt_client_id):
+    def __init__(self, host, port, mqtt_client_id, logger):
         self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         self.mqtt_client.reconnect_delay_set(10, 15)
-        self.log = Logger.get_logger()
+        self.log = logger
         self.host = host
         self.port = port
+        self.router = MqttRouter()
 
     def init_mqtt_client_callbacks(self, on_connect, on_message, on_disconnect):
         self.mqtt_client.on_connect = on_connect
@@ -30,11 +31,14 @@ class ConnectionHandler:
         return json.dumps(msg)
 
     def decode_message(self, message):
+        return self.decode_payload(message.payload)
+
+    def decode_payload(self, payload_bytes):
         try:
-            payload = json.loads(message.payload)
+            payload = json.loads(payload_bytes)
             return payload
         except json.JSONDecodeError as error:
-            self.log.error(error)
+            self.log.log_message(LogLevel.Error(), f'{error}')
 
         return None
 
@@ -46,3 +50,16 @@ class ConnectionHandler:
 
     def publish(self, topic, payload=None, qos=0, retain=False):
         self.mqtt_client.publish(topic, payload, qos, retain)
+
+    def register_route(self, route, callback):
+        self.router.register_route(route, callback)
+
+    def subscribe_and_register(self, route, callback):
+        self.subscribe(route)
+        self.router.register(route, callback)
+
+    def unsubscribe(self, topic):
+        self.mqtt_client.unsubscribe(topic)
+
+    def unregister_route(self, route, callback):
+        self.router.unregister_route(route, callback)

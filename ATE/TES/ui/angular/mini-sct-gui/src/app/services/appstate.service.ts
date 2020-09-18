@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { AppState } from './../app.state';
 import { Store } from '@ngrx/store';
 import { Status, statusEqual } from './../models/status.model';
@@ -7,25 +7,27 @@ import * as StatusActions from './../actions/status.actions';
 import * as ResultActions from './../actions/result.actions';
 import * as ConsoleActions from './../actions/console.actions';
 import * as UserSettingsActions from './../actions/usersettings.actions';
-import { formatDate } from '@angular/common';
 import { ConsoleEntry } from '../models/console.model';
-import { StdfRecord, StdfRecordType, StdfRecordValueType, StdfRecordLabelType} from 'src/app/stdf/stdf-stuff';
-import { Subject } from 'rxjs';
+import { StdfRecord, StdfRecordType, StdfRecordPropertyValue, PrrRecord } from 'src/app/stdf/stdf-stuff';
+import { Subject, Subscription } from 'rxjs';
 import { TestOptionSetting, TestOptionType } from '../models/usersettings.model';
 import { TestOptionValue } from '../system-control/test-option/test-option.component';
+import { saveAs } from 'file-saver';
 
 export enum MessageTypes {
   Cmd = 'cmd',
   Status = 'status',
   Testresult = 'testresult',
   Testresults = 'testresults',
-  Usersettings = 'usersettings'
+  Usersettings = 'usersettings',
+  Logdata = 'logs',
+  Logfile = 'logfile'
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class AppstateService {
+export class AppstateService implements OnDestroy {
 
   rebuildRecords$: Subject<boolean>;
   newRecordReceived$: Subject<StdfRecord[]>;
@@ -33,12 +35,17 @@ export class AppstateService {
   systemTime: string;
   private lastStatus: Status;
   private statusChanged: boolean;
+  private readonly subscriptionCommunication: Subscription;
 
   constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.stdfRecords = [];
     this.newRecordReceived$ = new Subject<StdfRecord[]>();
     this.rebuildRecords$ = new Subject<boolean>();
-    communicationService.message.subscribe(msg => this.handleServerMessage(msg));
+    this.subscriptionCommunication = communicationService.message.subscribe(msg => this.handleServerMessage(msg));
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptionCommunication.unsubscribe();
   }
 
   private handleServerMessage(serverMessage: any) {
@@ -47,12 +54,13 @@ export class AppstateService {
     this.updateResults(serverMessage);
     this.updateConsole(serverMessage);
     this.updateUserSettings(serverMessage);
+    this.handleLogfile(serverMessage);
   }
 
   private updateSystemStatus(serverMessage: any) {
     if (serverMessage.type === MessageTypes.Status && serverMessage.payload) {
       let receivedStatus: Status = {
-        deviceId : serverMessage.payload.device_id,
+        deviceId: serverMessage.payload.device_id,
         env: serverMessage.payload.env,
         handler: serverMessage.payload.handler,
         time: serverMessage.payload.systemTime,
@@ -66,101 +74,100 @@ export class AppstateService {
       this.statusChanged = !statusEqual(receivedStatus, this.lastStatus);
       this.lastStatus = receivedStatus;
       this.systemTime = serverMessage.payload.systemTime;
-      this.store.dispatch(new StatusActions.UpdateStatus(receivedStatus));
+      this.store.dispatch(StatusActions.updateStatus({status:receivedStatus}));
     }
   }
 
   private updateBinStatus(record: StdfRecord) {
-    if (record?.type === StdfRecordType.Prr) {
-      this.store.dispatch(new ResultActions.AddResult(record));
+    if (record.type === StdfRecordType.Prr) {
+      let prr = new PrrRecord();
+      prr.values = record.values;
+      this.store.dispatch(ResultActions.addResult({prr}));
     }
   }
 
   private updateResults(serverMessage: any) {
     if (serverMessage.type === MessageTypes.Testresult) {
-      // get prr record for determining bin and pas/fail informations
-      if (serverMessage.payload && serverMessage.payload.length > 0) {
-        let newReceivedRecords: StdfRecord[] = [];
-        serverMessage.payload.forEach(e => {
-          let record: StdfRecord = {
-            type : e.type,
-            values : Object.entries(e).filter( ([k,v]) => k !== 'type')
-              .map(([k,v]) => [k as StdfRecordLabelType, v as StdfRecordValueType]) as [StdfRecordLabelType, StdfRecordValueType][]
-          };
-          this.stdfRecords.push(record);
-          newReceivedRecords.push(record);
-          this.updateBinStatus(record);
-        });
-        this.newRecordReceived$.next(newReceivedRecords);
-      }
+      let newReceivedRecords: StdfRecord[] = [];
+      serverMessage.payload.forEach(e => {
+        let record: StdfRecord = {
+          type: e.type,
+          values: Object.entries(e).filter(([k, v]) => k !== 'type')
+            .map(([k, v]) => {
+              return {
+                key: k,
+                value: v as StdfRecordPropertyValue
+              };
+            })
+        };
+        this.stdfRecords.push(record);
+        newReceivedRecords.push(record);
+        this.updateBinStatus(record);
+      });
+      this.newRecordReceived$.next(newReceivedRecords);
     }
     if (serverMessage.type === MessageTypes.Testresults) {
-      if (serverMessage.payload && serverMessage.payload.length >=0) {
-        // clear/delete all stored records
-        this.stdfRecords = [];
-        serverMessage.payload.forEach(e => {
-          if (e.length > 0) {
-            e.forEach(a => {
-              let record: StdfRecord = {
-                type : a.type,
-                values : Object.entries(a).filter( ([k,v]) => k !== 'type')
-                  .map(([k,v]) => [k as StdfRecordLabelType, v as StdfRecordValueType]) as [StdfRecordLabelType, StdfRecordValueType][]
-              };
-              this.stdfRecords.push(record);
-              this.updateBinStatus(record);
-            });
-          }
-        });
-        this.rebuildRecords$.next(true);
-      }
+      // clear/delete all stored records
+      this.stdfRecords = [];
+      serverMessage.payload.forEach(e => {
+        if (e.length > 0) {
+          e.forEach(a => {
+            let record: StdfRecord = {
+              type: a.type,
+              values: Object.entries(a).filter(([k, v]) => k !== 'type')
+                .map(([k, v]) => {
+                  return {
+                    key: k,
+                    value: v as StdfRecordPropertyValue
+                  };
+                })
+            };
+            this.stdfRecords.push(record);
+            this.updateBinStatus(record);
+          });
+        }
+      });
+      this.rebuildRecords$.next(true);
     }
   }
 
   private updateConsole(serverMessage: any) {
-    if (serverMessage) {
-      if (serverMessage.type) {
-        let entry: ConsoleEntry = {
-          description: '',
-          date: this.systemTime || 'unknown',
-          type: serverMessage.type,
-          json: ''};
-        if (serverMessage.type === MessageTypes.Status && this.statusChanged) {
-          entry.description = `Entering state '${serverMessage.payload.state}'. ${serverMessage.payload.error_message}`;
-        } else {
-          switch(serverMessage.type) {
-            case MessageTypes.Testresult:
-              entry.description = `New part result for site ${serverMessage.payload?.[0]?.SITE_NUM} arrived`;
-              break;
-            case MessageTypes.Testresults:
-              entry.description = `Server send all stored part results (${serverMessage.payload.length})`;
-              break;
-            case MessageTypes.Usersettings:
-              entry.description = `Server send current user settings`;
-              break;
-          }
+    if (serverMessage.type === MessageTypes.Logdata) {
+      let entriesToAdd: ConsoleEntry[] = [];
+      serverMessage.payload.forEach(
+        e => {
+          entriesToAdd.push({
+            description: e.description,
+            date: e.date,
+            type: e.type,
+          });
         }
-        if (entry.description !== '') {
-          entry.json = serverMessage;
-          this.store.dispatch(new ConsoleActions.Add(entry));
-        }
-      }
+      );
+      this.store.dispatch(ConsoleActions.addConsoleEntry({entries: entriesToAdd}));
     }
   }
 
   private updateUserSettings(serverMessage: any) {
     if (serverMessage.type === MessageTypes.Usersettings) {
-      if ( serverMessage.payload && serverMessage.payload.length > 0) {
-        let testOptions: TestOptionSetting[] = serverMessage.payload.map(e => {
-          return {
-            type: e.name as TestOptionType,
-            value: {
-              active: e.active,
-              value: e.value
-            } as TestOptionValue
-          } as TestOptionSetting;
-        });
-        this.store.dispatch(new UserSettingsActions.Set(testOptions));
-      }
+      let testOptions: TestOptionSetting[] = serverMessage.payload.map(e => {
+        return {
+          type: e.name as TestOptionType,
+          value: {
+            active: e.active,
+            value: e.value
+          } as TestOptionValue
+        } as TestOptionSetting;
+      });
+      this.store.dispatch(UserSettingsActions.setSettings({settings:testOptions}));
+    }
+  }
+
+  private handleLogfile(serverMessage: any) {
+    if (serverMessage.type === MessageTypes.Logfile) {
+      var file = new File([serverMessage.payload.content],
+         serverMessage.payload.filename,
+         {type: 'text/plain;charset=utf-8'});
+      saveAs(file);
     }
   }
 }

@@ -1,6 +1,6 @@
 import { CommunicationService } from '../services/communication.service';
 import { Component, OnInit } from '@angular/core';
-import { CardConfiguration, CardStyle } from '../basic-ui-elements/card/card.component';
+import { CardConfiguration, CardStyle } from '../basic-ui-elements/card/card-config';
 
 @Component({
   selector: 'app-result',

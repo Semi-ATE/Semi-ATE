@@ -5,7 +5,6 @@ from typing import List, Callable
 class SequenceContainer:
     def __init__(self, seq: List[str], site_ids: List[str], on_complete: Callable, on_error: Callable):
         self.sequences = {site_id: TransitionSequence(seq[:]) for site_id in site_ids}
-        print(self.sequences)
         self.on_complete = on_complete
         self.on_error = on_error
         self.done = False

@@ -35,36 +35,37 @@ describe('AppstateService', () => {
     service = TestBed.inject(AppstateService);
   });
 
-  afterAll( () => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   describe(MessageTypes.Testresults, () => {
-    it('should set/snyc all stored test results to the received results', async () => {
+    it('should set/sync all stored test results to the received results', async () => {
+      mockServerService.setRepeatMessages(false);
       mockServerService.setMessages([
-        constants.TEST_RESULTS_SITE_1_AND_2,
-        {}
+        constants.TEST_RESULTS_SITE_1_AND_2
       ]);
 
       await expectWaitUntil (
         null,
         () => service.stdfRecords.length === constants.TEST_RESULTS_SITE_1_AND_2
         .payload.map(e => e.length).reduce( (a,c) => a + c, 0),
-        'Number of records are not equal to the number of received records'
+        `Number of records (${service.stdfRecords.length}) are not equal to the number of received records (${constants.TEST_RESULTS_SITE_1_AND_2
+          .payload.map(e => e.length).reduce( (a,c) => a + c, 0)})`,
+        100,
+        2000
       );
 
       mockServerService.setMessages([
-        {
-          type: 'testresults',
-          payload: []
-        },
-        {}
+        { type: 'testresults', payload: [] }
       ]);
 
       await expectWaitUntil (
         null,
         () => service.stdfRecords.length === 0,
-        'Number of records are not equal to the number of received records'
+        'Number of records should become 0 but is was ' + service.stdfRecords.length,
+        100,
+        2000
       );
     });
   });

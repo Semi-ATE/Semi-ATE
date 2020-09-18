@@ -11,11 +11,11 @@ def CreateParser(jobformat: str):
     return None
 
 
-def CreateDataSource(jobname: str, configuration: dict, parser):
+def CreateDataSource(jobname: str, configuration: dict, parser, logger):
     jobdatasource = configuration['jobsource']
 
     if(jobdatasource == 'filesystem'):
-        return FileSystemDataSource(jobname, configuration, parser)
+        return FileSystemDataSource(jobname, configuration, parser, logger)
     if(jobdatasource == "static"):
         return StaticDataSource()
 

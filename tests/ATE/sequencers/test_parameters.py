@@ -80,7 +80,7 @@ def test_set_test_description():
     op = OutputParameter("Op", 0, 10, 20, 30, 40)
     op.set_test_description('test_1')
     assert(op._test_description == 'test_1')
-    assert(op._get_test_name() == 'test_1.Op')
+    assert(op._get_PTR_test_name() == 'test_1.Op')
 
 
 def test_generate_empty_tsr():

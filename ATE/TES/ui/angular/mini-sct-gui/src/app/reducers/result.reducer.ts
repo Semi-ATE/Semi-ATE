@@ -1,22 +1,19 @@
 import * as ResultActions from './../actions/result.actions';
-import { StdfRecordType, StdfRecord, stdfGetValue, SiteHead, STDF_RECORD_ATTRIBUTES, computeSiteHeadFromRecord } from '../stdf/stdf-stuff';
+import { StdfRecordType, StdfRecord, stdfGetValue, SiteHead, STDF_RECORD_ATTRIBUTES, computeSiteHeadFromRecord, PrrRecord } from '../stdf/stdf-stuff';
+import { createReducer, on, Action, props } from '@ngrx/store';
 
 // define the initial state here
-const initialState: Map<SiteHead, StdfRecord> = new Map<SiteHead, StdfRecord>();
+export const initialState = new Map<SiteHead, PrrRecord>();
 
-export function resultReducer(state: Map<SiteHead, StdfRecord> = initialState, action: ResultActions.Actions): Map<SiteHead, StdfRecord> {
+const reducer = createReducer(
+  initialState,
+  on(ResultActions.addResult, (state, {prr}) => {
+    let key: SiteHead = computeSiteHeadFromRecord(prr);
+    state.set(key, prr);
+    return new Map<SiteHead, PrrRecord>(state);
+  })
+);
 
-  // return the new state (i.e. next state) depending on the current action type
-  // and payload
-  switch(action.type) {
-    case ResultActions.ADD_RESULT:
-      if(action.payload.type === StdfRecordType.Prr) {
-        let key: SiteHead = computeSiteHeadFromRecord(action.payload);
-        state.set(key, action.payload);
-        return new Map<SiteHead, StdfRecord>(state);
-      }
-      return state;
-    default:
-      return state;
-  }
+export function resultReducer(state: Map<SiteHead, PrrRecord> | undefined, action: Action) {
+  return reducer(state, action);
 }

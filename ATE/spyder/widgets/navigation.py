@@ -6,9 +6,7 @@ Created on Tue Mar  3 14:08:04 2020
 import os
 import pickle
 import platform
-import sqlite3
 
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QObject
 
 from ATE.spyder.widgets.constants import TableIds as TableId
@@ -142,54 +140,6 @@ class ProjectNavigation(QObject):
     def add_project(self, project_name, project_quality=''):
         project_directory = os.path.join(self.workspace_path, project_name)
         self.__call__(project_directory, project_quality)
-
-    # def dict_projects(self, workspace_path=''):
-    #     '''
-    #     given a workspace_path, create a list with projects as key, and their
-    #     (absolute) project_path as value.
-    #     if workspace_path is empty, the parent's "workspace_path" is used.
-    #     '''
-    #     retval = {}
-    #     if workspace_path == '':
-    #         workspace_path = self.workspace_path
-    #     for directory in os.listdir(workspace_path):
-    #         full_directory = os.path.join(workspace_path, directory)
-    #         if os.path.isdir(full_directory):
-    #             retval[directory] = full_directory
-    #     return retval
-
-    # def list_projects(self, workspace_path=''):
-    #     '''
-    #     given a workspace_path, extract a list of all projects
-    #     '''
-    #     if workspace_path == '':
-    #         workspace_path = self.workspace_path
-    #     return list(self.dict_projects(workspace_path))
-
-    # def list_ATE_projects(self, workspace_path=''):
-    #     '''
-    #     given a workspace_path, extract a list of all ATE projects
-    #     if workspace_path is empty, the parent's "workspace_path" will be used.
-    #     '''
-    #     if workspace_path == '':
-    #         workspace_path = self.workspace_path
-    #     return list(self.dict_ATE_projects(workspace_path))
-
-    # def dict_ATE_projects(self, workspace_path=''):
-    #     '''
-    #     given a workspace_path, create a dictionary with all ATE projects as key,
-    #     and the (absolute) project_path as value.
-    #     if workspace_path is empty, the parent's "workspace_path" is used.
-    #     '''
-    #     retval = {}
-    #     if workspace_path == '':
-    #         workspace_path = self.workspace_path
-    #     all_projects = self.dict_projects(workspace_path)
-    #     for candidate in all_projects:
-    #         possible_ATE_project = all_projects[candidate]
-    #         if is_ATE_project(possible_ATE_project):
-    #             retval[candidate] = possible_ATE_project
-    #     return retval
 
     def add_hardware(self, definition, is_enabled=True):
         '''This method adds a hardware setup to the project.

@@ -1,0 +1,7 @@
+<div class="passFailFilter">
+  <app-checkbox id="passFailCheckbox" [checkboxConfig]="passFailCheckboxConfig" (checkboxChangeEvent)="passFailFilterCheckboxChanged()"></app-checkbox>
+  <app-dropdown class="passFailDropdown"
+    [dropdownConfig]="dropdownConfig"
+    (dropdownChangeEvent)="passFailFilterValueChanged($selectedIndexEvent)">
+  </app-dropdown>
+</div>

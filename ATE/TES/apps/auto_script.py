@@ -40,14 +40,14 @@ def create_master_config_file(sites, device_id,
               "sites": sites,
               "webui_host": Configs.webui_host.value if webui_host is None else webui_host,
               "webui_port": Configs.webui_port.value if webui_port is None else webui_port,
-              "webui_static_path": "./ATE/TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",
+              "webui_static_path": "../ui/angular/mini-sct-gui/dist/mini-sct-gui",
               "Handler": "HTO92-20F",
               "environment": "F1",
               "jobsource": "filesystem",
               "jobformat": "xml.micronas",
-              "skip_jobdata_verification": True,
-              "filesystemdatasource.path": "./tests",
-              "filesystemdatasource.jobpattern": "le306426001.xml",
+              "skip_jobdata_verification": False,
+              "filesystemdatasource.path": ".",
+              "filesystemdatasource.jobpattern": "le306426001_template.xml",
               "enable_timeouts": True,
               "user_settings_filepath": "master_user_settings.json"
               }
@@ -124,7 +124,6 @@ def start_apps():
     pid_list = []
     run = True
 
-    print(app_typ)
     if app_typ == 'master':
         # generate list of site ids
         sites = [str(x) for x in range(num_apps)]
@@ -132,7 +131,7 @@ def start_apps():
                                   webui_host=args.web_host, webui_port=args.web_port)
         # TODO: only one master is supported for now
         if not args.conf:
-            master = subprocess.Popen("py launch_master.py --f master_config_file.json")
+            master = subprocess.Popen("python launch_master.py -f master_config_file.json")
             pid_list.append(master)
             time.sleep(2)
             # start webserver
@@ -146,7 +145,6 @@ def start_apps():
 
     elif app_typ == 'control':
         for id in range(num_apps):
-            print("id: ", id)
             create_control_config_file(str(id), device_id, host=Configs.host(), port=int(Configs.port()))
             if not args.conf:
                 control = subprocess.Popen("python launch_control.py")
@@ -158,7 +156,7 @@ def start_apps():
     elif app_typ == 'handler':
         create_handler_config_file(device_id, host=args.host, port=args.port)
         if not args.conf:
-            handler = subprocess.Popen("py launch_handler.py --f handler_config_file.json")
+            handler = subprocess.Popen("python launch_handler.py --f handler_config_file.json")
             pid_list.append(handler)
             time.sleep(2)
         else:

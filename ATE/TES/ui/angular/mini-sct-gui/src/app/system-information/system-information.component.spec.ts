@@ -60,8 +60,8 @@ describe('SystemInformationComponent', () => {
     fixture.detectChanges();
   });
 
-  afterAll(() => {
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID)?.remove();
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create status component', () => {
@@ -128,87 +128,48 @@ describe('SystemInformationComponent', () => {
     it('should contain information for the following topics: ' + JSON.stringify(expectedLabelTexts), async () => {
 
       function foundAPPInformation(): boolean {
-        let element = debugElement.queryAll(By.css('app-information .information h2'));
-        if (element.length === expectedLabelTexts.length) {
-          return true;
-        }
-        return false;
+        let currentTopics = debugElement.queryAll(By.css('app-information .information h2'))
+          .map(e => e.nativeElement.innerText);
+        return expectedLabelTexts.every(l => currentTopics.some(c => c === l));
       }
 
       // send initialized message
       mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_INITIALIZED]);
 
       await expectWaitUntil(
-        () => {
-          fixture.detectChanges();
-        },
+        () => fixture.detectChanges(),
         foundAPPInformation,
-        'Did not find ' + expectedLabelTexts.length + ' app-information elements');
-
-      let currentTopics = debugElement.queryAll(By.css('app-information .information h2'))
-        .map(e => e.nativeElement.innerText);
-
-      expect(currentTopics).toEqual(jasmine.arrayWithExactContents(expectedLabelTexts));
-    });
-
-    it('should display label texts: ' + JSON.stringify(expectedLabelTexts), async () => {
-      expect(component.infoContentCardConfiguration.labelText).toEqual('');
-
-      function foundLabeTexts(): boolean {
-        let element = debugElement.queryAll(By.css('app-information'));
-        return element.length === expectedLabelTexts.length;
-      }
-      // send initialized message
-      mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_INITIALIZED]);
-      await expectWaitUntil(
-        () => {
-          fixture.detectChanges();
-        },
-        foundLabeTexts,
-        'Did not find ' + expectedLabelTexts.length + ' app-information elements');
-
-      let labelElements = [];
-      debugElement.queryAll(By.css('app-information h2'))
-        .forEach(a => labelElements
-          .push(a.nativeElement.innerText));
-
-      expect(labelElements).toEqual(jasmine.arrayWithExactContents(expectedLabelTexts));
+        'Did not find expected lables ' + JSON.stringify(expectedLabelTexts));
     });
 
     it('should display value of system information', async () => {
       expect(component.systemInformationConfiguration.value).toEqual('connecting');
 
-      function foundLabeTexts(): boolean {
-        let element = debugElement.queryAll(By.css('app-information'));
-        if (element.length === expectedLabelTexts.length) {
-          return true;
-        }
-        return false;
-      }
-      // send testing message
-      mockServerService.setUpdateTime(false);
-      mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING]);
-
-      await expectWaitUntil(
-        () => {
-          fixture.detectChanges();
-        },
-        foundLabeTexts,
-        'Did not find ' + expectedLabelTexts.length + ' app-information elements'
-      );
-
-      let valueTexts = [];
-      debugElement.queryAll(By.css('app-information h3'))
-        .forEach(a => valueTexts
-          .push(a.nativeElement.innerText));
-
-      expect(valueTexts).toEqual([
+      let expectedTexts = [
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.device_id,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.systemTime,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.env,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.handler,
         constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING.payload.lot_number
-      ]);
+      ];
+
+      function foundLabeTexts(): boolean {
+        let valueTexts = [];
+        debugElement.queryAll(By.css('app-information h3'))
+          .forEach(a => valueTexts
+          .push(a.nativeElement.innerText));
+        return expectedTexts.every(t => valueTexts.some(e => e === t));
+      }
+
+      // send testing message
+      mockServerService.setUpdateTime(false);
+      mockServerService.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_TESTING]);
+
+      await expectWaitUntil(
+        () => fixture.detectChanges(),
+        foundLabeTexts,
+        'Did not find expected texts: ' + JSON.stringify(expectedTexts)
+      );
     });
   });
 });

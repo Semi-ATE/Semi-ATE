@@ -1,5 +1,6 @@
-from ATE.spyder.widgets.plugins.hookspec import hookimpl
+from ATE.semiateplugins.hookspec import hookimpl
 from TDKMicronas.Actuators import ThermostreamProxy
+from TDKMicronas.Actuators import Thermostream
 from TDKMicronas.Testers import MiniSCT
 
 
@@ -12,6 +13,9 @@ class BusinessObjectStandin:
 
     def get_abort_reason(self):
         return "This is a standin object without functionality"
+
+    def set_mqtt_client(self, mqtt):
+        pass
 
 
 class Plugin:
@@ -112,6 +116,9 @@ class Plugin:
 
     @hookimpl
     def get_actuator(required_capability):
+        if (required_capability == "Temperature"):
+            print("Got Thermostream")
+            return Thermostream.Thermostream()
         return BusinessObjectStandin()
 
     @hookimpl

@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { WebsocketService } from './websocket.service';
 import { MockServerService } from './mockserver.service';
+import * as constants from './../services/mockserver-constants';
+import { spyOnStoreArguments } from '../test-stuff/auxillary-test-functions';
 
 describe('WebsocketService', () => {
   let service: WebsocketService;
@@ -12,6 +14,10 @@ describe('WebsocketService', () => {
     });
     mockServer = TestBed.inject(MockServerService);
     service = TestBed.inject(WebsocketService);
+  });
+
+  afterEach(() => {
+    mockServer.ngOnDestroy();
   });
 
   it('should create a WebsocketService instance', () => {
@@ -28,19 +34,12 @@ describe('WebsocketService', () => {
 
   describe('send', () => {
     it('should call next function of the websocketsubject', () => {
-      let nextArguments: any;
       service.connect('127.0.0.1');
-      // As we nned a function here we have to disable the only-arrow-functions rule here
-      // the reason is that the this context, i.e. execution context is different from function
-      // and arrow functions
-      // tslint:disable:only-arrow-functions
-      let spySubject = spyOn((service as any).subject, 'next').and.callFake(function () {
-        nextArguments = arguments[0];
-      });
-      // tslint:enable:only-arrow-functions
-
+      let nextArguments = [];
+      let spySubject = spyOnStoreArguments((service as any).subject, 'next', nextArguments);
       service.send({key: 'Value'});
-      expect(nextArguments.key).toEqual('Value');
+      expect(spySubject).toHaveBeenCalled();
+      expect(nextArguments[0].key).toEqual('Value');
     });
   });
 });

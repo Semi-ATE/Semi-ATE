@@ -1,13 +1,12 @@
 import { UserSettings, TestOptionSetting, TestOptionType } from 'src/app/models/usersettings.model';
 import * as UserSettingsActions from 'src/app/actions/usersettings.actions';
+import { on, Action, createReducer } from '@ngrx/store';
 
 let computeInitialState = () => {
   let settings: UserSettings = {
     testOptions: []
   };
-  for (let e in TestOptionType) {
-    if (!e)
-      continue;
+  Object.keys(TestOptionType).forEach(e => {
     settings.testOptions.push(
       {
         type: e,
@@ -15,22 +14,21 @@ let computeInitialState = () => {
           active: false,
           value: -1
         }
-      } as TestOptionSetting
-    );
-  }
-  return settings;
+      } as TestOptionSetting);
+  });
+  return  settings;
 };
 
 // define the initial state here
 const initialState = computeInitialState();
 
-export function userSettingsReducer(usersettings: UserSettings = initialState, action: UserSettingsActions.Actions) {
-  // return the new state (i.e. next state) depending on the current action type
-  // and payload
-  switch (action.type) {
-    case  UserSettingsActions.SET_TEST_OPTIONS:
-      return {testOptions: action.payload} as UserSettings;
-    default:
-      return usersettings;
-  }
+const reducer = createReducer(
+  initialState,
+  on(UserSettingsActions.setSettings, (state, {settings}) => {
+    return {testOptions: settings};
+  })
+);
+
+export function userSettingsReducer(state: UserSettings | undefined, action: Action) {
+  return reducer(state, action);
 }

@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
 import { MockServerService } from '../services/mockserver.service';
 import * as constants from './../services/mockserver-constants';
 import { CommunicationService } from '../services/communication.service';
-import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
+import { expectWaitUntil, spyOnStoreArguments } from '../test-stuff/auxillary-test-functions';
 import { StoreModule } from '@ngrx/store';
 import { statusReducer } from '../reducers/status.reducer';
 import { resultReducer } from '../reducers/result.reducer';
@@ -34,8 +34,9 @@ describe('MenuComponent', () => {
   let component: MenuComponent;
   let fixture: ComponentFixture<MenuComponent>;
   let debugElement: DebugElement;
-  let router: Router;
   let mockServerService: MockServerService;
+  let appstateService: AppstateService;
+  let router: Router;
   const expectedMenuEntries = [ 'Information', 'Control', 'Results', 'Logging'];
 
   beforeEach(async(() => {
@@ -53,7 +54,7 @@ describe('MenuComponent', () => {
         TestOptionComponent,
         ButtonComponent,
         InputComponent,
-        CheckboxComponent
+        CheckboxComponent,
       ],
       imports: [
         RouterTestingModule.withRoutes(MINISCT_ROUTES),
@@ -74,18 +75,16 @@ describe('MenuComponent', () => {
 
   beforeEach(() => {
     mockServerService = TestBed.inject(MockServerService);
-    TestBed.inject(AppstateService);
+    appstateService = TestBed.inject(AppstateService);
+    router = TestBed.inject(Router);
     fixture = TestBed.createComponent(MenuComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
-    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
   afterEach(() => {
-    fixture.destroy();
-    component = null;
-    document.getElementById(constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID).remove();
+    mockServerService.ngOnDestroy();
   });
 
   it('should create menu component', () => {
@@ -95,6 +94,7 @@ describe('MenuComponent', () => {
   it('should render the following menu items: ' + JSON.stringify(expectedMenuEntries), () => {
     let currentMenuEntries = [];
     debugElement.queryAll(By.css('a'))
+      .filter(e => !e.classes.space)
       .forEach(a => currentMenuEntries
         .push(a.nativeElement.innerText));
 
@@ -102,7 +102,7 @@ describe('MenuComponent', () => {
   });
 
   it('should show ' + MenuItem.Info + ' page on startup', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/information');
+    spyOnProperty(router, 'url').and.returnValue('/' + MenuItem.Info);
     fixture.detectChanges();
 
     const activeMenuItems = debugElement.queryAll(By.css('.active'));
@@ -182,10 +182,9 @@ describe('MenuComponent', () => {
         .filter(e => e.nativeElement.innerText === 'Logging');
 
     expect(loggingList.length).toEqual(1, 'Logging menu item is unique');
-
+    // set current url to '/logging'
+    spyOnProperty(router, 'url').and.returnValue('/' + MenuItem.Logging);
     // prepare test
-    let spy = spyOnProperty(router, 'url').and.returnValue('/logging');
-
     let isActiveSpy = spyOn(component, 'isActive').and.callThrough();
 
     // click logging menu item
@@ -195,14 +194,34 @@ describe('MenuComponent', () => {
 
     // wait until all menu items are enabled
     await expectWaitUntil(
-      () => {
-        component.ngOnInit();
-        fixture.detectChanges();
-      },
+      () => fixture.detectChanges(),
       loggingIsActive,
       'Logging menu item should be active');
 
-    expect(spy).toBeTruthy();
     expect(isActiveSpy).toHaveBeenCalled();
+  });
+
+  it('should navigate to' + MenuItem.Info + ', when system state is ' + SystemState.connecting, () => {
+    // mock system status and set systemState to connecting
+    (component as any).status = {
+      deviceId: '',
+      env: '',
+      handler: '',
+      time: '',
+      sites: [],
+      program: '',
+      log: '',
+      state: SystemState.connecting,
+      reason: '',
+      lotNumber: ''
+    };
+    let args = [];
+    let navigateByUrlSpy = spyOnStoreArguments((component as any).router, 'navigateByUrl', args);
+    spyOnProperty(router, 'url').and.returnValue('/' + MenuItem.Control);
+    expect((component as any).resultsDisabled()).toEqual(true);
+    (component as any).navigateToInformationIfNeeded();
+    expect(navigateByUrlSpy).toHaveBeenCalled();
+    expect(args[0]).toContain(MenuItem.Info);
+    expect(args[1].skipLocationChange).toEqual(false, `Location must change to ${MenuItem.Info}`);
   });
 });

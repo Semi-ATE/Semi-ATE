@@ -29,6 +29,11 @@ def create_xml_file(device_id):
 create_xml_file(DEVICE_ID)
 
 
+def get_logger():
+    from ATE.TES.apps.common.logger import Logger
+    return Logger('test')
+
+
 class TestParserFactory:
 
     def test_create_parser_yields_xml_parser_for_xmlmicronas(self):
@@ -48,14 +53,14 @@ class TestParserFactory:
                   'filesystemdatasource.path': '.',
                   'filesystemdatasource.jobpattern': 'job'}
         parser = None
-        datasource = parser_factory.CreateDataSource("somejob", config, parser)
+        datasource = parser_factory.CreateDataSource("somejob", config, parser, get_logger())
 
         assert(type(datasource) is FileSystemDataSource)
 
     def test_create_datasource_yields_filesystemdatasource_for_unkown_value(self):
         config = {'jobsource': 'gremlins'}
         parser = None
-        datasource = parser_factory.CreateDataSource("somejob", config, parser)
+        datasource = parser_factory.CreateDataSource("somejob", config, parser, get_logger())
 
         assert(datasource is None)
 
@@ -66,7 +71,7 @@ class TestParserFactory:
                   'filesystemdatasource.jobpattern': 'ddd.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
-        datasource = parser_factory.CreateDataSource("306426.001", config, parser)
+        datasource = parser_factory.CreateDataSource("306426.001", config, parser, get_logger())
         assert(type(datasource) is FileSystemDataSource)
         data = datasource.retrieve_data()
         assert(data is None)
@@ -78,7 +83,7 @@ class TestParserFactory:
                   'filesystemdatasource.jobpattern': 'le306426001.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
-        datasource = parser_factory.CreateDataSource("11111111", config, parser)
+        datasource = parser_factory.CreateDataSource("11111111", config, parser, get_logger())
         assert(type(datasource) is FileSystemDataSource)
         data = datasource.retrieve_data()
         assert(data is not None)
@@ -93,7 +98,7 @@ class TestParserFactory:
                   'filesystemdatasource.jobpattern': 'le306426001.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
-        datasource = parser_factory.CreateDataSource("306426.001", config, parser)
+        datasource = parser_factory.CreateDataSource("306426.001", config, parser, get_logger())
         assert(type(datasource) is FileSystemDataSource)
         data = datasource.retrieve_data()
         assert(data is not None)
@@ -110,7 +115,7 @@ class TestParserFactory:
                   'Environment': 'F1'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
-        datasource = parser_factory.CreateDataSource("306426.001", config, parser)
+        datasource = parser_factory.CreateDataSource("306426.001", config, parser, get_logger())
         assert(type(datasource) is FileSystemDataSource)
         data = datasource.retrieve_data()
         assert(data is not None)
@@ -127,7 +132,7 @@ class TestParserFactory:
                   'Environment': 'F1'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
-        datasource = parser_factory.CreateDataSource("306426001", config, parser)
+        datasource = parser_factory.CreateDataSource("306426001", config, parser, get_logger())
         assert(type(datasource) is FileSystemDataSource)
         data = datasource.retrieve_data()
         assert(data is not None)

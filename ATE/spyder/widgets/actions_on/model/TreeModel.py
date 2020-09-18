@@ -6,7 +6,7 @@ from ATE.spyder.widgets.actions_on.model import FlowItem as FlowItem
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.tests.TestItem import TestItem
 from ATE.spyder.widgets.constants import TableIds
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.semiateplugins.pluginmanager import get_plugin_manager
 
 
 class TreeModel(QtGui.QStandardItemModel):

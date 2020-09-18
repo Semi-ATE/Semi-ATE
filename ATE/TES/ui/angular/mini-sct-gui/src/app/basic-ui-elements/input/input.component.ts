@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, Input, EventEmitter } from '@angular/core';
 import { InputConfiguration } from './input-config';
+import { getQueryPredicate } from '@angular/compiler/src/render3/view/util';
 
 @Component({
   selector: 'app-input',
@@ -9,10 +10,12 @@ import { InputConfiguration } from './input-config';
 export class InputComponent implements OnInit {
   @Input() inputConfig: InputConfiguration;
   @Output() inputChangeEvent: EventEmitter<string>;
+  @Output() carriageReturnEvent: EventEmitter<boolean>;
 
   constructor() {
     this.inputConfig = new InputConfiguration();
     this.inputChangeEvent = new EventEmitter<string>();
+    this.carriageReturnEvent = new EventEmitter<boolean>();
   }
 
   resetErrorMsg() {
@@ -21,5 +24,12 @@ export class InputComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  getColor(): string {
+    if (this.inputConfig.disabled) {
+      return 'grey';
+    }
+    return this.inputConfig.errorMsg !== ''? this.inputConfig.errorColor:this.inputConfig.textColor;
   }
 }

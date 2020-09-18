@@ -4,10 +4,12 @@ button {
   padding: 14px;
   border-radius: 10px;
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.3;
     cursor: not-allowed;
+    background-color: #aaa !important;
+    color: black !important;
   }
-  &:hover {
+  &:hover:enabled {
     opacity: 0.6;
   }
 }

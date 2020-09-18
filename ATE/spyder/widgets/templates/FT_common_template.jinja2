@@ -2,15 +2,17 @@
 """
 {{ definition['hardware'] }}/FT/__init__.py
 """
+from ATE.sequencers.SequencerMqttClient import SequencerMqttClient
+mqtt = SequencerMqttClient()
 
 # Tester
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.semiateplugins.pluginmanager import get_plugin_manager
 tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")[0]
 
 
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
 {% for actuator in definition['Actuator']['FT'] %}
 {{actuator}}_instance = get_plugin_manager().hook.get_actuator_proxy(required_capability="{{actuator}}")[0]
+{{actuator}}_instance.set_mqtt_client(mqtt)
 {% endfor %}
 
 {% for instrument in definition['Instruments'] %}

@@ -17,7 +17,7 @@ import { TestOptionType } from 'src/app/models/usersettings.model';
 import { MockServerService } from 'src/app/services/mockserver.service';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 import * as constants from 'src/app/services/mockserver-constants';
-import { expectWaitUntil } from 'src/app/test-stuff/auxillary-test-functions';
+import { expectWaitUntil, spyOnStoreArguments } from 'src/app/test-stuff/auxillary-test-functions';
 import { AppstateService } from 'src/app/services/appstate.service';
 
 describe('TestOptionComponent', () => {
@@ -58,6 +58,10 @@ describe('TestOptionComponent', () => {
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
     fixture.detectChanges();
+  });
+
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create test-option component', () => {
@@ -179,8 +183,7 @@ describe('TestOptionComponent', () => {
 
     mockServerService.setRepeatMessages(false);
       mockServerService.setMessages([
-        settingsFromServer,
-        {}
+        settingsFromServer
       ]
     );
 
@@ -295,8 +298,6 @@ describe('TestOptionComponent', () => {
       });
       fixture.detectChanges();
 
-      let communicationServiceRetrievedSendArgument: any;
-
       // configure stop on fail option
       let checkboxes = fixture.debugElement.queryAll(By.css('app-checkbox'));
       let checkbox = checkboxes.filter(e => e.nativeElement.innerText === 'Stop on Fail')[0].nativeElement.querySelector('.slider');
@@ -305,15 +306,8 @@ describe('TestOptionComponent', () => {
 
       // spy on send function of the communication service
       // and store received arguments to check them later
-
-      // As we nned a function here we have to disable the only-arrow-functions rule here
-      // the reason is that the this context, i.e. execution context is different from function
-      // and arrow functions
-      // tslint:disable:only-arrow-functions
-      let sendSpy = spyOn(communicationService, 'send').and.callFake(function () {
-        communicationServiceRetrievedSendArgument = arguments[0];
-      });
-      // tslint:enable:only-arrow-functions
+      let communicationServiceRetrievedSendArgument = [];
+      let sendSpy = spyOnStoreArguments(communicationService, 'send', communicationServiceRetrievedSendArgument);
 
       // apply changes
       let buttons = fixture.debugElement.queryAll(By.css('app-button'));
@@ -325,10 +319,10 @@ describe('TestOptionComponent', () => {
       expect(sendSpy).toHaveBeenCalled();
 
       // check the data that would be send to the server
-      expect(communicationServiceRetrievedSendArgument.command).toEqual('usersettings');
-      expect(communicationServiceRetrievedSendArgument.payload.length).toEqual(Object.keys(TestOptionType).length);
-      expect(communicationServiceRetrievedSendArgument.payload.some(e => e.name === TestOptionType.stopOnFail)).toBeTrue();
-      expect(communicationServiceRetrievedSendArgument
+      expect(communicationServiceRetrievedSendArgument[0].command).toEqual('usersettings');
+      expect(communicationServiceRetrievedSendArgument[0].payload.length).toEqual(Object.keys(TestOptionType).length);
+      expect(communicationServiceRetrievedSendArgument[0].payload.some(e => e.name === TestOptionType.stopOnFail)).toBeTrue();
+      expect(communicationServiceRetrievedSendArgument[0]
         .payload.filter(
           e => e.name === TestOptionType.stopOnFail)[0].active).toBeTrue();
     });

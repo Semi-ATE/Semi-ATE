@@ -1,0 +1,4 @@
+<div class="testTextFilter">
+  <app-checkbox id="testTextCheckbox" [checkboxConfig]="testTextCheckboxConfig" (checkboxChangeEvent)="testTextFilterCheckboxChanged()"></app-checkbox>
+  <app-input id="testTextInput" [inputConfig]="testTextInputConfig" (inputChangeEvent)="testTextFilterValueChanged($event)"></app-input>
+</div>

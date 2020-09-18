@@ -1,4 +1,4 @@
-from ATE.TES.apps.masterApp.result_collection_handler import ResultsCollector
+from ATE.TES.apps.masterApp.resulthandling.result_collection_handler import ResultsCollector
 
 
 def test_result_handler_without_setting_size():

@@ -14,7 +14,7 @@ from PyQt5 import QtWidgets
 
 from ATE.spyder.widgets.actions_on.hardwaresetup.InstrumentListItem import InstrumentListItem
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-from ATE.spyder.widgets.plugins.pluginmanager import get_plugin_manager
+from ATE.semiateplugins.pluginmanager import get_plugin_manager
 from ATE.spyder.widgets.validation import valid_pcb_name_regex
 
 

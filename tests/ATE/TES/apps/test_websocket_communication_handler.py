@@ -1,5 +1,6 @@
 from ATE.TES.apps.masterApp.master_application import MasterApplication
 from ATE.TES.apps.masterApp.master_webservice import WebsocketCommunicationHandler
+from ATE.TES.apps.common.logger import Logger
 
 
 class TestWebsocketCommunicationHandler:
