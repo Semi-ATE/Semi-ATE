@@ -1,4 +1,3 @@
-qtawesome
 qdarkstyle
 watchdog
 numpy
@@ -13,3 +12,4 @@ hypothesis
 aiohttp
 aiomqtt
 pyqt
+qtawesome==0.7.0
