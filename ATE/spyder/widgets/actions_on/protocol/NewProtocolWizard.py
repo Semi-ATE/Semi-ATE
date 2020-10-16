@@ -8,13 +8,8 @@ import os
 import re
 
 from PyQt5 import QtCore
-from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5 import uic
-
-from ATE.spyder.widgets.actions import Create_new_maskset
-from ATE.spyder.widgets.listings import list_masksets
-from ATE.spyder.widgets.validation import is_valid_maskset_name
 
 
 class NewProtocolWizard(QtWidgets.QDialog):
@@ -29,5 +24,12 @@ class NewProtocolWizard(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
-        self.parent = parent
-        self.project_directory = os.path.join(self.parent.workspace_path, self.parent.active_project)
+        # TODO: fix this
+        # self.parent = parent
+        # self.project_directory = os.path.join(self.parent.workspace_path, self.parent.active_project)
+
+
+def new_protocol_dialog(project_info):
+    protocol_wizard = NewProtocolWizard(project_info)
+    protocol_wizard.exec_()
+    del(protocol_wizard)

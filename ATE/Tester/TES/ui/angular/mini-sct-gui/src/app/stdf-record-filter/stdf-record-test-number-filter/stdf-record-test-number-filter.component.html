@@ -1,0 +1,11 @@
+<div class="testNumberFilter">
+  <app-checkbox
+   id="testNumberCheckbox"
+   [checkboxConfig]="testNumberCheckboxConfig"
+   (checkboxChangeEvent)="filterChanged()"></app-checkbox>
+  <app-input
+   id="testNumberInput"
+   [inputConfig]="testNumberInputConfig"
+   (inputChangeEvent)="filterChanged()"
+   (carriageReturnEvent)="filterChanged()"></app-input>
+</div>

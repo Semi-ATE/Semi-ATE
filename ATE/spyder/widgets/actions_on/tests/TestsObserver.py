@@ -5,8 +5,10 @@ from ATE.spyder.widgets.actions_on.utils.ObserverBase import ObserverBase
 
 
 class EventHandler(EventHandlerBase):
-    def __init__(self, section_root):
-        super().__init__(section_root)
+    def __init__(self, section_root, path):
+        super().__init__()
+        self.path = path
+        self.section_root = section_root
 
     def _on_file_created(self, path, modify=False):
         if not self._is_python_file(path):
@@ -48,5 +50,5 @@ class EventHandler(EventHandlerBase):
 
 class TestsObserver(ObserverBase):
     def __init__(self, path, section_root):
-        self.event_handler = EventHandler(section_root)
-        super().__init__(path, section_root)
+        event_handler = EventHandler(section_root, path)
+        super().__init__(event_handler)

@@ -1,0 +1,11 @@
+<div class="testProgramFilter">
+  <app-checkbox 
+    id="testProgramCheckbox"
+    [checkboxConfig]="testProgramCheckboxConfig"
+    (checkboxChangeEvent)="testProgramFilterChanged()"></app-checkbox>
+  <app-input 
+    id="testProgramInput"
+    [inputConfig]="testProgramInputConfig"
+    (inputChangeEvent)="testProgramFilterChanged()" 
+    (carriageReturnEvent)="testProgramFilterChanged()"></app-input>
+</div>

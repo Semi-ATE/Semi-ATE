@@ -1,0 +1,16 @@
+<div class="dropdown">
+  <label *ngIf="dropdownConfig.labelText !== ''">
+    {{dropdownConfig.labelText}}
+  </label>
+  <div class="dropbox" [ngClass]="{'disabled': dropdownConfig.disabled, 'closed': dropdownConfig.closed && !dropdownConfig.disabled}">
+    <ul>
+      <li *ngFor="let item of dropdownConfig.items; index as i"
+        [class.selected]="dropdownConfig.selectedIndex===i"
+        (click)="selectedItem(i)">
+        {{item.description}}
+      </li>
+    </ul>
+  </div>
+</div>
+
+

@@ -66,6 +66,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog._available_pattern = hw_configuration["Parallelism"]
         dialog.populate_selected_instruments(hw_configuration["Instruments"])
         dialog.populate_selected_actuators(hw_configuration["Actuator"])
+        dialog.populate_selected_gpfunctions(hw_configuration["GPFunctions"])
         dialog.select_tester(hw_configuration["tester"])
         ViewHardwaresetupSettings._update_available_pattern_list(dialog)
 

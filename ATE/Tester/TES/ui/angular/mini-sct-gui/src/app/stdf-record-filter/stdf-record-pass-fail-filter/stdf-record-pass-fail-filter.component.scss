@@ -1,0 +1,17 @@
+.passFailFilter {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: left;
+  width: 270px;
+  border: 1px #767687 solid;
+  border-radius: 5px;
+  padding: 10px 0 10px 10px;
+  height: auto;
+  .passFailDropdown {
+    width: 250px;
+  }
+  #siteNumberInput {
+    width: 250px;
+  }
+}

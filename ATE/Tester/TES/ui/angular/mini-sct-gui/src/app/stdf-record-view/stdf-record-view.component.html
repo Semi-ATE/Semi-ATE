@@ -1,0 +1,35 @@
+<hr class="blueDivider">
+<app-card [cardConfiguration]="stdfRecordsViewCardConfiguration">
+  <div id="leftContent">
+    <app-button id="refresh" [buttonConfig]="refreshButtonConfig" (buttonClickEvent)="reloadRecords()"></app-button>
+    <app-system-bin-status id="systemBinStatus"></app-system-bin-status>
+  </div>
+  <div *ngIf="anyRecordStored(); else norecordsavailable" class="recordView">
+    <app-stdf-record-type-filter></app-stdf-record-type-filter>
+    <div class="filters">
+      <app-stdf-record-site-number-filter></app-stdf-record-site-number-filter>
+      <app-stdf-record-test-number-filter></app-stdf-record-test-number-filter>
+      <app-stdf-record-test-text-filter></app-stdf-record-test-text-filter>
+      <app-stdf-record-pass-fail-filter></app-stdf-record-pass-fail-filter>
+      <app-stdf-record-program-filter></app-stdf-record-program-filter>
+    </div>
+    <div class="recordsContent">
+      <div class="autoScrollAndButtons">
+        <app-button id="prev" [buttonConfig]="previousRecordButtonConfig" [ngClass]="{'hidden': autoscrollCheckboxConfig.checked}" class="left" (buttonClickEvent)="previousRecord()"></app-button>
+        <app-checkbox [checkboxConfig]="autoscrollCheckboxConfig" (checkboxChangeEvent)="autoscrollChanged($event)"></app-checkbox>
+        <app-button id="next" class="right" [buttonConfig]="nextRecordButtonConfig" [ngClass]="{'hidden': autoscrollCheckboxConfig.checked}" (buttonClickEvent)="nextRecord()"></app-button>
+      </div>
+      <div *ngIf="filterTooStrong(); else records" class="recordNavigation">
+        <p>Filter settings are too restrictive! No records match the applied filter settings.</p>
+      </div>
+    </div>
+  </div>
+</app-card>
+
+<ng-template #records>
+  <app-stdf-record id="stdfRecords" [stdfRecord]="currentRecord()"></app-stdf-record>
+</ng-template>
+<ng-template #norecordsavailable>
+  <p>No records available!</p>
+</ng-template>
+

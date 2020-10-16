@@ -19,9 +19,8 @@ class EventHandlerBase(PatternMatchingEventHandler, QtCore.QObject):
     file_modified = QtCore.pyqtSignal(str)
     dir_modified = QtCore.pyqtSignal(str)
 
-    def __init__(self, section_root):
+    def __init__(self):
         super().__init__()
-        self.section_root = section_root
         self._connect_event_handler()
         self.file_created.connect(self._on_file_created)
         self.dir_created.connect(self._on_dir_created)
@@ -80,9 +79,9 @@ class ObserverBase:
     '''
     create doc content observer
     '''
-    def __init__(self, path, section_root):
-        self.path = path
-        self.section_root = section_root
+    def __init__(self, event_handler):
+        self.event_handler = event_handler
+        self.path = event_handler.path
 
         self._init_observer()
         self._init_section()

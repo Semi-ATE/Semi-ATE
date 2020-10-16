@@ -1,7 +1,8 @@
 import pytest
 import mock
-from ATE.TES.apps.masterApp import master_application
-from ATE.TES.apps.masterApp import master_connection_handler
+from ATE.Tester.TES.apps.masterApp import master_application
+from ATE.Tester.TES.apps.masterApp import master_connection_handler
+from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
 
 
 class TestApplication:
@@ -16,6 +17,7 @@ class TestApplication:
                 'enable_timeouts': True,
                 'skip_jobdata_verification': False,
                 'environment': "abs",
+                'Handler': "abc",
                 "user_settings_filepath": "master_user_settings.json"}
 
     def trigger_control_state_change(self, app: master_application.MasterApplication, site: str, newstate: str):
@@ -24,8 +26,9 @@ class TestApplication:
     def trigger_test_state_change(self, app: master_application.MasterApplication, site: str, newstate: str):
         app.on_testapp_status_changed(site, {"state": newstate, "interface_version": 1})
 
-    def trigger_test_result_change(self, app: master_application.MasterApplication, site: str):
-        app.on_testapp_testresult_changed(site, {"type": 'testresult', "payload": []})
+    @mock.patch.object(YieldInformationHandler, 'extract_yield_information')
+    def trigger_test_result_change(self, app: master_application.MasterApplication, site: str, mocker):
+        app.on_testapp_testresult_changed(site, {"type": 'testresult', "payload": {}})
 
     def test_masterapp_missed_broker_field_configuration(self):
         cfg = self.default_configuration()
@@ -59,7 +62,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     @mock.patch.object(master_connection_handler.MasterConnectionHandler, "send_load_test_to_all_sites")
@@ -76,7 +79,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     @mock.patch.object(master_connection_handler.MasterConnectionHandler, "send_load_test_to_all_sites")
@@ -100,12 +103,14 @@ class TestApplication:
         self.trigger_control_state_change(app, "1", "busy")
         assert(app.state == "loading")
         self.trigger_test_state_change(app, "1", "idle")
+        assert(app.state == "waitingforbintable")
+        app.all_binsettings_received_complete(None)
         assert(app.state == "ready")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     @mock.patch.object(master_connection_handler.MasterConnectionHandler, "send_next_to_all_sites")
@@ -117,6 +122,7 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
         assert(app.state == "ready")
         app.next(None)
         assert(app.external_state == "testing")
@@ -125,7 +131,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def test_masterapp_testsdone_triggers_ready(self, mock1):
@@ -136,6 +142,7 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
         app.next(None)
         assert(app.external_state == "testing")
         self.trigger_test_state_change(app, "0", "testing")
@@ -153,7 +160,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def test_masterapp_crash_triggers_error(self, mock1):
@@ -164,6 +171,7 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
         app.testapp_disconnected(1, None)
         assert(app.state == "softerror")
 
@@ -183,7 +191,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def test_masterapp_testresult_accepted_if_testing(self, mock1):
@@ -194,6 +202,7 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
         app.next(None)
         assert(app.external_state == "testing")
         self.trigger_test_state_change(app, "0", "testing")
@@ -210,7 +219,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def test_masterapp_testresult_triggers_error_if_not_sent_during_test(self, mock1):
@@ -221,13 +230,14 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
         app.on_testapp_testresult_changed("0", None)
         assert(app.state == "softerror")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def test_masterapp_error_state_testapp_crash(self, mock1):
@@ -248,7 +258,7 @@ class TestApplication:
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
         'cwd': 'src/ATE/apps/testApp',     # optional
-        'testapp_script_args': ['--verbose', '--thetestzip_name', 'example1'],
+        'testapp_script_args': ['--verbose'],
         'XML': ''                                                                 # optional/unused for now
     })
     def _common_setup_for_testing_with_resource_synchronization(self, app, mocker, mock1):
@@ -257,6 +267,7 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': 306426.001}
         app.load_command(cmd)
         app.all_siteloads_complete()
+        app.all_binsettings_received_complete(None)
 
         app.next(None)
         assert(app.external_state == "testing")
@@ -421,7 +432,6 @@ class TestApplication:
         self.trigger_test_state_change(app, "0", "idle")
         assert(app.state == "ready")
 
-    
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_masterapp_testing_all_sites_complete_while_waiting_for_resource(self, mocker):
         cfg = self.default_configuration()
@@ -450,3 +460,81 @@ class TestApplication:
         # TODO: the callback should probably be canceled eventually, for now we just check that it doesn't cause an error
         self._trigger_resource_config_applied_callback(app)
         assert(app.state == "ready")
+
+    @staticmethod
+    def _generate_PRR(part_id, sbin):
+        from ATE.data.STDF.records import PRR
+        endian = '<'
+        version = 'V4'
+        rec = PRR(version, endian)
+        rec.set_value('HEAD_NUM', 1)
+        rec.set_value('SITE_NUM', 1)
+        rec.set_value('PART_FLG', ['0', '0', '0', '0', '1', '0', '0', '0'])
+        rec.set_value('NUM_TEST', 0)
+        rec.set_value('HARD_BIN', 0)
+        rec.set_value('SOFT_BIN', sbin)
+        rec.set_value('PART_ID', part_id)
+        return rec.to_dict()
+
+    @staticmethod
+    def get_bin_settings():
+        return {'type1': {'sbins': [1, 2, 3], 'hbins': [1]}, 'type2': {'sbins': [4], 'hbins': [1]}}
+
+    def test_masterapp_testing_yield_generation(self):
+        cfg = self.default_configuration()
+        app = master_application.MasterApplication(cfg)
+        app._bin_settings = self.get_bin_settings()
+        app._yield_info_handler.set_bin_settings(app._bin_settings)
+
+        prr = self._generate_PRR('abc', 1)
+        app._yield_info_handler.extract_yield_information([prr])
+
+        prr = self._generate_PRR('eft', 2)
+        app._yield_info_handler.extract_yield_information([prr])
+
+        prr = self._generate_PRR('zzz', 4)
+        app._yield_info_handler.extract_yield_information([prr])
+
+        site_num = str(prr['SITE_NUM'])
+        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+
+        assert site_yield_info == [{'name': 'type1', 'value': 66.66666666666666, 'count': 2, 'siteid': site_num},
+                                   {'name': 'type2', 'value': 33.33333333333333, 'count': 1, 'siteid': site_num},
+                                   {'name': 'sum', 'value': 100.0, 'count': 3, 'siteid': site_num},
+                                   ]
+
+        yield_info = app._yield_info_handler.get_yield_messages()
+        all_site_num = '-1'
+        assert yield_info == [{'name': 'type1', 'value': 66.66666666666666, 'count': 2, 'siteid': site_num},
+                              {'name': 'type2', 'value': 33.33333333333333, 'count': 1, 'siteid': site_num},
+                              {'name': 'sum', 'value': 100.0, 'count': 3, 'siteid': site_num},
+                              {'name': 'type1', 'value': 66.66666666666666, 'count': 2, 'siteid': all_site_num},
+                              {'name': 'type2', 'value': 33.33333333333333, 'count': 1, 'siteid': all_site_num},
+                              {'name': 'sum', 'value': 100.0, 'count': 3, 'siteid': all_site_num},
+                              ]
+
+    def test_masterapp_testing_yield_generation_override_part_id(self):
+        cfg = self.default_configuration()
+        app = master_application.MasterApplication(cfg)
+        app._bin_settings = self.get_bin_settings()
+        app._yield_info_handler.set_bin_settings(app._bin_settings)
+
+        prr = self._generate_PRR('abc', 1)
+        app._yield_info_handler.extract_yield_information([prr])
+        site_num = str(prr['SITE_NUM'])
+        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+
+        assert site_yield_info == [{'name': 'type1', 'value': 100.0, 'count': 1, 'siteid': site_num},
+                                   {'name': 'type2', 'value': 0.0, 'count': 0, 'siteid': site_num},
+                                   {'name': 'sum', 'value': 100.0, 'count': 1, 'siteid': site_num},
+                                   ]
+
+        prr = self._generate_PRR('abc', 4)
+        app._yield_info_handler.extract_yield_information([prr])
+
+        site_num = str(prr['SITE_NUM'])
+        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+        assert site_yield_info == [{'name': 'type1', 'value': 0.00, 'count': 0, 'siteid': site_num},
+                                   {'name': 'type2', 'value': 100.00, 'count': 1, 'siteid': site_num},
+                                   {'name': 'sum', 'value': 100.00, 'count': 1, 'siteid': site_num},
+                                   ]

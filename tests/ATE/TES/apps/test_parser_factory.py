@@ -1,6 +1,6 @@
-from ATE.TES.apps.masterApp.parameter_parser import parser_factory
-from ATE.TES.apps.masterApp.parameter_parser.xml_parameter_parser import XmlParameterParser
-from ATE.TES.apps.masterApp.parameter_parser.filesystem_data_source import FileSystemDataSource
+from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
+from ATE.Tester.TES.apps.masterApp.parameter_parser.xml_parameter_parser import XmlParameterParser
+from ATE.Tester.TES.apps.masterApp.parameter_parser.filesystem_data_source import FileSystemDataSource
 import xml.etree.ElementTree as tree
 
 
@@ -30,7 +30,7 @@ create_xml_file(DEVICE_ID)
 
 
 def get_logger():
-    from ATE.TES.apps.common.logger import Logger
+    from ATE.common.logger import Logger
     return Logger('test')
 
 

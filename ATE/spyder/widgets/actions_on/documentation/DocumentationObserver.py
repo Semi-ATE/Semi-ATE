@@ -8,8 +8,9 @@ import os
 
 class EventHandler(EventHandlerBase):
     def __init__(self, section_root, path):
-        super().__init__(section_root)
+        super().__init__()
         self.path = path
+        self.section_root = section_root
 
     def _on_file_created(self, path):
         file_name = os.path.basename(path)
@@ -59,8 +60,9 @@ class DocumentationObserver(ObserverBase):
     create doc content observer
     '''
     def __init__(self, path, section_root):
-        self.event_handler = EventHandler(section_root, path)
-        super().__init__(path, section_root)
+        self.section_root = section_root
+        event_handler = EventHandler(self.section_root, path)
+        super().__init__(event_handler)
 
     def _generate_dir_item(self, name, path, parent):
         return DocumentationItem(name, path, parent)

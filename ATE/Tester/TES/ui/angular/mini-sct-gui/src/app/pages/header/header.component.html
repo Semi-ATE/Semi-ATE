@@ -1,0 +1,15 @@
+<div class="stickyHeader">
+  <div class="header">
+    <h1>{{title}}</h1>
+    <img class="logo" src="../../../assets/TDK_logo.png">
+  </div>
+  <div class="menu">
+    <app-menu></app-menu>
+    <div class="right">
+      <app-button [style.display]="isStartDutTestButtonInvisible() ? 'none' : 'block'" [buttonConfig]="startDutTestButtonConfig" (buttonClickEvent)="startDutTest()"></app-button>
+      <app-button [style.display]="isResetButtonInvisible() ? 'none' : 'block'" [buttonConfig]="resetButtonConfig" (buttonClickEvent)="resetSystem()"></app-button>
+      <app-system-status></app-system-status>
+    </div>
+  </div>
+</div>
+

@@ -27,11 +27,11 @@ class ATEPlugin:
         pass
 
     @hookspec
-    def get_actuator_names():
+    def get_instrument_names():
         pass
 
     @hookspec
-    def get_instrument_names():
+    def get_general_purpose_function_names():
         pass
 
     @hookspec
@@ -55,17 +55,13 @@ class ATEPlugin:
         pass
 
     @hookspec
-    def get_actuator(required_capability):
-        pass
-
-    @hookimpl
-    def get_actuator_proxy(required_capability):
-        pass
-
-    @hookspec
     def get_instrument(instrument_name):
         pass
 
     @hookspec
     def get_tester(tester_name):
+        pass
+
+    @hookspec
+    def get_general_purpose_function(func_name):
         pass

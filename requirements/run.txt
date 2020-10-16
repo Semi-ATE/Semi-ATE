@@ -7,7 +7,6 @@ paho-mqtt
 xmltodict
 transitions
 async-timeout
-pytest-asyncio
 mypy
 SQLAlchemy
 hypothesis

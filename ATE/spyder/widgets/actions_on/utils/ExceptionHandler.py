@@ -1,12 +1,14 @@
 from enum import Enum
 
+
 def generate_exception(text, title, is_trace_back, label, steps, repo='Semi-ATE/Semi-ATE'):
     return {"text": text,
             "is_traceback": is_trace_back,
             "repo": repo,
             "title": title,
             "label": label,
-            "steps": steps,}
+            "steps": steps}
+
 
 def report_exception(parent, title, is_trace_back=True, label='', steps=''):
     import traceback
@@ -31,6 +33,7 @@ class ExceptionTypes(Enum):
     Product = 'product wizard exception'
     Test = 'test wizard exception'
     Program = 'program wizard exception'
+    Protocol = 'protocol wizard exception'
 
     def __call__(self):
         return self.value

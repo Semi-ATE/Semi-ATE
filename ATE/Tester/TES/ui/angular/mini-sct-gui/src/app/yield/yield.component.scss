@@ -1,0 +1,11 @@
+@import "../../styles.scss";
+
+.yield {
+  min-width: 421px;
+  height: auto;
+  font-size: $text;
+  app-tab, p {
+    display: inline-block;
+    margin-top: 10px;
+  }
+}

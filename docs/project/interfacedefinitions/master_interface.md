@@ -1,0 +1,271 @@
+# Master
+## Daten die vom Master erzeugt werden
+
+### Statusinfo
+
+Topic: \<device-id>/Master/status
+|Feld| Bedeutung/Zulässige Werte   |
+|----|------------------------------|
+|Command| status                  |
+|alive | 0 oder 1                   |
+|interface_version| Bezeichnet die Version der Schnittstelle Master -> TestApp, die von dieser Version des Masters implementiert wird. |
+
+Gültige Werte für alive:
+
+* 0 = Masterapplikation hat sich beendet (unbeabsichtigt/Fehler),
+* 1 = Masterapplikation aktiv
+
+Beispiel:
+
+```json
+{
+    "type": "status",
+    "alive": "1",
+    "interface_version": "1"
+}
+```
+
+## Job
+
+Topic: \<device-id>/Master/job
+In diesem Topic findet sich eine Reihe von Key-Value Paaren, die die Konfiguration für den aktuellen Testjob darstellen. Der Master ermittelt sie anhand der Losnummer und einer kofigurierten Quelle (z.B. Networkshare für Job.xml).
+
+## PeripheryState
+**ToDo: Überarbeiten, gilt so nicht mehr!**
+
+Topic: \<device-id>/Master/peripherystate
+
+Im diesem Topic teilt der Master den Zustand von Peripheriegeräten mit, die durch den Master kontrolliert werden, d.h. solche für die nur eine Instanz existiert. Die konkret verwendeten Peripheriegeräte sind noch offen. Die Daten in diesem Topic werden wie folgt organisiert:
+"\<PeripheryName>.\<Attribute>" : \<Value>
+Somit besteht die Möglichkeit sowohl einfache "an/aus" Zustände als auch komplexere Zustände zu modellieren.
+
+**Ende Todo**
+
+## Befehle die vom Master verstanden werden
+
+Der Master empfängt Befehle im Topic Master/command. Alle Befehle, auf die eine Antwort geschickt wird postet der Master im Topic Master/response
+
+### Geteilte Peripherie steuern
+
+**TODO - Abschnitt überarbeiten**
+|Feld | Bedeutung/Zulässige Werte   |
+|----|------------------------------|
+|Command| „togglesharedperiphery“ |
+|peripheryType | < name >           |
+|param<0-n>| Parameter für Peripherie|
+
+
+Weist den Master an ein Stück Peripherie anzusteuern, das
+für alle Testprogramme gleich ist (z.B. Magnetfeldgenerator).
+Der Master meldet Vollzug, indem das korrespondierende Feld im Topic "\<device-id>/Master/peripherystate" auf den geforderten Wert gesetzt wird. Das Parameterfeld ist als Beispiel zu verstehen. Je nach konkreter Peripherie werden unterschiedliche Parameter gebraucht. Hierzu muss eine seperate Dokumentation geschrieben werden.
+
+**Ende ToDo**
+
+__Beispiel__:
+Im Test wird gefordert, dass der Fluxkompensator auf 100 bozos geschaltet wird.
+
+Der aktuelle Peripheriestatus ist:
+
+```json
+{
+    "fluxcompensator": 0,
+    ...
+}
+```
+
+TestApp postet:
+
+```json
+{
+    "type": "io-control-request",
+    "periphery_type": "fluxcompensator",
+    "ioctl_name": "set_output",
+    "parameters": 
+    {
+        "param0": 100,
+        "timeout": 5.0
+    }
+}
+```
+
+Nach Empfang der Nachricht der Testapp steuert der Master den Fluxkompensator an.
+
+:information_source: Der Master stellt sicher, dass die angeforderte Peripherie im korrekten Zustand ist, wenn der Vollzug meldet, d.h. etwaige Einschwingzeiten sind vom Testprogramm nicht seperat zu berücksichtigen, sondern wurden zum Zeitpunkt der Vollzugsmeldung durch den Master (bzw. das Plugin, welches die Ressourcensteuerung implementiert!) bereits berückstichtigt.
+
+:warning: Wird eine Ressource angefordert, die nicht existiert, so geht der Master in den Fehlerzustand.
+
+:warning: Erhält der Master verschiedene Befehle für die gleiche Peripherie (z.B. Site A fordert "Magnetfeld an", Site B fordert "Magnetfeld aus"), während noch eine Zustandsänderung pendent ist, so geht er in den Fehlerzustand über.
+
+:warning: Zu einem Zeitpunkt kann nur genau eine Ressourcenanforderung aktiv sein. Werden zwei verschiedene Ressourcen angefordert, so geht der Master in den Fehlerzustand über.
+
+:warning: Der Master synchronisiert den Zugriff auf die geteilten Peripherien derart, dass eine Änderung erst durchgeführt wird, wenn dieselbe Anfrage von allen aktiven Sites gesendet wurde. Es wird davon ausgegangen, dass auf allen Sites dasselbe Programm läuft und demnach auch immer zum gleichen Zeitpunkt während des Testablaufs von allen Sites dieselbe gemeinsame Ressource verwendet wird. Derzeit sind noch keine Timeouts für diesen Vorgang definiert.
+
+__Auflösen von geteilten Peripherien__: Der Master verwendet Pluggy um für geteilte Peripherien das richtige Businessobjekt zu ermitteln, dabei wird der Peripherytype als Aktuatorfähigkeit interpretiert. Der Master instanziert sich ein Aktuatorobjekt mit dem Call "get_actuator" aus den installierten Plugins. Er verwendet die erste Implementierung, die gemeldet wird. Das bedeutet, dass mehrere Aktuatorimplementierungen für denselben Aktuator (die durchaus aus verschiedenen Plugins kommen können!) zu unvorhersehbarem Verhalten führen.
+
+
+### Handlerbefehle
+
+Topic: \<device-id>/Master/command
+|Feld| Bedeutung/Zulässige Werte    |
+|----|------------------------------|
+|type| \<command_type>              |
+|value | \<payload>                 |
+
+payload kann mehere key paramters haben. Dies im Falle von load lot
+informationen über das zu ladene lot (Losnumber, Temperature, etc..). Viele Befehle werden mit dem Zustand des Master quittiert, d.h. die interne Zustandsmaschine des Masters wechselt den Zustand aufgrund eines Befehls, was auf dem Master/status Topic zu beobachten ist. Dementsprechend muss eine Handlersteuerung dieses Topic überwachen.
+
+
+Unterstützte Befehle
+
+#### load
+Der Loadbefehl weist die Masterapplikation an ein Los zu laden.
+Bei Erfolg wechselt der Master in den Zustand XXX
+
+```json
+{
+    "type": "load",
+    "payload": 
+        {
+            "lotnumber": "", 
+            "sublotnumber": "", 
+            "devicetype": "", 
+            "measurementtemperature": ""
+        }
+}
+```
+
+Der Loadbefehl weist die Masterapplikation an ein Los zu laden
+
+* **lotnumber**: Losnummer
+* sublotnumer: Sublosnummer / Wafernummer
+* devicetype: Device Type
+* measurementtemperature: Eingestellte Test-Temperature
+
+Bei Erfolg wechselt der Master in den Zustand XXX
+
+#### next
+Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge von Sites zu starten. Der Master wechselt während die Tests laufen in den Zustand XXX und nach Testabschluss in den Zustand YYY. Die Handlerapplikation darf keinen neuen Testbefehl schicken, solange der Zustand XXX nicht erreicht wurde, selbst dann nicht, wenn der Master bereits Testergebnisse publiziert hat.
+
+```json
+{
+    "type": "next",
+    "payload": 
+        {
+            "sites": [
+                {
+                    "siteid": "site-id",
+                    "deviceid": "", 
+                    "binning": "", 
+                    "logflag": "", 
+                    "additionalinfo": ""
+                },
+                (mehr sites)
+            ]
+        }
+}
+```
+
+* **siteid**: Siteid einer Site, auf der getestet werden soll. Diese Siteid muss mit einer Site übereinstimmen, die beim Master angemeldet ist.
+* **deviceid**: Bauteilnummer
+* **binning**: Bin Ergebnis
+* **logflag**:  LOG FLAG
+* **additionalinfo**: Informationen die Zwischen meherere Tester ausgetauscht werden
+
+**Fehlerfälle**:
+Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in den Zustand "Error".
+
+
+Antwort:
+```json
+{
+    "type": "endtest",
+    "payload": 
+        {
+            "sites": [
+                {
+                    "siteid": "site-id",
+                    "deviceid": "", 
+                    "binning": "", 
+                    "logflag": "", 
+                    "additionalinfo": ""
+                },
+                (mehr sites)
+            ]
+        }
+}
+```
+* **siteid**: Site für die das Ergebnis gilt
+* **deviceid**: Bauteil Nummer
+* **binning**: Bin Ergebnis
+* **logflag**:  LOG FLAG
+* **additionalinfo**: Informationen die Zwischen meherere Tester ausgetauscht werden , TODO -> Wie damit verfahren?
+
+
+#### end lot
+Der Endlotbefehl weist die Masterapplikation ihre Testapplikation zu beenden. Bei Erfolg wechselt der Master in den Zustand XXX
+
+```json
+{
+    "type": "endlot",
+    "payload": {}
+}
+```
+
+
+#### identify
+Der identifybefehl weist die Masterapplikation sein ID(Name) zu schicken. Die Antwort ist:
+
+```json
+{
+    "type": "identify",
+    "payload": {}
+}
+```
+
+
+```json
+{
+    "type": "identify",
+    "payload": {"value": ""}
+}
+```
+
+
+#### get-state
+Der get-state Befehl weist die Masterapplikation seinen Zustand zu schicken. Der Master published daraufhin seinen aktuellen Zustand im status Topic.
+
+```json
+{
+    "type": "get-state",
+    "payload": {}
+}
+```
+
+**ToDo: Hier sollten nur die Statemachinezustände des Masters stehen. Der Handler muss sehen, wie er damit klarkommt.**
+
+* BUSY
+* LOT = loading
+* INIT
+* OK
+* ERR
+* CHECKSUM = checksum error
+* NOT_IMPL
+* INVAL_LOT
+* NO_LOT
+* HAVE_LOT
+* UN_ERR = unrecorverable error
+
+
+## Daten die vom Master konsumiert werden
+
+Der Master konsumiert Statusinformationen aus den Topics:
+
+* \<device-id>/Control/status
+* \<device-id>/TestApp/status
+* \<device-id>/Webserver/status
+* \<device-id>/Periphery/status
+
+* \<handler-id>/Handler/status
+
+
+* \<device-id>/MasterApp/status

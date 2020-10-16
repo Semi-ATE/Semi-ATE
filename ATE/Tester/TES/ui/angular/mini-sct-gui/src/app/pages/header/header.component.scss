@@ -1,0 +1,65 @@
+@import '../../../styles.scss';
+
+.stickyHeader {
+  .header {
+    width: 100%;
+    padding: 20px;
+    vertical-align: center;
+    background-color: $micronasBlue;
+    color: $white;
+    * {
+      display: inline-block;
+    }
+    h1 {
+      text-align: left;
+      font-size: 50px;
+    }
+    img {
+      float: right;
+      height: auto;
+      width: 186px;
+      margin-top: 17px;
+    }
+  }
+  position: absolute;
+  background-color: $micronasBlue;
+  position: sticky;
+  top: 0px;
+  left: 0px;
+  z-index: 5;
+  height: 180px;
+  .menu {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    .right {
+      display: flex;
+      flex-direction: row;
+      margin-top: 30px;
+    }
+  }
+}
+
+@media screen and (max-width: 850px) {
+  .stickyHeader{
+    float: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+  .header img {
+    float: none;
+    width: 30%;
+    margin-left: 15px;
+  }
+  .menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    .right {
+      display: flex;
+      flex-direction: column;
+      float: left;
+    }
+  }
+}
