@@ -3,6 +3,7 @@ include *.rst
 include *.txt
 include *.yaml
 include *.md
+include *.ps1
 recursive-include docs *.md
 recursive-include docs *.pdf
 recursive-include docs *.png
@@ -27,6 +28,16 @@ recursive-include ATE *.ui
 recursive-include ATE *.xcf
 recursive-include ATE *.xlsx
 recursive-include ATE *.pptx
+recursive-include ATE *.editorconfig
+recursive-include ATE *.gitkeep
+recursive-include ATE *.html
+recursive-include ATE *.ico
+recursive-include ATE *.js
+recursive-include ATE *.json
+recursive-include ATE *.scss
+recursive-include ATE *.ts
+recursive-include ATE *.txt
+recursive-include ATE *.xml
 recursive-include requirements *.txt
 recursive-include tests *.py
 recursive-include ATE/TES *.*
