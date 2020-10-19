@@ -594,6 +594,7 @@ class test_proper_generator(BaseTestGenerator):
         else:
             self._update_test_file()
 
+
 class test_base_generator(BaseTestGenerator):
     """Generator for the Test Base Class."""
 

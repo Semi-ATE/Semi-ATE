@@ -1,4 +1,4 @@
-from ATE.TES.apps.testApp.thetest_application import main
+from ATE.Tester.TES.apps.testApp.thetest_application import main
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.model.TreeModel import TreeModel
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import ProjectWizard
@@ -13,11 +13,30 @@ from ATE.spyder.widgets.actions_on.tests.TestWizard import TestWizard
 from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 from ATE.spyder.widgets.actions_on.program.EditTestProgramWizard import EditTestProgramWizard
 
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QMainWindow
+
 import os
 import shutil
 import pytest
+import json
 from pytestqt.qt_compat import qt_api
 from PyQt5 import QtCore, QtWidgets
+
+
+bin_table = {
+    '1': [1],
+    '2': [10],
+    '3': [11],
+}
+
+PROJECT_NAME = 'smoke_test'
+
+
+def generate_bin_table():
+    path = os.path.join(os.path.dirname(__file__), PROJECT_NAME, 'src', test_configruation['hardware'], test_configruation['base'])
+    with open(os.path.join(path, 'binmapping.json'), 'w+') as f:
+        json.dump(bin_table, f)
 
 
 class MockDBObject:
@@ -27,9 +46,6 @@ class MockDBObject:
     def get_definition(self):
         return self.__definition
 
-
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QMainWindow
 
 class MockATEWidgets(QMainWindow):
     # dummy Signals
@@ -58,7 +74,7 @@ definitions = {'hardware': 'HW0',
                'package': 'Package1',
                'device': 'Device1',
                'product': 'Product1',
-               'test': 'ABC',
+               'test': 'DBC',
                'test1': 'CBA'}
 
 
@@ -71,7 +87,7 @@ test_configruation = {'name': definitions['test'],
                       'prog_name': 'smoke_test_HW0_PR_Die1_Production_PR_1',
                       'input_parameters': {'T': {'name': 'foo', 'Min': -40, 'Max': 170, 'Default': 25, 'Unit': '°C', 'fmt': '.3f', '10ᵡ': '1', 'Shmoo': 'False'}},
                       'output_parameters': {'parameter2_name': {'name': 'foo', 'LSL': 100, 'USL': -100, 'LTL': 0, 'UTL': 0, 'Nom': 2.5, 'Unit': 'mV', 'fmt': '.3f', '10ᵡ': '1'}},
-                      'docstring': 'test ABC',
+                      'docstring': 'test DBC',
                       }
 
 
@@ -96,7 +112,7 @@ def mainwindow():
 @pytest.fixture(scope='module')
 def project_navigation():
     root_name = os.path.dirname(__file__)
-    dir_name = os.path.join(root_name, 'smoke_test')
+    dir_name = os.path.join(root_name, PROJECT_NAME)
     if os.path.exists(dir_name):
         shutil.rmtree(dir_name)
 
@@ -370,6 +386,8 @@ def test_create_new_test_program_enter_name(new_test_program, qtbot):
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     new_test_program.availableTests.item(0).setSelected(False)
+
+    generate_bin_table()
 
     qtbot.mouseClick(new_test_program.OKButton, QtCore.Qt.LeftButton)
 

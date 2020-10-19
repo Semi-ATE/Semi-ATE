@@ -1,0 +1,33 @@
+# =============================================================================
+# DEPRECATION WARNING:
+#
+# The file `requirements.txt` does not influence the package dependencies and
+# will not be automatically created in the next version of PyScaffold (v4.x).
+#
+# Please have look at the docs for better alternatives
+# (`Dependency Management` section).
+# =============================================================================
+#
+# Add your pinned requirements so that they can be easily installed with:
+# conda install --file requirement.txt
+# Remember to also add them in setup.cfg but unpinned.
+# Example:
+# numpy==1.13.3
+# scipy==1.0
+#
+
+pytest-qt==3.3.0
+pytest==5.3.5
+pytest-cov==2.8.1
+mock==4.0.2
+
+
+aiohttp==3.6.2
+paho-mqtt==1.5.0
+aiomqtt==0.1.1
+xmltodict==0.12.0
+pytest-mock==2.0.0
+transitions==0.7.2
+async-timeout==3.0.1
+pytest-asyncio==0.10.0
+

@@ -1,0 +1,10 @@
+<div class="yield">
+  <app-card [cardConfiguration]="yieldCardConfiguration">
+    <p *ngIf="!yieldDataAvailable(); else yieldAvailable">No yield entries</p>
+  </app-card>
+</div>
+<ng-template #yieldAvailable>
+  <app-tab [tabConfig]="yieldTabConfiguration" (tabChangeEvent)="tabChanged()"></app-tab>
+  <app-table [tableConfig]="yieldTableConfiguration"></app-table>
+</ng-template>
+

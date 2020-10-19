@@ -1,0 +1,27 @@
+<div class="tableElement">
+  <ul class="tableHeader">
+    <li *ngFor="let header of tableConfig.headerRow; index as i"
+      [ngStyle]="{
+        'display': 'block',
+        'color': header.textColor,
+        'text-align': header.align,
+        'background-color': header.backgroundColor,
+        'width': tableConfig.tableWidth[i]
+      }">
+      {{header.text}}
+    </li>
+  </ul>
+  <ul class="tableRow" *ngFor="let row of tableConfig.rows">
+    <li *ngFor="let entry of row; index as j" 
+      [ngStyle]="{
+        'display': 'block',
+        'color': entry.textColor,
+        'text-align': entry.align,
+        'background-color': entry.backgroundColor,
+        'width': tableConfig.tableWidth[j]
+      }">
+      {{entry.text}}
+    </li>
+  </ul>
+</div>
+

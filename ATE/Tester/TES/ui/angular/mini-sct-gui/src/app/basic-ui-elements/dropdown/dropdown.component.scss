@@ -1,0 +1,64 @@
+@import "../../../styles.scss";
+
+.dropdown {
+  label {
+    font-size:$label;
+    padding-left: 0px;
+    color: $micronasBlue;
+  }
+  li, ul {
+    color: white;
+    background: $micronasBlue;
+    font-size: $dropdown;
+  }
+  h2 {
+    margin-left: 8px;
+  }
+  ul {
+    list-style-type: none;
+    padding: 1px;
+    border-radius: 5px;
+    li {
+      border-bottom: 1px solid $white;
+      padding: 5px;
+      &:hover {
+        opacity: 0.6;
+      }
+      &.selected::after {
+        content: "\25cf";
+        float: right;
+      }
+    }
+  }
+  .dropbox {
+    &.disabled {
+      li, ul {
+        @include disabled;
+      }
+      li {
+        display: none;
+        border-color: $inactiveBackgroundColor;
+        &.selected {
+          display: block;
+          cursor: not-allowed;
+          &:hover {
+            @include disabled;
+          }
+        }
+      }
+    }
+    &.closed {
+      li {
+        display: none;
+        border-color: $micronasBlue;
+        &.selected {
+          display: block;
+          &::after {
+            content: "\25bc";
+            float: right;
+          }
+        }
+      }
+    }
+  }
+}

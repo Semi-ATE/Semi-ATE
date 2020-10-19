@@ -12,7 +12,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-from ATE.spyder.widgets.actions_on.hardwaresetup.InstrumentListItem import InstrumentListItem
+from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizardListItem import HardwareWizardListItem
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.semiateplugins.pluginmanager import get_plugin_manager
 from ATE.spyder.widgets.validation import valid_pcb_name_regex
@@ -86,6 +86,12 @@ class HardwareWizard(BaseDialog):
             for instrument in instrument_list:
                 self._append_instrument_to_manufacturer(instrument)
 
+    # GP Functions
+        gpfunction_lists = self._plugin_manager.hook.get_general_purpose_function_names()
+        for gpfunction_list in gpfunction_lists:
+            for gpfunction in gpfunction_list:
+                self._append_gpfunction_to_manufacturer(gpfunction)
+
     # Testers
         self.tester.clear()
         for tester_list in self._plugin_manager.hook.get_tester_names():
@@ -133,22 +139,36 @@ class HardwareWizard(BaseDialog):
     def _append_instrument_to_manufacturer(self, instrument):
         manufacturer = instrument["manufacturer"]
         manufacturer_node = self._get_manufacturer_node(manufacturer)
-        instrumentNode = InstrumentListItem(manufacturer_node, instrument)
+        instrumentNode = HardwareWizardListItem(manufacturer_node, instrument)
+        manufacturer_node.addChild(instrumentNode)
+
+    def _get_gpmanufacturer_node(self, manufacterer):
+        for mfg in range(0, self.availableFunctions.topLevelItemCount()):
+            item = self.availableFunctions.topLevelItem(mfg)
+            if item.text(0) == manufacterer:
+                return item
+
+        # Manufacturer does not exist yet, create it and return it:
+        the_manufacturer = QtWidgets.QTreeWidgetItem([manufacterer])
+        self.availableFunctions.addTopLevelItem(the_manufacturer)
+        return the_manufacturer
+
+    def _append_gpfunction_to_manufacturer(self, gpfunction):
+        # ToDo: Rename instrument node to something more generic
+        manufacturer = gpfunction["manufacturer"]
+        manufacturer_node = self._get_gpmanufacturer_node(manufacturer)
+        instrumentNode = HardwareWizardListItem(manufacturer_node, gpfunction)
         manufacturer_node.addChild(instrumentNode)
 
     def _set_icons(self):
         self.right_button.setIcon(qta.icon('mdi.arrow-right-bold', color='orange'))
         self.left_button.setIcon(qta.icon('mdi.arrow-left-bold', color='orange'))
-        # self.availableInstruments.clear()
-        # self.availableInstruments.addItems([''])
-        # self.parent.project_info.get_available_instruments())
-        # TODO: move from list to tree for this widget!
         self.collapse.setIcon(qta.icon('mdi.unfold-less-horizontal', color='orange'))
         self.expand.setIcon(qta.icon('mdi.unfold-more-horizontal', color='orange'))
         self.addInstrument.setIcon(qta.icon('mdi.arrow-right-bold', color='orange'))
         self.removeInstrument.setIcon(qta.icon('mdi.arrow-left-bold', color='orange'))
-        # self.tableWidget.clear()
-        # TODO: move from list to tree for this widget!
+        self.addGPFunction.setIcon(qta.icon('mdi.arrow-right-bold', color='orange'))
+        self.removeGPFunction.setIcon(qta.icon('mdi.arrow-left-bold', color='orange'))
 
     # Actuator
         self.probecardLink.setIcon(qta.icon('mdi.link', color='orange'))
@@ -181,7 +201,9 @@ class HardwareWizard(BaseDialog):
         self.collapse.clicked.connect(self.collapseAvailableInstruments)
         self.expand.clicked.connect(self.expandAvailableInstruments)
         self.addInstrument.clicked.connect(self.addingInstrument)
+        self.addGPFunction.clicked.connect(self.addingGPFunction)
         self.removeInstrument.clicked.connect(self.removingInstrument)
+        self.removeGPFunction.clicked.connect(self.removingGPFunction)
         self.checkInstruments.clicked.connect(self.checkInstrumentUsage)
         self.availableInstruments.itemSelectionChanged.connect(self.availableInstrumentsSelectionChanged)
         self.availableInstruments.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
@@ -562,6 +584,13 @@ class HardwareWizard(BaseDialog):
             retVal.append(item.text())
         return retVal
 
+    def _collect_gpfunctions(self):
+        retVal = []
+        for row in range(0, self.usedFunctions.rowCount()):
+            item = self.usedFunctions.item(row, 2)
+            retVal.append(item.text())
+        return retVal
+
     def _collect_actuators(self):
         retVal = {'PR': [], 'FT': []}
         for row in range(0, self.usedActuators.rowCount()):
@@ -593,7 +622,8 @@ class HardwareWizard(BaseDialog):
                 'Parallelism': self._available_pattern,
                 'tester': testername,
                 'Actuator': self._collect_actuators(),
-                'Instruments': self._collect_instruments()}
+                'Instruments': self._collect_instruments(),
+                'GPFunctions': self._collect_gpfunctions()}
 
 # instruments
     def testerChanged(self, new_tester):
@@ -604,38 +634,58 @@ class HardwareWizard(BaseDialog):
 
     def addingInstrument(self):
         theInstrument = self.availableInstruments.currentItem()
-        if type(theInstrument) is InstrumentListItem:
+        if type(theInstrument) is HardwareWizardListItem:
             self.__add_instrument(theInstrument)
 
+    def addingGPFunction(self):
+        theFunction = self.availableFunctions.currentItem()
+        if type(theFunction) is HardwareWizardListItem:
+            self.__add_gpfunction(theFunction)
+
     def __add_instrument(self, instrument):
-        rowPosition = self.usedInstruments.rowCount()
-        # Don't add the instrument, if it was added before
+        self.__add_unique_item_to_list(instrument, self.usedInstruments)
+
+    def __add_gpfunction(self, gpfunction):
+        self.__add_unique_item_to_list(gpfunction, self.usedFunctions)
+
+    def __add_unique_item_to_list(self, item, table_widget):
+        rowPosition = table_widget.rowCount()
+        # Don't add the item, if it was added before
         for i in range(0, rowPosition):
-            used_intrument_name = self.usedInstruments.item(i, 2).text()
-            if used_intrument_name == instrument.instrument_data["name"]:
+            used_function_name = table_widget.item(i, 2).text()
+            if used_function_name == item.item_data["name"]:
                 return
 
-        self.usedInstruments.insertRow(rowPosition)
-        self.usedInstruments.setItem(rowPosition, 0, QtWidgets.QTableWidgetItem(instrument.instrument_data["display_name"]))
-        self.usedInstruments.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(instrument.instrument_data["manufacturer"]))
-        self.usedInstruments.setItem(rowPosition, 2, QtWidgets.QTableWidgetItem(instrument.instrument_data["name"]))
+        table_widget.insertRow(rowPosition)
+        table_widget.setItem(rowPosition, 0, QtWidgets.QTableWidgetItem(item.item_data["display_name"]))
+        table_widget.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(item.item_data["manufacturer"]))
+        table_widget.setItem(rowPosition, 2, QtWidgets.QTableWidgetItem(item.item_data["name"]))
         for i in range(0, 3):
-            theItem = self.usedInstruments.item(rowPosition, i)
+            theItem = table_widget.item(rowPosition, i)
             theItem.setFlags(theItem.flags() & ~ QtCore.Qt.ItemIsEditable)
 
-    def populate_selected_instruments(self, instrument_list):
+    def popuplate_item_list_widget(self, item_list, widget, add_cb):
         # The instrumentlist contains just the names of the instrument, we
         # need to find them in the available instrument lists
-        for i in range(0, self.availableInstruments.topLevelItemCount()):
-            manufacturer_node = self.availableInstruments.topLevelItem(i)
+        for i in range(0, widget.topLevelItemCount()):
+            manufacturer_node = widget.topLevelItem(i)
             for i in range(0, manufacturer_node.childCount()):
-                instrument_node = manufacturer_node.child(i)
-                if type(instrument_node) is InstrumentListItem:
-                    if instrument_node.instrument_data["name"] in instrument_list:
-                        self.__add_instrument(instrument_node)
+                item_node = manufacturer_node.child(i)
+                if type(item_node) is HardwareWizardListItem:
+                    if item_node.item_data["name"] in item_list:
+                        add_cb(item_node)
+
+    def populate_selected_instruments(self, instrument_list):
+        self.popuplate_item_list_widget(instrument_list, self.availableInstruments, self.__add_instrument)
+
+    def populate_selected_gpfunctions(self, function_list):
+        self.popuplate_item_list_widget(function_list, self.availableFunctions, self.__add_gpfunction)
 
     def removingInstrument(self):
         self.usedInstruments.removeRow(self.usedInstruments.currentRow())
+
+    def removingGPFunction(self):
+        self.usedFunctions.removeRow(self.usedFunctions.currentRow())
 
     def checkInstrumentUsage(self):
         print("check Instrument Usage")

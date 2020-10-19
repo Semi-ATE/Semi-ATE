@@ -1,11 +1,12 @@
-from ATE.TES.apps.masterApp.master_connection_handler import MasterConnectionHandler
-from ATE.TES.apps.common.connection_handler import ConnectionHandler
-from ATE.TES.apps.common.logger import Logger
+from ATE.Tester.TES.apps.masterApp.master_connection_handler import MasterConnectionHandler
+from ATE.Tester.TES.apps.common.connection_handler import ConnectionHandler
+from ATE.common.logger import Logger
 
 PORT = 1883
 HOST = '10.9.1.6'
 SITE = 0
 DEVICEID = "sct01"
+HANDLERID = "abc"
 
 SITES = [0, 1, 2]
 
@@ -38,6 +39,7 @@ class TestApplication:
                                                           PORT,
                                                           SITES,
                                                           DEVICEID,
+                                                          HANDLERID,
                                                           self)
         self.controlsite = None
         self.controlmsg = None

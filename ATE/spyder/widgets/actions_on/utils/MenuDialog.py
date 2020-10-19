@@ -55,7 +55,7 @@ class DeleteFileDialog(MenuDialog):
         font.setBold(True)
         self.file_name_label.setFont(font)
         self.file_name_label.setText(os.path.basename(self.path))
-        self.label.setText(f"Are you sure you want to delete")
+        self.label.setText("Are you sure you want to delete")
 
     def _accept(self):
         os.remove(self.path)
@@ -106,4 +106,13 @@ class AddDirectoryDialog(RenameDialog):
         except Exception as e:
             print(e)
 
+        self.accept()
+
+
+class ExceptionFoundDialog(DeleteFileDialog):
+    def __init__(self, path, action, parent, message):
+        super().__init__(path, action, parent)
+        self.label.setText(f"{message}")
+
+    def _accept(self):
         self.accept()

@@ -1,6 +1,4 @@
 from ATE.semiateplugins.hookspec import hookimpl
-from TDKMicronas.Actuators import ThermostreamProxy
-from TDKMicronas.Actuators import Thermostream
 from TDKMicronas.Testers import MiniSCT
 
 
@@ -56,19 +54,6 @@ class Plugin:
              "name": "TDKMicronas.DummyPinimport"}]
 
     @hookimpl
-    def get_actuator_names():
-        return [
-            {"display_name": "Dummy Actuator",
-             "version": "0.0",
-             "capabilities": (),
-             "name": "TDKMicronas.DummyActuator"},
-
-             {"display_name": "Mag Field",
-             "version": "0.0",
-             "capabilities": (),
-             "name": "TDKMicronas.MagField"}]
-
-    @hookimpl
     def get_instrument_names():
         return [
             {"display_name": "Dummy Instrument",
@@ -95,6 +80,14 @@ class Plugin:
              "name": "TDKMicronas.MiniSCT"}]
 
     @hookimpl
+    def get_general_purpose_function_names():
+        return [
+            {"display_name": "METIS Connector",
+             "version": "0.0",
+             "manufacturer": "TDK Micronas",
+             "name": "TDKMicronas.Metis"}]
+
+    @hookimpl
     def get_importer(importer_name):
         if "TDKMicronas." in importer_name:
             return BusinessObjectStandin()
@@ -115,21 +108,6 @@ class Plugin:
             return BusinessObjectStandin()
 
     @hookimpl
-    def get_actuator(required_capability):
-        if (required_capability == "Temperature"):
-            print("Got Thermostream")
-            return Thermostream.Thermostream()
-        return BusinessObjectStandin()
-
-    @hookimpl
-    def get_actuator_proxy(required_capability):
-        print(f"Get Actuator Proxy:{required_capability}")
-        if (required_capability == "Temperature"):
-            print("Got Proxy")
-            return ThermostreamProxy.ThermostreamProxy()
-        return BusinessObjectStandin()
-
-    @hookimpl
     def get_instrument(instrument_name):
         return BusinessObjectStandin()
 
@@ -141,3 +119,8 @@ class Plugin:
     def get_tester(tester_name):
         if tester_name == "TDKMicronas.MiniSCT":
             return MiniSCT.MiniSCT()
+
+    @hookimpl
+    def get_general_purpose_function(func_name):
+        print(f"Get General Purpose Function: {func_name}")
+        return BusinessObjectStandin()

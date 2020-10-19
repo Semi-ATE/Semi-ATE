@@ -1,0 +1,62 @@
+@import "../../styles.scss";
+
+nav {
+  width: 100%;
+  background-color: $micronasBlue;
+  padding-top: 18px;
+}
+
+ul {
+  height: 45px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+li {
+  list-style-type: none;
+  margin-top: 10px;
+  a {
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    font-size: $menuItem;
+
+    &:hover {
+      background-color: $hoverBackgroundColor;
+    }
+    &.active {
+      font-weight: bold;
+      background-color: $hoverBackgroundColor;
+    }
+  }
+
+  a.space {
+    visibility: hidden;
+    font-weight: bold;
+    display: block;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    a {
+      opacity: 0.6;
+      color: black;
+      pointer-events: none;
+    }
+  }
+}
+
+.navigationContainer {
+  display: flex;
+  flex-direction: row;
+  background-color: $micronasBlue;
+}
+
+@media screen and (max-width: 750px) {
+  a {
+    min-width: 120px;
+    min-height: 50px;
+  }
+}
+

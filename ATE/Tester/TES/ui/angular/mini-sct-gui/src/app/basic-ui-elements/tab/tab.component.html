@@ -1,0 +1,11 @@
+<div class="tabElement">
+  <ul class="tabLabel">
+    <li *ngFor="let tab of tabConfig.labels; index as i" 
+      [class.disabled]="tabConfig.disabled[i]"
+      [class.selected]="tabConfig.selectedIndex===i"
+      (click)="selectTab(i)">
+      {{tab}}
+    </li>
+  </ul>
+  <div class="linie"></div>
+</div>

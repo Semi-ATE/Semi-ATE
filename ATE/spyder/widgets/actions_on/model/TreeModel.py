@@ -8,6 +8,8 @@ from ATE.spyder.widgets.actions_on.tests.TestItem import TestItem
 from ATE.spyder.widgets.constants import TableIds
 from ATE.semiateplugins.pluginmanager import get_plugin_manager
 
+from ATE.spyder.widgets.actions_on.model.FileItemHandler import FileItemHandler
+
 
 class TreeModel(QtGui.QStandardItemModel):
     edit_file = Signal(str)
@@ -22,6 +24,7 @@ class TreeModel(QtGui.QStandardItemModel):
         self.hardware = ''
         self.base = ''
         self.target = ''
+        self.folder_sections = []
 
         self.plugin_manager = get_plugin_manager()
 
@@ -31,7 +34,9 @@ class TreeModel(QtGui.QStandardItemModel):
 
         import os
         self.doc_path = os.path.join(self.project_info.project_directory, "doc")
-        self.tests_path = os.path.join(self.project_info.project_directory, "src")
+        self.base_path = os.path.join(self.project_info.project_directory, "src")
+
+        self.file_item_handler = FileItemHandler(self.project_info, self.base_path)
         self._setup()
         self._connect_action_handler()
 
@@ -107,6 +112,8 @@ class TreeModel(QtGui.QStandardItemModel):
         self._setup_definitions()
         self._setup_documentation()
         self._setup_flow_items(self.project_info)
+        self._setup_file_collector_items()
+        self._setup_protocol_item()
         self._setup_tests()
         self.appendRow(self.root_item)
 
@@ -225,16 +232,12 @@ class TreeModel(QtGui.QStandardItemModel):
         self.base = base
         self.target = target
 
-        if self.die.has_children():
-            self.die.set_children_hidden(False)
-        else:
-            if self.maskset.has_children() and \
-               self.hardwaresetup.has_children():
-                self.die.set_children_hidden(False)
-            else:
-                self.die.set_children_hidden(True)
+        self._update_die_section()
+        self._update_device_section()
+        self._update_product_section()
+        self._update_file_collector_section()
 
-        # device update state
+    def _update_device_section(self):
         if self.device.has_children():
             self.device.set_children_hidden(False)
         else:
@@ -245,7 +248,7 @@ class TreeModel(QtGui.QStandardItemModel):
             else:
                 self.device.set_children_hidden(True)
 
-        # product update state
+    def _update_product_section(self):
         if self.product.has_children():
             self.product.set_children_hidden(False)
         else:
@@ -255,10 +258,27 @@ class TreeModel(QtGui.QStandardItemModel):
             else:
                 self.product.set_children_hidden(True)
 
+    def _update_file_collector_section(self):
+        for folder_section in self.file_item_handler.items():
+            if len(self.target) and len(self.base):
+                folder_section.set_pattern_directory(self.hardware, self.base)
+            else:
+                folder_section.hide()
+
         self._reset_flows(self.project_info)
 
+    def _update_die_section(self):
+        if self.die.has_children():
+            self.die.set_children_hidden(False)
+        else:
+            if self.maskset.has_children() and \
+               self.hardwaresetup.has_children():
+                self.die.set_children_hidden(False)
+            else:
+                self.die.set_children_hidden(True)
+
     def _setup_tests(self):
-        self.tests_section = TestItem(self.project_info, "tests", self.tests_path, self)
+        self.tests_section = TestItem(self.project_info, "tests", self.base_path, self)
         self.root_item.appendRow(self.tests_section)
 
     def _update_tests(self):
@@ -323,13 +343,24 @@ class TreeModel(QtGui.QStandardItemModel):
     def clean_up(self):
         self.doc_observer.stop_observer()
         self.tests_section.observer.stop_observer()
+        self.file_item_handler.clean_up()
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         self.clean_up()
-    
+
+    def _setup_file_collector_items(self):
+        for file_item in self.file_item_handler.items():
+            self.root_item.appendRow(file_item)
+
+    def _setup_protocol_item(self):
+        from ATE.spyder.widgets.actions_on.protocol.ProtocolItem import ProtocolItem
+        self.protocol_section = ProtocolItem('protocols', self.project_info)
+        self.root_item.appendRow(self.protocol_section)
+
+
 # ToDo: Move this class to its own file.
 # Also: Check if it is really needed. The added value basically none
 class SectionItem(BaseItem):

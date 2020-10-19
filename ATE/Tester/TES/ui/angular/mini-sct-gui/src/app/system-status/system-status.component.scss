@@ -1,0 +1,37 @@
+@import "../../styles.scss";
+
+.systemStatusContainer {
+  background-color: beige;
+  text-align: left;
+  padding: 6px;
+}
+
+h2 {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: $button;
+}
+
+span {
+  @include solidBorder(1px, beige);
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  float: left;
+}
+
+.green {
+  background-color: green;
+}
+.yellow {
+  background-color: #FFBC58;
+}
+.red {
+  background-color: red;
+}
+
+@media screen and (max-width: 600px) {
+  .systemStatusContainer {
+    top: 270px;
+  }
+}

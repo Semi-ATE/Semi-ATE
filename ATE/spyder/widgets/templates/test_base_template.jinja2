@@ -12,9 +12,9 @@ BTW : YOU SHOULD **NOT** BE READING THIS !!!
 """
 
 from numpy import nan, inf
-from ATE.sequencers.TestParameters import InputParameter, OutputParameter
-from ATE.sequencers.DutTestCaseABC import DutTestCaseBase
-from ATE.sequencers.Result import Result
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import InputParameter, OutputParameter
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 
 
 class {{ definition['name'] }}_OP:
@@ -54,10 +54,11 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     base = '{{ definition['base'] }}'
     Type = '{{ definition['type'] }}'
 
-    def __init__(self, callvalues, limits, test_desc):
+    def __init__(self, logger, callvalues, limits, test_desc):
         super().__init__(callvalues, None, None)
         self.ip = {{ definition['name'] }}_IP(callvalues)
         self.op = {{ definition['name'] }}_OP(limits, test_desc)
+        self.logger = logger
 
     def aggregate_test_result(self, site_num):
         stdf_data = []

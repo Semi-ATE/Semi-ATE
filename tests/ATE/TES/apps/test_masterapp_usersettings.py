@@ -1,6 +1,5 @@
-from ATE.TES.apps.masterApp import master_application
-from ATE.TES.apps.masterApp import master_connection_handler
-from ATE.TES.apps.masterApp.user_settings import UserSettings
+from ATE.Tester.TES.apps.masterApp import master_application
+from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
 
 
 DEFAULT_USER_SETTINGS_FILE_UNITTEST = 'master_user_settings_from_unittest.json'
@@ -16,6 +15,7 @@ class TestApplication:
                 'jobsource': 'static',
                 'jobformat': 'xml.micronas',
                 'enable_timeouts': True,
+                'Handler': "abc",
                 'environment': "abs"}
 
     def default_configuration_with_persistent_user_settings(self):

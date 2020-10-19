@@ -1,0 +1,24 @@
+@import '../../../styles.scss';
+
+.tableElement {
+  overflow: auto;
+  font-size: $text;
+  ul {
+    &:nth-child(odd) {
+      background-color: $beige;
+    }
+  }
+  li {
+    padding: 15px;
+  }
+  .tableHeader {
+    font-weight: bold;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .tableRow{
+    @extend .tableHeader;
+    font-weight: normal;
+  }
+}

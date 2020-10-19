@@ -1,4 +1,4 @@
-from ATE.TES.apps.masterApp.sequence_container import SequenceContainer
+from ATE.Tester.TES.apps.masterApp.sequence_container import SequenceContainer
 
 
 class TestSequenceContainer:

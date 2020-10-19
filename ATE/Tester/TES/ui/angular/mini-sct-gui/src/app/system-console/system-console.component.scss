@@ -1,0 +1,49 @@
+@import '../../styles.scss';
+
+.systemConsole {
+  display: flex;
+  flex-direction: row;
+}
+
+.leftContent {
+  display: flex;
+  flex-direction: column;
+  .leftButtons {
+    margin-bottom: 5px;
+    margin-right: 20px;
+    width: 120px;
+  }
+}
+
+table {
+  font-size: $label;
+  table-layout: fixed;
+  margin-top: -30px;
+  th {
+    text-align: center;
+    background-color: $beige;
+  }
+
+  td {
+    text-align: left;
+    padding: 10px;
+  }
+
+  .time {
+    width: 175px;
+    white-space: nowrap;
+  }
+  .source {
+    width: 100px;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .type {
+    width: 80px;
+    text-align: center;
+  }
+  .info {
+    width: 1000px;
+    word-wrap: break-word;
+  }
+}

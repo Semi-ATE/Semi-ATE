@@ -1,4 +1,4 @@
-from ATE.TES.apps.masterApp.transition_sequence import TransitionSequence
+from ATE.Tester.TES.apps.masterApp.transition_sequence import TransitionSequence
 
 
 class TestTransitionSequence:

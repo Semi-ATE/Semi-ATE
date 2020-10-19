@@ -165,7 +165,14 @@ class ProjectNavigation(QObject):
             definition['InstrumentNames'] = {}
             for instrument in definition['Instruments']:
                 definition['InstrumentNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
+
+            definition['GPFunctionNames'] = {}
+
+            for instrument in definition['GPFunctions']:
+                definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
+
             hardware_generator(self.project_directory, definition)
+
         except Exception as e:  # explode on fail
             print(f"failed to create hardware structure for {definition['hardware']}")
             raise e

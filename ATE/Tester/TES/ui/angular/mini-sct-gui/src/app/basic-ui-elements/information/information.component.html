@@ -1,0 +1,8 @@
+<div class="information">
+  <div class="displayInRow">
+    <h3>{{informationConfig.labelText}}</h3>
+    <p *ngIf="informationConfigValueType() === 'string'">{{informationConfig.value}}</p>
+    <p *ngIf="informationConfigValueType() === 'number'" class="numberLayout"><input type="button" disabled value="{{informationConfig.value}}" /></p>
+  </div>
+  <hr>
+</div>

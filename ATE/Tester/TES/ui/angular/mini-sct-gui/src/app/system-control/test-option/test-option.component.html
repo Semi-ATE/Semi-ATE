@@ -1,0 +1,28 @@
+<div id="testOptions">
+  <app-card [cardConfiguration]="testOptionCardConfiguration">
+    <app-checkbox [checkboxConfig]="stopOnFailOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, stopOnFailOption)"></app-checkbox>
+    <app-checkbox [checkboxConfig]="singleStepOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, singleStepOption)"></app-checkbox>
+    <div class="optionInput">
+      <app-checkbox [checkboxConfig]="stopAtTestNumberOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, stopAtTestNumberOption)"></app-checkbox>
+      <app-input [inputConfig]="stopAtTestNumberOption.inputConfig" (inputChangeEvent)="stopAtTestNumberOption.toBeAppliedValue.value = $event"></app-input>
+    </div>
+    <div class="optionInput">
+      <app-checkbox [checkboxConfig]="triggerForTestNumberOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, triggerForTestNumberOption)"></app-checkbox>
+      <app-input [inputConfig]="triggerForTestNumberOption.inputConfig" (inputChangeEvent)="triggerForTestNumberOption.toBeAppliedValue.value = $event"></app-input>
+    </div>
+    <app-checkbox [checkboxConfig]="triggerOnFailureOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, triggerOnFailureOption)"></app-checkbox>
+    <app-checkbox [checkboxConfig]="triggerSiteSpecificOption.checkboxConfig" (checkboxChangeEvent)="optionChanged($event, triggerSiteSpecificOption)"></app-checkbox>
+    <div class="optionButtons">
+      <div class="applyButton">
+        <app-button [buttonConfig]="applyTestOptionButtonConfig" (buttonClickEvent)="sendOptionsToServer()"></app-button>
+      </div>
+      <div class="resetButtons">
+        <app-button [buttonConfig]="resetOptionButtonConfig" (buttonClickEvent)="resetTestOptions()"></app-button>
+      </div>
+   </div>
+  </app-card>
+</div>
+
+
+
+

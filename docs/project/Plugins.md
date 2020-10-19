@@ -69,11 +69,18 @@ A devicepin importer is used to import the pinset, that is accessible for a give
 ```
 
 
-#### Actuators
-An actuator is a piece of hardware, that controls some aspect of the test environment (e.g. magenetic field). In addition to the common layout as specified above, each actator will also return a list of "services", that actuator provides. These services are plain strings and are used by the ATE runtime to resolve an actuator that can modify a defined aspect of the testenvironment.
+#### Instruments
+An instrument is a piece of hardware, that is used to measure a given aspect of the DUT. It is usually used in a lab context.
 
 ```
-    get_actuator_names() -> []
+    get_instrument_names() -> []
+```
+
+#### General Purpose Functions
+General Purpose Functions are plugin functionality that needs to be available to tests, but that is not tied to a specific usage scenario. 
+
+```
+get_general_purpose_function_names() -> []
 ```
 
 The complete layout of the results of this function is:
@@ -82,15 +89,7 @@ The complete layout of the results of this function is:
     display_name: "Display Name"
     version: "Object Version"
     name: "Object Name"
-    capabilities: ("MagField", "Temperature")
 }
-```
-
-#### Instruments
-An instrument is a piece of hardware, that is used to measure a given aspect of the DUT. It is usually used in a lab context.
-
-```
-    get_instrument_names() -> []
 ```
 
 ## Instances
@@ -152,93 +151,6 @@ An importer is expected to have the following interface:
 
 The importer shall show it's own import dialog (which may well be just a file chooser!), perform the import and return the imported data in an - as of now - not yet specified format. If the import fails/is canceled do_import() shall not propagate any exception to the application, but instead return "None". The plugin shall expose the reason, why no data was returned when get_abort_reason is called.
 
-### Actuators
-```
-get_actuator(required_capability) -> ActuatorInstance
-get_actuator_proxy(required_capability) -> ActuatorInstance
-```
-
-This hook shall return an instance of an actuator that provides the required capability. This hook is intended for use in tests only. If the environment cannot resolve the service (e.g. because none is available) it shall *immediatly* throw an exception containing the missing capability. Do not return None in this case as it makes diagnostics harder than a well thought out error string.
-
-A note on actuator capabilities: The capabilities are stored by the runtime environment. If a test asks for an actuator that provides a given capability, the test environemt shall find actuator that best matches this request, taking into account:
-* The physical hardware on which the test is running
-* The available actuators
-* The physical location & connection of the actuators
-
-The master application uses the ```get_actuator``` hook to obtain an actuator providing the required capability. It assumes
-the following interface for the returned object:
-```
-    init(mqtt_client)
-    async device_io_control(ioctl_name, data) -> Option[Data]
-    close()
-```
-
-The masterapplication will lazily initialize an actuator, when it is first required, by calling init. Whenever an iocontrol
-request is sent by one of the connected testprograms the master will wait until all testprograms have sent the same request.
-Once this happend, it will call device_io_control for the actuator in question, using the parameters sent with the first call
-as ```data``` parameter and returning any non-none value to the callers.
-
-__Attention__ device_io_control is required to be a python __async__ function and the master app will await on this function. This means, that
-device_io_control must *never* block, as this will cause the masterapp's mqtt connection to stall forever. 
-A canonical way to implement a device_io_control that does not return immediately and waits for *something* to happen would be:
-```
-class peripheral:
-    def __init__(self):
-        self.event = asyncio.Event()
-
-    def init(self, mqtt_client):
-        pass
-
-    async def device_io_control(self, ioctl_name, data):
-        await self.event.wait()
-        return "Done"
-
-    def on_event_happened(self):
-        self.event.set()
-```
-
-implementing the client side of an actuator is similar to the masterside, as it also involves async code. The codegenerator
-assumes, that all actuatorproxies provide a set_mqtt_client function through which a reference to the testprogram's mqtt client
-can be set.
-
-#### Using mqtt in actuators
-If the actuator implementation needs to use mqtt it should use the __init__ call to subscribe to any relevant topics. For the internal routing to work correctly the peripheral will have to call "register_route" as well.
-
-__Note__: Actuators will only be unloaded, once an unload command is issued to the master application. The masterapp will call close on all actuators, that were previously loaded. The peripheral is expected to unsubscribe from mqtt and to deregister all routes.
-
-Example
-```
-    class mqtt_peripheral():
-        def __init__(self):
-            self.event = asyncio.Event()
-            # Always store the actual lambda/callback to use for registration
-            # and unregistration. Don' use ad-hoc lambdas as this will
-            # always create a new lambda and cause the instance of the peripheral
-            # to never be released due to it being kept alive by the lambdas.
-            self.message_cb = lambda topic, payload: self.on_message_received
-        
-        def init(self, mqtt_client):
-            self.mqtt_client = mqtt_client
-            mqtt_client.subscribe("SomePeripheral/command")
-            mqtt_client.register_route("SomePeripheral/command", self.message_cb)
-        
-        def on_message_received(self, topic, payload):
-            # This code is called whenever a message arrives on "SomePeripheral/command"
-            self.event.set()
-        
-        async def device_io_control(self, ioctl_name, data):
-            await self.event.wait()
-            return "Done"
-
-        def unload(self):
-            self.mqtt_client.unsubscribe("SomePeripheral/command")
-            mqtt_client.unregister_route("SomePeripheral/command",self.message_cb)
-  
-```
-
-
-
-
 ### Instruments
 ```
 get_instrument(instrument_name) -> InstrumentInstance
@@ -247,6 +159,16 @@ get_instrument_proxy(instrument_name) -> InstrumentInstance
 This hook shall return an instance of a given instrument. The returned instance has no specified interface. This hook is intended for use in tests only.
 
 If the plugin is unable to resolve the instrument name it shall *immediatly* throw an exception containing the missing instrument's name. Do not return None in this case as it makes diagnostics harder than a well thought out error string.
+
+
+### General Purpose Functions
+General Purpose Functions are plugin functionality that needs to be available to tests, but that is not tied to a specific usage scenario. 
+
+```
+get_general_purpose_function(func_name) -> FunctionInstance
+```
+
+Note that a "Function" in this context denotes an object that can have an arbitrary interface. The runtime environment will make an instance of the object available for each test program and test
 
 ## Configuration
 At this point we assume, that no plugin will need any kind of central configuration and therefore no method of storing configuration data (e.g. in the project database) is specified for the plugin API.
@@ -260,19 +182,18 @@ get_importer_names() -> []
 get_exporter_names() -> []
 get_equipment_names() -> []
 get_devicepin_importer_names() -> []
-get_actuator_names() -> []
 get_instrument_names() -> []
+get_general_purpose_function_names() -> []
 
 get_importer(importer_name) -> Importer
 get_exporter(exporter_name) -> Exporter
 get_equipment(equipment_name) -> EquipmentInstance
 get_devicepin_importer(importer_name) -> Importer
 
-get_actuator(required_capability) -> ActuatorInstance
-get_actuator_proxy(required_capability) -> ActuatorProxy
-
 get_instrument(instrument_name) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
+
+get_general_purpose_function(func_name) -> FunctionInstance
 ```
 
 The hookspecmarker is "ate.org"
@@ -309,10 +230,6 @@ class ThePlugin(object):
         return []
 
     @hookspec.ate.hookimpl
-    def get_actuator_names() -> []:
-        return []
-
-    @hookspec.ate.hookimpl
     def get_instrument_names() -> []:
         return []
 
@@ -330,14 +247,6 @@ class ThePlugin(object):
 
     @hookspec.ate.hookimpl
     def get_devicepin_importer(importer_name) -> Importer:
-        throw NotImplementedError
-
-    @hookspec.ate.hookimpl
-    def get_actuator(required_capability) -> ActuatorInstance:
-        throw NotImplementedError
-
-    @hookspec.ate.hookimpl
-    def get_actuator_proxy(required_capability) -> ActuatorInstance:
         throw NotImplementedError
 
     @hookspec.ate.hookimpl

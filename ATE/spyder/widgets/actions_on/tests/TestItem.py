@@ -83,7 +83,8 @@ class TestItem(BaseItem):
             file_names = [x for x in directories if '_' not in x]
             break
 
-        return file_names, test_directory
+        tests_form_db = set([test.name for test in self.project_info.get_tests_from_db(active_hardware, active_base)])
+        return [test for test in tests_form_db if test in file_names], test_directory
 
     def add_standard_test_item(self):
         handle_excpetions(self.project_info.parent,

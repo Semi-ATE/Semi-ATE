@@ -45,7 +45,7 @@ class BinningColumns(Enum):
 
 
 class Result(Enum):
-    Fail = ('FAIL', 0)
+    Fail = ('FAIL', 2)
     Pass = ('PASS', 1)
 
     def __call__(self):
@@ -633,11 +633,13 @@ class TestProgramWizard(BaseDialog):
              Action.Left(): lambda: self._remove_from_testprogram(),
              Action.Right(): lambda: self._add_to_testprogram(),
              }[action]()
-        except Exception:
-            raise (f'action "{action}" not recognized')
+        except KeyError:
+            raise f"action '{action}' not recognized"
+        except Exception as e:
+            raise e
 
-    # Naming: Name is confusing
-    def _is_selected(self, test_list):
+    @staticmethod
+    def _is_test_selected(test_list):
         selected_items = len(test_list.selectedItems())
         if not selected_items:
             return False
@@ -705,14 +707,16 @@ class TestProgramWizard(BaseDialog):
 
     @QtCore.pyqtSlot()
     def _add_to_testprogram(self):
-        if not self._is_selected(self.availableTests):
+        if not self._is_test_selected(self.availableTests):
             self._update_feedback(ErrorMessage.NotSelected())
             return
 
         for item in self.availableTests.selectedItems():
             self._add_test_tuple_items(item.text())
 
-        self._update_test_list_table()
+        self.selectedTests.setRowCount(len(self.selected_tests))
+        self._validate_selected_test(self.selected_tests[-1], len(self.selected_tests) - 1)
+        self._verify()
 
     @QtCore.pyqtSlot(str)
     def _verify_temperature(self, text):
@@ -849,7 +853,7 @@ class TestProgramWizard(BaseDialog):
             parameters = self._get_test_parameters(test['name'])
             if not self._verify_input_parameters(test['input_parameters'], parameters) \
                or not self._verify_output_parameters(test['output_parameters'], parameters):
-               return
+                return
 
     def _verify_input_parameters(self, input_parameters, parameters):
         for param, val, in input_parameters.items():
@@ -871,10 +875,7 @@ class TestProgramWizard(BaseDialog):
         return True
 
     def _is_valid_temperature(self):
-        if self.sequencer_type == Sequencer.Dynamic():
-            return self._get_dynamic_temp(self.temperature.text())
-        else:
-            return self.temperature.text() and self.is_valid_temperature
+        return self.is_valid_temperature
 
     @property
     def program_name(self):
@@ -976,7 +977,7 @@ class TestProgramWizard(BaseDialog):
                         try:
                             if self.selected_cell is not None and not self._is_input_limit_valid(parameter_name, value['Default']['Value'], self._get_test_parameters(self.selected_cell.text())):
                                 self._set_widget_color(item, RED)
-                        except:
+                        except Exception:
                             pass
 
                 elif col == 3:
@@ -1062,7 +1063,7 @@ class TestProgramWizard(BaseDialog):
                     try:
                         if self.selected_cell is not None and not self._is_output_limit_valid(parameter_name, value['LTL'], 'LTL', self._get_test_parameters(self.selected_cell.text())):
                             self._set_widget_color(item, RED)
-                    except:
+                    except Exception:
                         pass
                 # TODO: should the nom be a part of the table
                 # elif col == 3:
@@ -1074,7 +1075,7 @@ class TestProgramWizard(BaseDialog):
                     try:
                         if self. selected_cell is not None and not self._is_output_limit_valid(parameter_name, value['UTL'], 'UTL', self._get_test_parameters(self.selected_cell.text())):
                             self._set_widget_color(item, RED)
-                    except:
+                    except Exception:
                         pass
                 elif col == 4:
                     item = QtWidgets.QTableWidgetItem(str(self._get_text(value['USL'], fmt)))
@@ -1196,7 +1197,7 @@ class TestProgramWizard(BaseDialog):
             return False
 
         return True
-        
+
     def _update_test_description(self, test_row, new_description):
         self.selected_tests[test_row]['description'] = new_description
 
@@ -1431,25 +1432,28 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.setRowCount(len(self.selected_tests))
         count = 0
         for test in self.selected_tests:
-            item_name = self._generate_test_name_item(test['name'])
-            item_description = self._generate_test_description_item(test['description'])
-            which_range = self._is_temperature_in_range(self._extract_base_test_name(test['name']), self._get_temps())
-
-            is_test_valid = self._is_test_valid(test)
-            if which_range == Range.Out_Of_Range() or not is_test_valid:
-                self._set_widget_color(item_name, RED)
-                self._set_widget_color(item_description, RED)
-
-            if which_range == Range.Limited_Range() and is_test_valid:
-                self._set_widget_color(item_name, ORANGE)
-                self._set_widget_color(item_description, ORANGE)
-
-            self.selectedTests.setItem(count, 0, item_name)
-            self.selectedTests.setItem(count, 1, item_description)
+            self._validate_selected_test(test, count)
             count += 1
 
         self._set_parameter_validity()
         self._verify()
+
+    def _validate_selected_test(self, test, count):
+        item_name = self._generate_test_name_item(test['name'])
+        item_description = self._generate_test_description_item(test['description'])
+        which_range = self._is_temperature_in_range(self._extract_base_test_name(test['name']), self._get_temps())
+
+        is_test_valid = self._is_test_valid(test)
+        if which_range == Range.Out_Of_Range() or not is_test_valid:
+            self._set_widget_color(item_name, RED)
+            self._set_widget_color(item_description, RED)
+
+        if which_range == Range.Limited_Range() and is_test_valid:
+            self._set_widget_color(item_name, ORANGE)
+            self._set_widget_color(item_description, ORANGE)
+
+        self.selectedTests.setItem(count, 0, item_name)
+        self.selectedTests.setItem(count, 1, item_description)
 
     def _set_parameter_validity(self):
         for test in self.selected_tests:
@@ -1663,7 +1667,6 @@ class TestProgramWizard(BaseDialog):
 
     def _cancel(self):
         self.reject()
-
 
 
 def new_program_dialog(project_info, owner, parent):

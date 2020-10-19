@@ -3,21 +3,20 @@ import os
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-from ATE.spyder.widgets.actions_on.documentation.BaseDocumentationItem import BaseDocumentationItem
 from ATE.spyder.widgets.actions_on.model.Actions import ACTIONS
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
+from ATE.spyder.widgets.actions_on.model.BaseFolderItem import BaseFolderItem
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 
 
-class DocumentationItem(BaseDocumentationItem):
+class DocumentationItem(BaseFolderItem):
     '''
     DocumentationItem is the presentation of a folder
     '''
     def __init__(self, name, path, project_info, parent=None, is_editable=True):
         self._is_editable = is_editable
-        super().__init__(name, path, parent, project_info=project_info)
+        super().__init__(name, path, project_info, parent=parent)
         self._set_icon()
-        self.file_system_operator = FileSystemOperator(self.path, self.project_info.parent)
 
     def update_item(self, path):
         self.path = path
@@ -50,27 +49,6 @@ class DocumentationItem(BaseDocumentationItem):
                 return True
 
         return False
-
-    def import_folder_item(self):
-        self.file_system_operator.import_dir()
-
-    def import_file_item(self):
-        self.file_system_operator.import_file()
-
-    def delete_item(self):
-        self.file_system_operator.delete_dir()
-
-    def rename_item(self):
-        self.file_system_operator.rename()
-
-    def move_item(self):
-        self.file_system_operator.move()
-
-    def add_file__item(self):
-        self.file_system_operator.add_file()
-
-    def add_folder_item(self):
-        self.file_system_operator.add_dir()
 
     def _set_icon(self):
         if self.text() == 'documentation':
@@ -142,12 +120,12 @@ class DocumentationItem(BaseDocumentationItem):
         return menu_action
 
 
-class DocumentationItemChild(BaseDocumentationItem):
+class DocumentationItemChild(BaseFolderItem):
     '''
     DocumentationItemChild is the presentation of a file
     '''
-    def __init__(self, name, path, parent, project_info, is_editable=True):
-        super().__init__(name, path, parent)
+    def __init__(self, name, path, parent, project_info):
+        super().__init__(name, path, project_info, parent=parent)
         _, extension = os.path.splitext(name)
         self._set_icon(extension)
         self.file_system_operator = FileSystemOperator(self.path, project_info.parent)
@@ -165,22 +143,6 @@ class DocumentationItemChild(BaseDocumentationItem):
 
     def move_item(self):
         self.file_system_operator.move()
-
-    def _set_icon(self, extension):
-        icon = self._get_icon(extension)
-        if icon is None:
-            return
-
-        self.setIcon(icon)
-
-    def _get_icon(self, extension):
-        from ATE.spyder.widgets.actions_on.documentation.FileIcon import FileIcons
-        from ATE.spyder.widgets.actions_on.documentation.Constants import FileIconTypes
-        for name, member in FileIconTypes.__members__.items():
-            if extension in member():
-                return FileIcons[name]
-
-        return None
 
     def _get_menu_items(self):
         return [MenuActionTypes.Rename(),

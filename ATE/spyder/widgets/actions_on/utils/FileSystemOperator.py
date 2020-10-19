@@ -7,6 +7,7 @@ from ATE.spyder.widgets.actions_on.utils.MenuDialog import AddDirectoryDialog
 from ATE.spyder.widgets.actions_on.utils.MenuDialog import DeleteDirDialog
 from ATE.spyder.widgets.actions_on.utils.MenuDialog import DeleteFileDialog
 from ATE.spyder.widgets.actions_on.utils.MenuDialog import RenameDialog
+from ATE.spyder.widgets.actions_on.utils.MenuDialog import ExceptionFoundDialog
 
 
 class FileSystemOperator(QtWidgets.QFileDialog):
@@ -31,17 +32,18 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         add_dir.show()
 
     def import_file(self):
-        selected, _ = self.getSaveFileName(self, "Save File", self.path, "", options=self.options())
+        selected, _ = self.getOpenFileName(self, "Import File", self.path, "", options=self.options())
         if not selected:
             return
 
         file_name = os.path.basename(selected)
-        desired_location = os.path.join(self.path, file_name)
+        location = os.path.join(self.path, file_name)
+
         try:
-            shutil.copyfile(selected, desired_location)
-        except Exception as e:
-            print(e)
-            print("file exists already")
+            shutil.copyfile(selected, location)
+        except Exception:
+            exception = ExceptionFoundDialog(selected, "File not found", self.parent, "file exists already: ")
+            exception.show()
 
     def import_dir(self):
         selected = self.getExistingDirectory(self, "Select directory", self.path, options=self.options())
@@ -50,8 +52,9 @@ class FileSystemOperator(QtWidgets.QFileDialog):
 
         try:
             shutil.copytree(selected, os.path.join(self.path, os.path.basename(selected)))
-        except Exception as e:
-            print(e)
+        except Exception:
+            exception = ExceptionFoundDialog(selected, "Import Exception", self.parent, f"cannot copy directory {selected}")
+            exception.show()
 
     def move(self):
         selected = self.getExistingDirectory(self, "Select directory", self.path, options=self.options())
@@ -59,11 +62,12 @@ class FileSystemOperator(QtWidgets.QFileDialog):
             return
         try:
             shutil.move(self.path, selected)
-        except Exception as e:
-            print("file exists already", e)
+        except Exception:
+            exception = ExceptionFoundDialog(selected, "Move Exception", self.parent, f"cannot move directory {selected}")
+            exception.show()
 
-    def delete_file(self):
-        delete = DeleteFileDialog(self.path, "Remove", self.parent)
+    def delete_file(self, path=None):
+        delete = DeleteFileDialog(path if path is not None else self.path, "Remove", self.parent)
         return delete.show()
 
     def delete_dir(self):

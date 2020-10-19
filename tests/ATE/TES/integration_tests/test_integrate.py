@@ -1,8 +1,8 @@
 import pytest
 import multiprocessing as mp
-from ATE.TES.apps.launch_master import launch_master
-from ATE.TES.apps.launch_control import launch_control
-from ATE.TES.apps.launch_testapp import launch_testapp
+from ATE.Tester.TES.apps.launch_master import launch_master
+from ATE.Tester.TES.apps.launch_control import launch_control
+from ATE.Tester.TES.apps.launch_testapp import launch_testapp
 import time
 import asyncio
 import aiohttp
@@ -63,10 +63,6 @@ BROKER_PORT = int(os.getenv(ENVVAR_PREFIX + 'BROKER_PORT', '1883'))
 
 JOB_LOT_NUMBER = '306426.001'  # load ./tests/le306426001.xml
 
-# Note: The identifier after the pipe is a hack use a mocked the testzip (example1 currently passes, example2 currently fails, example3 uses resource synchronization)
-# TODO: currently this is done to increase code coverage and inlcude STDF processing at all. but there are no assertions of the generated data yet (as they only affect websocket messages for now)
-TESTZIPMOCKS = ['example1', 'example2', 'example3']
-
 
 # this will generate the desired xml file and must be called before running the tests
 def create_xml_file(device_id):
@@ -108,11 +104,12 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         'sites': sites,
         'webui_port': webui_port,
         "skip_jobdata_verification": False,
+        "webui_static_path": "./ATE/Tester/TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",
         "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json"
     }
-    launch_master(config_file_path='ATE/TES/apps/master_config_file_template.json',
+    launch_master(config_file_path='ATE/Tester/TES/apps/master_config_file_template.json',
                   user_config_dict=config)
 
 
@@ -124,7 +121,7 @@ def run_control(device_id, site_id, broker_host, broker_port):
         'device_id': device_id,
         'site_id': site_id
     }
-    launch_control(config_file_path='ATE/TES/apps/control_config_file_template.json',
+    launch_control(config_file_path='ATE/Tester/TES/apps/control_config_file_template.json',
                    user_config_dict=config)
 
 
@@ -174,8 +171,7 @@ class ProcessManager:
     def start_master(self, proc_name, device_id, sites):
         self._assert_unused_name(proc_name)
         p = self.mp_ctx.Process(target=run_master,
-                    args=(device_id, sites, BROKER_HOST, BROKER_PORT,
-                          WEBUI_PORT))
+                                args=(device_id, sites, BROKER_HOST, BROKER_PORT, WEBUI_PORT))
         self._add_process(proc_name, p)
         p.start()
         assert p.is_alive()
@@ -184,20 +180,24 @@ class ProcessManager:
     def start_control(self, proc_name, device_id, site_id):
         self._assert_unused_name(proc_name)
         p = self.mp_ctx.Process(target=run_control,
-                    args=(device_id, site_id, BROKER_HOST, BROKER_PORT))
+                                args=(device_id, site_id, BROKER_HOST, BROKER_PORT))
         self._add_process(proc_name, p)
         p.start()
         assert p.is_alive()
         return ProcessManagerItem(proc_name, p, site_id=site_id)
 
-    def start_testapp(self, proc_name, device_id, site_id, thetestzipname):
+    def start_testapp(self, proc_name, device_id, site_id):
+        args = [str(sys.executable), os.path.basename(TEST_PROGRAM),
+                '--device_id', device_id,
+                '--site_id', site_id,
+                '--broker_host', BROKER_HOST,
+                '--broker_port', str(BROKER_PORT)]
         self._assert_unused_name(proc_name)
-        p = self.mp_ctx.Process(target=run_testapp,
-                    args=(device_id, site_id, BROKER_HOST, BROKER_PORT,
-                          thetestzipname))
+        import subprocess
+        p = subprocess.Popen(args=args,
+                             cwd=os.path.dirname(TEST_PROGRAM))
+        # p = self.mp_ctx.Process(args=args)
         self._add_process(proc_name, p)
-        p.start()
-        assert p.is_alive()
         return ProcessManagerItem(proc_name, p, site_id=site_id)
 
     def kill_process(self, proc_name: str):
@@ -245,6 +245,7 @@ class ProcessManager:
         p.join(timeout=0.5)
         return p.exitcode
 
+
 @pytest.fixture
 def process_manager():
     with ProcessManager() as instance:
@@ -288,9 +289,8 @@ def create_controls(process_manager, sites):
     return controls
 
 
-def create_standalone_testapp(process_manager, site_id, thetestzipname):
-    return process_manager.start_testapp(f"testapp.{site_id}", DEVICE_ID,
-                                         site_id, thetestzipname)
+def create_standalone_testapp(process_manager, site_id):
+    return process_manager.start_testapp(f"testapp.{site_id}", DEVICE_ID, site_id)
 
 
 def create_sites(process_manager, sites):
@@ -433,8 +433,7 @@ def remove_adjacent_dups(iterable):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
-@pytest.mark.parametrize("testzipmockname", TESTZIPMOCKS)
-async def test_load_run_unload(sites, testzipmockname, process_manager, ws_connection):
+async def test_load_run_unload(sites, process_manager, ws_connection):
     master, controls = create_sites(process_manager, sites)
 
     # allow webservice to start up before attempting to connect ws
@@ -449,12 +448,12 @@ async def test_load_run_unload(sites, testzipmockname, process_manager, ws_conne
         assert not (set(seen_states) - set(['connecting', 'initialized']))
 
         # STEP 2: load load
-        await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}|{testzipmockname}'})
+        await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
         seen_states = await expect_message_with_state(ws, 'ready', 5.0)
         # TODO: this assertion is commented out, because we don't see 'loading' reliably as well.
         #       the reason is that state changes are only propagated every 1ms (and only if the main loop is unblocked)
         # assert remove_dups(seen_states) == ['loading', 'ready']
-        assert not (set(seen_states) - {'loading', 'ready'})
+        assert not (set(seen_states) - {'loading', 'waitingforbintable', 'ready'})
 
         # STEP 3: run test
         await ws.send_json({'type': 'cmd', 'command': 'next'})
@@ -943,8 +942,7 @@ async def read_messages_until_whatever(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
-@pytest.mark.parametrize("testzipmockname", TESTZIPMOCKS)
-async def test_master_states_during_load_and_unload(sites, testzipmockname, process_manager, ws_connection):
+async def test_master_states_during_load_and_unload(sites, process_manager, ws_connection):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
              (f'ate/{DEVICE_ID}/TestApp/testresult/#', 2)]
 
@@ -960,46 +958,20 @@ async def test_master_states_during_load_and_unload(sites, testzipmockname, proc
         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
         async with ws_connection() as ws:
+            await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
+            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'waitingforbintable', 'ready'])
 
-            # STEP 2: load load
-            await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}|{testzipmockname}'})
-            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
-
-            await asyncio.sleep(0.5)
-
-            # STEP 3: run test
+        async with ws_connection() as ws:
             await ws.send_json({'type': 'cmd', 'command': 'next'})
             msgs_while_testing = await read_messages_until_master_state(buffer, 'testing', 5.0, ['ready', 'testing'])
             msgs_while_testing += await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
 
-            # STEP 4: expect one testresult from each site
-            # Each TestApp must have published a testresult before it finished testing.
-            # Unfortunately we (our mqtt client) cannot guarantee to see this before the master published the
-            # state 'ready', even though the TestApp will always publish the testresult before the state
-            # change (race condition).
-            # Therefore we wait a bit longer and for more messages on the testresult topic
-            # TODO: Note that eventually the master must publish the combined testresult and we should
-            #       assert to see that instead of (only) individual sites
-            async with timeout(5, suppress_exc=True):
-                while True:
-                    testresult_site_ids = [msg.site_id for msg in msgs_while_testing if isinstance(msg, MqttTestresultMessage)]
-                    if sorted(sites) == sorted(testresult_site_ids):
-                        break
-                    msgs_while_testing.append(await buffer.read_one())
-            assert sorted(sites) == sorted(testresult_site_ids)
-
-            # STEP 5: unload lot
+        async with ws_connection() as ws:
             await ws.send_json({'type': 'cmd', 'command': 'unload'})
             await read_messages_until_master_state(buffer, 'initialized', 5.0, ['ready', 'unloading', 'initialized'])
 
-            # TODO: commented out, because master does not handle this case correctly right now and makes the test fail (which we dont want right now)
-            # # STEP 5: kill controls
-            # process_manager.kill_processes(*(c.proc_name for c in controls))
-            # await read_messages_until_master_state(buffer, 'connecting', 5.0, ['initialized', 'connecting'])
-
-            # STEP 5: kill master
             process_manager.kill_processes(master.proc_name)
-            await read_messages_until_master_state(buffer, 'crash', 5.0, ['initialized', 'connecting', 'crash'])
+            await read_messages_until_master_state(buffer, 'crash', 5.0, ['initialized', 'crash'])
 
         # Final assertion of the overall state sequence
         all_seen_master_states = remove_adjacent_dups(
@@ -1007,7 +979,7 @@ async def test_master_states_during_load_and_unload(sites, testzipmockname, proc
              if isinstance(msg, MqttStatusMessage)])
         assert all_seen_master_states == [
             'connecting', 'initialized',
-            'loading', 'ready',
+            'loading', 'waitingforbintable', 'ready',
             'testing', 'ready',
             'unloading', 'initialized',
             # 'connecting',  # STEP 5 commented out
@@ -1015,7 +987,7 @@ async def test_master_states_during_load_and_unload(sites, testzipmockname, proc
 
 
 @pytest.mark.asyncio
-async def test_standalone_testapp_start_and_terminate(process_manager, ws_connection):
+async def test_standalone_testapp_start_and_terminate(process_manager):
     subscriptions = [(f'ate/{DEVICE_ID}/TestApp/status/+', 2)]
     site_id = '0'
 
@@ -1028,7 +1000,7 @@ async def test_standalone_testapp_start_and_terminate(process_manager, ws_connec
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
         # STEP 1: create testapp, wait for 'idle' status
-        testapp = create_standalone_testapp(process_manager, site_id, 'sleepmock')
+        testapp = create_standalone_testapp(process_manager, site_id)
         await read_messages_until_testapp_state(buffer, site_id, 'idle', 5.0, ['idle'])
 
         # STEP 2: send terminate command
@@ -1037,7 +1009,7 @@ async def test_standalone_testapp_start_and_terminate(process_manager, ws_connec
 
         # STEP 3: check that testapp process is actually gone
         async with timeout(5, "waiting for testapp process to exit"):
-            while testapp.is_process_active():
+            while testapp.process.returncode:
                 await asyncio.sleep(0.25)
 
         # Final assertion of the overall state sequence
@@ -1051,7 +1023,7 @@ async def test_standalone_testapp_start_and_terminate(process_manager, ws_connec
 # @pytest.mark.parametrize('num_dut_tests_to_run', [1, 5])
 # @pytest.mark.parametrize('thetestzipname', ['sleepmock', 'example1'])
 @pytest.mark.skip(reason="no way of currently testing this")
-async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, thetestzipname, process_manager, ws_connection):
+async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, _, process_manager, ws_connection):
     subscriptions = [
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
         (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2)]
@@ -1066,7 +1038,7 @@ async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, thetestzipn
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
         # STEP 1: create testapp, wait for 'idle' status
-        testapp = create_standalone_testapp(process_manager, site_id, thetestzipname)
+        testapp = create_standalone_testapp(process_manager, site_id)
         await read_messages_until_testapp_state(buffer, site_id, 'idle', 5.0, ['idle'])
 
         # STEP 2: run n duttests
@@ -1102,100 +1074,30 @@ async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, thetestzipn
         assert all_seen_testapp_states == expected_testapp_states
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.parametrize('num_dut_tests_to_run', [1, 5])
-@pytest.mark.skip(reason="no way of currently testing this")
-async def test_standalone_testapp_resource_request(num_dut_tests_to_run, process_manager, ws_connection):
+@pytest.mark.asyncio
+# @pytest.mark.skip(reason="no way of currently testing this")
+async def test_standalone_testapp_test_process(process_manager):
     subscriptions = [
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
-        (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2),
-        (f'ate/{DEVICE_ID}/TestApp/resource/#', 2)]
+        (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2)]
     site_id = '0'
-    thetestzipname = 'example3'
-    resource_id = 'myresourceid'
-    expected_config = {'param': 'value'}
-
-    # Note: The test app is usually only started by the control.
-    #       In order to test the testapp independently we start the testapp
-    #       manually, which should be close to what the control does, but it's
-    #       not exactly the same.
-
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, subscriptions) as mqtt:
-
-        def _publish_resource_config(resource_id, config):
-            mqtt.publish(f'ate/{DEVICE_ID}/Master/resource/{resource_id}', {
-                'type': 'resource-config',
-                'resource_id': resource_id,
-                'config': config
-            })
-
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
+        mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'terminate', 'sites': [site_id]})
         # STEP 1: create testapp, wait for 'idle' status
-        testapp = create_standalone_testapp(process_manager, site_id, thetestzipname)
+        _ = create_standalone_testapp(process_manager, site_id)
         await read_messages_until_testapp_state(buffer, site_id, 'idle', 5.0, ['idle'])
 
-        # STEP 2: run duttest, which requests a single resource config
-        for _ in range(num_dut_tests_to_run):
-            mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'next', 'sites': [site_id]})
+        mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'next', 'sites': [site_id]})
+        await read_messages_until_testapp_state(buffer, site_id, 'testing', 5.0, ['idle', 'testing'])
 
-            # the duttests will execute until a single resource is required
-            msgs_while_testing = await read_messages_until_whatever(
-                buffer,
-                5.0,
-                lambda msg: isinstance(msg, MqttStatusMessage) and msg.component == 'TestApp' and msg.site_id == site_id and msg.state == 'testing',
-                lambda msg: isinstance(msg, MqttResourceRequestMessage))
-
-            resource_request_msgs = [msg for msg in msgs_while_testing if isinstance(msg, MqttResourceRequestMessage)]
-            assert len(resource_request_msgs) == 1
-            assert resource_request_msgs[0].site_id == site_id
-            assert resource_request_msgs[0].resource_id == resource_id
-            assert resource_request_msgs[0].config == expected_config
-
-            # echo back the requested config exactly as it is
-            _publish_resource_config(resource_request_msgs[0].resource_id, resource_request_msgs[0].config)
-
-            # tests will continue until another resource config request (with the default config, currently an empty config dict)
-            msgs_while_testing += await read_messages_until_whatever(
-                buffer,
-                5.0,
-                lambda msg: isinstance(msg, MqttResourceRequestMessage))
-            resource_request_msgs = [msg for msg in msgs_while_testing if isinstance(msg, MqttResourceRequestMessage)]
-            assert len(resource_request_msgs) == 2
-            assert resource_request_msgs[1].site_id == site_id
-            assert resource_request_msgs[1].resource_id == resource_id
-            assert resource_request_msgs[1].config == {}
-
-            # again, simply echo back the request to indicate success
-            _publish_resource_config(resource_request_msgs[1].resource_id, resource_request_msgs[1].config)
-
-            # now the test must run until completion and there must be one test result
-            msgs_while_testing += await read_messages_until_whatever(
-                buffer,
-                5.0,
-                lambda msg: isinstance(msg, MqttStatusMessage) and msg.component == 'TestApp' and msg.site_id == site_id and msg.state == 'idle',
-                lambda msg: isinstance(msg, MqttTestresultMessage))
-
-            test_result_msgs = [msg for msg in msgs_while_testing if isinstance(msg, MqttTestresultMessage)]
-            assert len(test_result_msgs) == 1
-            assert test_result_msgs[0].site_id == site_id
-            assert test_result_msgs[0].ispass
+        await asyncio.sleep(5.0)
 
         # STEP 3: send terminate command
         mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'terminate', 'sites': [site_id]})
-        await read_messages_until_testapp_state(buffer, site_id, 'terminated', 5.0, ['idle', 'terminated'])
+        await read_messages_until_testapp_state(buffer, site_id, 'terminated', 5.0, ['idle', 'testing', 'terminated'])
 
-        # STEP 4: check that testapp process is actually gone
-        async with timeout(5, "waiting for testapp process to exit"):
-            while testapp.is_process_active():
-                await asyncio.sleep(0.25)
-
-        # Final assertion of the overall state sequence
-        all_seen_testapp_states = remove_adjacent_dups(
-            [msg.state for msg in buffer.messages
-             if isinstance(msg, MqttStatusMessage)])
-        expected_testapp_states = ['idle'] + num_dut_tests_to_run * ['testing', 'idle'] + ['terminated']
-        assert all_seen_testapp_states == expected_testapp_states
 
 # This test does not test the way the feature is intended. ToDo: Check ATE-82 against actual requiremens.
 # @pytest.mark.asyncio
@@ -1245,7 +1147,6 @@ async def test_standalone_testapp_stop_on_fail_setting(stop_on_fail_enabled, pro
         (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2),
         (f'ate/{DEVICE_ID}/TestApp/resource/#', 2)]
     site_id = '0'
-    thetestzipname = 'example4'
     resource_id = 'myresourceid'
     expected_config = {'param': 'value'}
 
@@ -1262,7 +1163,7 @@ async def test_standalone_testapp_stop_on_fail_setting(stop_on_fail_enabled, pro
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
         # STEP 1: create testapp, wait for 'idle' status
-        _ = create_standalone_testapp(process_manager, site_id, thetestzipname)
+        _ = create_standalone_testapp(process_manager, site_id)
         await read_messages_until_testapp_state(buffer, site_id, 'idle', 5.0, ['idle'])
 
         # STEP 2: run duttest

@@ -1,6 +1,6 @@
 import pytest
 import json
-from ATE.TES.apps.common.configuration_reader import ConfigReader
+from ATE.Tester.TES.apps.common.configuration_reader import ConfigReader
 
 
 CONFIG_FILE_PATH = "./tests/ATE/TES/apps/config_file_test.json"
