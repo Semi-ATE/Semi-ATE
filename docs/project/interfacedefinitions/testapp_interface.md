@@ -53,9 +53,57 @@ Der Initbefehl weist die Testapplikation an einen Selbsttest durchzuführen.
 
 Der Nextbefehl weist die Testapplikation einen neuen Testlauf zu starten. Der Testbefehl muss für jedes Bauteil, das von der Applikation getestet werden soll erneut geschickt werden
 
-|Feld| Bedeutung/Zulässige Werte             |
-|----|----------------------------------------|
-|command| "next"                              |
+|Feld    | Bedeutung/Zulässige Werte           |
+|------- |-------------------------------------|
+|command | "next"                              |
+|sites   | list of sites that should test      |
+|job_data| all information needed to test      |
+
+__example__:
+```json
+{
+  "type": "cmd",
+  "command": "bext",
+  "sites": [
+    "0"
+  ],
+  "job_data": {
+    "stop_on_fail": {
+      "active": false,
+      "value": -1
+    },
+    "single_step": {
+      "active": false,
+      "value": -1
+    },
+    "stop_on_test": {
+      "active": false,
+      "value": -1
+    },
+    "trigger_on_test": {
+      "active": false,
+      "value": -1
+    },
+    "trigger_on_fail": {
+      "active": false,
+      "value": -1
+    },
+    "trigger_site_specific": {
+      "active": false,
+      "value": -1
+    },
+    "sites_info": [
+                  {
+                    "siteid": "0",
+                    "partid": "12346",
+                    "binning": -1,
+                    "logflag": 2,
+                    "additionalinfo": 0
+                  }
+                  ]
+  }
+}
+```
 
 #### Terminate
 

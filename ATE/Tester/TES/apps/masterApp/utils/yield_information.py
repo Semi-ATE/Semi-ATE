@@ -49,20 +49,8 @@ class YieldInformationHandler:
         if not self._bin_settings:
             self.on_error("bin settings are not received yet")
 
-        part_id = ''
         param_data = param_data[-1]
-        if param_data['PART_ID']:
-            part_id = param_data['PART_ID']
-        else:
-            default_value = -32768
-            if (param_data['X_COORD'], param_data['Y_COORD']) == (default_value, default_value):
-                part_id = ''
-            else:
-                part_id = f"{param_data['X_COORD']}x{param_data['Y_COORD']}"
-
-        assert part_id
-        if not part_id:
-            self.on_error("Part id could not be extracted from PRR record")
+        part_id = self._get_part_id(param_data)
 
         if not self.prr_rec_information.get(part_id):
             self.prr_rec_information[part_id] = param_data
@@ -70,6 +58,28 @@ class YieldInformationHandler:
         else:
             self.prr_rec_information.update({part_id: param_data})
             self._reaccumulate_bin_info()
+
+    @staticmethod
+    def _get_part_id(prr_record):
+        part_id = ''
+        if prr_record['PART_ID']:
+            part_id = prr_record['PART_ID']
+        else:
+            default_value = -32768
+            if (prr_record['X_COORD'], prr_record['Y_COORD']) == (default_value, default_value):
+                assert False
+            else:
+                part_id = f"{prr_record['X_COORD']}x{prr_record['Y_COORD']}"
+
+        return part_id
+
+    def get_site_result(self, param_data):
+        prr_record = param_data[-1]
+        part_id = self._get_part_id(prr_record)
+        hard_bin = prr_record['HARD_BIN']
+        siteid = str(prr_record['SITE_NUM'])
+
+        return {'siteid': siteid, 'partid': part_id, 'binning': hard_bin, 'logflag': 0, 'additionalinfo': 0}
 
     def _accumulate_site_bin_info(self, data):
         site_num = str(data['SITE_NUM'])

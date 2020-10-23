@@ -6,11 +6,13 @@
   <span><hr class="blueDivider"></span>
   <ul class="recordEntries">
     <li *ngFor="let property of stdfRecord.values">
-        <div class="label">
-          {{property.key}}:
-          <span class="value">{{property.value}}</span>
+      <div *ngIf="property.key !=='TEST_FLG'; else testflg" class="label">
+        {{property.key}}:
+        <span class="value">{{property.value}}</span>
       </div>
+      <ng-template #testflg>
+        <app-multichoice [multichoiceConfig]="computeMultichoiceConfigurationForTestFlagValue(property.value)"></app-multichoice>
+      </ng-template>
     </li>
   </ul>
 </div>
-

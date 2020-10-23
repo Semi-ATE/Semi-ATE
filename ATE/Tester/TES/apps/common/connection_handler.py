@@ -63,3 +63,7 @@ class ConnectionHandler:
 
     def unregister_route(self, route, callback):
         self.router.unregister_route(route, callback)
+
+    # TODO: remove if not needed
+    def send_log(self, message):
+        pass

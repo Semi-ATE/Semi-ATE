@@ -10,8 +10,9 @@ from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategy import BinStrate
 
 import os
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'binmapping.json')
-BIN_SETTINGS = [{'Bin-Name': 'F_DAW', 'Typ': 'Fail Electric', 'S-Bin': 3},
-                {'Bin-Name': 'Good1', 'Typ': 'Type1', 'S-Bin': 2}]
+BIN_SETTINGS = [{'Bin-Name': 'F_DAW', 'Typ': 'Fail Electric', 'SBin': 3},
+                {'Bin-Name': 'Good1', 'Typ': 'Type1', 'SBin': 2}]
+SITE_INFO = {'sites_info': [{'siteid': '0', 'partid': '1', 'binning': '-1'}]}
 
 
 class dummy_execution_policy(ExecutionPolicyABC):
@@ -135,7 +136,9 @@ def test_trigger_on_test_will_pulse_triggerout(sequencer):
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
-    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": {'active': True, 'value': 2}})
+    test_settings = {"trigger_on_test": {'active': True, 'value': 2}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(trigger.was_triggered)
     assert(trigger.num_pulses == 1)
     assert(trigger.pulse_width == 250)
@@ -147,7 +150,9 @@ def test_trigger_on_test_will_not_pulse_triggerout_if_testindex_is_not_available
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
-    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": {'active': True, 'value': 7}})
+    test_settings = {"trigger_on_test": {'active': True, 'value': 7}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(trigger.was_triggered is False)
     assert(trigger.num_pulses == 0)
     assert(trigger.pulse_width == 0)
@@ -157,7 +162,9 @@ def test_trigger_on_test_will_not_crash_if_trigger_on_test_is_set_but_no_trigger
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
-    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_test": {'active': True, 'value': 1}})
+    test_settings = {"trigger_on_test": {'active': True, 'value': 1}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
 
 
 def test_trigger_on_fail_will_pulse_trigger_out_on_testfail(sequencer):
@@ -166,7 +173,9 @@ def test_trigger_on_fail_will_pulse_trigger_out_on_testfail(sequencer):
     sequencer.register_test(dummy_test_case(Result.Fail()))
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
-    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_fail": {'active': True, 'value': -1}})
+    test_settings = {"trigger_on_fail": {'active': True, 'value': -1}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(trigger.was_triggered is True)
     assert(trigger.num_pulses == 1)
     assert(trigger.pulse_width == 250)
@@ -178,7 +187,9 @@ def test_trigger_on_fail_will_pulse_trigger_out_multiple_times(sequencer):
     sequencer.register_test(dummy_test_case(Result.Fail()))
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case(Result.Fail()))
-    sequencer.run(SingleShotExecutionPolicy(), {"trigger_on_fail": {'active': True, 'value': -1}, "stop_on_fail": {'active': False, 'value': -1}})
+    test_settings = {"trigger_on_fail": {'active': True, 'value': -1}, "stop_on_fail": {'active': False, 'value': -1}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(trigger.was_triggered is True)
     assert(trigger.num_pulses == 2)
     assert(trigger.pulse_width == 250)
@@ -190,6 +201,8 @@ def test_stop_on_fail_stop_on_failure(sequencer):
     sequencer.register_test(t1)
     sequencer.register_test(t2)
 
-    sequencer.run(SingleShotExecutionPolicy(), {"stop_on_fail": {'active': True, 'value': -1}})
+    test_settings = {"stop_on_fail": {'active': True, 'value': -1}}
+    test_settings.update(SITE_INFO)
+    sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(t1.has_run is True)
     assert(t2.has_run is False)

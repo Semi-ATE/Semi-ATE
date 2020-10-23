@@ -47,4 +47,27 @@ describe('StdfRecordComponent', () => {
     let currentStrings = entries?.map(e => e.nativeElement.innerText);
     expect(currentStrings).toEqual(jasmine.arrayWithExactContents(expectedStrings));
   });
+
+  describe('computeMultichoiceConfigurationForTestFlagValue', () => {
+    it('should compute label starting with "TEST_FLG"', () => {
+      let configuration = component.computeMultichoiceConfigurationForTestFlagValue(1);
+      expect(configuration.label).toMatch('^TEST_FLG.*', 'Label has to start with "TEST_FLG"');
+    });
+
+    it('should always compute 8 items', () => {
+      let numbers = [
+        -50,
+        1,
+        10,
+        17,
+        100,
+        500,
+        8000
+      ];
+      for (let i = 0; i < numbers.length; ++i) {
+        let configuration = component.computeMultichoiceConfigurationForTestFlagValue(numbers[i]);
+        expect(configuration.items.length).toBe(8, 'We expect always 8 items');
+      }
+    });
+  });
 });

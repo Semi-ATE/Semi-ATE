@@ -43,6 +43,9 @@ class LogHandler(StreamHandler):
         self._last_log = []
         return log
 
+    def set_mqtt_client(self, mqtt_client):
+        self.mqtt = mqtt_client
+
 
 class Logger:
     datefmt = '%d/%m/%Y %I:%M:%S %p'
@@ -162,3 +165,4 @@ class Logger:
 
     def set_mqtt_client(self, mqtt_client):
         self.mqtt = mqtt_client
+        self.stream_handler.set_mqtt_client(mqtt_client)

@@ -9,7 +9,7 @@ def parse_config_dict_from_command_line():
                         help='serial interface for tester communication')
     parser.add_argument('--baudrate', default=115200, type=int,
                         help='set bautrate')
-    parser.add_argument('--timeout', default=1, type=int,
+    parser.add_argument('--timeout', default=0.2, type=float,
                         help='set timeout')
     parser.add_argument('--parity', default='N', type=str,
                         help='set parity')

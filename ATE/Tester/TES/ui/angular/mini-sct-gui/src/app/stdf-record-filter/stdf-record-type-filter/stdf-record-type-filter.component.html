@@ -1,7 +1,7 @@
 <div class="stdfTypeFilter">
   <div class="multipleChoice">
     <ul>
-      <li class="listLabel">STDF-Types</li>
+      <li class="listLabel">STDF Record Types</li>
       <li class="stdfTypes" *ngFor="let c of recordTypeFilterCheckboxes">
         <div class="stdfRecordTypes">
           <app-checkbox [checkboxConfig]="c" (checkboxChangeEvent)="recordTypeFilterChanged($event, c.labelText)"></app-checkbox>

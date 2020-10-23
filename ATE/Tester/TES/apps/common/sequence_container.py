@@ -1,4 +1,4 @@
-from ATE.Tester.TES.apps.masterApp.transition_sequence import TransitionSequence
+from ATE.Tester.TES.apps.common.transition_sequence import TransitionSequence
 from typing import List, Callable
 
 
@@ -9,13 +9,14 @@ class SequenceContainer:
         self.on_error = on_error
         self.done = False
 
-    def trigger_transition(self, site_id: str, transition: str) -> bool:
+    def trigger_transition(self, site_id: str, transition: str, must_match_transition=True) -> bool:
         seq = self.sequences.get(site_id)
         if seq is None:
             self.on_error(site_id, transition)
             return False
         if not seq.trigger_transition(transition):
-            self.on_error(site_id, transition)
+            if must_match_transition:
+                self.on_error(site_id, transition)
             return False
 
         if all(x.finished() for x in self.sequences.values()):

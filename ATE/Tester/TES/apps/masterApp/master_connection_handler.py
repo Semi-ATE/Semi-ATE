@@ -38,7 +38,8 @@ class MasterConnectionHandler:
 
         self.mqtt.register_route("Control", lambda topic, payload: self.dispatch_control_message(topic, self.mqtt.decode_payload(payload)))
         self.mqtt.register_route("TestApp", lambda topic, payload: self.dispatch_testapp_message(topic, self.mqtt.decode_payload(payload)))
-        self.mqtt.register_route(f"{self.handler_id}/Handler", lambda topic, payload: self.dispatch_handler_message(topic, self.mqtt.decode_payload(payload)))
+        self.mqtt.register_route("Master", lambda topic, payload: self.dispatch_handler_message(topic, self.mqtt.decode_payload(payload)))
+        self.mqtt.register_route("Handler", lambda topic, payload: self.dispatch_handler_message(topic, self.mqtt.decode_payload(payload)))
 
     def start(self):
         self.mqtt.set_last_will(
@@ -69,15 +70,28 @@ class MasterConnectionHandler:
 
     def send_next_to_all_sites(self, job_data: Optional[dict] = None):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        params = self._generate_command_message('next')
+        params = self._generate_command_message('next', job_data['sites'])
 
         if job_data is not None:
             params['job_data'] = job_data
+            job_data.pop('sites')
         self.mqtt.publish(topic, json.dumps(params), 0, False)
 
     def send_terminate_to_all_sites(self):
         topic = f'ate/{self.device_id}/TestApp/cmd'
         self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 0, False)
+
+    def send_test_results(self, test_results):
+        topic = f'ate/{self.device_id}/Master/response'
+        self.mqtt.publish(topic, json.dumps(self._generate_test_results_message(test_results)), 0, False)
+
+    def send_identification(self):
+        topic = f'ate/{self.device_id}/Master/response'
+        self.mqtt.publish(topic, json.dumps(self._generate_identification_message()), 0, False)
+
+    def send_state(self, state, message):
+        topic = f'ate/{self.device_id}/Master/response'
+        self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)), 0, False)
 
     def send_reset_to_all_sites(self):
         control_topic = f'ate/{self.device_id}/Control/cmd'
@@ -100,11 +114,24 @@ class MasterConnectionHandler:
         message.update({'name': 'binsettings'})
         self.mqtt.publish(topic, json.dumps(message), 0, False)
 
-    def _generate_command_message(self, command):
+    def _generate_command_message(self, command, sites=None):
         return {'type': 'cmd',
                 'command': command,
-                'sites': self.sites,
+                'sites': self.sites if sites is None else sites,
                 }
+
+    def _generate_test_results_message(self, test_results):
+        return self._generate_response_message('next', {'sites': test_results})
+
+    def _generate_identification_message(self):
+        return self._generate_response_message('identify', {'name': self.device_id})
+
+    def _generate_state_message(self, state, message):
+        return self._generate_response_message('get-state', {'state': state, 'message': message})
+
+    @staticmethod
+    def _generate_response_message(type, payload):
+        return {'type': type, 'payload': payload}
 
     def on_cmd_message(self, message):
         payload = self.decode_message(message)
@@ -142,9 +169,8 @@ class MasterConnectionHandler:
             "alive": alive,
             "interface_version": INTERFACE_VERSION,
             "state": state,
+            "payload": {"state": state, "message": statedict}
         }
-        if statedict is not None:
-            message.update(statedict)
         return message
 
     def _generate_base_topic_status(self):
@@ -178,7 +204,10 @@ class MasterConnectionHandler:
         return "ate/" + topic
 
     def _generate_base_topic_cmd(self):
-        return "ate/" + str(self.device_id) + "/Master/cmd"
+        return "ate/" + str(self.device_id) + "/Master/command"
+
+    def _generate_response_topic(self):
+        return "ate/" + str(self.device_id) + "/Master/response"
 
     def _generate_base_topic_resource(self):
         return "ate/" + str(self.device_id) + "/Master/peripherystate"
@@ -240,7 +269,7 @@ class MasterConnectionHandler:
 
     def dispatch_handler_message(self, topic, msg):
         if "status" in topic:
-            self.status_consumer.on_handler_status_changed(msg)
+            self.status_consumer.on_handler_status_changed(msg['payload'])
         elif "command" in topic:
             self.status_consumer.on_handler_command_message(msg)
         else:

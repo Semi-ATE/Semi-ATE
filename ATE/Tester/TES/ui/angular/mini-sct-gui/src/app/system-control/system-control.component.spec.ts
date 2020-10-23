@@ -85,9 +85,9 @@ describe('SystemControlComponent', () => {
       expect(componentElement).not.toEqual(null);
     });
 
-    it('should contain an app-test-execution tag', () => {
+    it('should not contain an app-test-execution tag', () => {
       let componentElement = debugElement.nativeElement.querySelector('app-test-execution');
-      expect(componentElement).not.toEqual(null);
+      expect(componentElement).toEqual(null);
     });
 
     it('should contain an app-test-option tag', () => {

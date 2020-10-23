@@ -178,7 +178,7 @@ Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in
 Antwort:
 ```json
 {
-    "type": "endtest",
+    "type": "next",
     "payload": 
         {
             "sites": [
@@ -226,7 +226,7 @@ Der identifybefehl weist die Masterapplikation sein ID(Name) zu schicken. Die An
 ```json
 {
     "type": "identify",
-    "payload": {"value": ""}
+    "payload": {"name": ""}
 }
 ```
 
@@ -240,6 +240,18 @@ Der get-state Befehl weist die Masterapplikation seinen Zustand zu schicken. Der
     "payload": {}
 }
 ```
+
+Antwort durch den Master
+
+```json
+{
+    "type": "get-state",
+    "payload": {"state": "",
+                "message": ""
+               }
+ }
+```
+
 
 **ToDo: Hier sollten nur die Statemachinezustände des Masters stehen. Der Handler muss sehen, wie er damit klarkommt.**
 

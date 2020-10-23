@@ -36,7 +36,6 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
   previousRecordButtonConfig: ButtonConfiguration;
   nextRecordButtonConfig: ButtonConfiguration;
   refreshButtonConfig: ButtonConfiguration;
-  autoScroll: boolean;
 
   private currentRecordIndex: [number, number];
   private readonly unsubscribe: Subject<void>;
@@ -48,7 +47,6 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
               private readonly store: Store<AppState>,
               private readonly storage: StorageMap ) {
     this.initConfigurations();
-    this.autoScroll = true;
     this.currentRecordIndex = [0, 0];
     this.unsubscribe = new Subject<void>();
     this.store.select('systemStatus')
@@ -67,7 +65,6 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe.next();
     this.unsubscribe.complete();
-    this.saveSettings();
   }
 
   currentRecord(): StdfRecord {
@@ -109,6 +106,7 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
       }
     }
     this.setDisabledStatusOfButtons();
+    this.saveSettings();
   }
 
   anyRecordStored(): boolean {
@@ -192,8 +190,10 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
       .subscribe( e => {
         let autoscrollSetting = e as RecordViewAutoscrollSetting;
         if (autoscrollSetting && typeof autoscrollSetting.enabled === 'boolean') {
+          this.autoscrollCheckboxConfig.checked = autoscrollSetting.enabled;
           this.autoscrollChanged(autoscrollSetting.enabled);
         } else {
+          this.autoscrollCheckboxConfig.checked = true;
           this.autoscrollChanged(true);
         }
     });

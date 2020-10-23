@@ -16,7 +16,9 @@ class SequencerBase:
         self.stdf_data = []
         self.tester_instance = None
         self.soft_bin = 0
-        self.site_id = 0
+        self.site_id = '0'
+        self.part_id = None
+        self.binning = None
         self.logger = None
         self.bin_strategy = bin_strategy
 
@@ -53,14 +55,26 @@ class SequencerBase:
         self.tester_instance = tester_instance
 
     def run(self, execution_policy, test_settings={}):
+        # TODO: raise an exception if test_settings is None !?
         if test_settings:
             self.test_settings = test_settings
+            self._extract_test_information(test_settings)
+
         if execution_policy is None:
             raise Exception("No Execution Policy set")
         if not issubclass(type(execution_policy), ExecutionPolicyABC):
             raise Exception("Need an execution policy type object")
 
         return execution_policy.run(self)
+
+    def _extract_test_information(self, test_settings):
+        for site in test_settings['sites_info']:
+            if site['siteid'] != self.site_id:
+                continue
+
+            self.part_id = site['partid']
+            self.binning = site['binning']
+            break
 
     def pre_cycle_cb(self):
         self.stdf_data = []
@@ -108,7 +122,7 @@ class SequencerBase:
 
     def do_trigger_on_test(self, test_index):
         # Check if the next test is our trigger_on_Test id
-        # Note: This is not the perferct solution, as we can
+        # Note: This is not the perfect solution, as we can
         # never trigger on the first test.
         if "trigger_on_test" not in self.test_settings:
             return
@@ -138,7 +152,7 @@ class SequencerBase:
         self.stdf_data.append(generate_PRR_dict(head_num=0, site_num=int(self.site_id), is_pass=is_pass,
                                                 num_tests=num_tests, hard_bin=hard_bin, soft_bin=self.soft_bin,
                                                 x_coord=1, y_coord=1, test_time=execution_time,
-                                                part_id="1", part_txt="1", part_fix=[0b00000000]))
+                                                part_id=self.part_id, part_txt="1", part_fix=[0b00000000]))
 
         return self.stdf_data
 

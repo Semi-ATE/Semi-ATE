@@ -1089,7 +1089,8 @@ async def test_standalone_testapp_test_process(process_manager):
         _ = create_standalone_testapp(process_manager, site_id)
         await read_messages_until_testapp_state(buffer, site_id, 'idle', 5.0, ['idle'])
 
-        mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'next', 'sites': [site_id]})
+        mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'next', 'sites': [site_id],
+                                                      'job_data': {'sites_info': [{'siteid': f'{site_id}', 'partid': '1', 'binning': -1}]}})
         await read_messages_until_testapp_state(buffer, site_id, 'testing', 5.0, ['idle', 'testing'])
 
         await asyncio.sleep(5.0)

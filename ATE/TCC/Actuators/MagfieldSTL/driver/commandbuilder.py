@@ -56,7 +56,7 @@ class CommandBuilder():
     def __do_command(self, commandname, parameters, timeout):
         results = do_command(self.com_channel, commandname, parameters, timeout)
         result_dict = {}
-        for index, result_value in enumerate(results):
+        for index, result_value in enumerate(result for result in results if result != ""):
             result_dict[f"value{index}"] = result_value
         result_dict["status"] = "ok"
         return result_dict

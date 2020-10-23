@@ -44,6 +44,7 @@ import { StdfRecordProgramFilterComponent } from './stdf-record-filter/stdf-reco
 import { TableComponent } from './basic-ui-elements/table/table.component';
 import { TabComponent } from './basic-ui-elements/tab/tab.component';
 import { YieldComponent } from './yield/yield.component';
+import { MultichoiceComponent } from './basic-ui-elements/multichoice/multichoice.component';
 
 @NgModule({
   declarations: [
@@ -77,7 +78,8 @@ import { YieldComponent } from './yield/yield.component';
     StdfRecordProgramFilterComponent,
     TabComponent,
     TableComponent,
-    YieldComponent
+    YieldComponent,
+    MultichoiceComponent
   ],
   imports: [
     BrowserModule,
