@@ -15,4 +15,51 @@ Yours,
 
 Tom 
 
-Trial2 dasdfasdfasdf
+
+# Setup Semi-ATE
+
+## HowTo: on Windows
+
+### Setup
+
+Assuming that the current directory is Semi-ATE root.
+
+open a Windows command prompt(__CMD__) and run
+the following command:
+```Console
+Powershell -ep Unrestricted -file setup.ps1
+```
+
+### Before starting the applications
+
+**Make sure**!
+
+1) testprogram name must be adapted in ATE/Tester/TES/apps/le306426000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
+
+    ```Console
+    <missing_part>/tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py
+    ```
+
+    \<missing_part> must be replaced with the missing path piece to fit the absolut path of the test program
+
+
+2) lot number must be adapted in ATE/Tester/TES/apps/le306426000.xml.
+Therefore, 'LOTNUMBER' field muss be fit. Assuming the xml file name is
+'le306426000.xml', LOTNUMNBER field should look as the following:
+<LOTNUMBER>306426.000</LOTNUMBER>
+
+3) After configuring xml-file there still one thing to do.
+open the master configuration file (ATE/Tester/TES/apps/master_configuration_file.json)
+and replace the 'filesystemdatasource.jobpattern' key-value with
+the xml file name.
+
+    Based on the example above, this should look something like this:
+    'filesystemdatasource.jobpattern': 'le306426000.xml'
+
+
+---
+__NOTE__
+
+As soon the xml-file name is changed, make sure to update the lot number as discribed in 2) and 3)  !
+
+---

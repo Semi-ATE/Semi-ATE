@@ -13,17 +13,23 @@ class TcpCommunicationChannel(CommunicationChannel):
     def __init__(self, target_ip, target_port):
         self.target_ip = target_ip
         self.target_port = int(target_port)
+        self.connected = False
         self.do_connect(target_ip, target_port)
+
+    def is_connected(self):
+        return self.connected
 
     def do_connect(self, target_ip, target_port):
         num_retries = 0
         MAX_NUM_RETRIES = 5
+        self.connected = False
         while True:
             try:
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.sock.settimeout(1)
+                self.sock.settimeout(3)
                 self.sock.connect((target_ip, target_port))
                 # Connection succeeded, return.
+                self.connected = True
                 print("Connected to DSC6k")
                 return
             except Exception as ex:
@@ -45,6 +51,7 @@ class TcpCommunicationChannel(CommunicationChannel):
             if sent == 0:
                 print("Lost connection to DCS6k, reconnect in progress..")
                 self.do_connect(self.target_ip, self.target_port)
+                sent = 0        # Restart sending in case of a connection loss.
             totalsent = totalsent + sent
 
     def receive(self, timeout_ms):
@@ -64,6 +71,7 @@ class TcpCommunicationChannel(CommunicationChannel):
                 # We'll try to reconnect on the next send. Doing this
                 # here makes no sense, as we probably have missed parts
                 # of the packet we were trying to receive anyway.
+                self.connected = False
                 print("Lost connection to DCS6k")
                 return ""
 

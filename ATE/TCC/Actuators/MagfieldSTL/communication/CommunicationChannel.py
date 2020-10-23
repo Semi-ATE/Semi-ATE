@@ -9,3 +9,7 @@ class CommunicationChannel(ABC):
     @abstractmethod
     def receive(self, timeout):
         pass
+
+    @abstractmethod
+    def is_connected(self):
+        pass

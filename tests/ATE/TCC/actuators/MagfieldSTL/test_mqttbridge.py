@@ -7,6 +7,7 @@ class MagFieldMock:
     def __init__(self):
         self.ioctls = []
         self.dry_ioctls = []
+        self._is_connected = False
 
     def set_output_state(self, val):
         pass
@@ -31,9 +32,14 @@ class MagFieldMock:
 
     def do_io_control(self, ioctl_name, params):
         self.ioctls.append(ioctl_name)
-    
+
     def get_type(self):
         return "MagField"
+
+    def get_status(self):
+        if self._is_connected:
+            return "available"
+        return "connecting"
 
 
 @fixture
@@ -68,3 +74,10 @@ def test_drycall_does_drycall(mqtt):
     mqtt.actuator_impl.disable_called = True
     _ = mqtt.on_request(request)
     assert("disable" in mqtt.actuator_impl.dry_ioctls)
+
+
+def test_sends_status_on_connect(mqtt, mocker):
+    mocker.patch.object(mqtt.mqtt_client, "publish")
+    mqtt.actuator_impl._is_connected = True
+    mqtt.on_connect(None, None, None, None)
+    mqtt.mqtt_client.publish.assert_called_once_with("ATE/1048/MagField/status", "{\"status\": \"available\"}")

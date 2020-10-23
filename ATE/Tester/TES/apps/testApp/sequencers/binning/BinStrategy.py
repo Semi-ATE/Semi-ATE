@@ -14,8 +14,11 @@ class BinStrategy(IBinStrategy):
 
     def _validate_bin_settings(self):
         for bin_setting in self.bin_settings:
-            soft_bin = bin_setting['S-Bin']
+            soft_bin = bin_setting['SBin']
             _ = self.get_hard_bin(soft_bin)
+
+        _ = self.get_hard_bin(0)    # sbin 0 is implicit, and must be available!
+        _ = self.get_hard_bin(1)    # sbin 1 is implicit, and must be available!
 
     def get_hard_bin(self, soft_bin):
         for hbin, sbins in self.bin_mapping.items():
@@ -38,7 +41,7 @@ class BinStrategy(IBinStrategy):
     def generate_bin_table(self):
         bin_table = self.bin_settings
         for bin_setting in bin_table:
-            soft_bin = bin_setting['S-Bin']
-            bin_setting.update({'H-Bin': self.get_hard_bin(soft_bin)})
+            soft_bin = bin_setting['SBin']
+            bin_setting.update({'HBin': self.get_hard_bin(soft_bin)})
 
         return bin_table

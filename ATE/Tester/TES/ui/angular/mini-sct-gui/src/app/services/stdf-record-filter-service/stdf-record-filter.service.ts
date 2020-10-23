@@ -102,15 +102,10 @@ export class StdfRecordFilterService implements OnDestroy {
     let foundFilter = this.filters.find(e => e.type === filter.type);
     if (!foundFilter) {
       this.filters.push(filter);
-      filterGetStronger = filter.active && filter.strengthen;
     } else {
-      if (!foundFilter.active && filter.active) {
-        filterGetStronger = true;
-      } else if (foundFilter.active && filter.active && filter.strengthen) {
-        filterGetStronger = true;
-      }
-      foundFilter = filter;
+      this.filters[this.filters.findIndex(e => e.type === filter.type)] = filter;
     }
+    filterGetStronger = filter.active && filter.strengthen;
     return filterGetStronger;
   }
 

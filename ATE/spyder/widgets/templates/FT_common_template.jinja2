@@ -12,8 +12,9 @@ tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition
 
 # Actuators are disable due to them being reworked.
 {% for actuator in definition['Actuator']['FT'] %}
-# {{actuator}}_instance = get_plugin_manager().hook.get_actuator_proxy(required_capability="{{actuator}}")[0]
-# {{actuator}}_instance.set_mqtt_client(mqtt)
+from ATE.Tester.TES.apps.testApp.actuators.{{actuator}}.{{actuator}} import {{actuator}}Proxy
+{{actuator}}_instance = {{actuator}}Proxy()
+{{actuator}}_instance.set_mqtt_client(mqtt)
 {% endfor %}
 
 {% for instrument in definition['Instruments'] %}

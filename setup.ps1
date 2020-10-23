@@ -18,6 +18,7 @@ $plugin_location = "Plugins/TDKMicronas"
 $spyder_location = ".."
 $smoke_test_location = "tests/ATE/spyder/widgets/CI/qt/smoketest"
 $apps_location = "ATE/Tester/TES/apps"
+$package_is_uptodate = $False
 
 Write-Host "install angular cli dependencies"
 Invoke-Expression "npm i -g @angular/cli"
@@ -55,20 +56,16 @@ catch
 
         Write-Host "install ATE package"
         Invoke-Expression "python setup.py develop"
+        $package_is_uptodate = $True
 
         Write-Host "install TDKMicronas plugin package"
         Invoke-Expression "cd $plugin_location"
         Invoke-Expression "python setup.py develop"
 
-        Set-Location -Path $root_location
-
-        Write-Host "build test program"
-        Invoke-Expression "pytest $smoke_test_location"
-
         Invoke-Expression "conda install spyder -y"
     }
 
-    if ((Get-Command "git" -ErrorAction SilentlyContinue) -eq $null)
+    if ($null -eq (Get-Command "git" -ErrorAction SilentlyContinue))
     {
         Write-Host "Unable to find git in path, spyder sources cannot be imported"
     } else
@@ -86,6 +83,27 @@ catch
     }
     Set-Location -Path $root_location
 }
+
+
+Set-Location -Path $root_location
+if ($package_is_uptodate -ne $True)
+{
+    $confirmation = Read-Host "do you want to install packages again [y/n]"
+    if ($confirmation -eq 'y')
+    {
+        Write-Host "install ATE package"
+        Invoke-Expression "python setup.py develop"
+
+        Write-Host "install TDKMicronas plugin package"
+        Invoke-Expression "cd $plugin_location"
+        Invoke-Expression "python setup.py develop"
+    }
+}
+
+
+Set-Location -Path $root_location
+Write-Host "build test program"
+Invoke-Expression "pytest $smoke_test_location"
 
 
 Write-Host "new configuration file for master and control Apps will be generated"

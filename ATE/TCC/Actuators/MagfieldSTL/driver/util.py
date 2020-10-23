@@ -40,5 +40,5 @@ def do_command(comm_chan, commandname, parameters, timeout):
         # do.
         raise ValueError(f"Result is: \"{str(result)}\"")
 
-    result_value_string = result[len(result_string) + 1:]       # +1 to skip the first value separating the "xxxxx" from the values
-    return result_value_string.split(",")
+    result_value_string = (result[len(result_string) + 1:]).decode('utf-8')      # +1 to skip the first value separating the "xxxxx" from the values
+    return result_value_string.strip().split(",")

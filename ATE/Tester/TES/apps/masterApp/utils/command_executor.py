@@ -8,7 +8,7 @@ class NonBlockingCall(threading.Thread):
 
 
 class NonBlockingCommand:
-    def __init__(self, connection_id, obj):
+    def __init__(self, obj, connection_id=None):
         self._is_ready = False
         self.connection_id = connection_id
         NonBlockingCall(lambda: self.acquire_data(obj))
@@ -49,3 +49,19 @@ class GetLogsCommand(NonBlockingCommand):
 
     def acquire_data_impl(self, data):
         self._reply = data.get_logs()
+
+
+class GetUserSettings(NonBlockingCommand):
+    async def execute(self, ws_comm_handler):
+        await ws_comm_handler.send_user_settings(self._reply)
+
+    def acquire_data_impl(self, get_user_settings_call_back):
+        self._reply = get_user_settings_call_back()
+
+
+class GetYields(NonBlockingCommand):
+    async def execute(self, ws_comm_handler):
+        await ws_comm_handler.send_yields(self._reply)
+
+    def acquire_data_impl(self, get_yield_call_back):
+        self._reply = get_yield_call_back()

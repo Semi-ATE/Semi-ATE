@@ -34,6 +34,7 @@ export class YieldComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.initElements();
     this.store.select('systemStatus')
       .pipe(takeUntil(this.unsubscribe))
       .subscribe( s => this.updateStatus(s));
@@ -43,7 +44,6 @@ export class YieldComponent implements OnInit, OnDestroy {
       .subscribe( y => this.updateYieldData(y));
 
     this.yieldCardConfiguration.initCard(true, CardStyle.COLUMN_STYLE, 'Yield');
-    this.initElements();
     this.restoreSelectedTabIndex();
   }
 

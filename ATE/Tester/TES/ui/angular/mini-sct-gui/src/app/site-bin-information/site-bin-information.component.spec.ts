@@ -74,7 +74,7 @@ describe('SiteBinInformationComponent', () => {
     expect(debugElement.query(By.css('.defaultStyle, .passStyle'))).toBeFalsy();
   });
 
-  const expectedContainedLabels = ['Part ID', 'Test Head', 'Site', 'S-BIN', 'H-BIN'];
+  const expectedContainedLabels = ['Part ID', 'Test Head', 'Site', 'SBIN', 'HBIN'];
   it('should show expected values for the expected label texts: ' + expectedContainedLabels, () => {
     let mockValues = {
       partId : '121345',

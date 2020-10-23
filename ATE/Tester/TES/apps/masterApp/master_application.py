@@ -2,6 +2,7 @@
 
 # External imports
 from aiohttp import web
+from transitions.core import MachineError
 from transitions.extensions import HierarchicalMachine as Machine
 from queue import Empty, Full, Queue
 import asyncio
@@ -12,12 +13,12 @@ import os
 from typing import Callable
 
 from ATE.common.logger import Logger, LogLevel
+from ATE.Tester.TES.apps.common.sequence_container import SequenceContainer
 from ATE.Tester.TES.apps.masterApp.master_connection_handler import MasterConnectionHandler
 from ATE.Tester.TES.apps.masterApp.master_webservice import webservice_setup_app
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
-from ATE.Tester.TES.apps.masterApp.sequence_container import SequenceContainer
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
-from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetTestResultsCommand)
+from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetTestResultsCommand, GetUserSettings, GetYields)
 from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
 
 from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
@@ -135,8 +136,8 @@ class MasterApplication(MultiSiteTestingModel):
     """ MasterApplication """
 
     def __init__(self, configuration):
-        sites = configuration['sites']
-        super().__init__(sites)
+        self.sites = configuration['sites']
+        super().__init__(self.sites)
         self.fsm = Machine(model=self,
                            states=MasterApplication.states,
                            transitions=MasterApplication.transitions,
@@ -160,10 +161,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.logs = []
         self.prev_state = ''
         self.summary_counter = 0
-
-        self._are_usersettings_required = True
-        self._is_status_reporting_required = True
-        
+        self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
         self.prr_rec_information = {}
@@ -173,6 +171,9 @@ class MasterApplication(MultiSiteTestingModel):
         self._bin_settings = {'type 1': {'sbins': [1, 2, 3], 'hbins': [1]}}
         self._yield_info_handler = YieldInformationHandler()
         self._yield_info_handler.set_bin_settings(self._bin_settings)
+        self.test_results = []
+
+        self.dummy_partid = 1
 
     def init(self):
         self.siteStates = {site_id: CONTROL_STATE_UNKNOWN for site_id in self.configuredSites}
@@ -233,12 +234,12 @@ class MasterApplication(MultiSiteTestingModel):
         if self.persistent_user_settings_enabled:
             UserSettings.save_to_file(self.user_settings_filepath, self.user_settings, add_defaults=True)
 
-        self._are_usersettings_required = True
+        self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
 
     def _store_user_settings(self, settings):
         UserSettings.save_to_file(self.user_settings_filepath, settings, add_defaults=True)
         self.user_settings = settings
-        self._are_usersettings_required = True
+        self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
 
     def on_usersettings_command_issued(self, param_data: dict):
         settings = param_data['payload']
@@ -324,12 +325,11 @@ class MasterApplication(MultiSiteTestingModel):
         self.prev_state = self.state
         self.log.log_message(LogLevel.Info(), f'Master state is {self.state}')
         self.connectionHandler.publish_state(self.external_state)
-        self._is_status_reporting_required = True
 
     def on_loadcommand_issued(self, param_data: dict):
         jobname = param_data['lot_number']
+        # TODO: see no difference !!
         self.loaded_jobname = str(jobname)
-
         self.loaded_lot_number = str(jobname)
 
         jobformat = self.configuration.get('jobformat')
@@ -405,13 +405,42 @@ class MasterApplication(MultiSiteTestingModel):
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during waiting of bin settings to {state}"))
         self.log.log_message(LogLevel.Info(), 'Master sent get_bin_settings command')
 
-    def on_next_command_issued(self, paramData: dict):
+    def on_next_command_issued(self, param_data: dict):
         self.received_site_test_results = []
         self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TESTING, TEST_STATE_IDLE], self.configuredSites, lambda: None,
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
         self.error_message = ''
-        self.connectionHandler.send_next_to_all_sites(self.user_settings)
+
+        settings = self.user_settings.copy()
+        settings.update(self._extract_sites_information(param_data))
+        self.connectionHandler.send_next_to_all_sites(settings)
+
+    def _extract_sites_information(self, parameters):
+        try:
+            sites_info = parameters['sites']
+            self.sites_to_test = [site['siteid'] for site in sites_info]
+            self.sites_to_test.sort()
+            self.sites.sort()
+
+            if not (self.sites_to_test == self.sites):
+                self.log.log_message(LogLevel.Error(), f'Master do not support site(s): {set(self.sites_to_test) - set(self.sites)}')
+                self.on_error('"next command", handler requiers not configured site(s)')
+            return self._generate_sites_message(self.sites_to_test, sites_info)
+        except Exception:
+            return self._generate_default_sites_configuration()
+
+    def _generate_default_sites_configuration(self):
+        sites_info = []
+        for index in range(len(self.sites)):
+            sites_info.append({'siteid': str(index), 'partid': str(self.dummy_partid), 'binning': -1})
+            self.dummy_partid += 1
+
+        return self._generate_sites_message(self.sites, sites_info)
+
+    @staticmethod
+    def _generate_sites_message(sites, sites_info):
+        return {'sites': sites, 'sites_info': sites_info}
 
     def on_unload_command_issued(self, param_data: dict):
         self.arm_timeout(UNLOAD_TIMEOUT, lambda: self.timeout("not all sites unloaded the testprogram"))
@@ -440,8 +469,13 @@ class MasterApplication(MultiSiteTestingModel):
         self.loaded_lot_number = ''
 
     def on_allsitetestscomplete(self):
+        self._send_test_results()
+        self.test_results = []
         self.disarm_timeout()
         self.handle_reset()
+
+    def _send_test_results(self):
+        self.connectionHandler.send_test_results(self.test_results)
 
     def on_site_test_result_received(self, site_id, param_data):
         self._write_stdf_data(param_data['payload'])
@@ -456,10 +490,16 @@ class MasterApplication(MultiSiteTestingModel):
         self.received_site_test_results.append(param_data)
         self._yield_info_handler.extract_yield_information(param_data['payload'])
 
+        if site_id in self.sites_to_test:
+            self.test_results.append(self._yield_info_handler.get_site_result(param_data['payload']))
+
     def _write_stdf_data(self, stdf_data):
         self._stdf_aggregator.append_test_results(stdf_data)
 
     def on_control_status_changed(self, siteid: str, status_msg: dict):
+        if self.external_state == 'softerror':
+            return
+
         newstatus = status_msg['state']
 
         if(status_msg['interface_version'] != INTERFACE_VERSION):
@@ -475,6 +515,9 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_error(f"Site id received: {siteid} is not configured")
 
     def on_testapp_status_changed(self, siteid: str, status_msg: dict):
+        if self.external_state == 'softerror':
+            return
+
         newstatus = status_msg['state']
         self.log.log_message(LogLevel.Info(), f'Testapp {siteid} state is {newstatus}')
         if self.is_testing(allow_substates=True) and newstatus == TEST_STATE_IDLE:
@@ -515,10 +558,34 @@ class MasterApplication(MultiSiteTestingModel):
         self.peripheral_controller.on_response_received(response)
 
     def on_handler_status_changed(self, msg: dict):
-        pass
+        if self.external_state == 'softerror':
+            return
+        # TODO: how to handle status crash
+        if msg['state'] == 'connecting':
+            self.connectionHandler.publish_state(self.state)
 
     def on_handler_command_message(self, msg: dict):
-        pass
+        cmd = msg.get('type')
+        payload = msg.get('payload')
+        try:
+            {
+                'load': lambda param_data: self.load_command(param_data),
+                'next': lambda param_data: self.next(param_data),
+                'unload': lambda param_data: self.unload(param_data),
+                'reset': lambda param_data: self.reset(param_data),
+                'identify': lambda param_data: self._send_tester_idnetification(param_data),
+                'get-state': lambda param_data: self._send_tester_state(param_data),
+            }[cmd](payload)
+        except KeyError:
+            self.log.log_message(LogLevel.Error(), f'Failed to execute command: {cmd}')
+        except MachineError:
+            self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
+
+    def _send_tester_idnetification(self, _):
+        self.connectionHandler.send_identification()
+
+    def _send_tester_state(self, _):
+        self.connectionHandler.send_state(self.external_state, self.error_message)
 
     def apply_resource_config(self, resource_request: dict, on_resource_config_applied_callback: Callable):
         resource_id = resource_request['periphery_type']
@@ -563,17 +630,16 @@ class MasterApplication(MultiSiteTestingModel):
         self.loglevel = loglevel
         self.log.set_logger_level(loglevel)
         self._send_set_log_level()
-        self._are_usersettings_required = True
+        self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
 
     def _handle_command_with_response(self, data):
         cmd = data.get('command')
         connection_id = data.get('connectionid')
         try:
-            obj = {'getlogs': lambda: GetLogsCommand(connection_id, self.log),
-                   'getlogfile': lambda: GetLogFileCommand(connection_id, self.log),
-                   'getresults': lambda: GetTestResultsCommand(connection_id, self.received_sites_test_results),
+            obj = {'getlogs': lambda: GetLogsCommand(self.log, connection_id),
+                   'getlogfile': lambda: GetLogFileCommand(self.log, connection_id),
+                   'getresults': lambda: GetTestResultsCommand(self.received_sites_test_results, connection_id),
                    }[cmd]()
-
             try:
                 self.command_queue.put_nowait(obj)
             except Full:
@@ -592,9 +658,10 @@ class MasterApplication(MultiSiteTestingModel):
         app['mqtt_handler'] = None
         await self.connectionHandler.stop()
 
-    def on_new_connection(self):
-        self._are_usersettings_required = True
-        self._is_status_reporting_required = True
+    def on_new_connection(self, connection_id):
+        self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
+        self.command_queue.put_nowait(GetTestResultsCommand(self.received_sites_test_results, connection_id))
+        self.command_queue.put_nowait(GetYields(lambda: self._generate_yield_message(), connection_id))
 
     async def _master_background_task(self, app):
         try:
@@ -629,9 +696,8 @@ class MasterApplication(MultiSiteTestingModel):
             await command.execute(ws_comm_handler)
 
     async def _handle_sending_data(self, ws_comm_handler):
-        if self._is_status_reporting_required:
-            await ws_comm_handler.send_status_to_all(self.external_state, self.error_message)
-            self._is_status_reporting_required = False
+        # TODO: used to update front-end's clock, do we need to do this anyway
+        await ws_comm_handler.send_status_to_all(self.external_state, self.error_message)
 
         # TODO: ATE-227, sync with UI Team
         for test_result in self.received_site_test_results:
@@ -639,10 +705,6 @@ class MasterApplication(MultiSiteTestingModel):
             await ws_comm_handler.send_yields(self._generate_yield_message())
 
         self.received_site_test_results = []
-
-        if self._are_usersettings_required and self.user_settings:
-            await ws_comm_handler.send_user_settings(self._generate_usersettings_message(self.user_settings))
-            self._are_usersettings_required = False
 
         await self._execute_commands(ws_comm_handler)
 
@@ -654,6 +716,7 @@ class MasterApplication(MultiSiteTestingModel):
 
     def _generate_usersettings_message(self, usersettings):
         settings = []
+
         for usersetting, value in usersettings.items():
             settings.append({'name': usersetting, 'active': value['active'], 'value': int(value['value'])})
 

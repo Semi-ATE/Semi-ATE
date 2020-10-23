@@ -153,7 +153,7 @@ class WebsocketCommunicationHandler:
 
         # master should propagate the available settings each time a page reloaded
         # or new websocket connection is required
-        self.handle_new_connection()
+        self.handle_new_connection(connection_id)
         await self.send_configuration(self._app['master_app'].configuration, ws_connection)
 
         self._log.log_message(LogLevel.Debug(), 'websocket connection opened.')
@@ -172,8 +172,8 @@ class WebsocketCommunicationHandler:
     def _discard_ws_connection_if_needed(self):
         self._websockets = set([ws for ws in self._websockets if ws.is_alive()])
 
-    def handle_new_connection(self):
-        self._app['master_app'].on_new_connection()
+    def handle_new_connection(self, connection_id):
+        self._app['master_app'].on_new_connection(connection_id)
 
     def handle_client_message(self, message_data: str):
         json_data = json.loads(message_data)

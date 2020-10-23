@@ -19,7 +19,7 @@ class DummyCommChan(CommunicationChannel):
         return self.received_data.pop()
 
     def expect_send_with_reply(self, data_to_send, reply):
-        self.received_data.append(reply)
+        self.received_data.append(reply.encode('utf-8'))
         actual_data = f"{data_to_send}\r\n"
         self.sent_data.append(actual_data)
 
@@ -28,3 +28,6 @@ class DummyCommChan(CommunicationChannel):
         for sends in self.sent_data:
             fail = True
         assert(not fail)
+
+    def is_connected(self):
+        return True

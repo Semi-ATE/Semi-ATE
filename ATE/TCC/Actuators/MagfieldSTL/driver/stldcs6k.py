@@ -29,7 +29,7 @@ class DCS6K:
         return result_dict
 
     def query_id(self):
-        result = self.__send_receive("*IDN?", 2500)
+        result = self.__send_receive("*IDN?", 2500).decode("utf-8")
         if "STL DCS-6K" not in result:
             raise IOError("Bad stl type.")
         return result[11:]
@@ -98,7 +98,7 @@ class DCS6K:
     def read_max_voltage(self):
         return self.__do_command("ReadMaxVoltage", "", 1500)
 
-    def read_operaiton_mode(self):
+    def read_operation_mode(self):
         return self.__do_command("ReadOperationMode", "", 1500)
 
     def read_output_state(self):
@@ -306,6 +306,17 @@ class DCS6K:
                    .with_timeout(1500)
 
     def set_value(self, value, dry):
+        return self.make_set_value(value).execute(dry)
+
+    def make_set_user_value(self, value):
+        return self.command_builder.init_command("SetUserValue") \
+                   .constrain_numeric_parameter("value", -2000, 2000, value) \
+                   .with_timeout(1500)
+
+    def set_user_value(self, value, dry):
+        # Note: RefMan lists slewrate, type and contr as additional parameters
+        # but TDK reference implementation uses internal defaul values of the
+        # source here by not sending the values
         return self.make_set_value(value).execute(dry)
 
     def make_start_sequence(self, start, stop, rep, proc, runtime, contr, timeout):

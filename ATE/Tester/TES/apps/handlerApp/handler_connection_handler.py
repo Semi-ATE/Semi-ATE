@@ -1,99 +1,166 @@
+from asyncio.queues import Queue, QueueEmpty
+from ATE.common.logger import LogLevel
 import json
-import sys
 
-from ATE.Tester.TES.apps.handlerApp.handler_message_generator import MessageGenerator
 from ATE.Tester.TES.apps.common.connection_handler import ConnectionHandler
+
+INVISIBLE_TESTER_STATES = ['connecting', 'loading', 'unloading', 'waitingforbintable']
 
 
 class HandlerConnectionHandler:
-    def __init__(self, host, port, handler_id, device_ids, log, app) -> None:
+    def __init__(self, host, port, _handler_id, _device_ids, log, app, event) -> None:
         self._mqtt = None
         self._app = app
         self._log = log
-        self._log.set_mqtt_client(self._mqtt)
+        self.event = None
+        self.command = None
 
-        self.__message_generator = MessageGenerator(self._log)
-        self.client_id = f'handler.{handler_id}'
-        self.host = host
-        self.port = port
-        self.device_ids = device_ids
-        self.handler_id = handler_id
+        self._client_id = f'handler.{_handler_id}'
+        self._host = host
+        self._port = port
+        self._device_ids = _device_ids
+        self._handler_id = _handler_id
+        self._event = event
+        self._message_queue = Queue()
 
     def start(self):
-        self._mqtt = ConnectionHandler(self.host, self.port, self.client_id, self._log)
+        self._mqtt = ConnectionHandler(self._host, self._port, self._client_id, self._log)
+        self._log.set_mqtt_client(self._mqtt)
         self._mqtt.init_mqtt_client_callbacks(self._on_connect,
                                               self._on_message,
                                               self._on_disconnect)
 
         self._mqtt.register_route("Master", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
+        self._mqtt.register_route("Handler", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
 
         self._mqtt.set_last_will(
-            self.__generate_handler_status_topic(),
+            self._generate_handler_status_topic(),
             self._mqtt.create_message(
-                self.__message_generator.generate_status_msg('crash', '')))
+                self._generate_status_message('crash', '')))
         self._mqtt.start_loop()
 
     async def stop(self) -> None:
         await self._mqtt.stop_loop()
 
-    def subscribe(self, topic: str) -> None:
+    def subscribe(self, topic) -> None:
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic: str, payload, qos: int = 0, retain: bool = False) -> None:
+    def publish(self, topic, payload, qos=0, retain=False) -> None:
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
-    def send_command(self, cmd_type: str, config: dict) -> bool:
-        message = self.__message_generator.generate_command_msg(cmd_type, config)
-        if message is None:
-            self._log.warning(f"failed to send command from\
-                             {sys._getframe().f_code.co_name} in\
-                             {sys._getframe().f_code.co_filename}")
-            return False
-
-        raise Exception('fix me!!')
-        topic = self.__generate_command_topic(self.device_id)
-        self.publish(topic, message, qos=2)
-
-        return True
-
-    def publish_state(self, state: str, message: str) -> None:
-        topic = self.__generate_handler_status_topic()
-        payload = self.__message_generator.generate_status_msg(state, message)
-        self.publish(topic, payload, qos=1, retain=False)
-
-    def __generate_handler_status_topic(self) -> str:
-        return f'ate/{self.handler_id}/Handler/status'
-
-    @staticmethod
-    def __generate_master_status_topic(device_id) -> str:
-        return f'ate/{device_id}/Master/status'
-
-    @staticmethod
-    def __command_topic(device_id):
-        return f"ate/{device_id}/Handler/command"
+    def publish_state(self, state, message) -> None:
+        self._log.log_message(LogLevel.Info(), f'Handler state: {state}')
+        self.publish(self._generate_handler_status_topic(),
+                     self._generate_status_message(state, message),
+                     qos=1,
+                     retain=False)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:
         self._app.startup_done()
-        self._log.debug("connected")
 
-        self.publish_state(self._app.state, '')
-
-        for device_id in self.device_ids:
-            self.subscribe(self.__generate_master_status_topic(device_id['device_id']))
-            self.subscribe(self.__command_topic(device_id['device_id']))
-
-    def dispatch_masterapp_message(self, topic, message) -> None:
-        if "status" in topic:
-            self._app.on_master_state_changed(message)
-        elif "command" in topic:
-            print("COMMAND FROM MASTER: Impl. ME")
-        elif "response" in topic:
-            print("RESPONSE FROM MASTER: Impl. ME")
-        else:
-            assert False
+        for device_id in self._device_ids:
+            self.subscribe(self._generate_master_status_topic(device_id))
+            self.subscribe(self._generate_command_topic(device_id))
+            self.subscribe(self._generate_response_topic(device_id))
 
     def _on_message(self, client, userdata, message) -> None:
         self._mqtt.router.inject_message(message.topic, message.payload)
 
     def _on_disconnect(self, client, userdata, rc) -> None:
         self._log.debug("disconnected")
+
+    def dispatch_masterapp_message(self, topic, message) -> None:
+        master_id = topic.split('/')[1]
+        if "status" in topic:
+            master_state = message['state']
+            self._app.on_master_state_changed(master_id, master_state)
+            self._handle_master_state(message)
+        elif "command" in topic or\
+             "response" in topic:
+            self._put_message(message)
+        else:
+            assert False
+
+    def _handle_master_state(self, message):
+        if message['state'] in INVISIBLE_TESTER_STATES:
+            return
+
+        if not self.command:
+            return
+
+        self._put_message(message)
+
+    def _put_message(self, message):
+        self._message_queue.put_nowait(message)
+        self._event.set()
+
+    def get_message(self):
+        try:
+            return self._message_queue.get_nowait()
+        except QueueEmpty:
+            return None
+
+    def get_mqtt_client(self):
+        return self._mqtt
+
+    def send_command_message(self, message):
+        for device_id in self._device_ids:
+            self._mqtt.publish(self._generate_master_command_topic(device_id),
+                               self._mqtt.create_message(message),
+                               False)
+
+    def send_response_message(self, message):
+        self._mqtt.publish(self._generate_handler_response_topic(),
+                           self._mqtt.create_message(message),
+                           False)
+
+    def handle_message(self, message):
+        response = self._app.handle_message(message)
+        if len(response):
+            self._message_queue.put_nowait(response)
+            self._event.set()
+            return
+
+        if message['type'] in ('temperature', 'state', 'name'):
+            self.send_response_message(message)
+        else:
+            self.send_command_message(message)
+            self.command = message['type']
+
+    @staticmethod
+    def _generate_message(type, payload):
+        return {'type': type, 'payload': payload}
+
+    def _generate_status_message(self, state, message):
+        payload = {'state': state, 'message': message}
+        return self._generate_message('status', payload)
+
+    @staticmethod
+    def _generate_command_topic(device_id):
+        return f"ate/{device_id}/Handler/command"
+
+    @staticmethod
+    def _generate_response_topic(device_id):
+        return f"ate/{device_id}/Master/response"
+
+    @staticmethod
+    def _generate_log_message(log_message):
+        return {"type": "log",
+                "payload": log_message}
+
+    def _handler_log_topic(self):
+        return f'ate/{self._handler_id}/Handler/log/'
+
+    def _generate_handler_status_topic(self):
+        return f'ate/{self._handler_id}/Handler/status'
+
+    def _generate_handler_response_topic(self):
+        return f'ate/{self._handler_id}/Handler/response'
+
+    @staticmethod
+    def _generate_master_status_topic(device_id):
+        return f'ate/{device_id}/Master/status'
+
+    @staticmethod
+    def _generate_master_command_topic(device_id):
+        return f"ate/{device_id}/Master/command"

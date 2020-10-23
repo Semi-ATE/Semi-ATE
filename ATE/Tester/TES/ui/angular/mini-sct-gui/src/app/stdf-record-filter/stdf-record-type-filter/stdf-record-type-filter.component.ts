@@ -72,11 +72,13 @@ export class StdfRecordTypeFilterComponent implements OnInit, OnDestroy {
   selectAllRecords() {
     this.selectRecords(true);
     this.updateFilterAndPublish(false);
+    this.saveSettings();
   }
 
   unselectAllRecords() {
     this.selectRecords(false);
     this.updateFilterAndPublish(true);
+    this.saveSettings();
   }
 
   private initStdfRecordTypeCheckboxes(): void {

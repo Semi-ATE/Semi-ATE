@@ -25,7 +25,7 @@ from PyQt5 import QtCore, QtWidgets
 
 
 bin_table = {
-    '1': [1],
+    '1': [0, 1],
     '2': [10],
     '3': [11],
 }

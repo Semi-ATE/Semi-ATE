@@ -16,12 +16,15 @@ class MqttBridge:
         self.device_id = device_id
 
     def start_loop(self):
+        self.mqtt_client.will_set(f"ATE/{self.device_id}/{self.actuator_type}/status", json.dumps({"status": "crash"}), 0, False)
         self.mqtt_client.connect_async(self.host, self.port)
         self.mqtt_client.loop_start()
 
     def on_connect(self, client, userdata, flags, conect_res):
         topic = f"ATE/{self.device_id}/{self.actuator_type}/io-control/request"
+
         self.mqtt_client.subscribe(topic)
+        self.post_status()
         print("Connection established")
 
     def on_message(self, client, userdata, message):
@@ -34,6 +37,10 @@ class MqttBridge:
 
     def on_disconnect(self, client, userdata, distc_res):
         pass
+
+    def post_status(self):
+        message = {"status": self.actuator_impl.get_status()}
+        self.mqtt_client.publish(f"ATE/{self.device_id}/{self.actuator_type}/status", json.dumps(message))
 
     def on_request(self, request_data):
         request_dict = json.loads(request_data)

@@ -1,0 +1,35 @@
+@import "../../../styles.scss";
+
+.multichoice {
+  display: flex;
+  flex-direction: column;
+  label {
+    text-align: left;
+    padding: 0px;
+    color: $micronasBlue;
+  }
+  .items {
+    li {
+      text-align: left;
+      padding-left: 25px;
+      cursor: pointer;
+    }
+    li::before {
+      padding-right: 20px;
+      content: "\25cf";
+      float: left;
+      visibility: hidden;
+    }
+    li.checked::before {
+      padding-right: 20px;
+      content: "\25cf";
+      float: left;
+      visibility: visible;
+    }
+    &.readonly {
+      li {
+        cursor: text;
+      }
+    }
+  }
+}
