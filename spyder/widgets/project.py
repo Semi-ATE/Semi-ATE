@@ -1,3 +1,0 @@
-"""
-ATE Project Type.
-"""

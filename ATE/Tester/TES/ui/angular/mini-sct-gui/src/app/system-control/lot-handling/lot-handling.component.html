@@ -1,0 +1,11 @@
+<div id="lotHandling">
+  <app-card [cardConfiguration]="lotCardConfiguration">
+    <div class="lotInput">
+      <app-input [inputConfig]="lotNumberInputConfig" (carriageReturnEvent)= "loadLot()"></app-input>
+    </div>
+    <div class="unloadLotBtn">
+      <app-button [buttonConfig]="unloadLotButtonConfig" (buttonClickEvent)="unloadLot()"></app-button>
+    </div>
+  </app-card>
+</div>
+

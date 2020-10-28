@@ -1,0 +1,11 @@
+<div class="testTextFilter">
+  <app-checkbox
+   id="testTextCheckbox"
+   [checkboxConfig]="testTextCheckboxConfig"
+   (checkboxChangeEvent)="filterChanged()"></app-checkbox>
+  <app-input
+   id="testTextInput"
+   [inputConfig]="testTextInputConfig"
+   (inputChangeEvent)="filterChanged()"
+   (carriageReturnEvent)="filterChanged()"></app-input>
+</div>

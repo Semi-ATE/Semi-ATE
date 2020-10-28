@@ -1,0 +1,31 @@
+<hr class="blueDivider">
+<app-card id="control" [cardConfiguration]="systemConsoleCardConfiguration">
+  <div class="systemConsole">
+    <div class="leftContent">
+      <app-button class="leftButtons" [buttonConfig]="clearConsoleButtonConfig" (buttonClickEvent)="clearConsole()"></app-button>
+      <app-button class="leftButtons" [buttonConfig]="reloadLogsButtonConfig" (buttonClickEvent)="reloadLogs()"></app-button>
+      <app-button class="leftButtons" [buttonConfig]="getLogFileButtonConfig" (buttonClickEvent)="getLogFile()"></app-button>
+      <app-multichoice class="leftButtons" [multichoiceConfig]="setLogLevelFilterConfig" (multichoiceChangeEvent)="setLogLevelFilter()"></app-multichoice>
+    </div>
+    <div class="main">
+      <table>
+        <thead>
+          <tr>
+            <th class="time">Date and Time</th>
+            <th class="type">Type</th>
+            <th class="source">Source</th>
+            <th class="info">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor='let entry of filteredEntries'>
+            <td class="time">{{ entry.date }}</td>
+            <td class="type">{{ entry.type }}</td>
+            <td class="source">{{ entry.source }}</td>
+            <td class="info">{{ entry.description }}</td>
+         </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-card>

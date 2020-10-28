@@ -1,0 +1,2 @@
+class testABC:
+    pass

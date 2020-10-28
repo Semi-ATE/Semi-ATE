@@ -1,0 +1,15 @@
+# ----------------------------------------------------------------------------
+# Copyright © {% now 'local', '%Y' %}, {{ cookiecutter.full_name }}
+#
+# Licensed under the terms of the {{ cookiecutter.open_source_license }}
+# ----------------------------------------------------------------------------
+
+commit_message: '[ci skip] New %language% translation from Crowdin'
+append_commit_message: false
+files:
+  - source: /{{cookiecutter.project_package_name}}/spyder/locale/{{cookiecutter.project_package_name}}.pot
+    translation: /{{cookiecutter.project_package_name}}/{{cookiecutter.project_package_name}}/locale/%two_letters_code%/LC_MESSAGES/%file_name%.po
+    languages_mapping:
+      two_letters_code:
+        pt-BR: pt_BR
+        zh-CN: zh_CN

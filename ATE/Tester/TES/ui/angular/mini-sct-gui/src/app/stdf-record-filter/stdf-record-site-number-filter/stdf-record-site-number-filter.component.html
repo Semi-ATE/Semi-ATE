@@ -1,0 +1,11 @@
+<div class="siteNumberFilter">
+  <app-checkbox 
+    id="siteNumberCheckbox"
+    [checkboxConfig]="siteNumberCheckboxConfig"
+    (checkboxChangeEvent)="filterChanged()"></app-checkbox>
+  <app-input
+    id="siteNumberInput"
+    [inputConfig]="siteNumberInputConfig"
+    (inputChangeEvent)="filterChanged()"
+    (carriageReturnEvent)="filterChanged()"></app-input>
+</div>

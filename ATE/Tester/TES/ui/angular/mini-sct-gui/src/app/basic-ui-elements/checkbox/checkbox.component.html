@@ -1,0 +1,7 @@
+<div class="checkbox" [ngClass]="{'disabled': checkboxConfig.disabled}">
+  <label class="toggle">
+    <input type="checkbox" name="option" [(ngModel)]="checkboxConfig.checked" (change)="checkboxValueChange($event.target.checked)"  >
+    <span class="slider"></span>
+  </label>
+  <label>{{checkboxConfig.labelText}}</label>
+</div>

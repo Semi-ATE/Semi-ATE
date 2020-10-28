@@ -1,0 +1,8 @@
+<div class="systemStatusContainer">
+  <div *ngIf="renderedState">
+    <span [ngClass]="renderedState.color">
+    </span>
+    <h2>{{ renderedState.description }}</h2>
+  </div>
+</div>
+

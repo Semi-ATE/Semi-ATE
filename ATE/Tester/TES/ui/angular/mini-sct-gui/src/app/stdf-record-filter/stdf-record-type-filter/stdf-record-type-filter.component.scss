@@ -1,0 +1,46 @@
+@import "../../../styles.scss";
+
+.multipleChoice {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px #767687 solid;
+  border-radius: 5px;
+  max-width: 450px;
+  min-width: 450px;
+  padding: 10px 10px 10px 15px;
+  height: auto;
+  .listLabel {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: $label;
+    color: $micronasBlue;
+    font-weight: bold;
+  }
+  .stdfTypes {
+    width: 138.22px;
+    float: left;
+    overflow-wrap: normal;
+    word-wrap: normal;
+    height: auto;
+  }
+  .stdfTypes:after {
+    clear: both;
+  }
+}
+
+.buttonsForSelect {
+  display: flex;
+  text-align: center;
+  margin-bottom: 5px;
+  margin-top: 10px;
+  #allSelected {
+    float: left;
+    width: 48%;
+    margin-right: 15px;
+  }
+  #noneSelected {
+    width: 48%;
+    float: right;
+  }
+}

@@ -1,0 +1,6 @@
+{
+    "broker_host": "127.0.0.1",
+    "broker_port": 1883,
+    "site_id": "0",
+    "device_id": "device-id"
+}
