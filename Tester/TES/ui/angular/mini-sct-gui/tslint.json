@@ -1,0 +1,151 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "no-bitwise": false,
+        "class-name": true,
+        "leadingUnderscore": false,
+        "prefer-const": false,
+        "no-var-keyword": false,
+        "indent": [
+            true,
+            "spaces",
+            2
+        ],
+        "max-line-length": false,
+        "variable-name": {
+            "options": [
+                "ban-keywords",
+                "check-format",
+                "allow-trailing-underscore",
+                "require-const-for-all-caps",
+                "allow-leading-underscore"
+            ]
+        },
+        "file-name-casing": [true, "kebab-case"],
+        "no-angle-bracket-type-assertion": true,
+        "interface-over-type-literal": true,
+        "no-any": false,
+        "encoding": true,
+        "deprecation": {
+            "severity": "warning"
+        },
+        "prefer-readonly": true,
+        "prefer-for-of": false,
+        "array-type": false,
+        "arrow-parens": false,
+        "component-class-suffix": true,
+        "contextual-lifecycle": true,
+        "directive-class-suffix": true,
+        "directive-selector": [
+            true,
+            "attribute",
+            "app",
+            "camelCase"
+        ],
+        "component-selector": [
+            true,
+            "element",
+            "app",
+            "kebab-case"
+        ],
+        "import-blacklist": [
+            true,
+            "rxjs/Rx"
+        ],
+        "one-line": [
+            true,
+            "check-open-brace",
+            "check-catch",
+            "check-else",
+            "check-whitespace"
+        ],
+        "interface-name": false,
+        "max-classes-per-file": false,
+        "member-access": [
+            true,
+            "no-public"
+        ],
+        "member-ordering": [
+            true,
+            {
+                "order": [
+                    "static-field",
+                    "instance-field",
+                    "static-method",
+                    "instance-method"
+                ]
+            }
+        ],
+        "radix": true,
+        "semicolon": [
+            true,
+            "always"
+        ],
+        "triple-equals": [
+            true,
+            "allow-null-check"
+        ],
+        "typedef-whitespace": [
+            true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-declaration": "nospace",
+                "variable-declaration": "nospace"
+            }
+        ],
+        "no-consecutive-blank-lines": false,
+        "no-unnecessary-callback-wrapper": true,
+        "no-console": [
+            true,
+            "debug",
+            "info",
+            "time",
+            "timeEnd",
+            "trace"
+        ],
+        "no-empty": false,
+        "no-unsafe-any": false,
+        "no-inferrable-types": [
+            true,
+            "ignore-params"
+        ],
+        "no-non-null-assertion": true,
+        "no-redundant-jsdoc": true,
+        "no-switch-case-fall-through": true,
+        "no-var-requires": false,
+        "no-shadowed-variable": [
+            true,
+            {
+                "temporalDeadZone": false
+            }
+        ],
+        "object-literal-key-quotes": [
+            true,
+            "as-needed"
+        ],
+        "object-literal-sort-keys": false,
+        "ordered-imports": false,
+        "quotemark": [
+            true,
+            "single"
+        ],
+        "trailing-comma": false,
+        "no-conflicting-lifecycle": true,
+        "no-host-metadata-property": true,
+        "no-input-rename": true,
+        "no-inputs-metadata-property": true,
+        "no-output-native": true,
+        "no-output-on-prefix": true,
+        "no-output-rename": true,
+        "no-outputs-metadata-property": true,
+        "template-banana-in-box": true,
+        "template-no-negated-async": true,
+        "use-lifecycle-interface": true,
+        "use-pipe-transform-interface": true
+    },
+    "rulesDirectory": [
+        "codelyzer"
+    ]
+}

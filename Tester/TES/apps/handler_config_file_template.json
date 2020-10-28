@@ -1,0 +1,7 @@
+{
+    "handler_type": "geringer",
+    "handler_id": "HTO92-20F",
+    "broker_host": "127.0.0.1",
+    "broker_port": 1883,
+    "device_ids": ["SCT-81-1F"]
+}

@@ -1,7 +1,0 @@
-check-manifest
-codecov
-pre-commit
-pytest
-pytest-cov
-Pytest-qt
-recommonmark
