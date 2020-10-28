@@ -29,6 +29,7 @@ $confirm = "y"
 
 function Install-Dependencies {
     Write-Host "install requirements"
+    Invoke-Expression "pip install spyder"
     Invoke-Expression "conda install --file requirements/run.txt -y"
 
     Write-Host "install test requirements"
@@ -36,14 +37,13 @@ function Install-Dependencies {
 
     Write-Host "install ATE package"
     Invoke-Expression "python setup.py develop"
-    $package_is_uptodate = $True
 
     Write-Host "install TDKMicronas plugin package"
     Invoke-Expression "cd $plugin_location"
     Invoke-Expression "python setup.py develop"
 
-    Invoke-Expression "conda install jedi=0.17.2 -y"
-    Invoke-Expression "conda install spyder -y"
+    # Invoke-Expression "conda install jedi==0.17.2 -y"
+    # Invoke-Expression "conda install spyder==3.3.6 -y"
 }
 
 
@@ -57,7 +57,8 @@ catch
 {
     Write-Host "new conda environment: " $env " will be generated"
     $confirmation = Read-Host "are you sure you want proceed and create the new environment [y/n]"
-
+    $package_is_uptodate = $True
+    
     if (($confirmation -eq $confirm) -or (!$confirmation))
     {
         Write-Host "create new conda environment: " $env
