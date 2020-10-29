@@ -6,19 +6,17 @@ import { DebugElement } from '@angular/core';
 import { MockServerService } from './../services/mockserver.service';
 import * as constants from '../services/mockserver-constants';
 import { By } from '@angular/platform-browser';
-import { AppstateService, MessageTypes } from '../services/appstate.service';
+import { AppstateService } from '../services/appstate.service';
 import { StoreModule } from '@ngrx/store';
 import { statusReducer } from '../reducers/status.reducer';
 import { resultReducer } from '../reducers/result.reducer';
 import { consoleReducer } from '../reducers/console.reducer';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
-import { expectWaitUntil, spyOnStoreArguments } from '../test-stuff/auxillary-test-functions';
-import { DropdownComponent } from '../basic-ui-elements/dropdown/dropdown.component';
-import { LogLevel } from '../models/usersettings.model';
+import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
 import { CommunicationService } from '../services/communication.service';
-import { AppState } from '../app.state';
 import { CardComponent } from '../basic-ui-elements/card/card.component';
 import { yieldReducer } from '../reducers/yield.reducer';
+import { MultichoiceComponent } from '../basic-ui-elements/multichoice/multichoice.component';
 
 describe('SystemConsoleComponent', () => {
   let msg: ConsoleEntry;
@@ -35,7 +33,7 @@ describe('SystemConsoleComponent', () => {
       declarations: [
         SystemConsoleComponent,
         ButtonComponent,
-        DropdownComponent,
+        MultichoiceComponent,
         CardComponent,
       ],
       providers: [
@@ -176,55 +174,6 @@ describe('SystemConsoleComponent', () => {
       () => entryFound(expectedEntry),
       'No entry: "' + '" has been found',
       200,3000);
-  });
-
-  it('should update log level setting accroding to server message', async () => {
-    let msgFromServer = {
-      type: MessageTypes.Usersettings,
-      payload: {
-        loglevel: LogLevel.Debug
-      }
-    };
-    mockServerService.setMessages([msgFromServer]);
-    let expectedSelectedIndex = component.setLogLevelDropdownConfig.items.findIndex(e => e.value === msgFromServer.payload.loglevel);
-
-    await expectWaitUntil(
-      () => fixture.detectChanges(),
-      () => component.setLogLevelDropdownConfig.selectedIndex === expectedSelectedIndex,
-      'Dropdown element for setting the loglevel did not update selected idex. It should be: ' + expectedSelectedIndex
-    );
-
-    msgFromServer.payload.loglevel = LogLevel.Error;
-    mockServerService.setMessages([msgFromServer]);
-    expectedSelectedIndex = component.setLogLevelDropdownConfig.items.findIndex(e => e.value === msgFromServer.payload.loglevel);
-
-    await expectWaitUntil(
-      () => fixture.detectChanges(),
-      () => component.setLogLevelDropdownConfig.selectedIndex === expectedSelectedIndex,
-      'Dropdown element for setting the loglevel did not update selected idex. It should be: ' + expectedSelectedIndex
-    );
-  });
-
-  it('should send new loglevel to the server', async () => {
-    let args = [];
-    let spy = spyOnStoreArguments(communicationService, 'send', args);
-
-    debugElement.query(By.css('app-dropdown li.selected')).nativeElement.click();
-
-    await expectWaitUntil(
-      () => fixture.detectChanges(),
-      () => debugElement.query(By.css('.closed')) === null,
-      'Dropdown did not open');
-
-
-     debugElement.queryAll(By.css('app-dropdown li'))
-      .find(e => e.nativeElement.innerText.includes('Error'))
-      .nativeElement.click();
-
-    await expectWaitUntil(
-      () => fixture.detectChanges(),
-      () => args.some(e => e.type === 'cmd' && e.command === 'setloglevel' && e.level === LogLevel.Error),
-      'Command setloglevel was not send to server.');
   });
 });
 

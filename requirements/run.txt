@@ -13,3 +13,4 @@ aiohttp
 aiomqtt
 pyqt
 qtawesome==0.7.0
+pyserial

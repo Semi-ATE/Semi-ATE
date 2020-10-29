@@ -38,17 +38,16 @@ export class StdfRecordSiteNumberFilterComponent implements OnInit, OnDestroy {
     this.filter$ = new Subject<SdtfRecordFilter>();
     this.filter = {
       active: false,
-      filterFunction: (e: StdfRecord) => true,
+      filterFunction: (_e: StdfRecord) => true,
       type: FilterType.SiteNumber,
       strengthen: false
     };
   }
 
   ngOnInit(): void {
-    this.subscribeStore();
     this.filterService.registerFilter(this.filter$);
-    this.restoreSettings();
     this.updateFilterAndPublish(false);
+    this.subscribeStore();
   }
 
   ngOnDestroy(): void {
@@ -69,6 +68,9 @@ export class StdfRecordSiteNumberFilterComponent implements OnInit, OnDestroy {
       this.updateFilterAndPublish(isSubset);
     }
     this.saveSettings();
+    if (!this.siteNumberCheckboxConfig.checked) {
+      this.siteNumberInputConfig.errorMsg = '';
+    }
   }
 
   private updateFilterAndPublish(filterStronger: boolean) {
@@ -81,7 +83,10 @@ export class StdfRecordSiteNumberFilterComponent implements OnInit, OnDestroy {
   private subscribeStore() {
     this.store.select('systemStatus')
       .pipe(takeUntil(this.unsubscribe))
-      .subscribe( s => this.getMaxSiteNumber(s)
+      .subscribe( s => {
+        this.updateStatus(s);
+        this.getMaxSiteNumber(s);
+      }
     );
   }
 
@@ -153,7 +158,7 @@ export class StdfRecordSiteNumberFilterComponent implements OnInit, OnDestroy {
   private defaultSettings() {
     this.selectedSiteNumbers = Array.from(Array(this.maxSiteNumber + 1).keys());
     this.siteNumberCheckboxConfig.initCheckBox('Show only the following sites', false, false);
-    this.siteNumberInputConfig.initInput('Site numbers of interest', true, `0-${this.maxSiteNumber}`);
+    this.siteNumberInputConfig.initInput('Site numbers of interest', true, `0-${this.maxSiteNumber}`, /([0-9]|,|-)/);
   }
 
   private restoreSettings() {
@@ -180,5 +185,13 @@ export class StdfRecordSiteNumberFilterComponent implements OnInit, OnDestroy {
 
   private getStorageKey() {
     return `${this.status.deviceId}${SettingType.SiteNumberFilter}`;
+  }
+
+  private updateStatus(status: Status) {
+    if (this.status?.deviceId !== status.deviceId) {
+      this.status = status;
+      this.restoreSettings();
+    }
+    this.status = status;
   }
 }

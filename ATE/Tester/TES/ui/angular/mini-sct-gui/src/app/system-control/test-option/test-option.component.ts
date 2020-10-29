@@ -9,7 +9,7 @@ import { Status, SystemState } from 'src/app/models/status.model';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/app.state';
 import { takeUntil } from 'rxjs/operators';
-import { TestOptionType, TestOptionSetting, UserSettings } from 'src/app/models/usersettings.model';
+import { TestOptionType, UserSettings } from 'src/app/models/usersettings.model';
 
 export enum TestOptionLabelText {
   stopOnFail = 'Stop on Fail',

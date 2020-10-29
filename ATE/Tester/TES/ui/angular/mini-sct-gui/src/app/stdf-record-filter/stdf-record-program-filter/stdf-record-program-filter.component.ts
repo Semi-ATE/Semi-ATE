@@ -3,14 +3,13 @@ import { Store } from '@ngrx/store';
 import { StorageMap } from '@ngx-pwa/local-storage';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AppState } from 'src/app/app.state';
+import { AppState, selectDeviceId } from 'src/app/app.state';
 import { CheckboxConfiguration } from 'src/app/basic-ui-elements/checkbox/checkbox-config';
 import { InputConfiguration } from 'src/app/basic-ui-elements/input/input-config';
-import { Status } from 'src/app/models/status.model';
 import { SettingType, ProgramFilterSetting } from 'src/app/models/storage.model';
 import { SdtfRecordProgramFilter } from 'src/app/services/stdf-record-filter-service/stdf-record-filter';
 import { StdfRecordFilterService } from 'src/app/services/stdf-record-filter-service/stdf-record-filter.service';
-import { computePassedInformationForTestFlag, StdfRecord, StdfRecordType, STDF_RECORD_ATTRIBUTES, STDF_RESULT_RECORDS } from 'src/app/stdf/stdf-stuff';
+import { computePassedInformationForTestFlag, StdfRecord, STDF_RECORD_ATTRIBUTES, STDF_RESULT_RECORDS } from 'src/app/stdf/stdf-stuff';
 
 export interface TestResult {
   testNumber: number;
@@ -30,8 +29,7 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
 
   testProgramCheckboxConfig: CheckboxConfiguration;
   testProgramInputConfig: InputConfiguration;
-  private readonly maxSiteNumber: number;
-  private status: Status;
+  private deviceId: string;
   private readonly unsubscribe: Subject<void>;
   private readonly filter$: Subject<SdtfRecordProgramFilter>;
   private readonly filter: SdtfRecordProgramFilter;
@@ -39,20 +37,19 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
   constructor(private readonly store: Store<AppState>, private readonly filterService: StdfRecordFilterService, private readonly storage: StorageMap) {
     this.testProgramCheckboxConfig = new CheckboxConfiguration();
     this.testProgramInputConfig = new InputConfiguration();
-    this.status = undefined;
+    this.deviceId = undefined;
     this.unsubscribe = new Subject<void>();
     this.filter$ = new Subject<SdtfRecordProgramFilter>();
     this.filter = {
       active: false,
-      filterFunction: (e: StdfRecord[]) => true
+      filterFunction: () => true
     };
   }
 
   ngOnInit(): void {
-    this.subscribeStore();
     this.filterService.registerProgramFilter(this.filter$);
-    this.restoreSettings();
     this.updateFilterAndPublish();
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
@@ -64,6 +61,9 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
     this.testProgramInputConfig.disabled = !this.testProgramCheckboxConfig.checked;
     this.updateFilterAndPublish();
     this.saveSettings();
+    if (!this.testProgramCheckboxConfig.checked) {
+      this.testProgramInputConfig.errorMsg = '';
+    }
   }
 
   private updateFilterAndPublish() {
@@ -76,7 +76,7 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
       }
       this.testProgramInputConfig.errorMsg = '';
       if (patterns.length === 0)
-        this.filter.filterFunction = (r: StdfRecord[]) => true;
+        this.filter.filterFunction = (_e: StdfRecord[]) => true;
       else
         this.filter.filterFunction =
           (r: StdfRecord[]) => patterns.some(p => p.pattern.every(pr => r.some(t => this.recordMatches(t, pr.testNumber, pr.passed))));
@@ -91,15 +91,9 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  private subscribeStore() {
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.unsubscribe))
-      .subscribe( s => this.status = s);
-  }
-
   private defaultSettings() {
     this.testProgramCheckboxConfig.initCheckBox('Program Pattern', false, false);
-    this.testProgramInputConfig.initInput('Pattern', true, '');
+    this.testProgramInputConfig.initInput('Pattern', true, '',/([0-9]|&|\||\(|\)|,|p|f|P|F|\s)/);
   }
 
   private restoreSettings() {
@@ -125,7 +119,7 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.ProgramFilter}`;
+    return `${this.deviceId}${SettingType.ProgramFilter}`;
   }
 
   private extractAllPattern(value: string ): Array<ProgramPattern> {
@@ -199,5 +193,19 @@ export class StdfRecordProgramFilterComponent implements OnInit, OnDestroy {
     let dnfRegExp = /^\([0-9]+,(f|t|p).*\)((&&|\|{2})\([0-9]+,(f|t|p).*\))*$/;
     let result = dnfRegExp.test(normalizedValue);
     return result;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

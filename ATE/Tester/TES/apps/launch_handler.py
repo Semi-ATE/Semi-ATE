@@ -1,6 +1,7 @@
 from ATE.Tester.TES.apps.handlerApp.handler_runner import HandlerRunner
 from ATE.Tester.TES.apps.common.configuration_reader import ConfigReader
 from argparse import ArgumentParser
+import serial
 
 
 def parse_config_dict_from_command_line():
@@ -21,10 +22,24 @@ def parse_config_dict_from_command_line():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def generate_serial_object():
+    args = parse_config_dict_from_command_line()
+    return serial.Serial(args.port, baudrate=args.baudrate, bytesize=args.bytesize,
+                         parity=args.parity, stopbits=args.stopbits, timeout=args.timeout)
+
+
+def launch_handler(configuration, comm):
+    app = HandlerRunner(configuration, comm)
+    app.run()
+
+
+def main():
     config = ConfigReader("./handler_config_file.json")
     configuration = config.get_configuration()
 
-    args = parse_config_dict_from_command_line()
-    app = HandlerRunner(configuration, args)
-    app.run()
+    comm = generate_serial_object()
+    launch_handler(configuration, comm)
+
+
+if __name__ == "__main__":
+    main()

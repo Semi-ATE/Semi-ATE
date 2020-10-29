@@ -6,8 +6,7 @@ import { SdtfRecordFilter, FilterType } from '../../services/stdf-record-filter-
 import { StdfRecordFilterService } from 'src/app/services/stdf-record-filter-service/stdf-record-filter.service';
 import { ButtonConfiguration } from '../../basic-ui-elements/button/button-config';
 import { StorageMap } from '@ngx-pwa/local-storage';
-import {  Status } from '../../models/status.model';
-import { AppState } from '../../app.state';
+import { AppState, selectDeviceId } from '../../app.state';
 import { Store } from '@ngrx/store';
 import { takeUntil } from 'rxjs/operators';
 import { RecordTypeFilterSetting, SettingType } from '../../models/storage.model';
@@ -25,7 +24,7 @@ export class StdfRecordTypeFilterComponent implements OnInit, OnDestroy {
   private readonly filter$: Subject<SdtfRecordFilter>;
   private readonly filter: SdtfRecordFilter;
   private readonly ngUnSubscribe: Subject<void>;
-  private status: Status;
+  private deviceId: string;
 
   constructor(private readonly filterService: StdfRecordFilterService, private readonly storage: StorageMap, private readonly store: Store<AppState>) {
     this.recordTypeFilterCheckboxes = [];
@@ -35,14 +34,12 @@ export class StdfRecordTypeFilterComponent implements OnInit, OnDestroy {
     this.filter$ = new Subject<SdtfRecordFilter>();
     this.filter = {
       active: true,
-      filterFunction: (e: StdfRecord) => true,
+      filterFunction: () => true,
       type: FilterType.RecordType,
       strengthen: false
     };
     this.ngUnSubscribe = new Subject<void>();
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.ngUnSubscribe))
-      .subscribe(s => this.status = s);
+    this.deviceId = undefined;
   }
 
   ngOnInit(): void {
@@ -50,7 +47,7 @@ export class StdfRecordTypeFilterComponent implements OnInit, OnDestroy {
     this.initStdfRecordTypeCheckboxes();
     this.allRecordsSelectedButtonConfig.labelText = 'All';
     this.noneRecordsSelectedButtonConfig.labelText = 'None';
-    this.restoreSettings();
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy() {
@@ -153,6 +150,20 @@ export class StdfRecordTypeFilterComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.RecordTypeFilter}`;
+    return `${this.deviceId}${SettingType.RecordTypeFilter}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.ngUnSubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

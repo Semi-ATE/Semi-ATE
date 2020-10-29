@@ -45,6 +45,7 @@ import { TableComponent } from './basic-ui-elements/table/table.component';
 import { TabComponent } from './basic-ui-elements/tab/tab.component';
 import { YieldComponent } from './yield/yield.component';
 import { MultichoiceComponent } from './basic-ui-elements/multichoice/multichoice.component';
+import { SystemHandlingComponent } from './system-control/system-handling/system-handling/system-handling.component';
 
 @NgModule({
   declarations: [
@@ -79,7 +80,8 @@ import { MultichoiceComponent } from './basic-ui-elements/multichoice/multichoic
     TabComponent,
     TableComponent,
     YieldComponent,
-    MultichoiceComponent
+    MultichoiceComponent,
+    SystemHandlingComponent
   ],
   imports: [
     BrowserModule,

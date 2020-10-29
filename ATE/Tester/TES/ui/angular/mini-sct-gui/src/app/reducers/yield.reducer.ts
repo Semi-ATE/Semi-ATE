@@ -6,7 +6,7 @@ export const initialYieldData: YieldData = [];
 
 const reducer = createReducer(
   initialYieldData,
-  on(YieldActions.updateYield, (state, {yieldData}) => yieldData)
+  on(YieldActions.updateYield, (_state, {yieldData}) => yieldData)
 );
 
 export function yieldReducer(state: YieldData | undefined, action: Action) {

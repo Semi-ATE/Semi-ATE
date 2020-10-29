@@ -25,9 +25,7 @@ const initialState = computeInitialState();
 
 const reducer = createReducer(
   initialState,
-  on(UserSettingsActions.setSettings, (state, settings) => {
-    return settings;
-  })
+  on(UserSettingsActions.setSettings, (_state, settings) => settings)
 );
 
 export function userSettingsReducer(state: UserSettings | undefined, action: Action) {

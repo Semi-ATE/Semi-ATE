@@ -917,13 +917,13 @@ export const LOG_ENTRIES = {
     },
     {
       date: '07/09/2020 03:30:50 PM',
-      type: 'INFO',
+      type: 'WARNING',
       description: 'Control 0 state is loading',
       source: 'control 0'
     },
     {
       date: '07/09/2020 03:30:50 PM',
-      type: 'INFO',
+      type: 'ERROR',
       description: 'Control 0 state is busy',
       source: 'control 0'
     }

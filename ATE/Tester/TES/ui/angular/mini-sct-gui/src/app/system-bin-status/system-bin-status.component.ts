@@ -12,8 +12,8 @@ import { Status } from 'src/app/models/status.model';
 export class SystemBinStatusComponent implements OnInit {
   status$: Observable<Status>;
 
-  constructor(private readonly store: Store<AppState>) {
-    this.status$ = store.pipe(select('systemStatus'));
+  constructor(private readonly _Store: Store<AppState>) {
+    this.status$ = this._Store.pipe(select('systemStatus'));
   }
 
   ngOnInit() {

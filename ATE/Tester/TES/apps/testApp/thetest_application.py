@@ -256,7 +256,7 @@ class TheTestAppMqttClient:
         # in MQTT311 disconnect always tells the broker to discard the will message
         self._client.disconnect()
 
-    def publish_status(self, alive: TheTestAppStatusAlive, statedict: dict = None) -> mqtt.MQTTMessageInfo:
+    def publish_status(self, alive: TheTestAppStatusAlive, statedict) -> mqtt.MQTTMessageInfo:
         payload = self._topic_factory.test_status_payload(alive)
         if statedict is not None:
             payload.update(statedict)
@@ -539,7 +539,7 @@ class TheTestAppApplication:
             # TODO: else is here to avoid publishing the initial idle state
             #       twice (which howver should not be a problem eventually
             #       after fixing problems in subsribers)
-            self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state})
+            self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'payload': {'state': self._statemachine.state, 'message': ''}})
 
     def _on_disconnect(self):
         self._disconnected = True
@@ -578,7 +578,7 @@ class TheTestAppApplication:
         # self.publish_result(selftest_result, "<insert init result data here>")
         # note that currently once "init" failed the status will not be restored to ALIVE
         if not selftest_result:
-            self._mqtt.publish_status(TheTestAppStatusAlive.INITFAIL)
+            self._mqtt.publish_status(TheTestAppStatusAlive.INITFAIL, {'payload': {'state': self._statemachine.state, 'message': ''}})
 
     def _execute_cmd_next(self, mock_result: bool, mock_duration_secs: int, job_data: Optional[dict]):
         logger.debug('COMMAND: next')

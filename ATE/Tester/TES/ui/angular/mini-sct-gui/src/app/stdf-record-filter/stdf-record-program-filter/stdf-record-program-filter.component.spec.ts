@@ -310,7 +310,7 @@ describe('StdfRecordProgramFilterComponent', () => {
       // wait until status is ready
       await expectWaitUntil(
         () => fixture.detectChanges(),
-        () => (component as any).status.deviceId === constants.MESSAGE_WHEN_SYSTEM_STATUS_READY.payload.device_id,
+        () => (component as any).deviceId === constants.MESSAGE_WHEN_SYSTEM_STATUS_READY.payload.device_id,
         'Device ID was not set');
 
       // setup

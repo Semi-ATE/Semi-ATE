@@ -73,18 +73,18 @@ class HandlerApplication(MultiSitesMasterHandler):
                                                                 lambda master, state: self._on_unexpected_master_state(master, state))
             self.arm_timeout(TOINITIALIZED_TIMEOUT, lambda: self.on_error('master(s) could not be recognized'))
 
-    def startup_done(self):
-        self._machine.model.startup_done()
+    def startup_done(self, message):
+        self._machine.model.startup_done(message)
 
     def on_error(self, message):
-        self._machine.model.on_error()
+        self._machine.model.on_error(message + ' ' + self.prev_master_state)
         self._log.log_message(LogLevel.Error(), message)
         self.pending_transistion_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_detected(),
                                                             lambda master, state: self._on_unexpected_master_state(master, state))
         self.arm_timeout(STARTUP_TIMEOUT, lambda: self.on_error('master(s) could not be recognized'))
 
     def _all_testers_detected(self):
-        self._machine.model.master_connected()
+        self._machine.model.master_connected('')
         self.disarm_timeout()
 
     def _on_unexpected_master_state(self, master_id, state):
@@ -146,15 +146,15 @@ class HandlerApplication(MultiSitesMasterHandler):
         return {'type': 'error', 'state': self.state, 'command_type': command_type, 'response_type': response_type, 'message': message}
 
     def _on_load_command_issued(self):
-        self._machine.model.master_loading()
+        self._machine.model.master_loading('')
         return [MasterStates.ready()]
 
     def _on_next_command_issued(self):
-        self._machine.model.master_testing()
+        self._machine.model.master_testing('')
         return [MasterStates.ready()]
 
     def _on_unload_command_issued(self):
-        self._machine.model.master_unload()
+        self._machine.model.master_unload('')
         return [MasterStates.initialized()]
 
     def _get_call_back(self, type):
@@ -167,9 +167,9 @@ class HandlerApplication(MultiSitesMasterHandler):
             raise Exception(f'callback type: "{type}" is not support')
 
     def _all_testers_ready(self):
-        self._machine.model.master_ready()
+        self._machine.model.master_ready('')
         self.disarm_timeout()
 
     def _all_testers_initialized(self):
-        self._machine.model.master_initialized()
+        self._machine.model.master_initialized('')
         self.disarm_timeout()

@@ -526,7 +526,7 @@ class MasterApplication(MultiSiteTestingModel):
         if self.pendingTransitionsTest:
             self.pendingTransitionsTest.trigger_transition(siteid, newstatus)
 
-    def on_testapp_log_message(self, siteid: str, log_msg: dict):
+    def on_log_message(self, siteid: str, log_msg: dict):
         self.log.append_log(log_msg['payload'])
 
     def on_testapp_bininfo_message(self, siteid: str, msg: dict):

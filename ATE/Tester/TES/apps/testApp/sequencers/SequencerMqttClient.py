@@ -189,7 +189,7 @@ class TheTestAppMachine:
             dodisconnect = False
             alive = TheTestAppStatusAlive.ALIVE
 
-        msginfo = self._mqtt.publish_status(alive, {'state': self.state})
+        msginfo = self._mqtt.publish_status(alive, {'state': self.state, 'payload': {'state': self.state, 'message': ''}})
         msginfo.wait_for_publish()
 
         # workaround: handle state after publishing status (which is done
@@ -247,10 +247,9 @@ class MqttClient():
         # in MQTT311 disconnect always tells the broker to discard the will message
         self._client.disconnect()
 
-    def publish_status(self, alive: TheTestAppStatusAlive, statedict: dict = None) -> mqtt.MQTTMessageInfo:
+    def publish_status(self, alive: TheTestAppStatusAlive, statedict) -> mqtt.MQTTMessageInfo:
         payload = self._topic_factory.test_status_payload(alive)
-        if statedict is not None:
-            payload.update(statedict)
+        payload.update(statedict)
         return self._client.publish(
             topic=self._topic_factory.test_status_topic(),
             payload=json.dumps(payload),
@@ -494,7 +493,7 @@ class SequencerMqttClient(Harness.Harness):
             # TODO: else is here to avoid publishing the initial idle state
             #       twice (which however should not be a problem eventually
             #       after fixing problems in subsribers)
-            self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state})
+            self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state, 'payload': {'state': self._statemachine.state, 'message': ''}})
 
     def _send_bin_settings(self):
         if not self._bin_settings:
@@ -521,6 +520,8 @@ class SequencerMqttClient(Harness.Harness):
         elif cmd == 'terminate':
             self._execute_cmd_terminate()
             self._statemachine.cmd_terminate()
+        elif cmd == 'reset':
+            self._statemachine.cmd_terminate()
         elif cmd == 'setloglevel':
             self._execute_cmd_setloglevel(payload['level'])
         elif cmd == 'setting':
@@ -541,7 +542,7 @@ class SequencerMqttClient(Harness.Harness):
         # self.publish_result(selftest_result, "<insert init result data here>")
         # note that currently once "init" failed the status will not be restored to ALIVE
         if not selftest_result:
-            self._mqtt.publish_status(TheTestAppStatusAlive.INITFAIL)
+            self._mqtt.publish_status(TheTestAppStatusAlive.INITFAIL, {'state': self._statemachine.state, 'payload': {'state': self._statemachine.state, 'message': 'selftest is failed'}})
 
     def _execute_cmd_next(self, job_data: Optional[dict]):
         self.logger.debug('COMMAND: next')

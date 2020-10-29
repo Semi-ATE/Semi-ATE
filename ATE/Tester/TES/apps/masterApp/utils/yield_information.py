@@ -95,7 +95,7 @@ class YieldInformationHandler:
             self._accumulate_all_bin_info()
             return
 
-        self.on_error("soft bin could not be mapped to any of the setting's bins")
+        self.on_error(f"soft bin: '{soft_bin}'' could not be mapped to any of the setting's bins")
 
     def _accumulate_all_bin_info(self):
         all_id = '-1'

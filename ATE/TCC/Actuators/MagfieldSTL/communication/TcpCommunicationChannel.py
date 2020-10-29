@@ -1,4 +1,5 @@
 
+from ATE.common.logger import LogLevel
 from ATE.TCC.Actuators.MagfieldSTL.communication.CommunicationChannel import CommunicationChannel
 import socket
 
@@ -10,10 +11,11 @@ import time
 
 class TcpCommunicationChannel(CommunicationChannel):
 
-    def __init__(self, target_ip, target_port):
+    def __init__(self, target_ip, target_port, log):
         self.target_ip = target_ip
         self.target_port = int(target_port)
         self.connected = False
+        self._log = log
         self.do_connect(target_ip, target_port)
 
     def is_connected(self):
@@ -30,11 +32,11 @@ class TcpCommunicationChannel(CommunicationChannel):
                 self.sock.connect((target_ip, target_port))
                 # Connection succeeded, return.
                 self.connected = True
-                print("Connected to DSC6k")
+                self._log.log_message(LogLevel.Debug(), "Connected to DSC6k")
                 return
             except Exception as ex:
-                print(f"Failed to connect to DCS6k@{self.target_ip}:{self.target_port}. Retrying.")
-                print(ex)
+                self._log.log_message(LogLevel.Error(), f"Failed to connect to DCS6k@{self.target_ip}:{self.target_port}. Retrying.")
+                self._log.log_message(LogLevel.Error(), f"exception: {ex}")
                 time.sleep(2)
                 num_retries = num_retries + 1
                 if num_retries > MAX_NUM_RETRIES:
@@ -49,7 +51,7 @@ class TcpCommunicationChannel(CommunicationChannel):
         while totalsent < msglen:
             sent = self.sock.send(data[totalsent:])
             if sent == 0:
-                print("Lost connection to DCS6k, reconnect in progress..")
+                self._log.log_message(LogLevel.Warning(), "Lost connection to DCS6k, reconnect in progress..")
                 self.do_connect(self.target_ip, self.target_port)
                 sent = 0        # Restart sending in case of a connection loss.
             totalsent = totalsent + sent
@@ -72,7 +74,7 @@ class TcpCommunicationChannel(CommunicationChannel):
                 # here makes no sense, as we probably have missed parts
                 # of the packet we were trying to receive anyway.
                 self.connected = False
-                print("Lost connection to DCS6k")
+                self._log.log_message(LogLevel.Warning(), "Lost connection to DCS6k")
                 return ""
 
             buffer.write(data)

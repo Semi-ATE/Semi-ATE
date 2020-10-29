@@ -1,4 +1,4 @@
-import { SiteHead, StdfRecord, computeSiteHeadFromNumbers, StdfRecordType, STDF_RECORD_ATTRIBUTES, stdfGetValue, computePassedInformationForPartFlag, PrrRecord } from 'src/app/stdf/stdf-stuff';
+import { SiteHead, computeSiteHeadFromNumbers, STDF_RECORD_ATTRIBUTES, stdfGetValue, computePassedInformationForPartFlag, PrrRecord } from 'src/app/stdf/stdf-stuff';
 import { takeUntil } from 'rxjs/operators';
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { AppState } from '../app.state';
