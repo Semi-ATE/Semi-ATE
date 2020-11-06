@@ -17,7 +17,7 @@ const reducer = createReducer(
         return [...entries,...state];
       }
     }),
-  on(ConsoleActions.clearConsoleEntries, state => [])
+  on(ConsoleActions.clearConsoleEntries, _state => [])
 );
 
 export function consoleReducer(state: ConsoleEntry[] | undefined, action: Action) {

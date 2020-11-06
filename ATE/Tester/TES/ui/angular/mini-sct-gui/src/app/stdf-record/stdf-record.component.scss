@@ -1,6 +1,7 @@
 @import '../../styles.scss';
 .stdfRecord {
-width: 360px;
+  padding-right: 10px;
+  width: 360px;
 }
 
 .stdfRecordType {
@@ -21,7 +22,7 @@ width: 360px;
 .recordEntries {
   display: block;
   margin-top: 10px;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 520px;
   li {
     padding: 5px;

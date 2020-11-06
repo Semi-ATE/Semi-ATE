@@ -15,6 +15,8 @@ import { statusReducer } from '../reducers/status.reducer';
 import { resultReducer } from '../reducers/result.reducer';
 import { consoleReducer } from '../reducers/console.reducer';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
+import { SystemHandlingComponent } from './system-handling/system-handling/system-handling.component';
+import { DropdownComponent } from '../basic-ui-elements/dropdown/dropdown.component';
 
 describe('SystemControlComponent', () => {
   let component: SystemControlComponent;
@@ -28,10 +30,12 @@ describe('SystemControlComponent', () => {
         TestExecutionComponent,
         TestOptionComponent,
         LotHandlingComponent,
+        SystemHandlingComponent,
         CardComponent,
         InputComponent,
         ButtonComponent,
-        CheckboxComponent
+        CheckboxComponent,
+        DropdownComponent
       ],
       imports: [
         FormsModule,

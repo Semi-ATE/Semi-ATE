@@ -1,14 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CheckboxConfiguration } from 'src/app/basic-ui-elements/checkbox/checkbox-config';
 import { InputConfiguration } from 'src/app/basic-ui-elements/input/input-config';
-import { Status } from 'src/app/models/status.model';
 import { Subject } from 'rxjs';
 import { SdtfRecordFilter, FilterType } from 'src/app/services/stdf-record-filter-service/stdf-record-filter';
 import { Store } from '@ngrx/store';
-import { AppState } from 'src/app/app.state';
+import { AppState, selectDeviceId } from 'src/app/app.state';
 import { StdfRecordFilterService } from 'src/app/services/stdf-record-filter-service/stdf-record-filter.service';
 import { StorageMap } from '@ngx-pwa/local-storage';
-import { StdfRecord, StdfRecordType, STDF_RESULT_RECORDS, STDF_RECORD_ATTRIBUTES } from 'src/app/stdf/stdf-stuff';
+import { StdfRecord, STDF_RESULT_RECORDS, STDF_RECORD_ATTRIBUTES } from 'src/app/stdf/stdf-stuff';
 import { takeUntil } from 'rxjs/operators';
 import { SettingType, TestNumberFilterSetting } from 'src/app/models/storage.model';
 
@@ -22,7 +21,7 @@ export class StdfRecordTestNumberFilterComponent implements OnInit, OnDestroy {
 
   testNumberCheckboxConfig: CheckboxConfiguration;
   testNumberInputConfig: InputConfiguration;
-  private status: Status;
+  private deviceId: string;
   private readonly unsubscribe: Subject<void>;
   private selectedtestNumbers: Array<number>;
   private readonly filter$: Subject<SdtfRecordFilter>;
@@ -31,25 +30,22 @@ export class StdfRecordTestNumberFilterComponent implements OnInit, OnDestroy {
   constructor(private readonly filterService: StdfRecordFilterService, private readonly storage: StorageMap, private readonly store: Store<AppState>) {
     this.testNumberCheckboxConfig = new CheckboxConfiguration();
     this.testNumberInputConfig = new InputConfiguration();
-    this.status = undefined;
+    this.deviceId = undefined;
     this.unsubscribe = new Subject<void>();
     this.selectedtestNumbers = [];
     this.filter$ = new Subject<SdtfRecordFilter>();
     this.filter = {
       active: false,
-      filterFunction: (e: StdfRecord) => true,
+      filterFunction: (_e: StdfRecord) => true,
       type: FilterType.TestNumber,
       strengthen: false
     };
   }
 
   ngOnInit(): void {
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.unsubscribe))
-      .subscribe( s => this.status = s);
     this.filterService.registerFilter(this.filter$);
-    this.restoreSettings();
     this.updateFilterAndPublish(false);
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
@@ -70,6 +66,9 @@ export class StdfRecordTestNumberFilterComponent implements OnInit, OnDestroy {
       this.updateFilterAndPublish(isSubset);
     }
     this.saveSettings();
+    if (!this.testNumberCheckboxConfig.checked) {
+      this.testNumberInputConfig.errorMsg = '';
+    }
   }
 
   private updateFilterAndPublish(filterStronger: boolean) {
@@ -133,7 +132,7 @@ export class StdfRecordTestNumberFilterComponent implements OnInit, OnDestroy {
   private defaultSettings() {
     this.selectedtestNumbers = [];
     this.testNumberCheckboxConfig.initCheckBox('Show only the following tests', false, false);
-    this.testNumberInputConfig.initInput('Test numbers of interest', true, '');
+    this.testNumberInputConfig.initInput('Test numbers of interest', true, '', /([0-9]|,|-)/);
   }
 
   private restoreSettings() {
@@ -159,6 +158,20 @@ export class StdfRecordTestNumberFilterComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.TestNumberFilter}`;
+    return `${this.deviceId}${SettingType.TestNumberFilter}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

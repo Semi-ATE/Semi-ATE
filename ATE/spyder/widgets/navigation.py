@@ -156,21 +156,8 @@ class ProjectNavigation(QObject):
         exception on fail (no sense of continuing, this should work!)
         '''
         try:  # make the directory structure
+            definition = self._prepare_hardware_definiton(definition)
             from ATE.spyder.widgets.coding.generators import hardware_generator
-            for index, hw in enumerate(definition['Actuator']['FT']):
-                definition['Actuator']['FT'][index] = hw.replace(" ", "_")
-            for index, hw in enumerate(definition['Actuator']['PR']):
-                definition['Actuator']['PR'][index] = hw.replace(" ", "_")
-
-            definition['InstrumentNames'] = {}
-            for instrument in definition['Instruments']:
-                definition['InstrumentNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
-
-            definition['GPFunctionNames'] = {}
-
-            for instrument in definition['GPFunctions']:
-                definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
-
             hardware_generator(self.project_directory, definition)
 
         except Exception as e:  # explode on fail
@@ -186,12 +173,33 @@ class ProjectNavigation(QObject):
         self.parent.hardware_added.emit(new_hardware)
         self.parent.database_changed.emit(TableId.Hardware())
 
+    @staticmethod
+    def _prepare_hardware_definiton(definition):
+        for index, hw in enumerate(definition['Actuator']['FT']):
+            definition['Actuator']['FT'][index] = hw.replace(" ", "_")
+        for index, hw in enumerate(definition['Actuator']['PR']):
+            definition['Actuator']['PR'][index] = hw.replace(" ", "_")
+
+        definition['InstrumentNames'] = {}
+        for instrument in definition['Instruments']:
+            definition['InstrumentNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
+
+        definition['GPFunctionNames'] = {}
+
+        for instrument in definition['GPFunctions']:
+            definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
+
+        return definition
+
     def update_hardware(self, hardware, definition):
         '''
         this method will update hardware 'name' with 'definition'
         if name doesn't exist, a KeyError will be thrown
         '''
-        # TODO: cleaner impl.
+        from ATE.spyder.widgets.coding.generators import hardware_generator
+        definition = self._prepare_hardware_definiton(definition)
+        hardware_generator(self.project_directory, definition)
+
         # blob do not have to contain hardware name it's already our primary key
         definition.pop('hardware')
         Hardware.update(self.get_session(), hardware, definition)
@@ -247,6 +255,8 @@ class ProjectNavigation(QObject):
         Hardware.remove(self.get_session(), name)
         self.parent.database_changed.emit(TableId.Hardware())
         self.parent.hardware_removed.emit(name)
+        import shutil
+        shutil.rmtree(os.path.join(self.project_directory, 'src', name))
 
     def add_maskset(self, name, customer, definition, is_enabled=True):
         '''
@@ -562,7 +572,7 @@ class ProjectNavigation(QObject):
         '''
 
         if definition['type'] != 'custom':
-            raise Exception(f"not a 'custom' test!!!")
+            raise Exception("not a 'custom' test!!!")
 
         self._generate_test_code(definition)
         Test.add(self.get_session(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)

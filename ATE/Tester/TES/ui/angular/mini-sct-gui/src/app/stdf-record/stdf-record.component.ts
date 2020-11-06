@@ -26,9 +26,9 @@ export class StdfRecordComponent implements OnInit {
   }
 
   computeMultichoiceConfigurationForTestFlagValue(testFlag: number): MultichoiceConfiguration {
-    let bitEncoding = [...Array(8)].map( (x , i )=> (testFlag >> i ) & 1 );
+    let bitEncoding = [...Array(8)].map( (_x , i )=> (testFlag >> i ) & 1 );
     let label = `TEST_FLG: ${bitEncoding.reverse().toString()}`;
-    let readonly = false;
+    let readonly = true;
     let items = new Array<MultichoiceEntry>();
 
     for (let idx = 0; idx < bitEncoding.length; idx++) {

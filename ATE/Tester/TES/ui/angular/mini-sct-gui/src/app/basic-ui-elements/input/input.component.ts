@@ -1,6 +1,23 @@
 import { Component, OnInit, Output, Input, EventEmitter } from '@angular/core';
 import { InputConfiguration } from './input-config';
-import { getQueryPredicate } from '@angular/compiler/src/render3/view/util';
+
+const ALLOWED_KEYS = [
+  'Enter',
+  'Insert',
+  'Delete',
+  'Backspace',
+  'Shift',
+  'Control',
+  'Alt',
+  'Home',
+  'End',
+  'PageDown',
+  'PageUp',
+  'ArrowLeft',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowRight',
+];
 
 @Component({
   selector: 'app-input',
@@ -19,7 +36,6 @@ export class InputComponent implements OnInit {
   }
 
   resetErrorMsg() {
-    // reset error message on user input
     this.inputConfig.errorMsg = '';
   }
 
@@ -31,5 +47,13 @@ export class InputComponent implements OnInit {
       return 'grey';
     }
     return this.inputConfig.errorMsg !== ''? this.inputConfig.errorColor:this.inputConfig.textColor;
+  }
+
+  onKeydown(event: KeyboardEvent ) {
+    if (!ALLOWED_KEYS.includes(event.key)) {
+      if (!this.inputConfig.validCharacterRegexp.test(event.key)) {
+        event.preventDefault();
+      }
+    }
   }
 }

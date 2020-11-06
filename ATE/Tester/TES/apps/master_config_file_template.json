@@ -12,7 +12,8 @@
     "jobformat": "xml.micronas",
     "skip_jobdata_verification": false,
     "filesystemdatasource.path" : ".",
-    "filesystemdatasource.jobpattern" : "le306426001.xml",
+    "filesystemdatasource.jobpattern" : "le123456001.xml",
     "enable_timeouts": true,
-    "user_settings_filepath": "master_user_settings.json"
+    "user_settings_filepath": "master_user_settings.json",
+    "loglevel": 10
 }

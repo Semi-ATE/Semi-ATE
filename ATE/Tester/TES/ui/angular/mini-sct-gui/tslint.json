@@ -17,7 +17,8 @@
                 "ban-keywords",
                 "check-format",
                 "allow-trailing-underscore",
-                "require-const-for-all-caps"
+                "require-const-for-all-caps",
+                "allow-leading-underscore"
             ]
         },
         "file-name-casing": [true, "kebab-case"],

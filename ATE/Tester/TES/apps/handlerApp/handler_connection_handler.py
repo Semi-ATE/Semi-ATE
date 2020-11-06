@@ -1,7 +1,7 @@
 from asyncio.queues import Queue, QueueEmpty
-from ATE.common.logger import LogLevel
 import json
 
+from ATE.common.logger import LogLevel
 from ATE.Tester.TES.apps.common.connection_handler import ConnectionHandler
 
 INVISIBLE_TESTER_STATES = ['connecting', 'loading', 'unloading', 'waitingforbintable']
@@ -56,7 +56,7 @@ class HandlerConnectionHandler:
                      retain=False)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:
-        self._app.startup_done()
+        self._app.startup_done('connection to broker is established')
 
         for device_id in self._device_ids:
             self.subscribe(self._generate_master_status_topic(device_id))

@@ -18,7 +18,7 @@ const initialState: Status = {
 
 const reducer = createReducer(
   initialState,
-  on(StatusActions.updateStatus, (state, {status}) => status)
+  on(StatusActions.updateStatus, (_state, {status}) => status)
 );
 
 export function statusReducer(state: Status | undefined, action: Action) {

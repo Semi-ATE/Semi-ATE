@@ -47,9 +47,10 @@ def create_master_config_file(sites, device_id,
               "jobformat": "xml.micronas",
               "skip_jobdata_verification": False,
               "filesystemdatasource.path": ".",
-              "filesystemdatasource.jobpattern": "le306426001_template.xml",
+              "filesystemdatasource.jobpattern": "le123456000.xml",
               "enable_timeouts": True,
-              "user_settings_filepath": "master_user_settings.json"
+              "user_settings_filepath": "master_user_settings.json",
+              "loglevel": 10
               }
 
     dump_to_file("master", config)
@@ -59,7 +60,8 @@ def create_control_config_file(site_id, device_id, host=None, port=None):
     config = {"broker_host": Configs.host.value if host is None else host,
               "broker_port": Configs.port.value if port is None else port,
               "device_id": device_id,
-              "site_id": site_id
+              "site_id": site_id,
+              "loglevel": 10
               }
 
     dump_to_file("control", config)

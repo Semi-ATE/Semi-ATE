@@ -8,45 +8,44 @@ organizing semiconductor testing in such a way that **all** use- (and special) c
 
 The `Semi-ATE` package is writen purely in Python (noarch) and provides besides libraries also a plugin to the [Spyder](https://www.spyder-ide.org/) IDE.
 
-
 Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki). 
 
 Yours,
 
-Tom 
+Tom
 
+## Setup Semi-ATE
 
-# Setup Semi-ATE
-
-## HowTo: on Windows
-
-### Setup
+## Setup on Windows
 
 Assuming that the current directory is Semi-ATE root.
 
 open a Windows command prompt(__CMD__) and run
 the following command:
+
 ```Console
 Powershell -ep Unrestricted -file setup.ps1
 ```
 
 ### Before starting the applications
 
-**Make sure**!
+Once, each step of the setup.ps1 is succeeded the following steps must be checked:
 
-1) testprogram name must be adapted in ATE/Tester/TES/apps/le306426000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
+1) testprogram name must be adapted in ATE/Tester/TES/apps/le123456000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
 
     ```Console
-    <missing_part>/tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py
+    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py
     ```
+
+    you will find the smoketest directory in the root level of Semi-ATE directory
 
     \<missing_part> must be replaced with the missing path piece to fit the absolut path of the test program
 
-
 2) lot number must be adapted in ATE/Tester/TES/apps/le306426000.xml.
 Therefore, 'LOTNUMBER' field muss be fit. Assuming the xml file name is
-'le306426000.xml', LOTNUMNBER field should look as the following:
-<LOTNUMBER>306426.000</LOTNUMBER>
+'le123456000.xml', LOTNUMNBER field should look as follow:
+
+    __\<LOTNUMBER>123456.000\</LOTNUMBER>__
 
 3) After configuring xml-file there still one thing to do.
 open the master configuration file (ATE/Tester/TES/apps/master_configuration_file.json)
@@ -54,12 +53,50 @@ and replace the 'filesystemdatasource.jobpattern' key-value with
 the xml file name.
 
     Based on the example above, this should look something like this:
-    'filesystemdatasource.jobpattern': 'le306426000.xml'
+    __'filesystemdatasource.jobpattern': 'le123456000.xml'__
 
+    ---
+    __NOTE__
+    </br>
+    As soon the xml-file name is changed, make sure to update the lot number as discribed in 2) and 3)  !
 
----
-__NOTE__
+    ---
 
-As soon the xml-file name is changed, make sure to update the lot number as discribed in 2) and 3)  !
+4) in case you generate your own test-program you need to make sure
+to create the binmapping file which is used from the test-program
+to map soft-bins(**SBINS**) to hard-bins(**HBINS**).
+the file name should be as follow: 'binmapping.json'
 
----
+    with using the default generated soft-bins the file should look as
+    bellow:
+
+    ```json
+        {
+         // HBIN        SBINS
+            "1":        [0, 1],
+            "2":        [10],
+            "3":        [11]
+        }
+    ```
+
+    ---
+    __NOTE__
+    </br>
+    As soon as a new soft-bin is used make sure to fit the confiuration file('binmapping.json')
+
+    ---
+5) make sure you got an mqtt-broker runs in your local machine.
+mosquitto can be used for this purpos.
+
+    For further informations please contact your IT.
+
+## Running Spyder-IDE
+
+before you can use spyder you should have already cloned the
+repository from git (could be done using the 'setup.ps1' script)
+
+If already done, than switch to spyder directory and run the following command:
+
+```Console
+python bootstrap.py
+```

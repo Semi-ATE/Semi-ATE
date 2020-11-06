@@ -3,6 +3,7 @@
        (focus)="resetErrorMsg();"
        [(ngModel)]="inputConfig.value"
        (change)="inputChangeEvent.emit()"
+       (keydown)="onKeydown($event)"
        (keyup.enter)="carriageReturnEvent.emit()"
        [ngStyle]="{'color': getColor()}"
        [attr.disabled]="inputConfig.disabled ? '' : null" />

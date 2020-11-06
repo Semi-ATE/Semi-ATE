@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CheckboxConfiguration } from 'src/app/basic-ui-elements/checkbox/checkbox-config';
-import { Status } from 'src/app/models/status.model';
 import { Subject } from 'rxjs';
 import { SdtfRecordFilter, FilterType } from 'src/app/services/stdf-record-filter-service/stdf-record-filter';
 import { StdfRecordFilterService } from 'src/app/services/stdf-record-filter-service/stdf-record-filter.service';
 import { StorageMap } from '@ngx-pwa/local-storage';
 import { Store } from '@ngrx/store';
-import { AppState } from 'src/app/app.state';
+import { AppState, selectDeviceId } from 'src/app/app.state';
 import { StdfRecord, STDF_RESULT_RECORDS, computePassedInformationForTestFlag } from 'src/app/stdf/stdf-stuff';
 import { takeUntil } from 'rxjs/operators';
 import { SettingType, PassFailFilterSetting } from 'src/app/models/storage.model';
@@ -26,7 +25,7 @@ enum TestResult {
 export class StdfRecordPassFailFilterComponent implements OnInit, OnDestroy {
   passFailCheckboxConfig: CheckboxConfiguration;
   dropdownConfig: DropdownConfiguration;
-  private status: Status;
+  private deviceId: string;
   private readonly unsubscribe: Subject<void>;
   private readonly filter$: Subject<SdtfRecordFilter>;
   private readonly filter: SdtfRecordFilter;
@@ -34,31 +33,27 @@ export class StdfRecordPassFailFilterComponent implements OnInit, OnDestroy {
   constructor(private readonly filterService: StdfRecordFilterService, private readonly storage: StorageMap, private readonly store: Store<AppState>) {
     this.passFailCheckboxConfig = new CheckboxConfiguration();
     this.dropdownConfig = new DropdownConfiguration();
-    this.status = undefined;
+    this.deviceId = undefined;
     this.unsubscribe = new Subject<void>();
     this.filter$ = new Subject<SdtfRecordFilter>();
     this.filter = {
       active: false,
-      filterFunction: (e: StdfRecord) => true,
+      filterFunction: (_e: StdfRecord) => true,
       type: FilterType.PassFail,
       strengthen: false
     };
   }
 
   ngOnInit(): void {
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.unsubscribe))
-      .subscribe( s => this.status = s);
     this.filterService.registerFilter(this.filter$);
-    this.restoreSettings();
     this.updateFilterAndPublish();
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
     this.unsubscribe.next();
     this.unsubscribe.complete();
   }
-
 
   filterChanged(): void {
     this.dropdownConfig.disabled = !this.passFailCheckboxConfig.checked;
@@ -113,6 +108,20 @@ export class StdfRecordPassFailFilterComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.PassFailFilter}`;
+    return `${this.deviceId}${SettingType.PassFailFilter}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

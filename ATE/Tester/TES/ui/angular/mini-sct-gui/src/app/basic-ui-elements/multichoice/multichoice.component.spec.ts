@@ -67,4 +67,26 @@ describe('MultichoiceComponent', () => {
         )
       );
   });
+
+  describe('changeItem', () => {
+    it('should not emit change event if configured as "readonly"', () => {
+      component.multichoiceConfig.readonly = true;
+      let spy = spyOn(component.multichoiceChangeEvent, 'emit');
+      fixture.detectChanges();
+      component.changeItem(0);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should emit change event if not configured as "readonly"', () => {
+      component.multichoiceConfig.readonly = false;
+      component.multichoiceConfig.items = [
+        initMultichoiceEntry('label 1', false)
+      ];
+      let spy = spyOn(component.multichoiceChangeEvent, 'emit');
+      fixture.detectChanges();
+      component.changeItem(0);
+      expect(spy).toHaveBeenCalled();
+    });
+
+  });
 });
