@@ -67,7 +67,7 @@ class DeviceItemChild(StateItem):
 
         dies_enabled = []
         for die in dies:
-            die_flag = self.project_info.get_die_state(die)
+            die_flag = self.project_info.get_die_state(die.split('_')[0])
             t = (die, die_flag)
             dies_enabled.append(t)
 

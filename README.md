@@ -41,7 +41,7 @@ Once, each step of the setup.ps1 is succeeded the following steps must be checke
 
     \<missing_part> must be replaced with the missing path piece to fit the absolut path of the test program
 
-2) lot number must be adapted in ATE/Tester/TES/apps/le306426000.xml.
+2) lot number must be adapted in ATE/Tester/TES/apps/le123456000.xml.
 Therefore, 'LOTNUMBER' field muss be fit. Assuming the xml file name is
 'le123456000.xml', LOTNUMNBER field should look as follow:
 

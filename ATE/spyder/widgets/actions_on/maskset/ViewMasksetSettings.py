@@ -46,7 +46,6 @@ class ViewMasksetSettings(NewMasksetWizard):
         self.viewDieButton.setEnabled(False)
         self.customer.setEnabled(False)
 
-
     @staticmethod
     def _init_table(dialog, table_size, enable_edit):
         dialog.bondpadTable.setRowCount(table_size)
@@ -133,7 +132,7 @@ class ViewMasksetSettings(NewMasksetWizard):
 
         for r in range(row):
             for c in range(column):
-                dialog.bondpadTable.item(r, c).setText(str(table_infos[r + 1][c]))
+                dialog.bondpadTable.item(r, c).setText(str(table_infos[r][c]))
 
         dialog.OKButton.setEnabled(True)
         dialog._validate_table()

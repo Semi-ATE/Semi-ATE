@@ -97,8 +97,9 @@ def create_xml_file(device_id):
 #       currently we can still end up with both, green and red, test results because of zombie processes still active in mqtt
 
 
+@pytest.mark.asyncio
 @pytest.fixture(scope='function')
-def handler_runner():
+async def handler_runner():
     configuration = {
         "handler_type": 'geringer',
         "handler_id": HANDLER_ID,
@@ -110,6 +111,7 @@ def handler_runner():
 
     handler_runner = HandlerRunner(configuration, DummySerialGeringer())
     yield handler_runner
+    await handler_runner.stop()
 
 
 # executed in own process with multiprocessing, no references to testenv state
@@ -1001,8 +1003,7 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
         handler_runner.start()
-        # sleeps used to guarantee the state change of handler app
-        # await asyncio.sleep(3.0)
+        await asyncio.sleep(3.0)
         await read_messages_until_handler_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
         handler_runner.comm.put('load')
@@ -1018,6 +1019,37 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
         # handler_runner.comm.put('unload')
         # await asyncio.sleep(3.0)
         # await read_messages_until_master_state(buffer, 'initialized', 5.0, ['unloading', 'initialized'])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sites", [(['0'], 1)])
+@pytest.mark.parametrize("handler", [DummySerialGeringer()])
+async def test_handler_send_temperature(sites, handler, process_manager, handler_runner):
+    topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
+             (f'ate/{HANDLER_ID}/Handler/status', 2),
+             (f'ate/{HANDLER_ID}/Handler/response', 2)]
+
+    # test the different handler implementation
+    handler_runner.comm = handler
+    async with mqtt_connection(BROKER_HOST, BROKER_PORT, topic) as mqtt:
+        buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
+
+        _ = create_master(process_manager, sites[0])
+        _ = create_controls(process_manager, sites[0])
+        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+
+        handler_runner.start()
+        await asyncio.sleep(3.0)
+        await read_messages_until_handler_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
+
+        handler_runner.comm.put('temperature')
+        await asyncio.sleep(3.0)
+        async with timeout(10, 'waiting for "temperature" response message'):
+            async for msg in buffer.read():
+                message = json.loads(msg.payload)
+                assert message['type'] == 'temperature'
+                assert message['payload']['temperature'] == 169.5
+                break
 
 
 @pytest.mark.asyncio

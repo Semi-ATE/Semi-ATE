@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
+    <width>822</width>
     <height>466</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>620</width>
+    <width>16777215</width>
     <height>16777215</height>
    </size>
   </property>
@@ -189,7 +189,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="dies">
         <attribute name="title">
@@ -412,7 +412,23 @@
          <item row="0" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QListWidget" name="listWidget"/>
+            <widget class="QTreeWidget" name="selectedDies">
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Type</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Direction</string>
+              </property>
+             </column>
+            </widget>
            </item>
            <item>
             <layout class="QVBoxLayout" name="pinAddRemoveLayout">
@@ -496,10 +512,7 @@
             </layout>
            </item>
            <item>
-            <widget class="QTableWidget" name="pinsTable">
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>66</number>
-             </attribute>
+            <widget class="QTreeWidget" name="pinsTable">
              <column>
               <property name="text">
                <string>Name</string>
@@ -678,7 +691,6 @@
   <tabstop>OKButton</tabstop>
   <tabstop>hardware</tabstop>
   <tabstop>availableDies</tabstop>
-  <tabstop>pinsTable</tabstop>
  </tabstops>
  <resources/>
  <connections/>

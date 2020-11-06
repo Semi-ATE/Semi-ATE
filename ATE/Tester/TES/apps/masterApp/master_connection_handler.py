@@ -115,6 +115,14 @@ class MasterConnectionHandler:
         message.update({'name': 'binsettings'})
         self.mqtt.publish(topic, json.dumps(message), 0, False)
 
+    def send_handler_get_temperature_command(self):
+        message = self._generate_message('temperature', {})
+        self.send_handler_command(message)
+
+    def send_handler_command(self, message):
+        topic = f'ate/{self.device_id}/Handler/command'
+        self.mqtt.publish(topic, json.dumps(message, 0, False))
+
     def _generate_command_message(self, command, sites=None):
         return {'type': 'cmd',
                 'command': command,
@@ -122,16 +130,16 @@ class MasterConnectionHandler:
                 }
 
     def _generate_test_results_message(self, test_results):
-        return self._generate_response_message('next', {'sites': test_results})
+        return self._generate_message('next', {'sites': test_results})
 
     def _generate_identification_message(self):
-        return self._generate_response_message('identify', {'name': self.device_id})
+        return self._generate_message('identify', {'name': self.device_id})
 
     def _generate_state_message(self, state, message):
-        return self._generate_response_message('get-state', {'state': state, 'message': message})
+        return self._generate_message('get-state', {'state': state, 'message': message})
 
     @staticmethod
-    def _generate_response_message(type, payload):
+    def _generate_message(type, payload):
         return {'type': type, 'payload': payload}
 
     def on_cmd_message(self, message):
@@ -282,6 +290,8 @@ class MasterConnectionHandler:
             self.status_consumer.on_handler_status_changed(msg['payload'])
         elif "command" in topic:
             self.status_consumer.on_handler_command_message(msg)
+        elif "response" in topic:
+            self.status_consumer.on_handler_response_message(msg)
         else:
             assert False
 

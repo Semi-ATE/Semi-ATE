@@ -63,6 +63,10 @@ class HandlerRunner:
     def start(self):
         self.task = asyncio.create_task(self._run_task())
 
+    async def stop(self):
+        await self._serial_communication.stop()
+        await self._connection_handler.stop()
+
     def _handle_message_from_serial(self):
         while(True):
             message = self._serial_communication.get_message()

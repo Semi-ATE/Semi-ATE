@@ -5,6 +5,7 @@ from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpeti
                                                                   ExceptionTypes)
 
 from PyQt5 import QtGui, QtCore
+import os
 
 
 flows = ['checker', 'maintenance', 'production', 'engineering', 'validation', 'quality']
@@ -221,6 +222,7 @@ class TestprogramTreeItem(BaseItem):
     def _get_menu_items(self):
         menu = [MenuActionTypes.Edit(),
                 MenuActionTypes.View(),
+                MenuActionTypes.CopyPath(),
                 None,
                 MenuActionTypes.Delete()]
 
@@ -246,8 +248,8 @@ class TestprogramTreeItem(BaseItem):
         from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
 
         targets = self.project_info.get_depandant_test_target_for_program(self.text())
-        if not ItemTrace(targets, self.text(), self.project_info.parent, message=f"the above target(s) are going to be\ndeleted !").exec_():
-            return 
+        if not ItemTrace(targets, self.text(), self.project_info.parent, message="the above target(s) are going to be\ndeleted !").exec_():
+            return
 
         self.project_info.delete_program(self.text(), self.owner, self.order, emit_event)
 
@@ -262,3 +264,15 @@ class TestprogramTreeItem(BaseItem):
 
     def _is_test_program_valid(self):
         return self.project_info.is_test_program_valid(self.text())
+
+    def copy_absolute_path(self):
+        clip_board = QtGui.QGuiApplication.clipboard()
+        clip_board.clear(mode=clip_board.Clipboard)
+        from pathlib import Path
+        file_path = os.fspath(Path(os.path.join(self.project_info.project_directory,
+                                                'src',
+                                                self.project_info.active_hardware,
+                                                self.project_info.active_base,
+                                                f'{self.program_name}.py')))
+
+        clip_board.setText(file_path, mode=clip_board.Clipboard)

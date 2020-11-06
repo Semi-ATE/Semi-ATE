@@ -21,7 +21,8 @@ class DummySerialGeringer:
                     'next': lambda: self._generate_next_command(),
                     'unload': lambda: self._generate_unload_command(),
                     'identify': lambda: self._generate_identify_command(),
-                    'get-state': lambda: self._generate_get_state_command()}[command]()
+                    'get-state': lambda: self._generate_get_state_command(),
+                    'temperature': lambda: self._generate_temperature_response()}[command]()
         except KeyError:
             raise Exception('command is not supported')
 
@@ -47,6 +48,10 @@ class DummySerialGeringer:
     @staticmethod
     def _generate_get_state_command():
         return b'TS?|98\n'
+
+    @staticmethod
+    def _generate_temperature_response():
+        return b'TE|169.5|148\n'
 
     def readline(self):
         try:

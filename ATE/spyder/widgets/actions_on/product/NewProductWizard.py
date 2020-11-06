@@ -218,7 +218,6 @@ class NewProductWizard(BaseDialog):
                 'type': self.Type.currentText(),
                 'customer': customer}
 
-    @QtCore.pyqtSlot()
     def ok_button_pressed(self):
         configuration = self._get_actual_defintion()
 

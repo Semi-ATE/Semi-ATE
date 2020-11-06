@@ -10,3 +10,7 @@ class WaveItem(FileItem):
     def _get_menu_items():
         return [MenuActionTypes.ImportFile(),
                 MenuActionTypes.CloneFrom()]
+
+    @staticmethod
+    def is_valid_functionality(functionality):
+        return not functionality == MenuActionTypes.CloneFrom()

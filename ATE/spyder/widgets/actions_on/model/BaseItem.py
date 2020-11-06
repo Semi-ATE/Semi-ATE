@@ -33,12 +33,20 @@ class BaseItem(QtGui.QStandardItem):
 
             action = ACTIONS[action_type]
             action = self.menu.addAction(action[0], action[1])
+
+            if not self.is_valid_functionality(action_type):
+                action.setEnabled(False)
+
             action.triggered.connect(getattr(self, action_type))
 
         if self.is_hidden():
             return
 
         self.menu.exec_(QtGui.QCursor.pos())
+
+    @staticmethod
+    def is_valid_functionality(functionality):
+        return True
 
     def update(self):
         self.removeRows(0, self.rowCount())

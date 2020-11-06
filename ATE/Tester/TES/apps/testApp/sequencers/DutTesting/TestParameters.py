@@ -89,8 +89,9 @@ class OutputParameter:
     def get_testresult(self):
         self._test_executions += 1
 
-        if np.isnan(self._ltl) or np.isnan(self._utl):
-            return (Result.Inconclusive(), 1)
+        ll, ul = self._get_limits()
+        if np.isnan(ll) and np.isnan(ul):
+            return (Result.Pass(), 1)
 
         fail_result = -1
         pass_result = -1
@@ -99,11 +100,27 @@ class OutputParameter:
         if self.bin_result == Result.Pass():
             pass_result = self.bin
 
-        if self._measurement >= self._ltl and self._measurement <= self._utl:
+        if self._measurement >= ll and self._measurement <= ul:
             return (Result.Pass(), pass_result)
         else:
             self._test_failures += 1
             return (Result.Fail(), fail_result)
+
+    def _get_limits(self):
+        ll, ul = -np.Inf, np.Inf
+        lls = [self._ltl, self._lsl]
+        uls = [self._utl, self._usl]
+        try:
+            ll = [limit for limit in lls if not np.isnan(limit) and not np.isneginf(limit)][0]
+        except IndexError:
+            pass
+
+        try:
+            ul = [limit for limit in uls if not np.isnan(limit) and not np.isposinf(limit)][0]
+        except IndexError:
+            pass
+
+        return ll, ul
 
     def generate_tsr_record(self, head_num, site_num, execution_time):
         if execution_time > 0:

@@ -121,7 +121,7 @@ class HandlerConnectionHandler:
             self._event.set()
             return
 
-        if message['type'] in ('temperature', 'state', 'name'):
+        if message['type'] == 'temperature':
             self.send_response_message(message)
         else:
             self.send_command_message(message)

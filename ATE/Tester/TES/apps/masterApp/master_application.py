@@ -100,36 +100,36 @@ class MasterApplication(MultiSiteTestingModel):
               'softerror',
               'waitingforbintable']
 
-    # multipe space code style "error" will be ignored for a better presentation of the possible state machine transitions
+    # multiple space code style "error" will be ignored for a better presentation of the possible state machine transitions
     transitions = [
-        {'source': 'startup',            'dest': 'connecting',  'trigger': "startup_done",                'after': "on_startup_done"},               # noqa: E241
-        {'source': 'connecting',         'dest': 'initialized', 'trigger': 'all_sites_detected',          'after': "on_allsitesdetected"},           # noqa: E241
-        {'source': 'connecting',         'dest': 'error',       'trigger': 'bad_interface_version'},                                                 # noqa: E241
+        {'source': 'startup',            'dest': 'connecting',             'trigger': "startup_done",                'after': "on_startup_done"},               # noqa: E241
+        {'source': 'connecting',         'dest': 'initialized',            'trigger': 'all_sites_detected',          'after': "on_allsitesdetected"},           # noqa: E241
+        {'source': 'connecting',         'dest': 'error',                  'trigger': 'bad_interface_version'},                                                 # noqa: E241
 
-        {'source': 'initialized',        'dest': 'loading',     'trigger': 'load_command',                'after': 'on_loadcommand_issued'},         # noqa: E241
+        {'source': 'initialized',        'dest': 'loading',                'trigger': 'load_command',                'after': 'on_loadcommand_issued'},         # noqa: E241
         {'source': 'loading',            'dest': 'waitingforbintable',     'trigger': 'all_siteloads_complete',      'after': 'on_allsiteloads_complete'},      # noqa: E241
-        {'source': 'waitingforbintable', 'dest': 'ready',       'trigger': 'all_binsettings_received_complete', 'after': 'on_all_bin_settings_received'},                                     # noqa: E241
-        {'source': 'loading',            'dest': 'initialized', 'trigger': 'load_error',                  'after': 'on_load_error'},                 # noqa: E241
+        {'source': 'waitingforbintable', 'dest': 'ready',       'trigger': 'all_binsettings_received_complete',      'after': 'on_all_bin_settings_received'},  # noqa: E241
+        {'source': 'loading',            'dest': 'initialized', 'trigger': 'load_error',                             'after': 'on_load_error'},                 # noqa: E241
 
         # TODO: properly limit source states to valid states where usersettings are allowed to be modified
         #       ATE-104 says it should not be possible while testing in case of stop-on-fail,
         #       but this constraint may not be required here and could be done in UI)
-        {'source': ['initialized', 'ready'], 'dest': '=', 'trigger': 'usersettings_command',             'after': 'on_usersettings_command_issued'},  # noqa: E241
+        {'source': ['initialized', 'ready'], 'dest': '=', 'trigger': 'usersettings_command',                       'after': 'on_usersettings_command_issued'},  # noqa: E241
 
-        {'source': 'ready',              'dest': 'testing',     'trigger': 'next',                        'after': 'on_next_command_issued'},        # noqa: E241
-        {'source': 'ready',              'dest': 'unloading',   'trigger': 'unload',                      'after': 'on_unload_command_issued'},      # noqa: E241
-        {'source': 'testing_completed',  'dest': 'ready',       'trigger': 'all_sitetests_complete',      'after': "on_allsitetestscomplete"},       # noqa: E241
-        {'source': 'unloading',          'dest': 'initialized', 'trigger': 'all_siteunloads_complete',    'after': "on_allsiteunloadscomplete"},     # noqa: E241
+        {'source': 'ready',              'dest': 'testing',                'trigger': 'next',                      'after': 'on_next_command_issued'},          # noqa: E241
+        {'source': 'ready',              'dest': 'unloading',              'trigger': 'unload',                    'after': 'on_unload_command_issued'},        # noqa: E241
+        {'source': 'testing_completed',  'dest': 'ready',                  'trigger': 'all_sitetests_complete',    'after': "on_allsitetestscomplete"},         # noqa: E241
+        {'source': 'unloading',          'dest': 'initialized',            'trigger': 'all_siteunloads_complete',  'after': "on_allsiteunloadscomplete"},       # noqa: E241
 
-        {'source': 'ready',              'dest': '=',           'trigger': 'getresults',                  'after': 'on_getresults_command'},         # noqa: E241
-        {'source': '*',                  'dest': '=',           'trigger': 'getlogs',                     'after': 'on_getlogs_command'},            # noqa: E241
-        {'source': '*',                  'dest': '=',           'trigger': 'getlogfile',                  'after': 'on_getlogfile_command'},         # noqa: E241
-        {'source': '*',                  'dest': '=',           'trigger': 'setloglevel',                 'after': 'on_setloglevel_command'},         # noqa: E241
+        {'source': 'ready',              'dest': '=',                      'trigger': 'getresults',                'after': 'on_getresults_command'},           # noqa: E241
+        {'source': '*',                  'dest': '=',                      'trigger': 'getlogs',                   'after': 'on_getlogs_command'},              # noqa: E241
+        {'source': '*',                  'dest': '=',                      'trigger': 'getlogfile',                'after': 'on_getlogfile_command'},           # noqa: E241
+        {'source': '*',                  'dest': '=',                      'trigger': 'setloglevel',               'after': 'on_setloglevel_command'},          # noqa: E241
 
-        {'source': '*',                  'dest': 'softerror',   'trigger': 'testapp_disconnected',        'after': 'on_disconnect_error'},           # noqa: E241
-        {'source': '*',                  'dest': 'softerror',   'trigger': 'timeout',                     'after': 'on_timeout'},                    # noqa: E241
-        {'source': '*',                  'dest': 'softerror',   'trigger': 'on_error',                    'after': 'on_error_occurred'},             # noqa: E241
-        {'source': 'softerror',          'dest': 'connecting',  'trigger': 'reset',                       'after': 'on_reset_received'}              # noqa: E241
+        {'source': '*',                  'dest': 'softerror',              'trigger': 'testapp_disconnected',      'after': 'on_disconnect_error'},             # noqa: E241
+        {'source': '*',                  'dest': 'softerror',              'trigger': 'timeout',                   'after': 'on_timeout'},                      # noqa: E241
+        {'source': '*',                  'dest': 'softerror',              'trigger': 'on_error',                  'after': 'on_error_occurred'},               # noqa: E241
+        {'source': 'softerror',          'dest': 'connecting',             'trigger': 'reset',                     'after': 'on_reset_received'}                # noqa: E241
 
     ]
 
@@ -560,9 +560,28 @@ class MasterApplication(MultiSiteTestingModel):
     def on_handler_status_changed(self, msg: dict):
         if self.external_state == 'softerror':
             return
-        # TODO: how to handle status crash
+
         if msg['state'] == 'connecting':
             self.connectionHandler.publish_state(self.state)
+
+        # TODO: how to handle status crash or error
+        if msg['state'] in ('error', 'crash'):
+            return
+
+    def on_handler_response_message(self, msg):
+        res = msg.get('type')
+        payload = msg.get('payload')
+        try:
+            {
+                'temperature': lambda: self._handle_handler_temperature(payload),
+            }[res]()
+        except KeyError:
+            self.log.log_message(LogLevel.Error(), f'Failed to execute response: {res}')
+        except MachineError:
+            self.on_error(f'cannot trigger command "{res}" from state "{self.fsm.model.state}"')
+
+    def _handle_handler_temperature(self, param_data):
+        self.log.log_message(LogLevel.Info(), f'handler temperature is : {param_data["temperature"]}')
 
     def on_handler_command_message(self, msg: dict):
         cmd = msg.get('type')
@@ -573,7 +592,7 @@ class MasterApplication(MultiSiteTestingModel):
                 'next': lambda param_data: self.next(param_data),
                 'unload': lambda param_data: self.unload(param_data),
                 'reset': lambda param_data: self.reset(param_data),
-                'identify': lambda param_data: self._send_tester_idnetification(param_data),
+                'identify': lambda param_data: self._send_tester_identification(param_data),
                 'get-state': lambda param_data: self._send_tester_state(param_data),
             }[cmd](payload)
         except KeyError:
@@ -581,11 +600,14 @@ class MasterApplication(MultiSiteTestingModel):
         except MachineError:
             self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
 
-    def _send_tester_idnetification(self, _):
+    def _send_tester_identification(self, _):
         self.connectionHandler.send_identification()
 
     def _send_tester_state(self, _):
         self.connectionHandler.send_state(self.external_state, self.error_message)
+
+    def send_handler_get_temperature_command(self):
+        self.connectionHandler.send_handler_get_temperature_command()
 
     def apply_resource_config(self, resource_request: dict, on_resource_config_applied_callback: Callable):
         resource_id = resource_request['periphery_type']
