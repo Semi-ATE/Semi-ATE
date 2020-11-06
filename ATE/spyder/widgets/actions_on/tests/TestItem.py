@@ -91,10 +91,17 @@ class TestItem(BaseItem):
                           lambda: new_standard_test_dialog(self.project_info),
                           ExceptionTypes.Test())
 
-    def _get_menu_items(self):
+    @staticmethod
+    def _get_menu_items():
         return [MenuActionTypes.Add(),
                 MenuActionTypes.AddStandardTest(),
                 MenuActionTypes.Import()]
+
+    def is_valid_functionality(self, functionality):
+        if functionality in (MenuActionTypes.AddStandardTest(), MenuActionTypes.Import()):
+            return False
+
+        return True
 
 
 class TestBaseItem(StateItem):

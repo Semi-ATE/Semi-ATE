@@ -18,7 +18,7 @@
 
 
 PyQt5==5.14.1
-qtawesome==0.7.0
+qtawesome==1.0.1
 qdarkstyle==2.8
 watchdog==0.10.2
 numpy==1.18.1

@@ -100,7 +100,7 @@ class ControlAppMachine:
     def on_test_app_exit(self, return_code):
         self.process = None
 
-        if return_code != 0 and self.state != 'idle':
+        if return_code != 0:
             self._error_message = self.stderr.decode('ascii')
             self.test_app_error(f'Test Program ends with an error:\n {self._error_message}')
 

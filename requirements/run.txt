@@ -12,5 +12,5 @@ hypothesis
 aiohttp
 aiomqtt
 pyqt
-qtawesome==0.7.0
+qtawesome
 pyserial

@@ -7,4 +7,3 @@ pytest-asyncio==0.14.0
 coverage
 check-manifest
 pre-commit
-qtawesome==0.7.0

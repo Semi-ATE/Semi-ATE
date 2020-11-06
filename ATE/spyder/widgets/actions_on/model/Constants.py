@@ -28,6 +28,7 @@ class MenuActionTypes(Enum):
     UseCustomImplementation = "use_custom_implementation"
     UseDefaultImplementation = "use_default_implementation"
     Select = "select_target_item"
+    CopyPath = "copy_absolute_path"
 
     def __call__(self):
         return self.value

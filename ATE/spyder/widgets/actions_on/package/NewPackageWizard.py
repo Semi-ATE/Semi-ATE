@@ -42,7 +42,7 @@ class NewPackageWizard(BaseDialog):
         # leads
         self.leads.setMinimum(2)
         self.leads.setMaximum(99)
-        self.leads.setValue(3)
+        self.leads.setValue(2)
 
         # drawing
         self.drawingGroup.setVisible(False)

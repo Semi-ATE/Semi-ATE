@@ -23,6 +23,10 @@ class ProtocolItem(BaseItem):
         return [MenuActionTypes.Add(),
                 MenuActionTypes.CloneFrom()]
 
+    @staticmethod
+    def is_valid_functionality(functionality):
+        return functionality not in (MenuActionTypes.Add(), MenuActionTypes.CloneFrom())
+
 
 class ProtocolItemChild(BaseItem):
     def __init__(self, name, path, project_info, parent=None):

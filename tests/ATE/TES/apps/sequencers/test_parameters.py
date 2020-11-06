@@ -70,12 +70,77 @@ def test_set_parameters_throws_exception_if_upperlimit_violates_specs():
 
 def test_output_parameter_with_no_limit_returns_inconclusive():
     import numpy as np
-    op = OutputParameter("Op", np.NaN, - np.inf, 0, np.NaN, np.inf)
+    op = OutputParameter("Op", - np.inf, np.NaN, 0, np.NaN, np.inf)
     op.set_bin(0, Result.Fail())
     op.write(25)
-    assert(op.get_testresult()[0] is Result.Inconclusive())
+    assert(op.get_testresult()[0] is Result.Pass())
 
 
+def test_output_parameter_with_usl_limit_returns_fail():
+    import numpy as np
+    op = OutputParameter("Op", - np.inf, np.NaN, 0, np.NaN, 1)
+    op.set_bin(1, Result.Pass())
+    op.write(25)
+    assert(op.get_testresult()[0] is Result.Fail())
+
+
+def test_output_parameter_with_usl_limit_returns_pass():
+    import numpy as np
+    op = OutputParameter("Op", -np.Inf, np.NaN, 0, np.NaN, 3)
+    op.set_bin(1, Result.Pass())
+    op.write(2)
+    assert(op.get_testresult()[0] is Result.Pass())
+
+
+def test_output_parameter_with_lsl_limit_returns_pass():
+    import numpy as np
+    op = OutputParameter("Op", -3, np.NaN, 0, np.NaN, np.Inf)
+    op.write(25)
+    assert(op.get_testresult()[0] is Result.Pass())
+
+
+def test_output_parameter_with_lsl_limit_returns_fail():
+    import numpy as np
+    op = OutputParameter("Op", -3, np.NaN, 0, np.NaN, np.Inf)
+    op.set_bin(1, Result.Pass())
+    op.write(-5)
+    assert(op.get_testresult()[0] is Result.Fail())
+
+
+def test_output_parameter_with_lsl_and_ltl_limit_returns_fail():
+    import numpy as np
+    op = OutputParameter("Op", -3, -1, 0, np.NaN, np.Inf)
+    op.set_bin(1, Result.Pass())
+    op.write(-2)
+    assert(op.get_testresult()[0] is Result.Fail())
+
+
+def test_output_parameter_with_lsl_and_ltl_limit_returns_pass():
+    import numpy as np
+    op = OutputParameter("Op", -3, -1, 0, np.NaN, np.Inf)
+    op.set_bin(1, Result.Pass())
+    op.write(-1)
+    assert(op.get_testresult()[0] is Result.Pass())
+
+
+def test_output_parameter_with_usl_and_utl_limit_returns_fail():
+    import numpy as np
+    op = OutputParameter("Op", -np.Inf, np.NaN, 0, 1, 3)
+    op.set_bin(1, Result.Pass())
+    op.write(3)
+    assert(op.get_testresult()[0] is Result.Fail())
+
+
+def test_set_test_description():
+    op = OutputParameter("Op", 0, 10, 20, 30, 40)
+    op.set_test_description('test_1')
+    assert(op._test_description == 'test_1')
+    assert(op._get_PTR_test_name() == 'test_1.Op')
+
+
+def test_generate_empty_tsr():
+    op = OutputParameter("Op", 0, 10, 20, 30, 40)
+    record = op.generate_tsr_record(1, 1, -1)
 def test_set_test_description():
     op = OutputParameter("Op", 0, 10, 20, 30, 40)
     op.set_test_description('test_1')
