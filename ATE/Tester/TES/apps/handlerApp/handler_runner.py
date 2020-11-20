@@ -1,5 +1,4 @@
 import asyncio
-import serial
 from ATE.Tester.TES.apps.handlerApp.handler_application import HandlerApplication
 from ATE.Tester.TES.apps.handlerApp.handler_connection_handler import HandlerConnectionHandler
 from ATE.Tester.TES.apps.handlerApp.handler_serial_com_handler import SerialCommunicationHandler
@@ -8,18 +7,19 @@ from ATE.common.logger import (Logger, LogLevel)
 
 
 class HandlerRunner:
-    def __init__(self, configuration, args):
+    def __init__(self, configuration, comm):
         self._mqtt = None
         self._log = Logger('handler', self._mqtt)
         loglevel = LogLevel.Warning() if configuration.get('loglevel') is None else configuration['loglevel']
         self._log.set_logger_level(loglevel)
+        self.comm = comm
 
         self._get_configuration(configuration)
-        self.args = args
         self._machine = HandlerStateMachine()
 
     def _get_configuration(self, configuration):
         try:
+            self.handler_type = configuration['handler_type']
             self.handler_id = configuration['handler_id']
             self.device_ids = configuration['device_ids']
             self.broker = configuration['broker_host']
@@ -31,7 +31,7 @@ class HandlerRunner:
     async def _run_task(self):
         self._app = HandlerApplication(self._machine, self.device_ids, self._log)
         event = asyncio.Event()
-        self._serial_communication = SerialCommunicationHandler(self._generate_serial_object(self.args), self._log, event, 'geringer')
+        self._serial_communication = SerialCommunicationHandler(self.comm, self._log, event, self.handler_type)
         self._connection_handler = HandlerConnectionHandler(self.broker,
                                                             self.broker_port,
                                                             self.handler_id,
@@ -40,7 +40,7 @@ class HandlerRunner:
                                                             self._app,
                                                             event)
 
-        self._machine.after_state_change(lambda: self._connection_handler.publish_state(self._machine.model.state, ''))
+        self._machine.after_state_change(lambda message: self._connection_handler.publish_state(self._machine.model.state, message))
         self._serial_communication.start()
         self._connection_handler.start()
         try:
@@ -51,18 +51,21 @@ class HandlerRunner:
                 self._handle_message_from_serial()
         except asyncio.CancelledError:
             await self._connection_handler.stop()
-            self._serial_communication.stop()
-
-    @staticmethod
-    def _generate_serial_object(args):
-        return serial.Serial(args.port, baudrate=args.baudrate, bytesize=args.bytesize,
-                             parity=args.parity, stopbits=args.stopbits, timeout=args.timeout)
+            await self._serial_communication.stop()
+            raise
 
     def run(self):
         try:
             asyncio.run(self._run_task())
         except KeyboardInterrupt:
             pass
+
+    def start(self):
+        self.task = asyncio.create_task(self._run_task())
+
+    async def stop(self):
+        await self._serial_communication.stop()
+        await self._connection_handler.stop()
 
     def _handle_message_from_serial(self):
         while(True):

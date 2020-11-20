@@ -15,6 +15,9 @@ class BusinessObjectStandin:
     def set_mqtt_client(self, mqtt):
         pass
 
+    def set_configuration_values(data):
+        pass
+
 
 class Plugin:
 
@@ -124,3 +127,7 @@ class Plugin:
     def get_general_purpose_function(func_name):
         print(f"Get General Purpose Function: {func_name}")
         return BusinessObjectStandin()
+
+    @hookimpl
+    def get_configuration_options(object_name):
+        return []

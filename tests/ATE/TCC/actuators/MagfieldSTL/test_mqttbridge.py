@@ -1,3 +1,4 @@
+from ATE.common.logger import LogLevel
 from ATE.TCC.Actuators.common.mqtt.mqttbridge import MqttBridge
 
 from pytest import fixture
@@ -44,7 +45,12 @@ class MagFieldMock:
 
 @fixture
 def mqtt():
-    return MqttBridge("192.168.0.1", "9001", "1048", MagFieldMock())
+    class Logger:
+        @staticmethod
+        def log_message(loglevel, msg):
+            print(f'{loglevel}|{msg}')
+
+    return MqttBridge("192.168.0.1", "9001", "1048", MagFieldMock(), Logger())
 
 
 def test_disable_command_calls_disable(mqtt):

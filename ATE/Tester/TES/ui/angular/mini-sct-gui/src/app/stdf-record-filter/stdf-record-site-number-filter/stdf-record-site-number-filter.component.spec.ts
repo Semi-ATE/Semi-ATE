@@ -383,8 +383,9 @@ describe('StdfRecordSiteNumberFilterComponent', () => {
     });
 
     describe('siteNumberFilterValueChanged', () => {
-      it('should set an error text in case of ivalid input like "a,b"', () => {
-        const INVALID_INPUT = 'a,b';
+      it('should set an error text in case of ivalid input like ",,1"', () => {
+        const INVALID_INPUT = ',,1';
+        component.siteNumberCheckboxConfig.checked = true;
         component.siteNumberInputConfig.value = INVALID_INPUT;
         component.filterChanged();
         expect(component.siteNumberInputConfig.errorMsg).toContain('error');

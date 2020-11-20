@@ -1,4 +1,5 @@
-import { StdfRecordType, ALL_STDF_RECORD_TYPES } from '../stdf/stdf-stuff';
+import { StdfRecordType } from '../stdf/stdf-stuff';
+import { LogLevelString } from '../system-console/system-console.component';
 
 export interface RecordTypeFilterSetting {
   selectedTypes: Array<StdfRecordType>;
@@ -37,6 +38,10 @@ export interface YieldSetting {
   selectedTabIndex: number;
 }
 
+export interface LogLevelFilterSetting {
+  logLevelFilter: Array<LogLevelString>;
+}
+
 export enum SettingType {
   RecordTypeFilter = 'typeFilter',
   RecordViewAutoscroll = 'autoscroll',
@@ -45,5 +50,6 @@ export enum SettingType {
   TestTextFilter = 'testTextFilter',
   PassFailFilter = 'passFailFilter',
   ProgramFilter = 'programFilter',
-  Yield = 'yield'
+  Yield = 'yield',
+  LogLevelFilter = 'logLevelFilter'
 }

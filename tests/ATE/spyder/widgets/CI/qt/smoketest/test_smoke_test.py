@@ -1,4 +1,3 @@
-from ATE.Tester.TES.apps.testApp.thetest_application import main
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.model.TreeModel import TreeModel
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import ProjectWizard

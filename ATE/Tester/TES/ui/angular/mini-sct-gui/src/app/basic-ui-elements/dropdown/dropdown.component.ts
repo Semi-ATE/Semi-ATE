@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { DropdownConfiguration, DropdownItemValueType } from './dropdown-config';
+import { DropdownConfiguration } from './dropdown-config';
 
 @Component({
   selector: 'app-dropdown',

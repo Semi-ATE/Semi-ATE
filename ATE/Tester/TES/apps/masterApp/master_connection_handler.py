@@ -10,6 +10,7 @@ TOPIC_TESTRESULT = "TestApp/testresult"
 TOPIC_TESTSUMMARY = "TestApp/testsummary"
 TOPIC_TESTRESOURCE = "TestApp/peripherystate"
 TOPIC_CONTROLSTATUS = "Control/status"
+TOPIC_CONTROLLOG = "Control/log"
 TOPIC_TESTBINSETTINGS = "TestApp/binsettings"
 SUBTOPIC_HANDLER = "Handler/status"
 TOPIC_LOG = "TestApp/log"
@@ -99,7 +100,7 @@ class MasterConnectionHandler:
 
         # hack: this make sure to terminate any zombie test application that do not have a parent process(control)
         testApp_topic = f'ate/{self.device_id}/TestApp/cmd'
-        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('terminate')), 0, False)
+        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('reset')), 0, False)
 
     def send_set_log_level(self, level):
         topics = [f'ate/{self.device_id}/TestApp/cmd', f'ate/{self.device_id}/Control/cmd']
@@ -114,6 +115,14 @@ class MasterConnectionHandler:
         message.update({'name': 'binsettings'})
         self.mqtt.publish(topic, json.dumps(message), 0, False)
 
+    def send_handler_get_temperature_command(self):
+        message = self._generate_message('temperature', {})
+        self.send_handler_command(message)
+
+    def send_handler_command(self, message):
+        topic = f'ate/{self.device_id}/Handler/command'
+        self.mqtt.publish(topic, json.dumps(message, 0, False))
+
     def _generate_command_message(self, command, sites=None):
         return {'type': 'cmd',
                 'command': command,
@@ -121,16 +130,16 @@ class MasterConnectionHandler:
                 }
 
     def _generate_test_results_message(self, test_results):
-        return self._generate_response_message('next', {'sites': test_results})
+        return self._generate_message('next', {'sites': test_results})
 
     def _generate_identification_message(self):
-        return self._generate_response_message('identify', {'name': self.device_id})
+        return self._generate_message('identify', {'name': self.device_id})
 
     def _generate_state_message(self, state, message):
-        return self._generate_response_message('get-state', {'state': state, 'message': message})
+        return self._generate_message('get-state', {'state': state, 'message': message})
 
     @staticmethod
-    def _generate_response_message(type, payload):
+    def _generate_message(type, payload):
         return {'type': type, 'payload': payload}
 
     def on_cmd_message(self, message):
@@ -154,16 +163,17 @@ class MasterConnectionHandler:
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTSTATUS))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTRESOURCE))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTSUMMARY))
-        self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_LOG))
         self.mqtt.subscribe(self.__generate_sub_topic(TOPIC_TESTBINSETTINGS))
+        self.mqtt.subscribe(self.__generate_log_topic())
         self.mqtt.subscribe(self.__generate_handler_topic(f"{self.handler_id}/{SUBTOPIC_HANDLER}"))
         self.status_consumer.startup_done()
+        self.send_reset_to_all_sites()
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
         self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
         self.connected_flag = False
 
-    def _generate_status_message(self, alive, state, statedict=None):
+    def _generate_status_message(self, alive, state, statedict=''):
         message = {
             "type": "status",
             "alive": alive,
@@ -200,6 +210,9 @@ class MasterConnectionHandler:
     def __generate_sub_topic(self, topic):
         return "ate/" + str(self.device_id) + "/" + topic + "/#"
 
+    def __generate_log_topic(self):
+        return "ate/" + str(self.device_id) + "/+" + '/log/#'
+
     def __generate_handler_topic(self, topic):
         return "ate/" + topic
 
@@ -213,10 +226,13 @@ class MasterConnectionHandler:
         return "ate/" + str(self.device_id) + "/Master/peripherystate"
 
     def __extract_siteid_from_control_topic(self, topic):
-        pat = rf'ate/{self.device_id}/{TOPIC_CONTROLSTATUS}/site(.+)$'
-        m = re.match(pat, topic)
-        if m:
-            return m.group(1)
+        pats = [rf'ate/{self.device_id}/{TOPIC_CONTROLSTATUS}/site(.+)$',
+                rf'ate/{self.device_id}/{TOPIC_CONTROLLOG}/site(.+)$']
+
+        for pat in pats:
+            m = re.match(pat, topic)
+            if m:
+                return m.group(1)
 
     def __extract_siteid_from_testapp_topic(self, topic):
         patterns = [rf'ate/{self.device_id}/TestApp/(?:status|testresult)/site(.+)$',
@@ -237,6 +253,8 @@ class MasterConnectionHandler:
 
         if "status" in topic:
             self.status_consumer.on_control_status_changed(siteid, msg)
+        elif "log" in topic:
+            self.status_consumer.on_log_message(siteid, msg)
         else:
             assert False
 
@@ -261,7 +279,7 @@ class MasterConnectionHandler:
         elif "status" in topic:
             self.status_consumer.on_testapp_status_changed(siteid, msg)
         elif "log" in topic:
-            self.status_consumer.on_testapp_log_message(siteid, msg)
+            self.status_consumer.on_log_message(siteid, msg)
         elif "binsettings" in topic:
             self.status_consumer.on_testapp_bininfo_message(siteid, msg)
         else:
@@ -272,6 +290,8 @@ class MasterConnectionHandler:
             self.status_consumer.on_handler_status_changed(msg['payload'])
         elif "command" in topic:
             self.status_consumer.on_handler_command_message(msg)
+        elif "response" in topic:
+            self.status_consumer.on_handler_response_message(msg)
         else:
             assert False
 

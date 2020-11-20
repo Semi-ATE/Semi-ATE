@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { StdfRecord } from '../../stdf/stdf-stuff';
-import { SdtfRecordFilter, FilterFunction, FilterType, SdtfRecordProgramFilter } from './stdf-record-filter';
+import { SdtfRecordFilter, FilterFunction, SdtfRecordProgramFilter } from './stdf-record-filter';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AppstateService } from '../appstate.service';
@@ -22,7 +22,7 @@ export class StdfRecordFilterService implements OnDestroy {
     this.filteredRecords = [];
     this.filters = [];
     this.programFilter = {
-      filterFunction: (e:StdfRecord[]) => true,
+      filterFunction: (_e:StdfRecord[]) => true,
       active: false
     };
     this.unsubscribe$ = new Subject<void>();
@@ -122,7 +122,7 @@ export class StdfRecordFilterService implements OnDestroy {
 
   private combineActiveFilters(): FilterFunction {
     let activeFilters = this.filters.filter(f => f.active);
-    return activeFilters.reduce( (a,f) => (r:StdfRecord) => a(r) && f.filterFunction(r), (e: StdfRecord) => true);
+    return activeFilters.reduce( (a,f) => (r:StdfRecord) => a(r) && f.filterFunction(r), (_e: StdfRecord) => true);
   }
 
   private matchesProgramPattern(programResult: StdfRecord[]): boolean {

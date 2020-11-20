@@ -11,6 +11,7 @@ export class InputConfiguration {
   disabled: boolean;
   errorMsg: string;
   value: string;
+  validCharacterRegexp: RegExp;
   constructor() {
       this.type = InputType.text;
       this.textColor = 'black';
@@ -19,11 +20,13 @@ export class InputConfiguration {
       this.disabled = false;
       this.errorMsg = '';
       this.value = '';
+      this.validCharacterRegexp = /./;
   }
 
-  initInput(placeholder: string, disabled: boolean, value: string): void {
+  initInput(placeholder: string, disabled: boolean, value: string, validCharacterRegexp: RegExp = /./): void {
     this.placeholder = placeholder;
     this.disabled = disabled;
     this.value = value;
+    this.validCharacterRegexp = validCharacterRegexp;
   }
 }

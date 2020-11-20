@@ -3,6 +3,7 @@ from ATE.TCC.Actuators.common.mqtt.mqttbridge import MqttBridge
 from ATE.TCC.Actuators.MagfieldSTL.communication.TcpCommunicationChannel import TcpCommunicationChannel
 from ATE.TCC.Actuators.MagfieldSTL.driver.stldcs6k import DCS6K
 from ATE.TCC.Actuators.MagfieldSTL.magfieldimpl.magfieldimpl import MagFieldImpl
+from ATE.common.logger import (Logger, LogLevel)
 
 import asyncio
 
@@ -15,13 +16,15 @@ parser.add_argument("device_port", type=int, metavar="devport", help="Port of th
 
 args = parser.parse_args()
 
-comm_channel = TcpCommunicationChannel(args.device_ip, args.device_port)
+log = Logger('magfield-stl')
+log.set_logger_level(LogLevel.Info())
+comm_channel = TcpCommunicationChannel(args.device_ip, args.device_port, log)
 driver = DCS6K(comm_channel)
 magfield = MagFieldImpl(driver)
 
 
 async def do_loop():
-    mqtt = MqttBridge(args.broker_ip, args.broker_port, args.device_id, magfield)
+    mqtt = MqttBridge(args.broker_ip, args.broker_port, args.device_id, magfield, log)
     mqtt.start_loop()
     while True:
         await asyncio.sleep(1)

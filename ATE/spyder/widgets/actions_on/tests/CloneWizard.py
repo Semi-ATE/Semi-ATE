@@ -150,7 +150,7 @@ class CloneWizard(QtWidgets.QDialog):
         self.inputParameterUnselect.setToolTip('Clear selection')
         self.inputParameterUnselect.clicked.connect(self.unselectInputParameter)
 
-        self.inputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+        self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
         self.inputParameterFormat.setToolTip('Show parameter formats')
         self.inputParameterFormat.clicked.connect(self.toggleInputParameterFormatVisible)
         self.inputParameterFormatVisible = False
@@ -201,7 +201,7 @@ class CloneWizard(QtWidgets.QDialog):
         self.outputParameterUnselect.setToolTip('Clear selection')
         self.outputParameterUnselect.clicked.connect(self.unselectOutputParameter)
 
-        self.outputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+        self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
         self.outputParameterFormat.setToolTip('Show parameter formats')
         self.outputParameterFormat.clicked.connect(self.toggleOutputParameterFormatVisible)
         self.outputParameterFormatVisible = False

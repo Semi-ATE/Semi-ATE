@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { WebSocket, Server } from 'mock-socket';
-import { interval, Observable, Subject, Subscription } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import * as constants from '../services/mockserver-constants';
 import { formatDate } from '@angular/common';
 import { BACKEND_URL_RUNNING_IN_PYTHON_MASTER_APPLICATION } from '../constants';

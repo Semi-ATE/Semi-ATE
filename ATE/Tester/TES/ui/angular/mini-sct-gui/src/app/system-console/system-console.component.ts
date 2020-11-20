@@ -1,16 +1,23 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ButtonConfiguration } from './../basic-ui-elements/button/button-config';
-import { AppState } from '../app.state';
-import { Store, select } from '@ngrx/store';
+import { AppState, selectDeviceId } from '../app.state';
+import { Store} from '@ngrx/store';
 import { ConsoleEntry } from '../models/console.model';
 import * as ConsoleActions from './../actions/console.actions';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { CommunicationService } from '../services/communication.service';
 import { takeUntil } from 'rxjs/operators';
-import { DropdownConfiguration } from '../basic-ui-elements/dropdown/dropdown-config';
-import { LogLevel, UserSettings } from '../models/usersettings.model';
 import { CardConfiguration, CardStyle } from '../basic-ui-elements/card/card-config';
+import { initMultichoiceEntry, MultichoiceConfiguration } from '../basic-ui-elements/multichoice/multichoice-config';
+import { StorageMap } from '@ngx-pwa/local-storage';
+import { LogLevelFilterSetting, SettingType } from '../models/storage.model';
 
+export enum LogLevelString {
+  Debug = 'DEBUG',
+  Info = 'INFO',
+  Warning = 'WARNING',
+  Error = 'ERROR'
+}
 @Component({
   selector: 'app-system-console',
   templateUrl: './system-console.component.html',
@@ -21,19 +28,28 @@ export class SystemConsoleComponent implements OnInit, OnDestroy {
   clearConsoleButtonConfig: ButtonConfiguration;
   reloadLogsButtonConfig: ButtonConfiguration;
   getLogFileButtonConfig: ButtonConfiguration;
-  setLogLevelDropdownConfig: DropdownConfiguration;
-  consoleEntries$: Observable<ConsoleEntry[]>;
+  setLogLevelFilterConfig: MultichoiceConfiguration;
+  private consoleEntries: ConsoleEntry[];
+  filteredEntries: ConsoleEntry[];
+  private loglevelFilter: Array<LogLevelString>;
   ngUnsubscribe: Subject<void>;
+  private deviceId: string;
 
-  constructor(private readonly store: Store<AppState>, private readonly communicationService: CommunicationService) {
+  constructor(private readonly store: Store<AppState>, private readonly communicationService: CommunicationService, private readonly storage: StorageMap) {
     this.systemConsoleCardConfiguration = new CardConfiguration();
     this.clearConsoleButtonConfig = new ButtonConfiguration();
     this.reloadLogsButtonConfig = new ButtonConfiguration();
     this.getLogFileButtonConfig = new ButtonConfiguration();
-    this.setLogLevelDropdownConfig = new DropdownConfiguration();
-
-    this.consoleEntries$ = store.pipe(select('consoleEntries'));
+    this.setLogLevelFilterConfig = {
+      readonly: false,
+      items: [],
+      label: ''
+    };
+    this.consoleEntries = [];
+    this.filteredEntries = [];
+    this.loglevelFilter = [];
     this.ngUnsubscribe = new Subject<void>();
+    this.deviceId = undefined;
   }
 
   ngOnInit() {
@@ -49,7 +65,12 @@ export class SystemConsoleComponent implements OnInit, OnDestroy {
     this.getLogFileButtonConfig.labelText = 'Save';
     this.getLogFileButtonConfig.disabled = false;
 
-    this.initLogLevel();
+    this.initLogLevelFilter();
+
+    this.store.select('consoleEntries')
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe( e => this.newConsoleEntries(e));
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
@@ -70,27 +91,87 @@ export class SystemConsoleComponent implements OnInit, OnDestroy {
     this.communicationService.send({type: 'cmd', command: 'getlogfile'});
   }
 
-  setLogLevel(): void {
-    this.communicationService.send({type: 'cmd', command: 'setloglevel', level: this.setLogLevelDropdownConfig.value});
+  setLogLevelFilter(): void {
+    this.loglevelFilter = this.setLogLevelFilterConfig
+      .items.filter(e => e.checked)
+      .map(e => e.label.toUpperCase()) as Array<LogLevelString>;
+    this.filteredEntries = this.consoleEntries.filter( e => this.passesFilter(e));
+    this.saveSettings();
   }
 
-  private initLogLevel() {
-    this.setLogLevelDropdownConfig.initDropdown('Loglevel', false, [
-      {description:'Debug', value: LogLevel.Debug},
-      {description:'Info', value: LogLevel.Info},
-      {description:'Warning', value: LogLevel.Warning},
-      {description:'Error', value: LogLevel.Error}
-    ],2);
+  passesFilter(entry: ConsoleEntry): boolean {
+    return (this.loglevelFilter.includes(entry.type.trim().toUpperCase() as LogLevelString));
+  }
 
-    this.store.select('userSettings')
+  private initLogLevelFilter() {
+    this.setLogLevelFilterConfig.label = 'Loglevel Filter';
+    this.setLogLevelFilterConfig.readonly = false;
+    this.setLogLevelFilterConfig.items = [];
+
+    this.setLogLevelFilterConfig.items.push(
+     initMultichoiceEntry('Debug', true, '#0046AD', 'white')
+    );
+
+    this.setLogLevelFilterConfig.items.push(
+      initMultichoiceEntry('Info', true, '#0046AD', 'white')
+     );
+
+    this.setLogLevelFilterConfig.items.push(
+      initMultichoiceEntry('Warning', true, '#0046AD', 'white')
+    );
+
+    this.setLogLevelFilterConfig.items.push(
+      initMultichoiceEntry('Error', true, '#0046AD', 'white')
+    );
+
+    this.loglevelFilter = [LogLevelString.Info, LogLevelString.Warning, LogLevelString.Debug, LogLevelString.Error];
+  }
+
+  private newConsoleEntries(entries: ConsoleEntry[]): void {
+    this.consoleEntries = entries;
+    this.filteredEntries = this.consoleEntries.filter( e => this.passesFilter(e));
+  }
+
+  private restoreSettings() {
+    this.storage.get(this.getStorageKey())
+      .subscribe( e => {
+        let logLevelFilterSetting = e as LogLevelFilterSetting;
+        if (logLevelFilterSetting && logLevelFilterSetting.logLevelFilter && typeof logLevelFilterSetting.logLevelFilter.length === 'number') {
+          this.loglevelFilter = logLevelFilterSetting.logLevelFilter;
+          this.setLogLevelFilterConfig.items = this.setLogLevelFilterConfig.items.map(i => {
+            i.checked = false;
+            return i;
+          });
+          this.setLogLevelFilterConfig
+            .items.filter(i => this.loglevelFilter.includes(i.label.toUpperCase() as LogLevelString))
+            .forEach(i => i.checked = true);
+          this.setLogLevelFilter();
+        }
+      });
+  }
+
+  private saveSettings() {
+    let setting: LogLevelFilterSetting = {
+      logLevelFilter: this.loglevelFilter
+    };
+    this.storage.set(this.getStorageKey(), setting).subscribe( () => {});
+  }
+
+  private getStorageKey() {
+    return `${this.deviceId}${SettingType.LogLevelFilter}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(e => this.updateLogLevel(e));
-  }
-
-  private updateLogLevel(settings: UserSettings) {
-    let index = this.setLogLevelDropdownConfig.items.findIndex(e => e.value === settings.logLevel);
-    if (index >= 0) {
-      this.setLogLevelDropdownConfig.selectedIndex = index;
-    }
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

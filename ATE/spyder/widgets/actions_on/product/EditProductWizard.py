@@ -12,7 +12,7 @@ class EditProductWizard(NewProductWizard):
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
         ViewProductWizard._setup_dialog_fields(self, name)
 
-    def OKButtonPressed(self):
+    def ok_button_pressed(self):
         configuration = self._get_actual_defintion()
         self.project_info.update_product(configuration['name'], configuration['device'],
                                          configuration['hardware'], configuration['quality'],

@@ -9,11 +9,9 @@ import { ButtonConfiguration } from '../basic-ui-elements/button/button-config';
 import { StdfRecordType, StdfRecord } from '../stdf/stdf-stuff';
 import { StdfRecordFilterService } from '../services/stdf-record-filter-service/stdf-record-filter.service';
 import { SettingType, RecordViewAutoscrollSetting } from '../models/storage.model';
-import { Status } from '../models/status.model';
 import { Store } from '@ngrx/store';
-import { AppState } from '../app.state';
+import { AppState, selectDeviceId } from '../app.state';
 import { StorageMap } from '@ngx-pwa/local-storage';
-import { updateStatus } from '../actions/status.actions';
 
 enum ButtonType {
   PrevButton,
@@ -39,7 +37,7 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
 
   private currentRecordIndex: [number, number];
   private readonly unsubscribe: Subject<void>;
-  private status: Status;
+  private deviceId: string;
 
   constructor(private readonly communicationService: CommunicationService,
               private readonly filterService: StdfRecordFilterService,
@@ -49,9 +47,7 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
     this.initConfigurations();
     this.currentRecordIndex = [0, 0];
     this.unsubscribe = new Subject<void>();
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.unsubscribe))
-      .subscribe(s => this.status = s);
+    this.deviceId = undefined;
   }
 
   ngOnInit(): void {
@@ -59,7 +55,7 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
     this.stdfRecordsViewCardConfiguration.initCard(false,  CardStyle.COLUMN_STYLE_FOR_COMPONENT, 'Records');
     this.initCheckBoxes();
     this.initButtons();
-    this.restoreSettings();
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
@@ -207,6 +203,20 @@ export class StdfRecordViewComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.RecordViewAutoscroll}`;
+    return `${this.deviceId}${SettingType.RecordViewAutoscroll}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

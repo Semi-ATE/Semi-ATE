@@ -1,14 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CheckboxConfiguration } from '../../basic-ui-elements/checkbox/checkbox-config';
 import { InputConfiguration } from '../../basic-ui-elements/input/input-config';
-import { Status } from '../../models/status.model';
 import { Subject } from 'rxjs';
 import { SdtfRecordFilter, FilterType } from '../../services/stdf-record-filter-service/stdf-record-filter';
 import { Store } from '@ngrx/store';
-import { AppState } from '../../app.state';
+import { AppState, selectDeviceId } from '../../app.state';
 import { StdfRecordFilterService } from '../../services/stdf-record-filter-service/stdf-record-filter.service';
 import { StorageMap } from '@ngx-pwa/local-storage';
-import { StdfRecord, StdfRecordType, STDF_RESULT_RECORDS, STDF_RECORD_ATTRIBUTES } from '../../stdf/stdf-stuff';
+import { StdfRecord, STDF_RESULT_RECORDS, STDF_RECORD_ATTRIBUTES } from '../../stdf/stdf-stuff';
 import { takeUntil } from 'rxjs/operators';
 import { SettingType, TestTextFilterSetting } from '../../models/storage.model';
 
@@ -20,7 +19,7 @@ import { SettingType, TestTextFilterSetting } from '../../models/storage.model';
 export class StdfRecordTestTextFilterComponent implements OnInit, OnDestroy {
   testTextCheckboxConfig: CheckboxConfiguration;
   testTextInputConfig: InputConfiguration;
-  private status: Status;
+  private deviceId: string;
   private readonly unsubscribe: Subject<void>;
   private containedText: string;
   private readonly filter$: Subject<SdtfRecordFilter>;
@@ -29,24 +28,21 @@ export class StdfRecordTestTextFilterComponent implements OnInit, OnDestroy {
   constructor(private readonly filterService: StdfRecordFilterService, private readonly storage: StorageMap, private readonly store: Store<AppState>) {
     this.testTextCheckboxConfig = new CheckboxConfiguration();
     this.testTextInputConfig = new InputConfiguration();
-    this.status = undefined;
+    this.deviceId = undefined;
     this.unsubscribe = new Subject<void>();
     this.containedText = '';
     this.filter$ = new Subject<SdtfRecordFilter>();
     this.filter = {
       active: false,
-      filterFunction: (e: StdfRecord) => true,
+      filterFunction: (_e: StdfRecord) => true,
       type: FilterType.TestText,
       strengthen: false
     };
   }
 
   ngOnInit(): void {
-    this.store.select('systemStatus')
-      .pipe(takeUntil(this.unsubscribe))
-      .subscribe( s => this.status = s);
     this.filterService.registerFilter(this.filter$);
-    this.restoreSettings();
+    this.subscribeDeviceId();
   }
 
   ngOnDestroy(): void {
@@ -103,6 +99,20 @@ export class StdfRecordTestTextFilterComponent implements OnInit, OnDestroy {
   }
 
   private getStorageKey() {
-    return `${this.status.deviceId}${SettingType.TestTextFilter}`;
+    return `${this.deviceId}${SettingType.TestTextFilter}`;
+  }
+
+  private updateDeviceId(id: string) {
+    this.deviceId = id;
+    this.restoreSettings();
+  }
+
+  private subscribeDeviceId() {
+    this.store.select(selectDeviceId)
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe( e => {
+        this.updateDeviceId(e);
+      }
+    );
   }
 }

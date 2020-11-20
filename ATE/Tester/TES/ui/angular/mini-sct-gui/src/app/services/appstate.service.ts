@@ -39,11 +39,11 @@ export class AppstateService implements OnDestroy {
   systemTime: string;
   private readonly subscriptionCommunication: Subscription;
 
-  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
+  constructor(private readonly _communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.stdfRecords = [];
     this.newRecordReceived$ = new Subject<StdfRecord[]>();
     this.rebuildRecords$ = new Subject<boolean>();
-    this.subscriptionCommunication = communicationService.message.subscribe(msg => this.handleServerMessage(msg));
+    this.subscriptionCommunication = this._communicationService.message.subscribe(msg => this.handleServerMessage(msg));
   }
 
   ngOnDestroy(): void {
@@ -94,7 +94,7 @@ export class AppstateService implements OnDestroy {
       serverMessage.payload.forEach(e => {
         let record: StdfRecord = {
           type: e.type,
-          values: Object.entries(e).filter(([k, v]) => k !== 'type')
+          values: Object.entries(e).filter(([k, _v]) => k !== 'type')
             .map(([k, v]) => {
               return {
                 key: k,
@@ -117,7 +117,7 @@ export class AppstateService implements OnDestroy {
           e.forEach(a => {
             let record: StdfRecord = {
               type: a.type,
-              values: Object.entries(a).filter(([k, v]) => k !== 'type')
+              values: Object.entries(a).filter(([k, _v]) => k !== 'type')
                 .map(([k, v]) => {
                   return {
                     key: k,

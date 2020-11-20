@@ -63,7 +63,7 @@ Der get-temperature Befehl weist den Handler an die Temperatur zu schicken, die 
 
 ```json
 {
-    "type": "get-temperature",
+    "type": "temperature",
     "payload": {}
  }
 ```

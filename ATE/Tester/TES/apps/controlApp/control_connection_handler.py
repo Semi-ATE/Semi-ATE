@@ -48,7 +48,7 @@ class ControlAppMachine:
         self._conhandler.publish_state(self.state, self._error_message)
 
         if self.prev_state != self.state:
-            self.log.log_message(LogLevel.Info(), f'publish_current_state: {self.state}')
+            self.log.log_message(LogLevel.Info(), f'control state is: {self.state}')
 
         self.prev_state = self.state
 
@@ -85,12 +85,13 @@ class ControlAppMachine:
         self._error_message = ''
         self.log.log_message(LogLevel.Info(), f'test_program parameters: {str(testapp_params)}')
         if not self._does_test_program_exist(testapp_params):
-            self.load_error('Test program could not be found')
+            self.load_error(f'Test program could not be found: {testapp_params["cwd"]}/{testapp_params["testapp_script_path"]}')
             return
 
         self._task = asyncio.create_task(self._run_testapp_task(testapp_params))
 
-    def _does_test_program_exist(self, testapp_params):
+    @staticmethod
+    def _does_test_program_exist(testapp_params):
         if not os.path.exists(os.path.join(testapp_params.get('cwd'), testapp_params['testapp_script_path'])):
             return False
 
@@ -99,7 +100,7 @@ class ControlAppMachine:
     def on_test_app_exit(self, return_code):
         self.process = None
 
-        if return_code != 0 and self.state != 'idle':
+        if return_code != 0:
             self._error_message = self.stderr.decode('ascii')
             self.test_app_error(f'Test Program ends with an error:\n {self._error_message}')
 
@@ -144,6 +145,7 @@ class ControlConnectionHandler:
         self.log = logger
         mqtt_client_id = f'controlapp.{device_id}.{site_id}'
         self.mqtt = ConnectionHandler(host, port, mqtt_client_id, self.log)
+        self.log.set_mqtt_client(self)
         self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
                                              self._on_message_handler,
                                              self._on_disconnect_handler)
@@ -170,6 +172,16 @@ class ControlConnectionHandler:
                           self.mqtt.create_message(
                               self._generate_status_message(ALIVE, state, error_message, statedict)),
                           retain=False)
+
+    def publish_log_information(self, log):
+        self.mqtt.publish(
+            topic=self._generate_log_topic(),
+            payload=json.dumps(self.log_payload(log)),
+            qos=2,
+            retain=False),
+
+    def send_log(self, log):
+        self.publish_log_information(log)
 
     def __set_log_level(self, cmd_payload: dict):
         level = cmd_payload['level']
@@ -244,8 +256,9 @@ class ControlConnectionHandler:
             "alive": alive,
             "interface_version": INTERFACE_VERSION,
             "software_version": SOFTWARE_VERSION,
+            # TODO: clean up
             "state": state,
-            "error_message": error_message
+            "payload": {"state": state, "error_message": error_message}
         }
         if statedict is not None:
             message.update(statedict)
@@ -254,8 +267,18 @@ class ControlConnectionHandler:
     def _generate_base_topic_status(self) -> str:
         return "ate/" + self.device_id + "/Control/status/site" + self.site_id
 
+    def _generate_log_topic(self) -> str:
+        return "ate/" + self.device_id + "/Control/log/site" + self.site_id
+
     def _generate_base_topic_cmd(self) -> str:
         return "ate/" + self.device_id + "/Control/cmd"
 
     def _generate_base_topic_status_master(self) -> str:
         return "ate/" + self.device_id + "/Master/status"
+
+    @staticmethod
+    def log_payload(log_info):
+        return {
+            "type": "log",
+            "payload": log_info
+        }

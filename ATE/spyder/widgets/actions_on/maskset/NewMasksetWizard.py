@@ -393,7 +393,6 @@ class NewMasksetWizard(BaseDialog):
         self._set_cells_content(row, elements)
 
     def _validate_table(self, row=0):
-        # check if all cells are filled
         for r in range(self.rows):
             for c in range(self.columns):
                 item = self.table_item(r, c)
@@ -638,6 +637,9 @@ class NewMasksetWizard(BaseDialog):
                 self.feedback.setText("Maskset name already defined")
             if not is_valid_maskset_name(MaskSetName):
                 self.feedback.setText("Invalid Maskset name")
+
+        self.feedback.setText('')
+
         # DieSizeX
         if self.feedback.text() == '':
             if self.dieSizeX.text() == '':
@@ -709,7 +711,7 @@ class NewMasksetWizard(BaseDialog):
         # TODO: add the die viewer (based ont the table here)
 
     def serialize_table_data(self):
-        table_infos = {}
+        table_infos = []
         for r in range(self.rows):
             data = ()
             for c in range(self.columns):
@@ -719,7 +721,7 @@ class NewMasksetWizard(BaseDialog):
                     cell_data = int(item.text())
                 data += (cell_data,)
 
-            table_infos[r + 1] = data
+            table_infos.append(data)
 
         return table_infos
 

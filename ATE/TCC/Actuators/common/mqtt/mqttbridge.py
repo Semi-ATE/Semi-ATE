@@ -1,9 +1,10 @@
+from ATE.common.logger import LogLevel
 import json
 import aiomqtt
 
 
 class MqttBridge:
-    def __init__(self, broker_ip, broker_port, device_id, actuator_impl):
+    def __init__(self, broker_ip, broker_port, device_id, actuator_impl, log):
         self.actuator_type = actuator_impl.get_type()
         self.mqtt_client = aiomqtt.Client(client_id=f"{device_id}{self.actuator_type}")
         self.mqtt_client.reconnect_delay_set(10, 15)
@@ -14,6 +15,7 @@ class MqttBridge:
         self.host = broker_ip
         self.port = broker_port
         self.device_id = device_id
+        self._log = log
 
     def start_loop(self):
         self.mqtt_client.will_set(f"ATE/{self.device_id}/{self.actuator_type}/status", json.dumps({"status": "crash"}), 0, False)
@@ -25,7 +27,7 @@ class MqttBridge:
 
         self.mqtt_client.subscribe(topic)
         self.post_status()
-        print("Connection established")
+        self._log.log_message(LogLevel.Debug(), 'Connection established')
 
     def on_message(self, client, userdata, message):
         try:
@@ -33,10 +35,10 @@ class MqttBridge:
             result_json = json.dumps(result)
             self.mqtt_client.publish(f"ATE/{self.device_id}/{self.actuator_type}/io-control/response", result_json)
         except json.JSONDecodeError as error:
-            print(f'{error}')
+            self._log.log_message(LogLevel.Error(), f'{error}')
 
     def on_disconnect(self, client, userdata, distc_res):
-        pass
+        self._log.log_message(LogLevel.Debug(), 'Disconnected')
 
     def post_status(self):
         message = {"status": self.actuator_impl.get_status()}

@@ -3,7 +3,6 @@ ATE widget.
 """
 # Standard library imports
 import os
-import sys
 
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
@@ -17,7 +16,6 @@ from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.toolbar import ToolBar
 from ATE.spyder.widgets.actions_on.tests.TestItem import (TestItemChild, TestItemChildTarget)
 # Third party imports
-#from PyQt5.QtCore import pyqtSignal
 # Local imports
 
 # Localization
@@ -56,6 +54,7 @@ class ATEWidget(PluginMainWidget):
         super().__init__(name, plugin, parent=parent, options=options)
 
         # Widgets
+        self.model = None
         self.tree = QTreeView()
         self.tree.setHeaderHidden(True)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -108,6 +107,10 @@ class ATEWidget(PluginMainWidget):
             return
 
         model_index = self.tree.indexAt(point)
+
+        if not self.model:
+            return
+
         item = self.model.itemFromIndex(model_index)
         if item is None:
             return

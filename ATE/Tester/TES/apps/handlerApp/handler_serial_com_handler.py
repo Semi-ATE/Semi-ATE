@@ -1,8 +1,8 @@
-from ATE.common.logger import LogLevel
 import asyncio
 from asyncio.queues import QueueEmpty, QueueFull
-from ATE.Tester.TES.apps.handlerApp.handlers.geringer_PTO92UT import Geringer
 from asyncio import Queue
+from ATE.Tester.TES.apps.handlerApp.handlers.geringer_PTO92UT import Geringer
+from ATE.common.logger import LogLevel
 
 
 def get_handler(handler_type, serial, log):
@@ -21,10 +21,14 @@ class SerialCommunicationHandler:
         self._handler = get_handler(handler_type, self.serial, self._log)
 
     def start(self):
-        asyncio.run_coroutine_threadsafe(self._communicate(), asyncio.get_event_loop())
+        self.task = asyncio.create_task(self._communicate())
 
-    def stop(self):
-        pass
+    async def stop(self):
+        self.task.cancel()
+        try:
+            await self.task
+        except asyncio.CancelledError:
+            pass
 
     async def _communicate(self):
         while True:

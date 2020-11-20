@@ -1,0 +1,8 @@
+<div id="systemHandling">
+  <app-card [cardConfiguration]="logLevelCardConfiguration">
+    <div class="systemInput">
+      <app-dropdown [dropdownConfig]="setLogLevelDropdownConfig" (dropdownChangeEvent)="setLogLevel()"></app-dropdown>
+    </div>
+  </app-card>
+</div>
+

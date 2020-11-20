@@ -171,7 +171,20 @@ get_general_purpose_function(func_name) -> FunctionInstance
 Note that a "Function" in this context denotes an object that can have an arbitrary interface. The runtime environment will make an instance of the object available for each test program and test
 
 ## Configuration
-At this point we assume, that no plugin will need any kind of central configuration and therefore no method of storing configuration data (e.g. in the project database) is specified for the plugin API.
+Pluginobjects may provide configuration data in the form of key-value pairs. Each plugin shall provide a list of configuration options for a given object when the function:
+
+```
+get_configuration_options(object_name) -> List[String]]
+```
+
+is called. It is up to the runtime to use the data (e.g. for creating a configuartion dialog). All objects shall support the
+function:
+```
+set_configuration_values(Dict[String, String]])
+```
+to apply a given set of configuration options. Each object shall be implemented such, that it is able to use the provided values on the fly.
+
+Note: The configuration values are plain strings and have no notion of types.
 
 
 ## Complete Hookspec
@@ -194,6 +207,8 @@ get_instrument(instrument_name) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
 
 get_general_purpose_function(func_name) -> FunctionInstance
+
+get_configuration_options(object_name) -> List[String]]
 ```
 
 The hookspecmarker is "ate.org"
@@ -205,57 +220,65 @@ The example in this chapter containes the most basic plugin possible.
 __File__: PluginSrc\PluginB\\_\_init__.py
 ```
 import pluggy
-import hookspec.ate
+from ATE.semiateplugins.hookspec import hookimpl
 
 class ThePlugin(object):
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_plugin_identification() -> dict:
         return {}
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_importer_names() -> []:
         return []
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_exporter_names() -> []:
         return []
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_equipment_names() -> []:
         return []
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_devicepin_importer_names() -> []:
         return []
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_instrument_names() -> []:
         return []
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_importer(importer_name) -> Importer:
-        throw NotImplementedError
+        raise NotImplementedError
 
     @hookspec.ate.hookimpl
     def get_exporter(exporter_name) -> Exporter:
-        throw NotImplementedError
+        raise NotImplementedError
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_equipment(equipment_name) -> EquipmentInstance:
-        throw NotImplementedError
+        raise NotImplementedError
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_devicepin_importer(importer_name) -> Importer:
-        throw NotImplementedError
+        raise NotImplementedError
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_instrument(instrument_name) -> InstrumentInstance:
-        throw NotImplementedError
+        raise NotImplementedError
 
-    @hookspec.ate.hookimpl
+    @hookimpl
     def get_instrument_proxy(instrument_name) -> InstrumentInstance:
-        throw NotImplementedError
+        raise NotImplementedError
+
+    @hookimpl
+    def get_general_purpose_function(function_name) -> FunctionInstance:
+        raise NotImplementedError
+
+    @hookimpl
+    def get_configuration_options(object_name) -> []:
+        raise NotImplementedError
 ```
 
 ### Plugin Installation
