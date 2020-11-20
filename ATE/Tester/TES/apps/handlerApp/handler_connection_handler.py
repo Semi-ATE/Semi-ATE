@@ -2,7 +2,7 @@ from asyncio.queues import Queue, QueueEmpty
 import json
 
 from ATE.common.logger import LogLevel
-from ATE.Tester.TES.apps.common.connection_handler import ConnectionHandler
+from ATE.Tester.TES.apps.common.mqtt_connection import MqttConnection
 
 INVISIBLE_TESTER_STATES = ['connecting', 'loading', 'unloading', 'waitingforbintable']
 
@@ -24,10 +24,9 @@ class HandlerConnectionHandler:
         self._message_queue = Queue()
 
     def start(self):
-        self._mqtt = ConnectionHandler(self._host, self._port, self._client_id, self._log)
+        self._mqtt = MqttConnection(self._host, self._port, self._client_id, self._log)
         self._log.set_mqtt_client(self._mqtt)
         self._mqtt.init_mqtt_client_callbacks(self._on_connect,
-                                              self._on_message,
                                               self._on_disconnect)
 
         self._mqtt.register_route("Master", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
@@ -62,9 +61,6 @@ class HandlerConnectionHandler:
             self.subscribe(self._generate_master_status_topic(device_id))
             self.subscribe(self._generate_command_topic(device_id))
             self.subscribe(self._generate_response_topic(device_id))
-
-    def _on_message(self, client, userdata, message) -> None:
-        self._mqtt.router.inject_message(message.topic, message.payload)
 
     def _on_disconnect(self, client, userdata, rc) -> None:
         self._log.debug("disconnected")
@@ -163,4 +159,4 @@ class HandlerConnectionHandler:
 
     @staticmethod
     def _generate_master_command_topic(device_id):
-        return f"ate/{device_id}/Master/command"
+        return f"ate/{device_id}/Master/cmd"

@@ -24,8 +24,7 @@ class DutTestCaseABC(ABC):
 
 
 class DutTestCaseBase(DutTestCaseABC):
-    def __init__(self, call_values, sbins, active_hardware):
-        self.call_values = call_values
+    def __init__(self, sbins, active_hardware):
         self.sbins = sbins
         self.active_hardware = active_hardware
         self._execution_time = 0

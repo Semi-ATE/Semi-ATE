@@ -9,16 +9,18 @@ Topic: \<device-id>/Testapp/status/site\<SiteId>
 |Feld| Bedeutung/Zulässige Werte   |
 |----|------------------------------|
 |type| „status“                    |
-|alive | 0, 1, 2, 3                 |
 |framework_version|Version des Frameworks, die verwendet wurde im die Testapp zu bauen|
 |test_version|Version des Testprogramms|
+|payload| Nutzdaten des Pakets      |
 
-Bedeutungen der Werte des Felds alive:
+Inhalt der Nutzdaten (Bsp!):
+```json
+{
+  "state": "ready",
+  "message": "some message"
+}
+```
 
-* 0 = Testapp hat sich beendet (unbeabsichtigt/Fehler),
-* 1 = Testapp aktiv,
-* 2 = Testapp wurde beendet („graceful shutdown)
-* 3 = Testapp aktiv, Selbsttest fehlgeschlagen. Details im Logfile der Testapp
 
 #### Testresultat
 
@@ -63,7 +65,7 @@ __example__:
 ```json
 {
   "type": "cmd",
-  "command": "bext",
+  "command": "next",
   "sites": [
     "0"
   ],

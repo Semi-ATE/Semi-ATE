@@ -45,9 +45,16 @@ class ViewHardwaresetupSettings(HardwareWizard):
         self.OKButton.setEnabled(True)
         self.OKButton.clicked.connect(self.accept)
 
+        self.addGPFunction.setEnabled(False)
+        self.removeGPFunction.setEnabled(False)
+        self.usedActuators.setEnabled(False)
+        self.addInstrument.setEnabled(False)
+        self.removeInstrument.setEnabled(False)
+
         self.CancelButton.setEnabled(True)
         self.CancelButton.clicked.connect(self.accept)
         self.feedback.setText("")
+        self.is_read_only = True
 
     @staticmethod
     def _setup_dialog_fields(dialog, hw_name):

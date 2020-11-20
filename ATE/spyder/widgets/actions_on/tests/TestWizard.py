@@ -44,6 +44,13 @@ INPUT_MAX_NUM_COLUMNS = INPUT_FMT_COLUMN_INDEX + 1  # Adjust this to match the h
 
 # ToDo: Use constants for all accesses to the output table.
 OUTPUT_NAME_COLUMN_INDEX = 0
+OUTPUT_LSL_COLUMN_INDEX = 1
+OUTPUT_LTL_COLUMN_INDEX = 2
+OUTPUT_NOM_COLUMN_INDEX = 3
+OUTPUT_UTL_COLUMN_INDEX = 4
+OUTPUT_USL_COLUMN_INDEX = 5
+OUTPUT_FMT_COLUMN_INDEX = 6
+OUTPUT_UNIT_COLUMN_INDEX = 7
 
 
 class Delegator(QtWidgets.QStyledItemDelegate):
@@ -172,7 +179,7 @@ class TestWizard(BaseDialog):
         self.inputParameterView.setItemDelegateForColumn(INPUT_FMT_COLUMN_INDEX, self.fmtDelegator)
 
         self.setInputpParameters(test_content['input_parameters'])
-        self.inputParameterView.setColumnHidden(6, True)
+        self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, True)
         self.inputParameterSelectionChanged()
 
     # OutputParametersTab
@@ -214,7 +221,7 @@ class TestWizard(BaseDialog):
         self.outputParameterView.setItemDelegateForColumn(4, self.UTLDelegator)
         self.outputParameterView.setItemDelegateForColumn(5, self.USLDelegator)
 
-        self.outputParameterView.setColumnHidden(8, True)
+        self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, True)
         self.setOutputParameters(test_content['output_parameters'])
         self.outputParameterSelectionChanged()
 
@@ -962,12 +969,12 @@ class TestWizard(BaseDialog):
             self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
             self.inputParameterFormatVisible = False
             self.inputParameterFormat.setToolTip('Show parameter formats')
-            self.inputParameterView.setColumnHidden(6, True)
+            self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, True)
         else:
             self.inputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
             self.inputParameterFormatVisible = True
             self.inputParameterFormat.setToolTip('Hide parameter formats')
-            self.inputParameterView.setColumnHidden(6, False)
+            self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, False)
         self.tableAdjust(self.inputParameterView, INPUT_NAME_COLUMN_INDEX)
 
     def deleteInputParameter(self):
@@ -1107,16 +1114,16 @@ class TestWizard(BaseDialog):
             item = self.outputParameterModel.itemFromIndex(index)
             if np.isinf(value):
                 if np.isposinf(value):  # only for columns 1 & 2
-                    if index.column() in [1, 2]:
+                    if index.column() in [OUTPUT_LSL_COLUMN_INDEX, OUTPUT_LTL_COLUMN_INDEX]:
                         item.setData('+∞', QtCore.Qt.DisplayRole)
                 else:  # np.isneginf(value) # only for columsn 4 & 5
-                    if index.column() in [4, 5]:
+                    if index.column() in [OUTPUT_USL_COLUMN_INDEX, OUTPUT_UTL_COLUMN_INDEX]:
                         item.setData('-∞', QtCore.Qt.DisplayRole)
             elif np.isnan(value):  # only for columns 2 & 4
-                if index.column() in [2, 4]:
+                if index.column() in [OUTPUT_LTL_COLUMN_INDEX, OUTPUT_UTL_COLUMN_INDEX]:
                     item.setData('', QtCore.Qt.DisplayRole)
             else:  # for columns 1, 2, 3, 4 and 5
-                if index.column() in [1, 2, 3, 4, 5]:
+                if index.column() in [OUTPUT_LSL_COLUMN_INDEX, OUTPUT_LTL_COLUMN_INDEX, OUTPUT_NOM_COLUMN_INDEX, OUTPUT_UTL_COLUMN_INDEX, OUTPUT_USL_COLUMN_INDEX]:
                     fmt_item = self.outputParameterModel.item(index.row(), 8)
                     Fmt = fmt_item.data(QtCore.Qt.DisplayRole)
                     item.setData(f"{value:{Fmt}}", QtCore.Qt.DisplayRole)
@@ -1465,12 +1472,12 @@ class TestWizard(BaseDialog):
             self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
             self.outputParameterFormatVisible = False
             self.outputParameterFormat.setToolTip('Show parameter formats')
-            self.outputParameterView.setColumnHidden(8, True)
+            self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, True)
         else:
             self.outputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
             self.outputParameterFormatVisible = True
             self.outputParameterFormat.setToolTip('Hide parameter formats')
-            self.outputParameterView.setColumnHidden(8, False)
+            self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, False)
         self.tableAdjust(self.outputParameterView, OUTPUT_NAME_COLUMN_INDEX)
 
     def deleteOutputParameter(self, row):

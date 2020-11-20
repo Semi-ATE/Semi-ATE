@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 {{ definition['hardware'] }}/FT/__init__.py
+
+
+Don't edit this file. It is bound to be regenerated if the project
+configuration changes. Any manual edits will be lost in that case.
 """
+import json
+import os
+import pathlib
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerMqttClient import SequencerMqttClient
 mqtt = SequencerMqttClient()
 
@@ -23,6 +30,8 @@ from ATE.Tester.TES.apps.testApp.actuators.{{actuator}}.{{actuator}} import {{ac
 
 {% for gpfunction in definition['GPFunctions'] %}
 {{definition['GPFunctionNames'][gpfunction]}}_instance = get_plugin_manager().hook.get_general_purpose_function(func_name="{{gpfunction}}")[0]
+config_file_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "..\{{gpfunction}}.json")
+if os.path.exists(config_file_path):
+    with open(config_file_path) as reader:
+        {{definition['GPFunctionNames'][gpfunction]}}_instance.apply_configuration(json.loads(reader.read()))
 {% endfor %}
-
-# Add your stuff after this line.

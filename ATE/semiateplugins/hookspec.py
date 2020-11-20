@@ -65,3 +65,7 @@ class ATEPlugin:
     @hookspec
     def get_general_purpose_function(func_name):
         pass
+
+    @hookspec
+    def get_configuration_options(object_name):
+        pass

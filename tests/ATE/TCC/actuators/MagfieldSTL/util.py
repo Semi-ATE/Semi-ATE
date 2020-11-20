@@ -9,11 +9,19 @@ class DummyCommChan(CommunicationChannel):
 
     def send(self, data):
         # This will throw, if data was sent, if no data was expected
-        next_sent_item = self.sent_data.pop()
+        next_sent_item = None
+        try:
+            next_sent_item = self.sent_data.pop(0)
+        except IndexError:
+            print(f"Trying to send {data} when nothing was expected.")
+            assert(False)
 
         sent_data_string = data.decode("utf-8")
         # This will throw if data was sent, that does not match expected data.
-        assert(next_sent_item == sent_data_string)
+        if next_sent_item != sent_data_string:
+            print(f"Expected: {next_sent_item}")
+            print(f"Seen: {sent_data_string}")
+            assert(False)
 
     def receive(self, timeout):
         return self.received_data.pop()

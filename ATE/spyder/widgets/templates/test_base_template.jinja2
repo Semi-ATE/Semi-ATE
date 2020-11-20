@@ -12,39 +12,38 @@ BTW : YOU SHOULD **NOT** BE READING THIS !!!
 """
 
 from numpy import nan, inf
-from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import InputParameter, OutputParameter
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import OutputParameter
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
+from ATE.Tester.TES.apps.testApp.parameters.ResolverFactroy import create_parameter_resolver
 
 
 class {{ definition['name'] }}_OP:
     """Class definition for the output parameters of {{ definition['name'] }}."""
 
-    def __init__(self, limits, test_desc):
-        super().__init__()
-        self.num_outputs = len(limits)
+    def __init__(self):
+        self.num_outputs = 0
         {% for output_parameter in output_params %}
         self.o_{{ output_parameter['name'] }} = OutputParameter('{{ output_parameter['name'] }}', {{ output_parameter['LSL'] }}, {{ output_parameter['LTL'] }}, {{ output_parameter['Nom'] }}, {{ output_parameter['UTL'] }}, {{ output_parameter['USL'] }})
-        self.o_{{ output_parameter['name'] }}.set_limits(limits['{{output_parameter['name']}}']['id'], limits['{{output_parameter['name']}}']['LTL'], limits['{{output_parameter['name']}}']['UTL'])
-        self.o_{{ output_parameter['name'] }}.set_bin(limits['{{output_parameter['name']}}']['bin'], limits['{{output_parameter['name']}}']['bin_result'])
-        self.o_{{ output_parameter['name'] }}.set_test_description(test_desc)
         {% endfor %}
 
+    def set_parameter(self, name, id, ltl, utl, bin, bin_result, test_desc):
+        output = getattr(self, f'o_{name}')
+        output.set_limits(id, ltl, utl)
+        output.set_bin(bin, bin_result)
+        output.set_test_description(test_desc)
+        self.num_outputs += 1
 
 class {{ definition['name']}}_IP:
     """Class definition for the input parameters of {{ definition['name'] }}."""
 
-    {% for input_parameter in input_params %}
-    {{ input_parameter['name'] }} = InputParameter('{{ input_parameter['name'] }}', {{ input_parameter['Shmoo'] }}, {{ input_parameter['Default'] }})
-    {% endfor %}
-
-    def __init__(self, callvalues):
-
+    def __init__(self):
         {% for input_parameter in input_params %}
-        self.i_{{ input_parameter['name'] }} = InputParameter('{{ input_parameter['name'] }}', {{ input_parameter['Shmoo'] }}, {{ input_parameter['Default'] }})
-        self.i_{{ input_parameter['name'] }}._value = callvalues['{{input_parameter['name']}}']
+        self.i_{{ input_parameter['name'] }} = None
         {% endfor %}
-        super().__init__()
+
+    def set_parameter(self, name, type, value):
+        setattr(self, f'i_{name}', create_parameter_resolver(type, f'i_{name}', '', value))
 
 
 class {{ definition['name'] }}_BC(DutTestCaseBase):
@@ -54,10 +53,10 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     base = '{{ definition['base'] }}'
     Type = '{{ definition['type'] }}'
 
-    def __init__(self, logger, callvalues, limits, test_desc):
-        super().__init__(callvalues, None, None)
-        self.ip = {{ definition['name'] }}_IP(callvalues)
-        self.op = {{ definition['name'] }}_OP(limits, test_desc)
+    def __init__(self, logger):
+        super().__init__(None, None)
+        self.ip = {{ definition['name'] }}_IP()
+        self.op = {{ definition['name'] }}_OP()
         self.logger = logger
 
     def aggregate_test_result(self, site_num):
