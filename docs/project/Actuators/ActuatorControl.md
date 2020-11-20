@@ -195,7 +195,7 @@ Explaination of status codes:
 
 
 #### Program Curve
-The program curve io command shall instruct the actuator to store a given curve of field strengths. The curve is presented as array of tuples, where the first value of the tuple denotes the field strength and the second value denotes the time for which this strength should be kept.
+The program curve io command shall instruct the actuator to store a given curve of field strengths. The curve is presented as array of tuples, where the first value of the tuple denotes the field strength (in millitesla!) and the second value denotes the time (in seconds!) for which this strength should be kept.
 
 ```json
 {
@@ -217,7 +217,7 @@ Result:
     "type": "io-control-response",
     "ioctl_name": "program_curve",
     "result": {
-        "status": {"ok" | "invalidid" | "error"},
+        "status": {"ok" | "invalidid" | "curvetoolarge" |"error"},
         <optional> "error_message": "some string"
     }
 }
@@ -226,6 +226,7 @@ Result:
 Explaination of status codes:
 * done: The curve has been stored
 * invalidid: The provided curve id is invalid (depending on the actuator implementation it might be outside of the range of permitted ids)
+* curvetoolarge: The sent curve is too large for the implementation (e.g. STL6k will only allow 1024 points at this time)
 * error: An unspecified error has occured. In this case the error_message field shall be present to provide context.
 
 

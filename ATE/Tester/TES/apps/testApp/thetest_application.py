@@ -13,7 +13,6 @@ from typing import Optional
 from ATE.Tester.TES.apps.testApp import thetestzip_mock
 import queue
 
-FRAMEWORK_VERSION = 1
 
 logger = logging.getLogger(__name__)
 
@@ -144,9 +143,9 @@ class TopicFactory:
     def test_status_payload(self, alive: TheTestAppStatusAlive):
         return {
             "type": "status",
-            "alive": alive.value,
             "framework_version": FRAMEWORK_VERSION,
-            "test_version": "N/A"
+            "test_version": "N/A",
+            "payload": {}
         }
 
     def test_result_payload(self, ispass: bool, testdata: object):
@@ -259,7 +258,7 @@ class TheTestAppMqttClient:
     def publish_status(self, alive: TheTestAppStatusAlive, statedict) -> mqtt.MQTTMessageInfo:
         payload = self._topic_factory.test_status_payload(alive)
         if statedict is not None:
-            payload.update(statedict)
+            payload["payload"].update(statedict)
         return self._client.publish(
             topic=self._topic_factory.test_status_topic(),
             payload=json.dumps(payload),

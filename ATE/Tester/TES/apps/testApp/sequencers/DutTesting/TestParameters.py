@@ -8,7 +8,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 class InputParameter:
     def __init__(self, name, shmoo, value):
         self._value = value
-        self._shmoo = value
+        self._shmoo = shmoo
         self._name = name
 
     def __call__(self):
@@ -23,9 +23,7 @@ class OutputParameter:
         self._nom = nom
         self._utl = utl
         self._usl = usl
-        # initialize the measurement with a value,
-        # that is guaranteed to fail the test
-        # if the test fails to write the param.
+
         self._measurements = []
         self._measurement = self._lsl
         self._id = 0

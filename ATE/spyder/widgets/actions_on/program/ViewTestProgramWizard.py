@@ -31,12 +31,8 @@ class ViewTestProgramWizard(TestProgramWizard):
 
     @staticmethod
     def setup_view(dialog, name):
-        # for test in dialog.project_info.get_tests_for_program(name, dialog.owner):
-        #     dialog.selectedTests.addItem(test)
-
-        dialog.selected_tests = dialog.project_info.get_program_test_configuration(name, dialog.owner)
-        dialog._format_selected_list()
-        dialog._update_test_list_table()
+        dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
+        dialog._update_selected_test_list()
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         # TODO: can we edit any of the following property
         dialog.hardware.clear()

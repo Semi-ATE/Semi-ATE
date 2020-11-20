@@ -59,7 +59,7 @@ export const MESSAGE_WHEN_SYSTEM_STATUS_SOFTERROR = {
     systemTime: formatDate(Date.now(), 'medium', 'en-US'),
     sites: ['0'],
     state: 'softerror',
-    error_message: 'On of the control applications crashed',
+    error_message: 'One of the control applications crashed',
     env: 'F1'
   }
 };
