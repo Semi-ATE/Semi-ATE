@@ -15,7 +15,7 @@ from numpy import nan, inf
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import OutputParameter
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
-from ATE.Tester.TES.apps.testApp.parameters.ResolverFactroy import create_parameter_resolver
+from ATE.Tester.TES.apps.testApp.parameters.ResolverFactory import create_parameter_resolver
 
 
 class {{ definition['name'] }}_OP:
@@ -24,7 +24,9 @@ class {{ definition['name'] }}_OP:
     def __init__(self):
         self.num_outputs = 0
         {% for output_parameter in output_params %}
-        self.o_{{ output_parameter['name'] }} = OutputParameter('{{ output_parameter['name'] }}', {{ output_parameter['LSL'] }}, {{ output_parameter['LTL'] }}, {{ output_parameter['Nom'] }}, {{ output_parameter['UTL'] }}, {{ output_parameter['USL'] }})
+        self.o_{{ output_parameter['name'] }} = OutputParameter('{{ output_parameter['name'] }}', {{ output_parameter['LSL'] }}, {{ output_parameter['LTL'] }}, {{ output_parameter['Nom'] }}, {{ output_parameter['UTL'] }}, {{ output_parameter['USL'] }}, {{ output_parameter['10ᵡ'] }})
+        self.o_{{ output_parameter['name'] }}.set_format('{{ output_parameter['fmt'] }}')
+        self.o_{{ output_parameter['name'] }}.set_unit('{{ output_parameter['Unit'] }}')
         {% endfor %}
 
     def set_parameter(self, name, id, ltl, utl, bin, bin_result, test_desc):
@@ -42,8 +44,8 @@ class {{ definition['name']}}_IP:
         self.i_{{ input_parameter['name'] }} = None
         {% endfor %}
 
-    def set_parameter(self, name, type, value):
-        setattr(self, f'i_{name}', create_parameter_resolver(type, f'i_{name}', '', value))
+    def set_parameter(self, name, type, value, min_value, max_value, power, context):
+        setattr(self, f'i_{name}', create_parameter_resolver(type, f'i_{name}', '', value, min_value, max_value, power, context))
 
 
 class {{ definition['name'] }}_BC(DutTestCaseBase):
@@ -58,18 +60,30 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
         self.ip = {{ definition['name'] }}_IP()
         self.op = {{ definition['name'] }}_OP()
         self.logger = logger
+        self._sbin = None
+        self._test_num = None
 
-    def aggregate_test_result(self, site_num):
+    def set_context(self, ctx):
+        self.context = ctx
+
+    def aggregate_test_result(self, site_num, exception):
         stdf_data = []
         test_result = Result.Inconclusive()
         test_bin = -1
+        if not exception:
         {% for output_parameter in output_params %}
-        current_result = self.op.o_{{ output_parameter['name'] }}.get_testresult()
-        test_result = self._select_testresult(test_result, current_result)
-        test_bin = self._select_bin(test_bin, current_result)
-        stdf_data.append(self.op.o_{{ output_parameter['name'] }}.generate_ptr_record(current_result[0], site_num))
+            current_result = self.op.o_{{ output_parameter['name'] }}.get_testresult()
+            test_result = self._select_testresult(test_result, current_result)
+            test_bin = self._select_bin(test_bin, current_result)
+            stdf_data.append(self.op.o_{{ output_parameter['name'] }}.generate_ptr_record(current_result[0], site_num))
         {% endfor %}
-        # ToDo: Aggregate STDF data from parameters
+        else:
+        {% for output_parameter in output_params %}
+            test_result = Result.Fail()
+            test_bin = self.get_sbin()
+            stdf_data.append(self.op.o_{{ output_parameter['name'] }}.generate_ptr_record(test_result, site_num))
+        {% endfor %}
+
         return (test_result, test_bin, stdf_data)
 
     def aggregate_tests_summary(self, head_num, site_num):
@@ -79,3 +93,15 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
         {% endfor %}
 
         return stdf_data
+
+    def set_sbin(self, sbin):
+        self._sbin = sbin
+
+    def get_sbin(self):
+        return self._sbin
+
+    def set_test_num(self, test_num):
+        self._test_num = test_num
+
+    def get_test_num(self):
+        return self._test_num

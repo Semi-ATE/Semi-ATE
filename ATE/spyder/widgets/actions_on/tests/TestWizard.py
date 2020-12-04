@@ -18,7 +18,6 @@ import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5 import uic
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.validation import is_valid_test_name
@@ -28,6 +27,7 @@ from ATE.spyder.widgets.validation import valid_max_float_regex
 from ATE.spyder.widgets.validation import valid_min_float_regex
 from ATE.spyder.widgets.validation import valid_test_name_regex
 from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
+from ATE.spyder.widgets.actions_on.tests.Utils import POWER
 
 minimal_docstring_length = 80
 
@@ -832,12 +832,10 @@ class TestWizard(BaseDialog):
 
             #shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
 
-
         if  attributes['Shmoo'] is True:
             shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
         else:
             shmoo_item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
-
 
     # Multiplier
         if name == 'Temperature':  # fixed regardless what the attributes say
@@ -845,7 +843,7 @@ class TestWizard(BaseDialog):
             multiplier_item.setData(int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
             multiplier_item.setFlags(QtCore.Qt.NoItemFlags)
         else:
-            multiplier_item.setData(str(attributes['10ᵡ']), QtCore.Qt.DisplayRole)
+            multiplier_item.setData(str(self.get_key(attributes['10ᵡ'])), QtCore.Qt.DisplayRole)
             multiplier_item.setData(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, QtCore.Qt.TextAlignmentRole)
             multiplier_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
     # Unit
@@ -867,7 +865,7 @@ class TestWizard(BaseDialog):
             self.setInputParameter(name, attributes)
 
     def getInputParameter(self, row):
-        attributes = {'Shmoo': None, 'Min': None, 'Default': None, 'Max': None, '10ᵡ': None, 'Unit': None, 'fmt': None}
+        attributes = {'Shmoo': None, 'Min': None, 'Default': None, 'Max': None, '10ᵡ': '˽', 'Unit': '˽', 'fmt': None}
 
         name_item = self.__get_input_parameter_column(row, INPUT_NAME_COLUMN_INDEX)
 
@@ -910,7 +908,7 @@ class TestWizard(BaseDialog):
 
         multiplier_item = self.__get_input_parameter_column(row, INPUT_MULTIPLIER_COLUMN_INDEX)
         Multiplier = multiplier_item.data(QtCore.Qt.DisplayRole)
-        attributes['10ᵡ'] = Multiplier
+        attributes['10ᵡ'] = Multiplier if Multiplier else attributes['10ᵡ']
 
         unit_item = self.__get_input_parameter_column(row, INPUT_UNIT_COLUMN_INDEX)
         Unit = unit_item.data(QtCore.Qt.DisplayRole)
@@ -923,8 +921,27 @@ class TestWizard(BaseDialog):
         rows = self.inputParameterModel.rowCount()
         for row in range(rows):
             name, attributes = self.getInputParameter(row)
+            self._update_power_with_correct_value(attributes)
             retval[name] = attributes
+
         return retval
+
+    def _update_power_with_correct_value(self, attributes):
+        try:
+            attributes['10ᵡ'] = POWER[attributes['10ᵡ']]
+        except KeyError:
+            attributes['10ᵡ'] = self.get_key(attributes['10ᵡ'])
+
+    # hack til the testwizard is refactored
+    @staticmethod
+    def get_key(attribute):
+        for key, value in POWER.items():
+            if value != attribute:
+                continue
+
+            return key
+
+        return attribute
 
     def moveInputParameterUp(self):
         selectedIndexes = self.inputParameterView.selectedIndexes()
@@ -958,7 +975,7 @@ class TestWizard(BaseDialog):
         else:
             new_parameter_index = max(existing_parameter_indexes) + 1
         name = f'new_parameter{new_parameter_index}'
-        attributes = {'Shmoo': False, 'Min': '-∞', 'Default': 0, 'Max': '+∞', '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}
+        attributes = {'Shmoo': False, 'Min': '-∞', 'Default': 0, 'Max': '+∞', '10ᵡ': '˽', 'Unit': '˽', 'fmt': '.3f'}
         self.setInputParameter(name, attributes)
 
     def unselectInputParameter(self):
@@ -1036,11 +1053,11 @@ class TestWizard(BaseDialog):
                 item.triggered.connect(special_value[1])
             menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() == 6:  # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
+        elif index.column() == OUTPUT_FMT_COLUMN_INDEX:  # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
             menu = self.multiplierContextMenu(multiplierSetter)
             menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() == 7:  # Unit
+        elif index.column() == OUTPUT_UNIT_COLUMN_INDEX:  # Unit
             menu = self.unitContextMenu(unitSetter)
             menu.exec_(QtGui.QCursor.pos())
 
@@ -1133,7 +1150,7 @@ class TestWizard(BaseDialog):
         selection = self.outputParameterView.selectedIndexes()
 
         for index in selection:
-            if index.column() == 6:  # multipliers are located in column#6 for output parameters
+            if index.column() == OUTPUT_FMT_COLUMN_INDEX:
                 self.outputParameterModel.setData(index, text, QtCore.Qt.DisplayRole)
                 self.outputParameterModel.setData(index, tooltip, QtCore.Qt.ToolTipRole)
         self.outputParameterView.clearSelection()
@@ -1142,8 +1159,7 @@ class TestWizard(BaseDialog):
         selection = self.outputParameterView.selectedIndexes()
 
         for index in selection:
-            print(f"({index.row()}, {index.column()}) --> {index.column()==7}")
-            if index.column() == 7:  # units are located in column#7 for output parameters
+            if index.column() == OUTPUT_UNIT_COLUMN_INDEX: 
                 self.outputParameterModel.setData(index, text, QtCore.Qt.DisplayRole)
                 self.outputParameterModel.setData(index, tooltip, QtCore.Qt.ToolTipRole)
         self.outputParameterView.clearSelection()
@@ -1338,7 +1354,7 @@ class TestWizard(BaseDialog):
         name_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
 
     # Multiplier
-        multiplier_item.setData(str(attributes['10ᵡ']), QtCore.Qt.DisplayRole)
+        multiplier_item.setData(str(self.get_key(attributes['10ᵡ'])), QtCore.Qt.DisplayRole)
         multiplier_item.setData(int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
         multiplier_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
     # Unit
@@ -1359,7 +1375,7 @@ class TestWizard(BaseDialog):
         the result is always a float (might be np.inf or np.nan) for LSL, LTL, Nom, UTL and USL (rest is string)
         the source is in the model, and always a string.
         '''
-        attributes = attributes = {'LSL': None, 'LTL': None, 'Nom': None, 'UTL': None, 'USL': None, '10ᵡ': '', 'Unit': '', 'fmt': ''}
+        attributes = attributes = {'LSL': None, 'LTL': None, 'Nom': None, 'UTL': None, 'USL': None, '10ᵡ': '˽', 'Unit': '˽', 'fmt': ''}
 
         name_item = self.outputParameterModel.item(row, 0)
         name = name_item.data(QtCore.Qt.DisplayRole)
@@ -1406,7 +1422,8 @@ class TestWizard(BaseDialog):
 
     # multiplier
         multiplier_item = self.outputParameterModel.item(row, 6)
-        attributes['10ᵡ'] = multiplier_item.data(QtCore.Qt.DisplayRole)
+        multiplier = multiplier_item.data(QtCore.Qt.DisplayRole)
+        attributes['10ᵡ'] = multiplier if multiplier else attributes['10ᵡ']
 
     # unit
         unit_item = self.outputParameterModel.item(row, 7)
@@ -1423,6 +1440,7 @@ class TestWizard(BaseDialog):
         rows = self.outputParameterModel.rowCount()
         for row in range(rows):
             name, attributes = self.getOutputParameter(row)
+            self._update_power_with_correct_value(attributes)
             retval[name] = attributes
         return retval
 
@@ -1458,7 +1476,7 @@ class TestWizard(BaseDialog):
         else:
             new_parameter_index = max(existing_parameter_indexes) + 1
         name = f'new_parameter{new_parameter_index}'
-        attributes = {'LSL': -np.inf, 'LTL': np.nan, 'Nom': 0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}
+        attributes = {'LSL': -np.inf, 'LTL': np.nan, 'Nom': 0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '˽', 'Unit': '˽', 'fmt': '.3f'}
         self.setOutputParameter(name, attributes)
         if new_row == 0:  # switch tabs back and fore to get the 'table adjust' bug out of the way
             self.testTabs.setCurrentWidget(self.inputParametersTab)
@@ -1637,8 +1655,8 @@ def make_blank_definition(project_info):
     retval['hardware'] = project_info.active_hardware
     retval['base'] = project_info.active_base
     retval['docstring'] = []
-    retval['input_parameters'] = {'Temperature': {'Shmoo': True, 'Min': -40, 'Default': 25, 'Max': 170, '10ᵡ': '', 'Unit': '°C', 'fmt': '.0f'}}
-    retval['output_parameters'] = {'new_parameter1': {'LSL': -np.inf, 'LTL': np.nan, 'Nom': 0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+    retval['input_parameters'] = {'Temperature': {'Shmoo': True, 'Min': -40, 'Default': 25, 'Max': 170, '10ᵡ': '˽', 'Unit': '°C', 'fmt': '.0f'}}
+    retval['output_parameters'] = {'new_parameter1': {'LSL': -np.inf, 'LTL': np.nan, 'Nom': 0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '˽', 'Unit': '˽', 'fmt': '.3f'}}
     retval['dependencies'] = {}
     return retval
 
@@ -1660,11 +1678,3 @@ def edit_test_dialog(project_info, test_content):
     edit = TestWizard(project_info, test_content=test_content, read_only=True)
     edit.exec_()
     del(edit)
-
-
-def new_standard_test_dialog(project_info):  # TODO: move the standard test wizard here too !!!
-    pass
-
-
-def edit_standard_test_dialog(project_info):  # TODO: does this make sense ?!? -->yes,open with TestWizard
-    pass

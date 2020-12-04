@@ -437,8 +437,6 @@ class HardwareWizard(BaseDialog):
         if self.hardware.text() == 'HW0':
             # when HW0 is set everything is allowed we do not need to check our entries
             self.OKButton.setEnabled(True)
-            self.tabLayout.setTabEnabled(1, False)
-            self.tabLayout.setTabEnabled(2, False)
             return
 
         self.feedback.setText('')

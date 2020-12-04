@@ -590,7 +590,7 @@ class ProjectNavigation(QObject):
         programs = Sequence.get_programs_for_test(self.get_session(), test_name)
         programs = set([program.prog_name for program in programs])
 
-        from ATE.spyder.widgets.coding.generators import test_program_generator
+        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         for program in programs:
             if not Program.get(self.get_session(), program).is_valid:
                 continue
@@ -600,9 +600,6 @@ class ProjectNavigation(QObject):
 
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
-
-    def _update_test_program_valid_state(self, program_name, is_valid):
-        Program.set_program_state(self.get_session(), program_name, is_valid)
 
     def is_test_program_valid(self, program_name):
         program = Program.get(self.get_session(), program_name)
@@ -723,12 +720,12 @@ class ProjectNavigation(QObject):
         QualificationFlowDatum.remove(self.get_session(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
-    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target):
-        for index, test in enumerate(definition['sequence']):
+    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy):
+        for _, test in enumerate(definition):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
 
-        Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target)
+        Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
@@ -736,18 +733,18 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Test())
 
     def _generate_program_code(self, name, owner):
-        from ATE.spyder.widgets.coding.generators import test_program_generator
+        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         test_program_generator(name, owner, self)
 
     def _insert_sequence_informations(self, owner_name, prog_name, definition):
-        for index, test in enumerate(definition['sequence']):
+        for index, test in enumerate(definition):
             # ToDo: Why protocol version 4?
             Sequence.add_sequence_information(self.get_session(), owner_name, prog_name, test['name'], index, test)
 
-    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target):
+    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
 
-        Program.update(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target)
+        Program.update(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target, cache_type, caching_policy)
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
@@ -762,7 +759,7 @@ class ProjectNavigation(QObject):
 
     def _update_test_targets_list(self, program_name, test_target, hardware, base, definition):
         tests = []
-        for test in definition['sequence']:
+        for test in definition:
             test.pop('is_valid', None)
             test_name = test['name']
             tests.append(test_name)
@@ -817,7 +814,7 @@ class ProjectNavigation(QObject):
             TestTarget.update_program_name(self.get_session(), name, new_name)
 
             self._remove_file(self._generate_program_path(name))
-            from ATE.spyder.widgets.coding.generators import test_program_generator
+            from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
             test_program_generator(new_name, owner_name, self)
 
     def _remove_test_targets_for_test_program(self, prog_name):
@@ -896,6 +893,8 @@ class ProjectNavigation(QObject):
         retval.update({"target": prog.target})
         retval.update({"usertext": prog.usertext})
         retval.update({"sequencer_type": prog.sequencer_type})
+        retval.update({"caching_policy": prog.caching_policy})
+        retval.update({"cache_type": prog.cache_type})
         if prog.sequencer_type == 'Fixed Temperature':
             retval.update({"temperature": str(pickle.loads(prog.temperature))})
         else:
@@ -1005,7 +1004,7 @@ class ProjectNavigation(QObject):
         testdefinition['hardware'] = hardware
 
         if not test_target.is_default:
-            from ATE.spyder.widgets.coding.generators import test_target_generator
+            from ATE.spyder.widgets.coding.TargetGenerator import test_target_generator
             test_target_generator(self.project_directory, testdefinition, do_update)
         self._update_programs_state_for_test(test)
 

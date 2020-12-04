@@ -1,3 +1,0 @@
-cookiecutter
-recommonmark
-requests

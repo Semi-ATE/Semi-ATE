@@ -7,7 +7,7 @@ import os
 from ATE.data.STDF.records import records_from_file
 from ATE.data.STDF.records import FAR, MIR, PIR, PTR, PRR, PCR, MRR, STDR
 #ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
-from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_PIR, generate_PRR, generate_PTR, generate_TSR)
+from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR, generate_PRR, generate_PTR, generate_TSR)
 
 
 class StdfPartTestContext:
@@ -155,6 +155,7 @@ class StdfTestResultAggregator:
                 'PIR': lambda test_result: self._generate_PIR(test_result),
                 'PTR': lambda test_result: self._generate_PTR(test_result),
                 'PRR': lambda test_result: self._generate_PRR(test_result),
+                'FTR': lambda test_result: self._generate_FTR(test_result),
             }[test_result['type']](test_result)
 
             self.write_records_to_file([rec])
@@ -175,8 +176,17 @@ class StdfTestResultAggregator:
     def _generate_PTR(ptr_record):
         rec = generate_PTR(ptr_record['TEST_NUM'], ptr_record['HEAD_NUM'], ptr_record['SITE_NUM'],
                            False, ptr_record['PARM_FLG'], ptr_record['RESULT'], ptr_record['TEST_TXT'],
-                           ptr_record['ALARM_ID'], ptr_record['OPT_FLAG'])
+                           ptr_record['ALARM_ID'], ptr_record['LO_LIMIT'], ptr_record['HI_LIMIT'],
+                           ptr_record['UNITS'], ptr_record['C_RESFMT'], ptr_record['RES_SCAL'],
+                           ptr_record['LO_SPEC'], ptr_record['HI_SPEC'], ptr_record['OPT_FLAG'])
 
+        return rec
+
+    @staticmethod
+    def _generate_FTR(ftr_record):
+        rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], False)
+
+        rec.set_value('TEST_FLG', ftr_record['TEST_FLG'])
         return rec
 
     @staticmethod

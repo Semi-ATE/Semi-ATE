@@ -4,11 +4,13 @@ import re
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QTableWidgetItem, QTreeWidgetItem
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-from ATE.spyder.widgets.actions_on.program.Utils import (ParameterEditability, ResolverTypes, Action, Sequencer, Result,                                                          
+from ATE.spyder.widgets.actions_on.program.Utils import (ParameterEditability, ResolverTypes, Action, Sequencer, Result,
                                                          BinningColumns, ErrorMessage, Tabs, ParameterState, InputFieldsPosition, OutputFieldsPosition)
-from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import TestProgram
+from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
+from ATE.spyder.widgets.navigation import ProjectNavigation
 
 
 DEFAULT_TEMPERATURE = '25'
@@ -29,7 +31,7 @@ GRADES = [("Grade_A", 1),
 
 
 class TestProgramWizard(BaseDialog):
-    def __init__(self, project_info, owner, parent=None, read_only=False, enable_edit=True, prog_name=''):
+    def __init__(self, project_info: ProjectNavigation, owner: str, parent=None, read_only: bool = False, enable_edit: bool = True, prog_name: str =''):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self.owner = owner
@@ -83,12 +85,14 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.itemDoubleClicked.connect(self._double_click_handler)
         self.selectedTests.itemClicked.connect(self._test_selected)
         self.selectedTests.itemSelectionChanged.connect(self._table_clicked)
+        self.selectedTests.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
 
-        self.tabWidget.currentChanged.connect(self._tab_changed)
         self.binning_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.binning_tree.itemClicked.connect(self._binning_tree_item_clicked)
         self.binning_tree.customContextMenuRequested.connect(self._context_menu)
         self.binning_tree.itemChanged.connect(self._binning_item_changed)
+        self.binning_tree.setItemsExpandable(False)
+        self.binning_tree.clear()
 
     def _connect_event_handler(self):
         self.availableTests.itemClicked.connect(self._available_test_selected)
@@ -133,6 +137,16 @@ class TestProgramWizard(BaseDialog):
         self.target.setEnabled(False)
         self.base.setEnabled(False)
 
+        available_functions = self.project_info.get_hardware_definition(self.project_info.active_hardware)["GPFunctions"]
+        self.cacheType.addItems(available_functions)
+        if len(available_functions) == 0:
+            self.cacheDrop.setChecked(False)
+            self.cacheDrop.setEnabled(False)
+            self.cacheStore.setChecked(False)
+            self.cacheStore.setEnabled(False)
+            self.cacheDisable.setChecked(True)
+            self.cacheDisable.setEnabled(False)
+
         current_base_index = self.base.findText(self.project_info.active_base, QtCore.Qt.MatchExactly)
         self.base.setCurrentIndex(current_base_index)
 
@@ -150,13 +164,25 @@ class TestProgramWizard(BaseDialog):
         self.usertext_feedback.setStyleSheet(ORANGE_LABEL)
         self._verify()
 
-    @staticmethod
-    def _generate_menu():
-        menu = QtWidgets.QMenu()
-        for grade in GRADES:
-            menu.addAction(grade[0])
+    @QtCore.pyqtSlot(QtCore.QPoint)
+    def _context_menu(self, point):
+        if not (self.binning_tree.currentColumn() == BinningColumns.Grade()
+                and self._is_binning_child_item()):
+            return
 
-        return menu
+        label = self._get_selected_menu_label(point)
+        if label is None:
+            return None
+
+        item = self.binning_tree.itemAt(point)
+        self._update_binning_tree(self._get_sbin(label), item, BinningColumns.Grade())
+
+    def _is_binning_child_item(self):
+        item = self.binning_tree.currentItem()
+        if not item:
+            None
+
+        return self.binning_tree.currentItem().parent() is not None
 
     def _get_selected_menu_label(self, point):
         menu = self._generate_menu()
@@ -167,24 +193,12 @@ class TestProgramWizard(BaseDialog):
 
         return action.text()
 
-    def _get_current_column(self):
-        return self.binning_tree.currentColumn()
+    def _generate_menu(self):
+        menu = QtWidgets.QMenu(self.project_info.parent)
+        for index in range(1, len(GRADES)):
+            menu.addAction(GRADES[index][0])
 
-    def _is_binning_child_item(self):
-        item = self.binning_tree.currentItem()
-        if not item:
-            None
-
-        return self.binning_tree.currentItem().parent() is not None
-
-    def _is_menu_supported(self):
-        return (self._get_current_column() == BinningColumns.Grade()
-                and self._is_binning_child_item())
-
-    @staticmethod
-    def _is_pass(text):
-        grade = int(text)
-        return grade >= 1 and grade <= 9
+        return menu
 
     @staticmethod
     def _get_sbin(text):
@@ -193,18 +207,6 @@ class TestProgramWizard(BaseDialog):
                 return str(elem[1])
 
         return text
-
-    @QtCore.pyqtSlot(QtCore.QPoint)
-    def _context_menu(self, point):
-        if not self._is_menu_supported():
-            return
-
-        label = self._get_selected_menu_label(point)
-        if label is None:
-            return None
-
-        item = self.binning_tree.itemAt(point)
-        self._update_binning_tree(self._get_sbin(label), item, BinningColumns.Grade())
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
     def _binning_tree_item_clicked(self, item, column):
@@ -217,12 +219,6 @@ class TestProgramWizard(BaseDialog):
                 item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
 
         self.binning_tree.blockSignals(False)
-
-    def _tab_changed(self, index):
-        tab_name = self.tabWidget.tabText(index)
-        self.binning_tree.clear()
-        if tab_name == Tabs.Binning():
-            self._populate_binning_tree()
 
     def _table_clicked(self):
         if len(self.selectedTests.selectedItems()):
@@ -419,6 +415,7 @@ class TestProgramWizard(BaseDialog):
             self._custom_parameter_handler.reorder_test(test_name, Action.Up())
             self._switch_item_names(row, row - 1)
 
+        self.selectedTests.selectRow(row - 1)
         self.selectedTests.blockSignals(False)
 
     @QtCore.pyqtSlot()
@@ -432,7 +429,9 @@ class TestProgramWizard(BaseDialog):
             test_name = self.selectedTests.item(row, 1).text()
             self._custom_parameter_handler.reorder_test(test_name, Action.Down())
             self._switch_item_names(row, row + 1)
+
         self.selectedTests.blockSignals(False)
+        self.selectedTests.selectRow(row + 1)
 
     def _switch_item_names(self, row, next_row):
         item_base = self.selectedTests.takeItem(row, 0)
@@ -475,7 +474,6 @@ class TestProgramWizard(BaseDialog):
         for item in self.availableTests.selectedItems():
             self._add_test_tuple_items(item.text())
         self.availableTests.blockSignals(False)
-        self._populate_binning_tree()
 
     @QtCore.pyqtSlot(str)
     def _verify_temperature(self, text):
@@ -825,8 +823,15 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.blockSignals(True)
         self.selectedTests.removeRow(row)
         self.selectedTests.insertRow(row)
-        self._insert_test_tuple_items(row, test_name, test_description)
+        self._insert_test_tuple_without_validation(row, test_name, test_description)
         self.selectedTests.blockSignals(False)
+
+    def _insert_test_tuple_without_validation(self, row, test_name, test_description):
+        test_base_item = self._generate_test_name_item(test_name)
+        test_name_item = self._generate_test_description_item(test_description)
+
+        self.selectedTests.setItem(row, 0, test_base_item)
+        self.selectedTests.setItem(row, 1, test_name_item)
 
     def _update_selected_test_list(self):
         self._validate_tests_parameters()
@@ -889,6 +894,8 @@ class TestProgramWizard(BaseDialog):
         pos = len(test_names) - 1
         self.selectedTests.setItem(pos, 0, item_name)
         self.selectedTests.setItem(pos, 1, item_description)
+        bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
+        self._add_tests_to_bin_table(bin_info)
 
     def _generate_test_name(self, test_base):
         test_names = self._custom_parameter_handler.get_test_names()
@@ -922,26 +929,40 @@ class TestProgramWizard(BaseDialog):
     def _populate_binning_tree(self):
         binning_infos = self._custom_parameter_handler.binning_information()
         for test in binning_infos:
-            parent = QtWidgets.QTreeWidgetItem(self.binning_tree)
-            parent.setExpanded(True)
-            parent.setText(0, test['name'])
-            self._add_binning_item(test['description'], test['output_parameters'], parent)
+            self._add_tests_to_bin_table(test)
 
-    def _add_binning_item(self, description, out_params, parent):
+    def _add_tests_to_bin_table(self, test: TestParameters):
+        self.binning_tree.blockSignals(True)
+        parent = QtWidgets.QTreeWidgetItem(self.binning_tree)
+        parent.setExpanded(True)
+        parent.setText(0, test['name'])
+        parent.setText(1, str(self.bin_counter))
+        test_sbin = self.bin_counter
+        self.bin_counter += 1
+        parent.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+        self._add_binning_item(test['description'], test['output_parameters'], parent, test_sbin)
+        self.binning_tree.blockSignals(False)
+
+    def _add_binning_item(self, description, out_params, parent, test_sbin):
+        child = None
         for key, value in out_params.items():
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, description + '_' + key)
             if not value.bin.get_value():
-                value.set_bin_infos(self.bin_counter, Result.Fail())
+                value.set_bin_infos(self.bin_counter, Result.Fail()[0])
                 self.bin_counter += 1
 
             self._set_bin_flag(item, value.get_field_state())
 
             item.setText(1, str(value.bin.get_value()))
-            item.setText(2, Result.Fail()[0] if value.bin_result.get_value()[0] == Result.Fail()[0] else Result.Pass()[0])
+            item.setText(2, Result.Fail()[0] if value.bin_result.get_value() == Result.Fail()[0] else Result.Pass()[0])
             item.setText(3, '')
 
+            # hold last item to update the appropriate test with the correct sbin value
+            child = item
             parent.addChild(item)
+
+        self._update_test_bin(child, test_sbin)
 
     def _set_bin_flag(self, item, validity):
         if validity in (ParameterState.Valid(), ParameterState.Changed(), ParameterState.PartValid()):
@@ -963,8 +984,12 @@ class TestProgramWizard(BaseDialog):
         item.setForeground(col, QtCore.Qt.black)
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem)
-    def _binning_item_changed(self, item):
+    def _binning_item_changed(self, item: QtWidgets.QTreeWidgetItem):
         if not item.text(1):
+            return
+
+        if item.childCount() != 0:
+            self._handle_changed_test_sbin(item)
             return
 
         self._update_feedback('')
@@ -976,10 +1001,41 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.SbinInvalid())
             return
 
-        if not self._is_pass(item.text(1)):
+        if not self._is_pass_grade(item.text(1)):
             self._update_binning_tree(Result.Fail()[0], item, BinningColumns.Result())
         else:
             self._update_binning_tree(Result.Pass()[0], item, BinningColumns.Result())
+
+    def _handle_changed_test_sbin(self, item: QTableWidgetItem):
+        try:
+            test_sbin = int(item.text(1))
+        except ValueError:
+            self._update_feedback('test bin must be an integral value')
+            self.OKButton.setEnabled(False)
+            return
+
+        if test_sbin in [grade[1] for grade in GRADES]:
+            self._update_feedback('test bin cannot be a good graded bin')
+            self.OKButton.setEnabled(False)
+            return
+
+        self._update_test_bin(item.child(0), test_sbin)
+        item.setText(2, '')
+        item.setText(3, '')
+        self._verify()
+
+    def _update_test_bin(self, output_item: QTableWidgetItem, test_sbin: int):
+        tests = self._custom_parameter_handler.get_tests()
+        for test in tests:
+            if test.get_test_name() not in output_item.text(0):
+                continue
+
+            test.set_sbin(test_sbin)
+
+    @staticmethod
+    def _is_pass_grade(text):
+        grade = int(text)
+        return grade >= 1 and grade <= 9
 
     @staticmethod
     def _update_binning_tree(text, item, pos):
@@ -992,7 +1048,10 @@ class TestProgramWizard(BaseDialog):
         else:
             return Result.Pass()
 
-    def _get_binning_structure(self, item):
+    def _get_binning_structure(self, item: QTreeWidgetItem):
+        if item.childCount() != 0:
+            return
+
         output_name = item.text(0).split('_')
         test_name = output_name[0] + '_' + output_name[1]
         param_name = item.text(0).replace(test_name, '')
@@ -1002,27 +1061,18 @@ class TestProgramWizard(BaseDialog):
     def _get_binning_params(item):
         return (item.text(1), item.text(2), item.text(3))
 
-    def _get_configuration(self):
-        configuration = {'name': '',
-                         'hardware': self.hardware.currentText(),
-                         'base': self.base.currentText(),
-                         'target': self.target.currentText(),
-                         'usertext': self.usertext.text(),
-                         'sequencer_type': self.sequencer_type,
+    def _get_temperature_value(self):
+        return self.temperature.text() if self.sequencer_type == Sequencer.Static() else self._get_dynamic_temp(self.temperature.text())
 
-                         'temperature': self.temperature.text() if self.sequencer_type == Sequencer.Static()
-                                 else self._get_dynamic_temp(self.temperature.text()),
-
-                         'sample': self.sample.suffix()}
-
-        definition = {'sequence': self._custom_parameter_handler.build_defintion()}
-        return configuration, definition
+    def _get_caching_policy_value(self):
+        if self.cacheDrop.isChecked():
+            return "drop"
+        if self.cacheStore.isChecked():
+            return "store"
+        return "disable"
 
     def _save_configuration(self):
-        configuration, definition = self._get_configuration()
-
-        if configuration is None:
-            return
+        definition = self._custom_parameter_handler.build_defintion()
 
         if not self.read_only and self.enable_edit:
             owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner}"
@@ -1031,14 +1081,16 @@ class TestProgramWizard(BaseDialog):
 
             self.target_prefix = f"{self.target.currentText()}_{self.owner}_{count}"
 
-            self.project_info.insert_program(self.prog_name, configuration['hardware'], configuration['base'], configuration['target'],
-                                             configuration['usertext'], configuration['sequencer_type'], configuration['temperature'],
-                                             definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix)
+            self.project_info.insert_program(self.prog_name, self.hardware.currentText(), self.base.currentText(), self.target.currentText(),
+                                             self.usertext.text(), self.sequencer_type, self._get_temperature_value(),
+                                             definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix,
+                                             self.cacheType.currentText(), self._get_caching_policy_value())
         else:
             self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
-            self.project_info.update_program(self.prog_name, configuration['hardware'], configuration['base'],
-                                             configuration['target'], configuration['usertext'], configuration['sequencer_type'],
-                                             configuration['temperature'], definition, self.owner, self._get_target_name())
+            self.project_info.update_program(self.prog_name, self.hardware.currentText(), self.base.currentText(),
+                                             self.target.currentText(), self.usertext.text(), self.sequencer_type,
+                                             self._get_temperature_value(), definition, self.owner, self._get_target_name(),
+                                             self.cacheType.currentText(), self._get_caching_policy_value())
 
         self.accept()
 
@@ -1070,30 +1122,13 @@ class TestProgramWizard(BaseDialog):
 
         return {ResolverTypes.Static(): self._static_selected, ResolverTypes.Local(): self._local_selected}
 
-    def _get_local_test_output_parameters_names(self):
-        available_tests = {}
-        current_item = self.selectedTests.selectedItems()[0]
-        test_name = self.selectedTests.item(current_item.row(), 1).text()
-        test_out_params = self._custom_parameter_handler.get_tests_outputs_parameters()
-
-        for test_out_param in test_out_params:
-            for test, out_param in test_out_param.items():
-                if test == test_name:
-                    return available_tests
-
-                for output in out_param:
-                    available_tests[f'{test}.{output}'] = self._set_out_params
-
-        return available_tests
-
     def _set_out_params(self):
         action = self.sender()
+        parent = action.parent()
         item = self.parametersInput.currentItem()
-        item.setText(action.text())
         input_name = self.parametersInput.item(item.row(), 0).text()
-
         parameter = self._custom_parameter_handler.get_input_parameter(self._selected_test_instance(), input_name)
-        parameter.set_value(action.text())
+        parameter.set_value(f'{parent.title()}.{action.text()}')
         self._fill_input_parameter_table()
 
     def _selected_test_instance(self):
@@ -1120,6 +1155,15 @@ class TestProgramWizard(BaseDialog):
         parameter.set_value_editability(editability)
         self._fill_input_parameter_table()
 
+    @staticmethod
+    def _set_editability(item, editability):
+        if editability == ParameterEditability.Selectable():
+            item.setFlags(QtCore.Qt.ItemIsEnabled)
+        elif editability == ParameterEditability.Editable():
+            item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
+        else:
+            item.setFlags(QtCore.Qt.NoItemFlags)
+
     def _context_menu_input_params(self, point):
         item = self.parametersInput.itemAt(point)
         if not item:
@@ -1132,30 +1176,59 @@ class TestProgramWizard(BaseDialog):
 
         type = self.parametersInput.item(row, 6).text()
         if column == 2 and type == ResolverTypes.Local():
-            self._create_menu(self._get_local_test_output_parameters_names())
+            input_name = self.parametersInput.item(row, 0).text()
+            self._create_value_menu(self._get_local_test_output_parameters_names(input_name))
         elif column == 6:
-            self._create_menu(self._get_input_parameter_types())
+            self._create_type_menu(self._get_input_parameter_types())
 
         self._verify()
 
-    @staticmethod
-    def _set_editability(item, editability):
-        if editability == ParameterEditability.Selectable():
-            item.setFlags(QtCore.Qt.ItemIsEnabled)
-        elif editability == ParameterEditability.Editable():
-            item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
-        else:
-            item.setFlags(QtCore.Qt.NoItemFlags)
+    def _get_local_test_output_parameters_names(self, input_name):
+        available_tests = {}
+        current_item = self.selectedTests.selectedItems()[0]
+        test_name = self.selectedTests.item(current_item.row(), 1).text()
+        test_out_params = self._custom_parameter_handler.get_tests_outputs_parameters()
+        test_in_param = self._custom_parameter_handler.get_input_parameter(test_name, input_name)
 
-    def _create_menu(self, components):
+        for test_out_param in test_out_params:
+            for test, out_param in test_out_param.items():
+                if test == test_name:
+                    return available_tests
+
+                available_tests[test] = []
+                for output in out_param:
+                    if not self._custom_parameter_handler.is_valid_range(test, test_in_param, output):
+                        continue
+
+                    available_tests[test].append(output)
+
+        return available_tests
+
+    def _create_type_menu(self, components):
         menu = QtWidgets.QMenu(self)
-
         for pd, func in components.items():
             item = menu.addAction(pd)
             item.triggered.connect(func)
             menu.addSeparator()
 
         menu.exec_(QtGui.QCursor.pos())
+
+    def _create_value_menu(self, components):
+        menu = QtWidgets.QMenu(self)
+        for test_name, tests in components.items():
+            menu.addMenu(self._generate_test_menu(test_name, tests, menu))
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def _generate_test_menu(self, test_name, tests, parent):
+        menu = QtWidgets.QMenu(test_name, parent)
+        if not len(tests):
+            menu.setEnabled(False)
+        for test in tests:
+            item = menu.addAction(test)
+            item.triggered.connect(self._set_out_params)
+
+        return menu
 
 
 def new_program_dialog(project_info, owner, parent):

@@ -1,15 +1,20 @@
-from ATE.data.STDF.records import (PTR, PRR, PIR, TSR)
+from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR)
+
 
 ENDIAN = '<'
 
 
 def generate_PTR_dict(test_num, head_num, site_num,
                       is_pass, param_flag, measurement,
-                      test_txt, alarm_id, opt_flag=255):
+                      test_txt, alarm_id, l_limit, u_limit,
+                      fmt, exponent, unit, ls_limit, us_limit,
+                      opt_flag=255):
     record = {'type': 'PTR'}
     ptr_record = generate_PTR(test_num, head_num, site_num,
                               is_pass, param_flag, measurement,
-                              test_txt, alarm_id, opt_flag=255).to_dict()
+                              test_txt, alarm_id, l_limit, u_limit,
+                              unit, fmt, exponent, ls_limit, us_limit,
+                              opt_flag).to_dict()
     ptr_record['TEST_FLG'] = flag_array_to_int(ptr_record['TEST_FLG'], ENDIAN)
     ptr_record['PARM_FLG'] = flag_array_to_int(ptr_record['PARM_FLG'], ENDIAN)
     ptr_record['OPT_FLAG'] = flag_array_to_int(ptr_record['OPT_FLAG'], ENDIAN)
@@ -19,8 +24,13 @@ def generate_PTR_dict(test_num, head_num, site_num,
 
 def generate_PTR(test_num, head_num, site_num,
                  is_pass, param_flag, measurement,
-                 test_txt, alarm_id, opt_flag=255):
+                 test_txt, alarm_id, l_limit, u_limit,
+                 unit, fmt, exponent, ls_limit, us_limit,
+                 opt_flag=255):
     rec = PTR('V4', ENDIAN)
+
+    format = f'%7{fmt}' if '%7' not in fmt else fmt
+    prefix = int(exponent) * -1
 
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
@@ -28,9 +38,25 @@ def generate_PTR(test_num, head_num, site_num,
 
     rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b00000001)
     rec.set_value('PARM_FLG', param_flag)
-    rec.set_value('RESULT', measurement)
+    rec.set_value('RESULT', measurement if measurement is not None else ls_limit)
     rec.set_value('TEST_TXT', test_txt)
     rec.set_value('ALARM_ID', alarm_id)
+
+    rec.set_value('LO_LIMIT', l_limit)
+    rec.set_value('HI_LIMIT', u_limit)
+
+    rec.set_value('LO_SPEC', ls_limit)
+    rec.set_value('HI_SPEC', us_limit)
+
+    rec.set_value('C_RESFMT', format)
+    rec.set_value('C_LLMFMT', format)
+    rec.set_value('C_HLMFMT', format)
+
+    rec.set_value('RES_SCAL', prefix)
+    rec.set_value('LLM_SCAL', prefix)
+    rec.set_value('HLM_SCAL', prefix)
+
+    rec.set_value('UNITS', ' ' if '˽' == unit else unit)
 
     # TODO: workaround, need to explicitly set this or serialization raises exception
     rec.set_value('OPT_FLAG', opt_flag)  # bit set means ignore some field
@@ -148,3 +174,25 @@ def flag_array_to_int(flags, endian):
         num += pow(2, index) * int(flag)
 
     return num
+
+
+def generate_FTR(test_num, head_num, site_num, exception, opt_flag=255):
+    rec = FTR('V4', endian=ENDIAN)
+    rec.set_value('TEST_NUM', test_num)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('TEST_FLG', 0b10000000 if exception else 0b00000001)
+    # RTN_ICNT and PGM_ICNT field must be initialized to satisfy the stdf-record generator
+    rec.set_value('RTN_ICNT', 0)
+    rec.set_value('PGM_ICNT', 0)
+    rec.set_value('OPT_FLAG', opt_flag)
+    return rec
+
+
+def generate_FTR_dict(test_num, head_num, site_num, exception):
+    record = {'type': 'FTR'}
+    ftr_record = generate_FTR(test_num, head_num, site_num, exception).to_dict()
+    ftr_record['TEST_FLG'] = flag_array_to_int(ftr_record['TEST_FLG'], ENDIAN)
+    ftr_record['OPT_FLAG'] = flag_array_to_int(ftr_record['OPT_FLAG'], ENDIAN)
+    record.update(ftr_record)
+    return record
