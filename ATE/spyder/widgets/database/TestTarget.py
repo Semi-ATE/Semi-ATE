@@ -8,7 +8,6 @@ from sqlalchemy import Text
 from sqlalchemy.orm import relationship
 
 from ATE.spyder.widgets.database.ORM import Base
-from ATE.spyder.widgets.database.Test import Test
 
 
 class TestTarget(Base):
@@ -25,6 +24,7 @@ class TestTarget(Base):
     test = Column(ForeignKey('tests.name'), nullable=False)
     is_default = Column(Boolean)
     is_enabled = Column(Boolean)
+    is_changed = Column(Boolean)
 
     hardware1 = relationship('Hardware')
     test1 = relationship('Test')
@@ -88,3 +88,19 @@ class TestTarget(Base):
         for test_target in test_targets:
             test_target.prog_name = new_prog_name
             session.commit()
+
+    @staticmethod
+    def update_test_changed_flag(session, name, hardware, base, test, is_changed):
+        test_target = TestTarget.get(session, name, hardware, base, test)
+        test_target.is_changed = is_changed
+        session.commit()
+
+    @staticmethod
+    def get_changed_test_targets(session, hardware, base, prog_name):
+        return session.query(TestTarget).filter(TestTarget.is_changed, TestTarget.prog_name == prog_name, TestTarget.hardware == hardware, TestTarget.base == base).all()
+
+    @staticmethod
+    def update_changed_state_test_targets(session, hardware, base, prog_name):
+        tests = session.query(TestTarget).filter(TestTarget.prog_name == prog_name, TestTarget.hardware == hardware, TestTarget.base == base).all()
+        for test in tests:
+            test.is_changed = False

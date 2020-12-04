@@ -7,21 +7,16 @@ Topic: \<device-id>/Master/status
 |Feld| Bedeutung/Zulässige Werte   |
 |----|------------------------------|
 |Command| status                  |
-|alive | 0 oder 1                   |
 |interface_version| Bezeichnet die Version der Schnittstelle Master -> TestApp, die von dieser Version des Masters implementiert wird. |
 
-Gültige Werte für alive:
-
-* 0 = Masterapplikation hat sich beendet (unbeabsichtigt/Fehler),
-* 1 = Masterapplikation aktiv
 
 Beispiel:
 
 ```json
 {
     "type": "status",
-    "alive": "1",
-    "interface_version": "1"
+    "interface_version": "1",
+    "payload": {"state": "idle", "message": ""}
 }
 ```
 
@@ -105,7 +100,7 @@ __Auflösen von geteilten Peripherien__: Der Master verwendet Pluggy um für get
 
 ### Handlerbefehle
 
-Topic: \<device-id>/Master/command
+Topic: \<device-id>/Master/cmd
 |Feld| Bedeutung/Zulässige Werte    |
 |----|------------------------------|
 |type| \<command_type>              |
@@ -139,7 +134,7 @@ Der Loadbefehl weist die Masterapplikation an ein Los zu laden
 * **lotnumber**: Losnummer
 * sublotnumer: Sublosnummer / Wafernummer
 * devicetype: Device Type
-* measurementtemperature: Eingestellte Test-Temperature
+* measurementtemperature: Eingestellte Test-Temperatur
 
 Bei Erfolg wechselt der Master in den Zustand XXX
 
@@ -278,6 +273,3 @@ Der Master konsumiert Statusinformationen aus den Topics:
 * \<device-id>/Periphery/status
 
 * \<handler-id>/Handler/status
-
-
-* \<device-id>/MasterApp/status

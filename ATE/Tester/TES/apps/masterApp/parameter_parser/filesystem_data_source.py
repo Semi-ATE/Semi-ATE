@@ -23,7 +23,7 @@ class FileSystemDataSource:
 
     def does_file_exist(self):
         if not os.path.exists(self.fullpath):
-            self.log.log_message(LogLevel.Error(), 'file not found')
+            self.log.log_message(LogLevel.Error(), f'file not found: {self.fullpath}')
             return False
 
         return True

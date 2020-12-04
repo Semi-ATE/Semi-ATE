@@ -4,12 +4,10 @@ import sys
 from transitions import Machine
 import json
 
-from ATE.Tester.TES.apps.common.connection_handler import ConnectionHandler
+from ATE.Tester.TES.apps.common.mqtt_connection import MqttConnection
 from ATE.common.logger import LogLevel
 
 
-DEAD = 0
-ALIVE = 1
 SOFTWARE_VERSION = 1
 INTERFACE_VERSION = 1
 
@@ -144,11 +142,13 @@ class ControlConnectionHandler:
         self.device_id = device_id
         self.log = logger
         mqtt_client_id = f'controlapp.{device_id}.{site_id}'
-        self.mqtt = ConnectionHandler(host, port, mqtt_client_id, self.log)
+        self.mqtt = MqttConnection(host, port, mqtt_client_id, self.log)
         self.log.set_mqtt_client(self)
         self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
-                                             self._on_message_handler,
                                              self._on_disconnect_handler)
+
+        self.mqtt.register_route(self._generate_base_topic_cmd(), lambda topic, payload: self.on_message_handler(topic, payload))
+        self.mqtt.register_route(self._generate_base_topic_status_master(), lambda topic, payload: self.on_message_handler(topic, payload))
 
         self.commands = {
             "loadTest": self.__load_test_program,
@@ -161,7 +161,7 @@ class ControlConnectionHandler:
         self.mqtt.set_last_will(
             self._generate_base_topic_status(),
             self.mqtt.create_message(
-                self._generate_status_message(DEAD, 'crash', '')))
+                self._generate_status_message('crash', '')))
         self.mqtt.start_loop()
 
     async def stop(self):
@@ -170,7 +170,7 @@ class ControlConnectionHandler:
     def publish_state(self, state, error_message, statedict=None):
         self.mqtt.publish(self._generate_base_topic_status(),
                           self.mqtt.create_message(
-                              self._generate_status_message(ALIVE, state, error_message, statedict)),
+                              self._generate_status_message(state, error_message, statedict)),
                           retain=False)
 
     def publish_log_information(self, log):
@@ -204,7 +204,7 @@ class ControlConnectionHandler:
 
     def on_cmd_message(self, message):
         try:
-            data = json.loads(message.payload.decode('utf-8'))
+            data = json.loads(message.decode('utf-8'))
             assert data['type'] == 'cmd'
             cmd = data['command']
             sites = data['sites']
@@ -236,28 +236,25 @@ class ControlConnectionHandler:
         self.mqtt.subscribe(self._generate_base_topic_status_master())
         self._statemachine.publish_current_state(None)
 
-    def _on_message_handler(self, client, userdata, message):
-        if "Master" in message.topic:
-            self._statemachine.on_master_state_changed(message)
+    def on_message_handler(self, topic, payload):
+        if "Master" in topic:
+            self._statemachine.on_master_state_changed(payload)
             return
-        if "status" in message.topic:
-            self.on_status_message(message)
-        elif "cmd" in message.topic:
-            self.on_cmd_message(message)
+        if "status" in topic:
+            self.on_status_message(payload)
+        elif "cmd" in topic:
+            self.on_cmd_message(payload)
         else:
             return
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
         self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
 
-    def _generate_status_message(self, alive, state, error_message, statedict=None):
+    def _generate_status_message(self, state, error_message, statedict=None):
         message = {
             "type": "status",
-            "alive": alive,
             "interface_version": INTERFACE_VERSION,
             "software_version": SOFTWARE_VERSION,
-            # TODO: clean up
-            "state": state,
             "payload": {"state": state, "error_message": error_message}
         }
         if statedict is not None:

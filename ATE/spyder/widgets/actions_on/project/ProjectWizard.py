@@ -7,12 +7,8 @@ import os
 
 import qtawesome as qta
 from PyQt5 import QtCore
-from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5 import uic
-
-from ATE.spyder.widgets.validation import is_valid_project_name
-from ATE.spyder.widgets.validation import valid_project_name_regex
 
 
 class ProjectWizard(QtWidgets.QDialog):

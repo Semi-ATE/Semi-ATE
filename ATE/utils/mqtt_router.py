@@ -10,10 +10,10 @@ class MqttRouter:
             self.routes[topic_regex] = []
         self.routes[topic_regex].append(callback)
 
-    def unregister_route(self, topic_regex: str, callback: callable):
+    def unregister_route(self, topic_regex: str):
         if topic_regex not in self.routes:
             return
-        self.routes[topic_regex].remove(callback)
+        self.routes.pop(topic_regex)
 
     def inject_message(self, topic, message):
         for route in self.routes:

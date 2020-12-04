@@ -18,6 +18,9 @@ class BusinessObjectStandin:
     def set_configuration_values(data):
         pass
 
+    def apply_configuration(self, data):
+        print("Configuration applied.")
+
 
 class Plugin:
 
@@ -130,4 +133,4 @@ class Plugin:
 
     @hookimpl
     def get_configuration_options(object_name):
-        return []
+        return ["ip", "port", "api_key"]

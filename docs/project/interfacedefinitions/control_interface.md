@@ -8,13 +8,17 @@ Topic: \<device-id>/Control/status/site\<SiteId>/
 |Feld| Bedeutung/Zulässige Werte   |
 |----|------------------------------|
 |type| „status“                    |
-|alive | 0, 1                       |
 |interface_version|Version,  der Schnittstelle Control -> Test|
 |softwareversion| Softwareversion der Controlapplikation
-Gültige Werte für alive:
+|payload| Nutzdaten des Pakets      |
 
-* 0 = Controlapplikation hat sich beendet (unbeabsichtigt/Fehler)
-* 1 = Controlapplikation aktiv
+Inhalt der Nutzdaten (Bsp!):
+```json
+{
+  "state": "ready",
+  "message": "some message"
+}
+```
 
 ## Daten die von Control konsumiert werden
 

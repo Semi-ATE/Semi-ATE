@@ -33,9 +33,11 @@ class HardwareWizard(BaseDialog):
         self._available_definiton = None
         self._selected_available_item = ''
         self._plugin_manager = get_plugin_manager()
+        self._plugin_configurations = {}
 
         self._availableTesters = {}
         self.is_active = True
+        self.is_read_only = False
 
         self._setup()
         self._connect_event_handler()
@@ -208,6 +210,7 @@ class HardwareWizard(BaseDialog):
         self.availableInstruments.itemSelectionChanged.connect(self.availableInstrumentsSelectionChanged)
         self.availableInstruments.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.availableInstruments.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.usedFunctions.doubleClicked.connect(self.__display_gpfunction_config_dialog)
 
         self.usedInstruments.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.usedInstruments.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
@@ -690,6 +693,18 @@ class HardwareWizard(BaseDialog):
     def checkInstrumentUsage(self):
         print("check Instrument Usage")
 
+    def __display_gpfunction_config_dialog(self):
+        function_row = self.usedFunctions.currentItem().row()
+        item = self.usedFunctions.item(function_row, 2)
+        function_name = item.text()
+        cfgs = get_plugin_manager().hook.get_configuration_options(object_name=function_name)[0]
+        from ATE.spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
+        current_config = self._plugin_configurations.get(function_name)
+        dialog = PluginConfigurationDialog(self, function_name, cfgs, self.hardware.text(), self.project_info, current_config, self.is_read_only)
+        dialog.exec_()
+        self._plugin_configurations[function_name] = dialog.get_cfg()
+        del(dialog)
+
 # Actuator
     def populate_selected_actuators(self, actuator_settings):
         for row in range(0, self.usedActuators.rowCount()):
@@ -721,13 +736,17 @@ class HardwareWizard(BaseDialog):
                 self.tester.setCurrentIndex(index)
                 return
 
-# Parallelism
-# General
+    def _store_plugin_configuration(self):
+        for plugin_name, plugin_cfg in self._plugin_configurations.items():
+            if plugin_cfg is not None:
+                self.project_info.store_plugin_cfg(self.hardware.text(), plugin_name, plugin_cfg)
+
     def CancelButtonPressed(self):
         self.reject()
 
     def OKButtonPressed(self):
         self.project_info.add_hardware(self._get_current_configuration())
+        self._store_plugin_configuration()
         self.accept()
 
 

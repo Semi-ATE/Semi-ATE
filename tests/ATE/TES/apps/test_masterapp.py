@@ -21,10 +21,10 @@ class TestApplication:
                 "user_settings_filepath": "master_user_settings.json"}
 
     def trigger_control_state_change(self, app: master_application.MasterApplication, site: str, newstate: str):
-        app.on_control_status_changed(site, {"state": newstate, "interface_version": 1})
+        app.on_control_status_changed(site, {"type": "status", "payload": {"state": newstate}, "interface_version": 1})
 
     def trigger_test_state_change(self, app: master_application.MasterApplication, site: str, newstate: str):
-        app.on_testapp_status_changed(site, {"state": newstate, "interface_version": 1})
+        app.on_testapp_status_changed(site, {"type": "status", "payload": {"state": newstate}, "interface_version": 1})
 
     @mock.patch.object(YieldInformationHandler, 'extract_yield_information')
     def trigger_test_result_change(self, app: master_application.MasterApplication, site: str, mocker):
@@ -185,7 +185,7 @@ class TestApplication:
         cfg = self.default_configuration()
         app = master_application.MasterApplication(cfg)
         app.startup_done()
-        app.on_control_status_changed("0", {"state": "idle", "interface_version": 120})
+        app.on_control_status_changed("0", {"type": "status", "payload": {"state": "idle"}, "interface_version": 120})
         assert (app.state == "error")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={

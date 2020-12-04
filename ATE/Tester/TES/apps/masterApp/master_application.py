@@ -158,14 +158,12 @@ class MasterApplication(MultiSiteTestingModel):
         self.loaded_jobname = ""
         self.loaded_lot_number = ""
         self.error_message = ''
-        self.logs = []
+
         self.prev_state = ''
         self.summary_counter = 0
         self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
-        self.prr_rec_information = {}
-        self.sites_yield_information = {}
 
         # TODO: bin settings should be initialized in an other stage
         self._bin_settings = {'type 1': {'sbins': [1, 2, 3], 'hbins': [1]}}
@@ -500,7 +498,7 @@ class MasterApplication(MultiSiteTestingModel):
         if self.external_state == 'softerror':
             return
 
-        newstatus = status_msg['state']
+        newstatus = status_msg['payload']['state']
 
         if(status_msg['interface_version'] != INTERFACE_VERSION):
             self.log.log_message(LogLevel.Error(), f'Bad interface version on site {siteid}')
@@ -518,7 +516,7 @@ class MasterApplication(MultiSiteTestingModel):
         if self.external_state == 'softerror':
             return
 
-        newstatus = status_msg['state']
+        newstatus = status_msg['payload']['state']
         self.log.log_message(LogLevel.Info(), f'Testapp {siteid} state is {newstatus}')
         if self.is_testing(allow_substates=True) and newstatus == TEST_STATE_IDLE:
             self.handle_status_idle(siteid)
@@ -614,17 +612,20 @@ class MasterApplication(MultiSiteTestingModel):
 
         async def periphery_io_control_task():
             try:
-                await self.periphery_io_control(resource_request)
+                result = await self.periphery_io_control(resource_request)
                 on_resource_config_applied_callback()
+                self.connectionHandler.publish_ioctl_response(resource_request, result)
             except asyncio.TimeoutError:
                 # Applying the resource configuration ran into a timeout.
                 # We err-out in this case.
+                self.connectionHandler.publish_ioctl_timeout(resource_request)
+                # TBD: Dunno if this is actually that much of a good idea,
+                # as nothing is wrong with the tester per se here.
                 self.on_error(f"Failed to control resource {resource_id}. Reason: Timeout.")
 
         asyncio.get_event_loop().create_task(periphery_io_control_task())
 
     async def periphery_io_control(self, resource_request):
-        # ToDo: What if the requested resource is not available?
         resource_id = resource_request['periphery_type']
         ioctl_name = resource_request['ioctl_name']
         parameters = resource_request['parameters']
@@ -730,8 +731,9 @@ class MasterApplication(MultiSiteTestingModel):
 
         await self._execute_commands(ws_comm_handler)
 
-        if self.log.are_logs_available():
-            await ws_comm_handler.send_logs_to_all(self.log.get_current_logs())
+        available_logs = self.log.get_current_logs()
+        if len(available_logs) > 0:
+            await ws_comm_handler.send_logs_to_all(available_logs)
 
     def _generate_yield_message(self):
         return self._yield_info_handler.get_yield_messages()

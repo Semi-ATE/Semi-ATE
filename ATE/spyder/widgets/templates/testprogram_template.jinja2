@@ -26,7 +26,15 @@ if __name__ == '__main__':
 
     {% for testinstance in test_list %}
     from {{ testinstance.test_module }} import {{ testinstance.test_class }}
-    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}(logger, {{testinstance.input_parameters}}, { {% for op in testinstance.output_parameters %}'{{op}}': {'id': {{testinstance.output_parameters[op]['id']}}, 'LTL': {{testinstance.output_parameters[op]['LTL']}}, 'UTL': {{testinstance.output_parameters[op]['UTL']}}, 'bin': {{testinstance.output_parameters[op]['Binning']['bin']}}, 'bin_result': {{testinstance.output_parameters[op]['Binning']['result']}}},{% endfor %} }, '{{ testinstance.instance_name }}')
+    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}(logger)
+    {% for ip in testinstance.input_parameters %}
+    _ate_var_{{ testinstance.instance_name }}.ip.set_parameter('{{ip}}', '{{testinstance.input_parameters[ip]['type']}}', {{testinstance.input_parameters[ip]['value']}})
+    {% endfor %}
+
+    {% for op in testinstance.output_parameters %}
+    _ate_var_{{ testinstance.instance_name }}.op.set_parameter('{{op}}', {{testinstance.output_parameters[op]['id']}}, {{testinstance.output_parameters[op]['LTL']}}, {{testinstance.output_parameters[op]['UTL']}}, {{testinstance.output_parameters[op]['Binning']['bin']}}, '{{testinstance.output_parameters[op]['Binning']['result'][0]}}', '{{ testinstance.instance_name }}')
+    {% endfor %}
+
     sequencer.register_test(_ate_var_{{ testinstance.instance_name }})
     {% endfor %}
 
