@@ -91,7 +91,6 @@ if (($confirmation -eq $confirm) -or (!$confirmation))
     Write-Host "generate web-UI distribution"
     Invoke-Expression "ng build"
     Set-Location -Path $root_location
-}
 Write-Host "new configuration file for master and control Apps will be generated"
 $confirmation = Read-Host "are you sure you want proceed and create new configuration files [y/n]"
 if (($confirmation -eq $confirm) -or (!$confirmation))

@@ -1,3 +1,4 @@
+import numpy as np
 import copy
 from ATE.spyder.widgets.actions_on.program.Utils import Action, ParameterState, ResolverTypes
 from ATE.spyder.widgets.actions_on.program.Parameters.InputParameter import InputParameter
@@ -14,6 +15,7 @@ class TestParameters:
         self._input_parameters = {}
         self._output_parameters = {}
         self._valid = ParameterState.Valid()
+        self._sbin = None
 
         self._add_input_parameter(input_parameters)
         self._add_output_parameter(output_parameters)
@@ -83,6 +85,37 @@ class TestParameters:
                 break
 
         self.set_valid_flag(validity)
+
+    def is_valid_range(self, input_parameter, output_name):
+        output_parameter = self.get_output_parameter(output_name)
+        out_l_limit, out_u_limit, out_exponent = output_parameter.get_range_infos()
+
+        in_l_limit, in_u_limit, in_exponent = input_parameter.get_range_infos()
+        if (in_l_limit, in_u_limit) == (-np.infty, np.infty):
+            return True
+
+        power = self._get_power(in_exponent, out_exponent)
+
+        if (in_l_limit * power) <= out_l_limit and (in_u_limit * power) >= out_u_limit:
+            return True
+
+        return False
+
+    @staticmethod
+    def _get_power(exponent_input, exponent_output):
+        exponent = None
+        if exponent_input > exponent_output:
+            exponent = exponent_input - exponent_output
+        else:
+            exponent = exponent_output - exponent_input
+
+        return pow(10, exponent)
+
+    def set_sbin(self, sbin):
+        self._sbin = sbin
+
+    def get_sbin(self):
+        return self._sbin
 
 
 class TestProgram:
@@ -170,14 +203,15 @@ class TestProgram:
             struct['output_parameters'] = {}
             struct['description'] = test.get_test_name()
             struct['name'] = test.get_test_base()
+            struct['sbin'] = test.get_sbin()
             for input, value in test.get_input_parameters().items():
                 if not value.is_valid():
                     continue
                 parameter_content = value.get_parameters_content()
                 struct['input_parameters'][input] = {'value': self._prepare_input_parameter(parameter_content['value'], parameter_content['type']),
                                                      'type': parameter_content['type'], 'Min': parameter_content['min'], 'Max': parameter_content['max'],
-                                                     'fmt': parameter_content['format'], 'Unit': parameter_content['unit'], '10ᵡ': parameter_content['factor'],
-                                                     'Default': parameter_content['default']}
+                                                     'fmt': parameter_content['format'], 'Unit': parameter_content['unit'], '10ᵡ': parameter_content['exponent'],
+                                                     'Default': parameter_content['default'], 'content': parameter_content['value']}
 
             for output, value in test.get_output_parameters().items():
                 if not value.is_valid():
@@ -186,7 +220,7 @@ class TestProgram:
                 struct['output_parameters'][output] = {'UTL': parameter_content['utl'], 'LTL': parameter_content['ltl'],
                                                        'LSL': parameter_content['lsl'], 'USL': parameter_content['usl'],
                                                        'Binning': {'bin': parameter_content['bin'], 'result': parameter_content['bin_result']},
-                                                       'fmt': parameter_content['format'], 'Unit': parameter_content['unit'], '10ᵡ': parameter_content['factor']}
+                                                       'fmt': parameter_content['format'], 'Unit': parameter_content['unit'], '10ᵡ': parameter_content['exponent']}
 
             definition.append(struct)
 
@@ -206,10 +240,18 @@ class TestProgram:
     def binning_information(self):
         binning_info = []
         for test in self._tests:
-            struct = {'name': test.get_test_base(), 'description': test.get_test_name(), 'output_parameters': test.get_output_parameters()}
+            struct = self._get_binning_structure(test)
             binning_info.append(struct)
 
         return binning_info
+
+    def get_binning_info_for_test(self, test_name):
+        test, _ = self.get_test(test_name)
+        return self._get_binning_structure(test)
+
+    @staticmethod
+    def _get_binning_structure(test):
+        return {'name': test.get_test_base(), 'description': test.get_test_name(), 'output_parameters': test.get_output_parameters()}
 
     def import_tests_parameters(self, sequence_information):
         for test_info in sequence_information:
@@ -256,3 +298,7 @@ class TestProgram:
                 continue
 
             test.set_valid_flag(ParameterState.Changed())
+
+    def is_valid_range(self, test, input_param, output_name):
+        test, _ = self.get_test(test)
+        return test.is_valid_range(input_param, output_name)

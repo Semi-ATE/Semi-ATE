@@ -1,3 +1,4 @@
+import numpy as np
 from ATE.spyder.widgets.actions_on.program.Utils import ParameterEditability, ParameterState, OutputFieldsPosition
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 
@@ -11,12 +12,19 @@ class OutputParameter:
         self.ltl = ParameterField(parameter['LTL'], editable=ParameterEditability.Editable())
         self.utl = ParameterField(parameter['UTL'], editable=ParameterEditability.Editable())
         self.usl = ParameterField(parameter['USL'])
-        self.factor = ParameterField(parameter['10ᵡ'])
+        self.exponent = ParameterField(parameter['10ᵡ'])
         self.unit = ParameterField(parameter['Unit'])
         self.format = ParameterField(parameter['fmt'])
-        self.bin = ParameterField(None if parameter.get('bin') is None else parameter['bin'])
-        self.bin_result = ParameterField(None if parameter.get('bin_result') is None else parameter['bin_result'])
+        self._update_binning_parameters(parameter)
         self.valid = True
+
+    def _update_binning_parameters(self, parameter: dict):
+        if parameter.get('Binning') is None:
+            self.bin = ParameterField(None if parameter.get('bin') is None else parameter['bin'])
+            self.bin_result = ParameterField(None if parameter.get('bin_result') is None else parameter['bin_result'])
+        else:
+            self.bin = ParameterField(parameter['Binning']['bin'])
+            self.bin_result = ParameterField(parameter['Binning']['result'])
 
     def set_bin_infos(self, bin, bin_result):
         self.bin.set_validity(ParameterState.Valid())
@@ -110,7 +118,22 @@ class OutputParameter:
         return {'name': self.name.get_value(), 'lsl': self.lsl.get_value(), 'ltl': self.ltl.get_value(),
                 'usl': self.usl.get_value(), 'utl': self.utl.get_value(), 'unit': self.unit.get_value(),
                 'format': self.format.get_value(), 'bin': self.bin.get_value(), 'bin_result': self.bin_result.get_value(),
-                'factor': self.factor.get_value()}
+                'exponent': self.exponent.get_value()}
 
     def get_field_state(self):
         return self.name.get_state()
+
+    def get_limits(self):
+        l_limit = self.lsl.get_value()
+        u_limit = self.usl.get_value()
+        if not np.isnan(float(self.ltl.get_value())):
+            l_limit = self.ltl.get_value()
+
+        if not np.isnan(float(self.utl.get_value())):
+            u_limit = self.utl.get_value()
+
+        return float(l_limit), float(u_limit)
+
+    def get_range_infos(self):
+        l_limit, u_limit = self.get_limits()
+        return l_limit, u_limit, int(self.exponent.get_value())

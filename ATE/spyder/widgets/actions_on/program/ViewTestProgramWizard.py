@@ -33,6 +33,7 @@ class ViewTestProgramWizard(TestProgramWizard):
     def setup_view(dialog, name):
         dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
         dialog._update_selected_test_list()
+        dialog._populate_binning_tree()
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         # TODO: can we edit any of the following property
         dialog.hardware.clear()
@@ -47,6 +48,15 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog.base.addItem(configuration['base'])
         dialog.target.addItem(configuration['target'])
         dialog.usertext.setText(configuration['usertext'])
+        dialog.cacheType.setCurrentText(configuration['cache_type'])
+
+        caching_policy = configuration['caching_policy']
+        # cacheDisable is checked by default, we just check
+        # the others, if they apply.
+        if caching_policy == "store":
+            dialog.cacheStore.setChecked(True)
+        elif caching_policy == "drop":
+            dialog.cacheDrop.setChecked(True)
 
         dialog.sequencerType.blockSignals(True)
         dialog.sequencerType.clear()

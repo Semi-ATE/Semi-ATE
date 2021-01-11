@@ -1,14 +1,14 @@
 # # -*- coding: utf-8 -*-
 from ATE.Tester.TES.apps.testApp.sequencers.ExecutionPolicy import ExecutionPolicyABC
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import (DutTestCaseABC, DutTestCaseBase)
-from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_PIR_dict, generate_PRR_dict)
+from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR_dict, generate_PIR_dict, generate_PRR_dict)
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 
 from ATE.Tester.TES.apps.testApp.sequencers.constants import Trigger_Out_Pulse_Width
 
 
 class SequencerBase:
-    def __init__(self, bin_strategy):
+    def __init__(self, program_name, bin_strategy):
         self.test_cases = []
         self.instance_counts = {}
         self.param_counts = 0
@@ -21,6 +21,15 @@ class SequencerBase:
         self.binning = None
         self.logger = None
         self.bin_strategy = bin_strategy
+        self.tester_instance = None
+        self.cache_instance = None
+        self.cache_policy = "disable"
+        self.program_name = program_name
+
+    def set_caching_policy(self, policy):
+        if policy not in ["disable", "store", "drop"]:
+            raise ValueError("Bad caching policy")
+        self.cache_policy = policy
 
     def set_site_id(self, site_id):
         self.site_id = site_id
@@ -54,6 +63,35 @@ class SequencerBase:
     def set_tester_instance(self, tester_instance):
         self.tester_instance = tester_instance
 
+    def set_cache_instance(self, cache_instance):
+        self.cache_instance = cache_instance
+
+    def do_caching(self):
+        if self.cache_policy == "disable":
+            return
+
+        if self.cache_instance is None:
+            raise ValueError(f"Caching policy is {self.cache_policy} but no cache was set.")
+
+        if self.cache_policy == "store":
+            self.cache_instance.publish(self.part_id, self.program_name, self.stdf_data)
+            return
+
+        if self.cache_policy == "drop":
+            self.cache_instance.drop_part(self.part_id)
+            return
+
+        raise ValueError(f"Bad cache policy {self.cache_policy}")
+
+    def do_cache_fetch(self):
+        if self.cache_policy == "disable":
+            return
+
+        if self.cache_instance is None:
+            raise ValueError(f"Caching policy is {self.cache_policy} but no cache was set.")
+
+        self.cache_instance.do_fetch(self.part_id)
+
     def run(self, execution_policy, test_settings={}):
         # TODO: raise an exception if test_settings is None !?
         if test_settings:
@@ -65,7 +103,13 @@ class SequencerBase:
         if not issubclass(type(execution_policy), ExecutionPolicyABC):
             raise Exception("Need an execution policy type object")
 
-        return execution_policy.run(self)
+        self.do_cache_fetch()
+
+        execution_policy.run(self)
+
+        self.do_caching()
+
+        return self.stdf_data
 
     def _extract_test_information(self, test_settings):
         for site in test_settings['sites_info']:
@@ -81,7 +125,7 @@ class SequencerBase:
         self.soft_bin = 1
         self.stdf_data.append(generate_PIR_dict(head_num=0, site_num=int(self.site_id)))
 
-    def after_test_cb(self, test_index, test_result):
+    def after_test_cb(self, test_index, test_result, test_num, exception):
         """
         This function is called after the execution
         of each individual test by the execution policy
@@ -95,6 +139,8 @@ class SequencerBase:
         result = test_result[2]
         self.stdf_data += result
         self.soft_bin = DutTestCaseBase._select_bin(self.soft_bin, test_result)
+
+        self.stdf_data.append(generate_FTR_dict(test_num=test_num, head_num=0, site_num=int(self.site_id), exception=exception))
 
         if self.__is_stop_on_fail_enabled() and failed:
             return False
@@ -148,13 +194,10 @@ class SequencerBase:
         # TODO: map correct field values instead of using hard codded values
         is_pass = test_result == Result.Pass()
         hard_bin = self.bin_strategy.get_hard_bin(self.soft_bin)
-        # hard_bin = 11 if not is_pass else 1
         self.stdf_data.append(generate_PRR_dict(head_num=0, site_num=int(self.site_id), is_pass=is_pass,
                                                 num_tests=num_tests, hard_bin=hard_bin, soft_bin=self.soft_bin,
                                                 x_coord=1, y_coord=1, test_time=execution_time,
                                                 part_id=self.part_id, part_txt="1", part_fix=[0b00000000]))
-
-        return self.stdf_data
 
     def aggregate_tests_summary(self):
         tests_summary = []

@@ -76,6 +76,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog.populate_selected_gpfunctions(hw_configuration["GPFunctions"])
         dialog.select_tester(hw_configuration["tester"])
         ViewHardwaresetupSettings._update_available_pattern_list(dialog)
+        dialog._verify()
 
     @staticmethod
     def _update_available_pattern_list(dialog):

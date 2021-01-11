@@ -103,6 +103,8 @@ def debug_visual(window, qtbot):
 
 
 main = None
+
+
 def mainwindow():
     global main
     return MockATEWidgets() if main is None else main

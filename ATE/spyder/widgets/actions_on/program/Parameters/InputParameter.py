@@ -2,6 +2,8 @@ import copy
 from ATE.spyder.widgets.actions_on.program.Utils import (ParameterState, ParameterEditability, ResolverTypes, Range, InputFieldsPosition)
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 
+PARAM_PREFIX = '_ate_var_'
+
 
 class InputParameter:
     class InputParameterFieldType(ParameterField):
@@ -20,14 +22,20 @@ class InputParameter:
         self.max = ParameterField(input_params['Max'])
         self.format = ParameterField(input_params['fmt'])
         self.unit = ParameterField(input_params['Unit'])
-        self.factor = ParameterField(input_params['10ᵡ'])
+        self.exponent = ParameterField(input_params['10ᵡ'])
         self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=editable)
         self.default = ParameterField(self.format_value(input_params['Default']), editable=editable)
-        self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(input_params['value'])
+        self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(self._get_value(input_params))
 
         self.editable = ParameterEditability.Editable()
-
         self.valid = True
+
+    @staticmethod
+    def _get_value(input_params):
+        if PARAM_PREFIX in input_params['value']:
+            return input_params['content']
+
+        return input_params['value']
 
     def set_value(self, value):
         self.value.set_validity(ParameterState.Valid())
@@ -69,7 +77,6 @@ class InputParameter:
 
         self.value.set_validity(ParameterState.Valid())
         if type == ResolverTypes.Static() and not convertable:
-            print(self.default.get_value())
             self.value.set_value(self.default.get_value())
         if type == ResolverTypes.Local() and convertable:
             self.value.set_validity(ParameterState.Invalid())
@@ -110,12 +117,12 @@ class InputParameter:
         return self.name.get_value()
 
     def get_parameters(self):
-        return [self.name, self.min, self.value, self.max, self.unit, self.format, self.type, self.factor]
+        return [self.name, self.min, self.value, self.max, self.unit, self.format, self.type, self.exponent]
 
     def get_parameters_content(self):
         return {'name': self.name.get_value(), 'min': self.min.get_value(), 'value': self.value.get_value(),
                 'max': self.max.get_value(), 'format': self.format.get_value(), 'unit': self.unit.get_value(),
-                'type': self.type.get_value(), 'factor': self.factor.get_value(), 'default': self.default.get_value()}
+                'type': self.type.get_value(), 'exponent': self.exponent.get_value(), 'default': self.default.get_value()}
 
     def is_valid(self):
         return self.valid
@@ -175,3 +182,10 @@ class InputParameter:
             return Range.Out_Of_Range()
         else:
             return Range.Limited_Range()
+
+    def get_limits(self):
+        return float(self.min.get_value()), float(self.max.get_value())
+
+    def get_range_infos(self):
+        l_limit, u_limit = self.get_limits()
+        return l_limit, u_limit, int(self.exponent.get_value())
