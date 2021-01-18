@@ -1,5 +1,6 @@
 from ATE.semiateplugins.hookspec import hookimpl
 from TDKMicronas.Testers import MiniSCT
+from TDKMicronas.Flatcache import Flatcache
 
 
 class BusinessObjectStandin:
@@ -18,6 +19,9 @@ class BusinessObjectStandin:
     def set_configuration_values(data):
         pass
 
+    def apply_configuration(self, data):
+        print("Configuration applied.")
+
 
 class Plugin:
 
@@ -30,10 +34,7 @@ class Plugin:
 
     @hookimpl
     def get_importer_names():
-        return [
-            {"display_name": "Dummy Importer",
-             "version": "0.0",
-             "name": "TDKMicronas.DummyImporter"}]
+        return []
 
     @hookimpl
     def get_exporter_names():
@@ -88,7 +89,11 @@ class Plugin:
             {"display_name": "METIS Connector",
              "version": "0.0",
              "manufacturer": "TDK Micronas",
-             "name": "TDKMicronas.Metis"}]
+             "name": "TDKMicronas.Metis"},
+            {"display_name": "Flatcache [Catflache]",
+             "version": "0.0",
+             "manufacturer": "TDK Micronas",
+             "name": "TDKMicronas.Flatcache"}]
 
     @hookimpl
     def get_importer(importer_name):
@@ -126,8 +131,12 @@ class Plugin:
     @hookimpl
     def get_general_purpose_function(func_name):
         print(f"Get General Purpose Function: {func_name}")
+        if func_name == "TDKMicronas.Flatcache":
+            return Flatcache.Flatcache()
         return BusinessObjectStandin()
 
     @hookimpl
     def get_configuration_options(object_name):
-        return []
+        if object_name == "TDKMicronas.Flatcache":
+            return ["ip", "port"]
+        return ["ip", "port", "api_key"]

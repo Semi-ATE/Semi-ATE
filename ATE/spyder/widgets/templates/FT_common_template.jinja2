@@ -1,28 +1,43 @@
 # -*- coding: utf-8 -*-
 """
-{{ definition['hardware'] }}/FT/__init__.py
+{{ definition['hardware'] }}/FT/common.py
+
+
+Don't edit this file. It is bound to be regenerated if the project
+configuration changes. Any manual edits will be lost in that case.
 """
+import json
+import os
+import pathlib
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerMqttClient import SequencerMqttClient
-mqtt = SequencerMqttClient()
 
-# Tester
-from ATE.semiateplugins.pluginmanager import get_plugin_manager
-tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")[0]
+class Context:
+    def __init__(self):
+        self.mqtt = SequencerMqttClient()
 
+        # Tester
+        from ATE.semiateplugins.pluginmanager import get_plugin_manager
+        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")[0]
 
-# Actuators are disable due to them being reworked.
-{% for actuator in definition['Actuator']['FT'] %}
-from ATE.Tester.TES.apps.testApp.actuators.{{actuator}}.{{actuator}} import {{actuator}}Proxy
-{{actuator}}_instance = {{actuator}}Proxy()
-{{actuator}}_instance.set_mqtt_client(mqtt)
-{% endfor %}
+        {% for actuator in definition['Actuator']['FT'] %}
+        from ATE.Tester.TES.apps.testApp.actuators.{{actuator}}.{{actuator}} import {{actuator}}Proxy
+        self.{{actuator}}_instance = {{actuator}}Proxy()
+        self.{{actuator}}_instance.set_mqtt_client(self.mqtt)
+        {% endfor %}
 
-{% for instrument in definition['Instruments'] %}
-{{definition['InstrumentNames'][instrument]}}_instance = get_plugin_manager().hook.get_instrument(instrument_name="{{instrument}}")[0]
-{% endfor %}
+        {% for instrument in definition['Instruments'] %}
+        self.{{definition['InstrumentNames'][instrument]}}_instance = get_plugin_manager().hook.get_instrument(instrument_name="{{instrument}}")[0]
+        {% endfor %}
 
-{% for gpfunction in definition['GPFunctions'] %}
-{{definition['GPFunctionNames'][gpfunction]}}_instance = get_plugin_manager().hook.get_general_purpose_function(func_name="{{gpfunction}}")[0]
-{% endfor %}
+        self.gp_dict = {}
+        {% for gpfunction in definition['GPFunctions'] %}
+        self.{{definition['GPFunctionNames'][gpfunction]}}_instance = get_plugin_manager().hook.get_general_purpose_function(func_name="{{gpfunction}}")[0]
+        self.gp_dict['{{definition['GPFunctionNames'][gpfunction]}}'] = self.{{definition['GPFunctionNames'][gpfunction]}}_instance
+        config_file_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "..\{{gpfunction}}.json")
+        if os.path.exists(config_file_path):
+            with open(config_file_path) as reader:
+                self.{{definition['GPFunctionNames'][gpfunction]}}_instance.apply_configuration(json.loads(reader.read()))
+        {% endfor %}
 
-# Add your stuff after this line.
+def make_context():
+    return Context()

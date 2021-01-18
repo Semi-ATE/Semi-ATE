@@ -1,4 +1,5 @@
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
+from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR_dict)
 from abc import ABC, abstractmethod
 import time
 
@@ -18,29 +19,25 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
         for _ in range(self.num_cycles):
             test_index = 0
             start = time.time()
-            sequencer_instance.pre_cycle_cb()
+            sequencer_instance.pre_cycle_cb()       # ToDo: This will kill all records generated up to now, which is probably not what we want if num_cycles > 1
             test_result = Result.Inconclusive()
             for test_case in sequencer_instance.test_cases:
-                result = test_case.run(sequencer_instance.site_id)
+                result, exception = test_case.run(sequencer_instance.site_id)
 
                 # Push result back to sequencer, abort testing if sequencer
                 # returns false
-                if not sequencer_instance.after_test_cb(test_index, result):
+                if not sequencer_instance.after_test_cb(test_index, result, test_case.get_test_num(), exception):
                     end = time.time()
                     break
 
                 test_index += 1
 
-                test_result = test_case._select_testresult(test_result, result)
+                if not exception:
+                    test_result = test_case._select_testresult(test_result, result)
 
             end = time.time()
             execution_time = int(end - start)
-
-            # assume for now that we only have a singleshot policy
-            return sequencer_instance.after_cycle_cb(execution_time, test_index, test_result)
-
-        # should not reach this
-        return {}
+            sequencer_instance.after_cycle_cb(execution_time, test_index, test_result)
 
 
 class SingleShotExecutionPolicy(LoopCycleExecutionPolicy):

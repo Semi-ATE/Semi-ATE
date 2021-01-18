@@ -6,7 +6,6 @@ Created on Nov 20, 2019
 import os
 import re
 
-import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -22,7 +21,6 @@ from ATE.spyder.widgets.validation import is_valid_maskset_name
 
 standard_flat_height = 7  # mm
 standard_scribe = 100  # um
-
 
 class NewMasksetWizard(BaseDialog):
     def __init__(self, project_info, read_only=False):
@@ -69,15 +67,17 @@ class NewMasksetWizard(BaseDialog):
     # wafer diameter
         self.waferDiameter.setCurrentIndex(self.waferDiameter.findText('200'))
 
+    # flat/notch
+        self.flatLabel.setVisible(False)
+        self.flat.setVisible(False)
+        self.flatUnitsLabel.setText(' ')
+        self.flat.setText('95')
+
     # bondpads
         self.bondpads.setMinimum(2)
         self.bondpads.setMaximum(99)
         self.bondpads.setValue(2)
         self._set_row_elements(DEFAULT_ROW)
-
-    # XY Flip Button
-        self.XYFlipButton.setText("")
-        self.XYFlipButton.setIcon(qta.icon('mdi.arrow-up-down', color='white'))
 
     # die size X
         NewMasksetWizard._setup_input_element(self.dieSizeX, "", self.positive_integer_validator)
@@ -95,14 +95,6 @@ class NewMasksetWizard(BaseDialog):
         NewMasksetWizard._setup_input_element(self.scribeX, str(standard_scribe), positive_float_validator)
     # scribe Y
         NewMasksetWizard._setup_input_element(self.scribeY, str(standard_scribe), positive_float_validator)
-
-    # Flat
-        WaferDiameter = int(self.waferDiameter.currentText())
-        Flat = (WaferDiameter / 2) - standard_flat_height
-        if Flat - int(Flat) == 0:
-            self.flat.setText(str(int(Flat)))
-        else:
-            self.flat.setText(str(Flat))
 
     # bondpad table
         self.bondpadTable.setRowCount(self.bondpads.value())
@@ -143,11 +135,6 @@ class NewMasksetWizard(BaseDialog):
 
         self.bondpadTable.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.bondpadTable.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
-
-    # view die button
-        self.viewDieButton.setText("")
-        self.viewDieButton.setIcon(qta.icon('mdi.eye-outline', color='white'))
-        self.viewDieButton.clicked.connect(self.viewDie)
 
     # import For
         importer_name_lists = self.plugin_manager.hook.get_importer_names()
@@ -504,11 +491,12 @@ class NewMasksetWizard(BaseDialog):
         self.Type.currentTextChanged.connect(self.typeChanged)
         self.customer.textChanged.connect(self.customerChanged)
 
+        self.flatRadioButton.clicked.connect(self.flatNotchToggled)
+        self.notchRadioButton.clicked.connect(self.flatNotchToggled)
+
         self.waferDiameter.currentTextChanged.connect(self.waferDiameterChanged)
         self.bondpads.valueChanged.connect(self._bondpads_changed)
         self.dieSizeX.textChanged.connect(self._die_size_x_changed)
-
-        self.XYFlipButton.clicked.connect(self.xy_flip)
 
         self.dieSizeY.textChanged.connect(self._die_size_y_changed)
         self.dieRefX.textChanged.connect(self.dieRefXChanged)
@@ -520,7 +508,12 @@ class NewMasksetWizard(BaseDialog):
     # Wafer Map Editor
         self.editWaferMapButton.clicked.connect(self.editWaferMap)
 
+    # Bond Pad Editor
+        self.editBondPadsButton.clicked.connect(self.editBondPads)
+    
+    # Importer
         self.importFor.currentTextChanged.connect(self.importForChanged)
+
     # buttons
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
@@ -576,19 +569,6 @@ class NewMasksetWizard(BaseDialog):
     def _die_size_y_changed(self, die_size_y):
         self._die_size_changed(die_size_y, self.dieRefY)
 
-    def xy_flip(self):
-        old_die_size_x = self.dieSizeX.text()
-        old_die_size_y = self.dieSizeY.text()
-        old_die_ref_x = self.dieRefX.text()
-        old_die_ref_y = self.dieRefY.text()
-
-        self.dieSizeX.setText(old_die_size_y)
-        self.dieSizeY.setText(old_die_size_x)
-        self.dieRefX.setText(old_die_ref_y)
-        self.dieRefY.setText(old_die_ref_x)
-
-        # self.validate() # ?!?
-
     def dieRefXChanged(self, DieRefX):
         pass
 
@@ -606,6 +586,20 @@ class NewMasksetWizard(BaseDialog):
 
     def scribeYChanged(self, ScribeY):
         pass
+
+    def flatNotchToggled(self):
+        here = os.path.dirname(__file__)
+        if self.notchRadioButton.isChecked():
+            png = QtGui.QPixmap(os.path.join(here, 'Notch.png'))
+            self.flatLabel.setVisible(False)
+            self.flat.setVisible(False)
+            self.flatUnitsLabel.setText(' ')
+        else:
+            png = QtGui.QPixmap(os.path.join(here, 'Flat.png'))
+            self.flatLabel.setVisible(True)
+            self.flat.setVisible(True)
+            self.flatUnitsLabel.setText('mm')
+        self.helpGraph.setPixmap(png)
 
     def importForChanged(self, Company):
         if Company == '':
@@ -680,11 +674,6 @@ class NewMasksetWizard(BaseDialog):
             if self.scribeY.text() == '':
                 self.feedback.setText("Supply a Scribe Size Y value")
 
-        # Flat
-        if self.feedback.text() == '':
-            if self.flat.text() == '':
-                self.feedback.setText("Supply a Flat distance value")
-
         if not self.feedback.text() == '':
             self.OKButton.setEnabled(False)
             self._set_table_flags(QtCore.Qt.NoItemFlags)
@@ -703,8 +692,16 @@ class NewMasksetWizard(BaseDialog):
                 item.setFlags(flags)
 
     def editWaferMap(self):
-        print("Wafer Map Editor not yet implemented")
-        # TODO: add the wafer map editor here
+        from .WaferMapEditor import WaferMapEditor
+        waferMapEditor = WaferMapEditor(self)
+        retval = waferMapEditor.exec_()
+        print(f"Wafer Map Editor returned {retval}")
+
+    def editBondPads(self):
+        from .BondPadEditor import BondPadEditor
+        bondPadEditor = BondPadEditor(self)
+        retval = bondPadEditor.exec_()
+        print(f"Bond Pad Editor returned {retval}")
 
     def viewDie(self):
         print("Die Viewer not yet implemented")

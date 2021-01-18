@@ -86,4 +86,4 @@ def test_sends_status_on_connect(mqtt, mocker):
     mocker.patch.object(mqtt.mqtt_client, "publish")
     mqtt.actuator_impl._is_connected = True
     mqtt.on_connect(None, None, None, None)
-    mqtt.mqtt_client.publish.assert_called_once_with("ATE/1048/MagField/status", "{\"status\": \"available\"}")
+    mqtt.mqtt_client.publish.assert_called_once_with("ate/1048/MagField/status", "{\"status\": \"available\"}")

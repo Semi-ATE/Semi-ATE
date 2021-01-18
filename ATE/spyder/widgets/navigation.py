@@ -3,6 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+import json
 import os
 import pickle
 import platform
@@ -589,7 +590,7 @@ class ProjectNavigation(QObject):
         programs = Sequence.get_programs_for_test(self.get_session(), test_name)
         programs = set([program.prog_name for program in programs])
 
-        from ATE.spyder.widgets.coding.generators import test_program_generator
+        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         for program in programs:
             if not Program.get(self.get_session(), program).is_valid:
                 continue
@@ -600,15 +601,12 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
 
-    def _update_test_program_valid_state(self, program_name, is_valid):
-        Program.set_program_state(self.get_session(), program_name, is_valid)
-
     def is_test_program_valid(self, program_name):
         program = Program.get(self.get_session(), program_name)
         return program.is_valid
 
     def _update_test_target_code(self, definition):
-        targets = [target for target in self.get_test_targets_for_test(definition['name']) if not target.is_default]
+        targets = [target for target in self.get_test_targets_for_test(definition['name'])]
         for target in targets:
             self._generate_test_target_file(target.name, definition['name'], definition['hardware'], definition['base'], do_update=True)
 
@@ -722,12 +720,12 @@ class ProjectNavigation(QObject):
         QualificationFlowDatum.remove(self.get_session(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
-    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target):
-        for index, test in enumerate(definition['sequence']):
+    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy):
+        for _, test in enumerate(definition):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
 
-        Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target)
+        Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
@@ -735,18 +733,18 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Test())
 
     def _generate_program_code(self, name, owner):
-        from ATE.spyder.widgets.coding.generators import test_program_generator
+        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         test_program_generator(name, owner, self)
 
     def _insert_sequence_informations(self, owner_name, prog_name, definition):
-        for index, test in enumerate(definition['sequence']):
+        for index, test in enumerate(definition):
             # ToDo: Why protocol version 4?
             Sequence.add_sequence_information(self.get_session(), owner_name, prog_name, test['name'], index, test)
 
-    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target):
+    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
 
-        Program.update(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target)
+        Program.update(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target, cache_type, caching_policy)
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
@@ -761,7 +759,7 @@ class ProjectNavigation(QObject):
 
     def _update_test_targets_list(self, program_name, test_target, hardware, base, definition):
         tests = []
-        for test in definition['sequence']:
+        for test in definition:
             test.pop('is_valid', None)
             test_name = test['name']
             tests.append(test_name)
@@ -816,7 +814,7 @@ class ProjectNavigation(QObject):
             TestTarget.update_program_name(self.get_session(), name, new_name)
 
             self._remove_file(self._generate_program_path(name))
-            from ATE.spyder.widgets.coding.generators import test_program_generator
+            from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
             test_program_generator(new_name, owner_name, self)
 
     def _remove_test_targets_for_test_program(self, prog_name):
@@ -895,6 +893,8 @@ class ProjectNavigation(QObject):
         retval.update({"target": prog.target})
         retval.update({"usertext": prog.usertext})
         retval.update({"sequencer_type": prog.sequencer_type})
+        retval.update({"caching_policy": prog.caching_policy})
+        retval.update({"cache_type": prog.cache_type})
         if prog.sequencer_type == 'Fixed Temperature':
             retval.update({"temperature": str(pickle.loads(prog.temperature))})
         else:
@@ -995,14 +995,24 @@ class ProjectNavigation(QObject):
 
     # TODO: use following arguments after fixing test behaviour (hardware, base)
     def _generate_test_target_file(self, target_name, test, hardware, base, do_update=False):
+        test_target = TestTarget.get(self.get_session(), target_name, hardware, base, test)
+        test_target.update_test_changed_flag(self.get_session(), target_name, hardware, base, test, is_changed=True)
         testdefinition = Test.get(self.get_session(), test, hardware, base).get_definition()
         testdefinition['base'] = base
         testdefinition['base_class'] = test
         testdefinition['name'] = target_name
         testdefinition['hardware'] = hardware
-        from ATE.spyder.widgets.coding.generators import test_target_generator
-        test_target_generator(self.project_directory, testdefinition, do_update)
+
+        if not test_target.is_default:
+            from ATE.spyder.widgets.coding.TargetGenerator import test_target_generator
+            test_target_generator(self.project_directory, testdefinition, do_update)
         self._update_programs_state_for_test(test)
+
+    def get_changed_test_targets(self, hardware, base, prog_name):
+        return TestTarget.get_changed_test_targets(self.get_session(), hardware, base, prog_name)
+
+    def update_changed_state_test_targets(self, hardware, base, prog_name):
+        TestTarget.update_changed_state_test_targets(self.get_session(), hardware, base, prog_name)
 
     def get_available_testers(self):
         # TODO: implement once the pluggy stuff is in place.
@@ -1148,6 +1158,24 @@ class ProjectNavigation(QObject):
 
     def get_test(self, name, hardware, base):
         return Test.get(self.get_session(), name, hardware, base)
+
+    def store_plugin_cfg(self, hw, object_name, cfg):
+        file_dir = os.path.join(self.project_directory, "src", hw)
+        file_path = os.path.join(file_dir, f"{object_name}.json")
+        with open(file_path, 'w+') as writer:
+            writer.write(json.dumps(cfg))
+
+    def load_plugin_cfg(self, hw, object_name):
+        file_path = os.path.join(self.project_directory, "src", hw, f"{object_name}.json")
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as reader:
+                raw = reader.read()
+                try:
+                    return json.loads(raw)
+                except json.JSONDecodeError:
+                    return {}
+        else:
+            return {}
 
     def __enter__(self):
         return self

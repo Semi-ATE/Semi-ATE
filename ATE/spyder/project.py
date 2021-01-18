@@ -40,6 +40,7 @@ class ATEProject(BaseProjectType):
         self.plugin.toggle_view(False)
         return True, ""
 
+
 class ATEPluginProject(BaseProjectType):
     ID = "Semi-ATE Plugin Project"
 

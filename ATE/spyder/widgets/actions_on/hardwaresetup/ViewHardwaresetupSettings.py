@@ -45,9 +45,16 @@ class ViewHardwaresetupSettings(HardwareWizard):
         self.OKButton.setEnabled(True)
         self.OKButton.clicked.connect(self.accept)
 
+        self.addGPFunction.setEnabled(False)
+        self.removeGPFunction.setEnabled(False)
+        self.usedActuators.setEnabled(False)
+        self.addInstrument.setEnabled(False)
+        self.removeInstrument.setEnabled(False)
+
         self.CancelButton.setEnabled(True)
         self.CancelButton.clicked.connect(self.accept)
         self.feedback.setText("")
+        self.is_read_only = True
 
     @staticmethod
     def _setup_dialog_fields(dialog, hw_name):
@@ -69,6 +76,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog.populate_selected_gpfunctions(hw_configuration["GPFunctions"])
         dialog.select_tester(hw_configuration["tester"])
         ViewHardwaresetupSettings._update_available_pattern_list(dialog)
+        dialog._verify()
 
     @staticmethod
     def _update_available_pattern_list(dialog):

@@ -1,4 +1,5 @@
 import pytest
+import mock
 
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
@@ -17,7 +18,10 @@ class BooleanTest(DutTestCaseBase):
 
     def run(self, site_num):
         self.ran = self.returnValue
-        return (self.returnValue, 0, [])
+        return (self.returnValue, 0, []), False
+
+    def get_test_num(self):
+        return 911
 
     def aggregate_test_result(self, site_num):
         pass
@@ -28,11 +32,11 @@ class BooleanTest(DutTestCaseBase):
 
 class CbCountingSequencer(SequencerBase):
     def __init__(self):
-        super().__init__(None)
+        super().__init__("Testprog", None)
         self.aftertest_calls = 0
         self.aftercycle_calls = 0
 
-    def after_test_cb(self, test_index, test_result):
+    def after_test_cb(self, test_index, test_result, test_num, exception):
         self.aftertest_calls += 1
         return test_result[0]
 

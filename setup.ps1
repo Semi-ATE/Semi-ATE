@@ -91,14 +91,6 @@ if (($confirmation -eq $confirm) -or (!$confirmation))
     Write-Host "generate web-UI distribution"
     Invoke-Expression "ng build"
     Set-Location -Path $root_location
-}
-
-
-Set-Location -Path $root_location
-Write-Host "build test program"
-Invoke-Expression "pytest $smoke_test_location"
-Invoke-Expression "Copy-Item  -Path $smoke_test_location -Destination ./ -Recurse -force"
-
 Write-Host "new configuration file for master and control Apps will be generated"
 $confirmation = Read-Host "are you sure you want proceed and create new configuration files [y/n]"
 if (($confirmation -eq $confirm) -or (!$confirmation))
@@ -143,7 +135,8 @@ if (($confirmation -eq $confirm) -or (!$confirmation))
     {
         Set-Location -Path $spyder2_location
         Invoke-Expression "conda install --file requirements/conda.txt -y"
-        Invoke-Expression "conda install --file requirements/test.txt -y"
+        Set-Location -Path $root_location
+        Install-Dependencies
     } catch
     {
         Set-Location -Path $spyder_location

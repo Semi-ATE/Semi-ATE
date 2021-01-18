@@ -123,8 +123,6 @@ class ViewMasksetSettings(NewMasksetWizard):
         dialog.xOffset.setText(str(maskset_configuration["Offset"][0]))  # tuple
         dialog.yOffset.setText(str(maskset_configuration["Offset"][1]))
 
-        dialog.flat.setText(str(maskset_configuration["Flat"]))
-
         table_infos = maskset_configuration["BondpadTable"]
         dialog.bondpadTable.setRowCount(len(table_infos))
         row = dialog.bondpadTable.rowCount()

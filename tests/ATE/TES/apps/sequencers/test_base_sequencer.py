@@ -38,7 +38,10 @@ class dummy_test_case(DutTestCaseBase):
 
     def run(self, site_num):
         self.has_run = True
-        return (self.result, 0, [])
+        return (self.result, 0, []), False
+
+    def get_test_num(self):
+        return 911
 
     def aggregate_test_result(self, site_num):
         pass
@@ -47,10 +50,29 @@ class dummy_test_case(DutTestCaseBase):
         pass
 
 
+class dummy_cache():
+    def __init__(self):
+        self.publish_called = False
+        self.drop_called = False
+        self.read_called = False
+
+    def publish(self, program_name, part_id, data):
+        self.publish_called = True
+
+    def drop_part(self, part_id):
+        self.drop_called = True
+
+    def get_value(self, part_id, value_name):
+        pass
+
+    def do_fetch(self, part_id):
+        self.read_called = True
+
+
 @pytest.fixture
 def sequencer():
     bin_strategy = BinStrategy(BIN_SETTINGS, CONFIG_FILE)
-    return SequencerBase(bin_strategy)
+    return SequencerBase("Testprog", bin_strategy)
 
 
 def test_can_create_sequener(sequencer):
@@ -206,3 +228,75 @@ def test_stop_on_fail_stop_on_failure(sequencer):
     sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(t1.has_run is True)
     assert(t2.has_run is False)
+
+
+def test_sequencer_will_publish_to_cache(sequencer):
+    t2 = dummy_test_case()
+    cache = dummy_cache()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("store")
+    sequencer.set_cache_instance(cache)
+    assert(cache.publish_called is False)
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+    assert(cache.publish_called is True)
+
+
+def test_sequencer_will_read_from_cache_if_caching_is_active(sequencer):
+    t2 = dummy_test_case()
+    cache = dummy_cache()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("store")
+    sequencer.set_cache_instance(cache)
+    assert(cache.read_called is False)
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+    assert(cache.read_called is True)
+
+
+def test_sequencer_will_not_read_from_cache_if_caching_is_disabled(sequencer):
+    t2 = dummy_test_case()
+    cache = dummy_cache()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("disable")
+    sequencer.set_cache_instance(cache)
+    assert(cache.read_called is False)
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+    assert(cache.read_called is False)
+
+
+def test_sequencer_will_delete_from_cache(sequencer):
+    t2 = dummy_test_case()
+    cache = dummy_cache()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("drop")
+    sequencer.set_cache_instance(cache)
+    assert(cache.drop_called is False)
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+    assert(cache.drop_called is True)
+
+
+def test_sequencer_will_ignore_cache(sequencer):
+    t2 = dummy_test_case()
+    cache = dummy_cache()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("disable")
+    sequencer.set_cache_instance(cache)
+    assert(cache.drop_called is False)
+    assert(cache.publish_called is False)
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+    assert(cache.drop_called is False)
+    assert(cache.publish_called is False)
+
+
+def test_sequencer_will_throw_if_invalid_caching_policy_was_set(sequencer):
+    t2 = dummy_test_case()
+    sequencer.register_test(t2)
+    with pytest.raises(ValueError):
+        sequencer.set_caching_policy("Foobar")
+
+
+def test_sequencer_will_throw_if_caching_was_enabled_and_no_cache_instance_was_set(sequencer):
+    t2 = dummy_test_case()
+    sequencer.register_test(t2)
+    sequencer.set_caching_policy("store")
+    with pytest.raises(ValueError):
+        sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)

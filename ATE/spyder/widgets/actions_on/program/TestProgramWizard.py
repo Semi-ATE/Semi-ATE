@@ -1,14 +1,19 @@
-import copy
 import os
 import re
-from enum import Enum, IntEnum
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QTableWidgetItem, QTreeWidgetItem
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.actions_on.program.Utils import (ParameterEditability, ResolverTypes, Action, Sequencer, Result,
+                                                         BinningColumns, ErrorMessage, Tabs, ParameterState, InputFieldsPosition, OutputFieldsPosition)
+from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
+from ATE.spyder.widgets.navigation import ProjectNavigation
 
+
+DEFAULT_TEMPERATURE = '25'
 MAX_SBIN_NUM = 65535
 ORANGE = (255, 127, 39)
 RED = (237, 28, 36)
@@ -25,104 +30,13 @@ GRADES = [("Grade_A", 1),
           ("Grade_I", 9)]
 
 
-class ParameterState(IntEnum):
-    Invalid = 0
-    Valid = 1
-    Changed = 2
-    New = 3
-
-    def __call__(self):
-        return self.value
-
-
-class BinningColumns(Enum):
-    Grade = 1
-    Result = 2
-    Context = 3
-
-    def __call__(self):
-        return self.value
-
-
-class Result(Enum):
-    Fail = ('FAIL', 2)
-    Pass = ('PASS', 1)
-
-    def __call__(self):
-        return self.value
-
-
-class Tabs(Enum):
-    Sequence = 'Sequence'
-    Binning = 'Binning'
-    PingPong = 'Ping_Pong'
-    Execution = 'Execution'
-
-    def __call__(self):
-        return self.value
-
-
-class Action(Enum):
-    Up = 'Up'
-    Down = 'Down'
-    Left = 'Left'
-    Right = 'Right'
-
-    def __call__(self):
-        return self.value
-
-
-class Range(Enum):
-    In_Range = 0
-    Out_Of_Range = 1
-    Limited_Range = 2
-
-    def __call__(self):
-        return self.value
-
-
-# ToDo: Add numeric type! These strings are display values that
-# are bound to change, which would break all projects.
-class Sequencer(Enum):
-    Static = 'Fixed Temperature'  # 'Static'
-    Dynamic = 'Variable Temperature'  # 'Dynamic'
-
-    def __call__(self):
-        return self.value
-
-
-class ErrorMessage(Enum):
-    NotSelected = 'no test is selected'
-    InvalidInput = 'invalid input'
-    InvalidTemperature = 'invalid temperature value(s)'
-    OutOfRange = 'value out of range'
-    TargetMissed = 'target is missing'
-    UsertextMissed = 'usertext is missing'
-    TemperatureMissed = 'temperature is missing'
-    NoTestSelected = 'no test was selected'
-    MultipleTestSelection = 'multiple tests are selected'
-    EmtpyTestList = 'no test was choosen'
-    NoValidTestRange = 'test range is not valid'
-    TemperatureNotValidated = 'temperature(s) could not be validated'
-    SbinInvalid = 'sbin is invalid'
-    TestInvalid = 'test(s) is(are) invalid'
-    TestDescriptionNotUnique = 'test description must be unique'
-
-    def __call__(self):
-        return self.value
-
-
-DEFAULT_TEMPERATURE = '25'
-
-
 class TestProgramWizard(BaseDialog):
-    def __init__(self, project_info, owner, parent=None, read_only=False, enable_edit=True, prog_name=''):
+    def __init__(self, project_info: ProjectNavigation, owner: str, parent=None, read_only: bool = False, enable_edit: bool = True, prog_name: str =''):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self.owner = owner
 
         self.available_tests = []
-        self.selected_tests = []
         self.read_only = read_only
         self.enable_edit = enable_edit
         self.prog_name = prog_name
@@ -132,7 +46,8 @@ class TestProgramWizard(BaseDialog):
         self._is_dynamic_range_valid = True
         self.bin_counter = 10
         self.cell_size = 0
-        self.is_valid_temperature = True
+        self._standard_parameter_handler = TestProgram()
+        self._custom_parameter_handler = TestProgram()
 
         self._setup()
         self._view()
@@ -170,17 +85,23 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.itemDoubleClicked.connect(self._double_click_handler)
         self.selectedTests.itemClicked.connect(self._test_selected)
         self.selectedTests.itemSelectionChanged.connect(self._table_clicked)
+        self.selectedTests.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
 
-        self.tabWidget.currentChanged.connect(self._tab_changed)
         self.binning_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.binning_tree.itemClicked.connect(self._binning_tree_item_clicked)
         self.binning_tree.customContextMenuRequested.connect(self._context_menu)
         self.binning_tree.itemChanged.connect(self._binning_item_changed)
+        self.binning_tree.setItemsExpandable(False)
+        self.binning_tree.clear()
 
     def _connect_event_handler(self):
         self.availableTests.itemClicked.connect(self._available_test_selected)
         self.availableTests.itemSelectionChanged.connect(self._available_table_clicked)
 
+        self.parametersInput.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.parametersInput.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.parametersInput.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
         self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
         self.parametersInput.itemClicked.connect(self._input_param_table_clicked)
@@ -216,6 +137,16 @@ class TestProgramWizard(BaseDialog):
         self.target.setEnabled(False)
         self.base.setEnabled(False)
 
+        available_functions = self.project_info.get_hardware_definition(self.project_info.active_hardware)["GPFunctions"]
+        self.cacheType.addItems(available_functions)
+        if len(available_functions) == 0:
+            self.cacheDrop.setChecked(False)
+            self.cacheDrop.setEnabled(False)
+            self.cacheStore.setChecked(False)
+            self.cacheStore.setEnabled(False)
+            self.cacheDisable.setChecked(True)
+            self.cacheDisable.setEnabled(False)
+
         current_base_index = self.base.findText(self.project_info.active_base, QtCore.Qt.MatchExactly)
         self.base.setCurrentIndex(current_base_index)
 
@@ -232,91 +163,26 @@ class TestProgramWizard(BaseDialog):
         self.target_feedback.setStyleSheet(ORANGE_LABEL)
         self.usertext_feedback.setStyleSheet(ORANGE_LABEL)
         self._verify()
-        self._verify_tests()
 
-    @staticmethod
-    def _update_binning_tree(text, item, pos):
-        item.setText(pos, text)
-
-    @staticmethod
-    def _is_bin_valid(text):
-        try:
-            sbin = int(text)
-        except Exception:
-            return False
-
-        return sbin < MAX_SBIN_NUM
-
-    @staticmethod
-    def _generate_binning_structure(bin, result, context):
-        return {'Binning': {'bin': bin, 'result': result, 'context': context}}
-
-    @staticmethod
-    def _does_test_changed(test_desc, item_changed_text):
-        desc_len = len(test_desc)
-        return item_changed_text[:desc_len] == test_desc
-
-    def _get_binning_structure(self, item):
-        for test in self.selected_tests:
-            if not self._does_test_changed(test['description'], item.text(0)):
-                continue
-
-            for key, value in test['output_parameters'].items():
-                if key not in item.text(0):
-                    continue
-
-                return value['Binning']
-
-        return None
-
-    @staticmethod
-    def _get_binning_params(item):
-        return (item.text(1), item.text(2), item.text(3))
-
-    def _update_binning_field(self, item):
-        params = self._get_binning_params(item)
-        for test in self.selected_tests:
-            if not self._does_test_changed(test['description'], item.text(0)):
-                continue
-
-            for key, value in test['output_parameters'].items():
-                if key not in item.text(0):
-                    continue
-
-                value['Binning']['bin'] = params[0]
-                value['Binning']['result'] = Result.Pass()[1] if params[1] == Result.Pass()[0] else Result.Fail()[1]
-                value['Binning']['context'] = params[2]
-
-    def _update_binning_table(self, item):
-        binning = self._get_binning_structure(item)
-        self._update_feedback('')
-
-        if not self._is_bin_valid(item.text(1)):
-            self._update_binning_tree(binning['bin'], item, BinningColumns.Grade())
-            self._update_feedback(ErrorMessage.SbinInvalid())
+    @QtCore.pyqtSlot(QtCore.QPoint)
+    def _context_menu(self, point):
+        if not (self.binning_tree.currentColumn() == BinningColumns.Grade()
+                and self._is_binning_child_item()):
             return
 
-        if not self._is_pass(item.text(1)):
-            self._update_binning_tree(Result.Fail()[0], item, BinningColumns.Result())
-        else:
-            self._update_binning_tree(Result.Pass()[0], item, BinningColumns.Result())
+        label = self._get_selected_menu_label(point)
+        if label is None:
+            return None
 
-        self._update_binning_field(item)
+        item = self.binning_tree.itemAt(point)
+        self._update_binning_tree(self._get_sbin(label), item, BinningColumns.Grade())
 
-    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem)
-    def _binning_item_changed(self, item):
-        if not item.text(1):
-            return
+    def _is_binning_child_item(self):
+        item = self.binning_tree.currentItem()
+        if not item:
+            None
 
-        self._update_binning_table(item)
-
-    @staticmethod
-    def _generate_menu():
-        menu = QtWidgets.QMenu()
-        for grade in GRADES:
-            menu.addAction(grade[0])
-
-        return menu
+        return self.binning_tree.currentItem().parent() is not None
 
     def _get_selected_menu_label(self, point):
         menu = self._generate_menu()
@@ -327,20 +193,12 @@ class TestProgramWizard(BaseDialog):
 
         return action.text()
 
-    def _get_current_column(self):
-        return self.binning_tree.currentColumn()
+    def _generate_menu(self):
+        menu = QtWidgets.QMenu(self.project_info.parent)
+        for index in range(1, len(GRADES)):
+            menu.addAction(GRADES[index][0])
 
-    def _is_binning_child_item(self):
-        return self.binning_tree.currentItem().parent() is not None
-
-    def _is_menu_supported(self):
-        return (self._get_current_column() == BinningColumns.Grade()
-                and self._is_binning_child_item())
-
-    @staticmethod
-    def _is_pass(text):
-        grade = int(text)
-        return grade >= 1 and grade <= 9
+        return menu
 
     @staticmethod
     def _get_sbin(text):
@@ -350,34 +208,17 @@ class TestProgramWizard(BaseDialog):
 
         return text
 
-    @QtCore.pyqtSlot(QtCore.QPoint)
-    def _context_menu(self, point):
-        if not self._is_menu_supported():
-            return
-
-        label = self._get_selected_menu_label(point)
-        if label is None:
-            return None
-
-        item = self.binning_tree.itemAt(point)
-        self._update_binning_tree(self._get_sbin(label), item, BinningColumns.Grade())
-
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
     def _binning_tree_item_clicked(self, item, column):
-        if not self._is_binning_child_item():
-            return
+        self.binning_tree.blockSignals(True)
+        if self._is_binning_child_item():
+            if column == BinningColumns.Grade()\
+               or column == BinningColumns.Context():
+                item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
+            else:
+                item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
 
-        if column == BinningColumns.Grade()\
-           or column == BinningColumns.Context():
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
-        else:
-            item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-
-    def _tab_changed(self, index):
-        tab_name = self.tabWidget.tabText(index)
-        self.binning_tree.clear()
-        if tab_name == Tabs.Binning():
-            self._populate_binning_tree()
+        self.binning_tree.blockSignals(False)
 
     def _table_clicked(self):
         if len(self.selectedTests.selectedItems()):
@@ -385,7 +226,6 @@ class TestProgramWizard(BaseDialog):
 
         self.parametersInput.setRowCount(0)
         self.parametersOutput.setRowCount(0)
-        self._update_test_list_table()
 
     def _double_click_handler(self, item):
         if item.column() == 0:
@@ -402,29 +242,14 @@ class TestProgramWizard(BaseDialog):
         if item.column() in (0, 1, 3, 4, 5) or self.read_only:
             return
 
-        param_name = self.parametersInput.item(item.row(), 0).text()
-        flag = self._get_appropriate_item_flag_for_table(param_name, 'input_parameters')
-        item.setFlags(flag)
+        self._verify()
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _output_param_table_clicked(self, item):
         if item.column() in (0, 1, 4, 5, 6) or self.read_only:
             return
 
-        param_name = self.parametersOutput.item(item.row(), 0).text()
-        flag = self._get_appropriate_item_flag_for_table(param_name, 'output_parameters')
-        item.setFlags(flag)
-
-    def _get_appropriate_item_flag_for_table(self, param_name, type):
-        for test in self.selected_tests:
-            for param, val in test[type].items():
-                if param != param_name:
-                    continue
-
-                if val['validity'] == ParameterState.Invalid():
-                    return QtCore.Qt.NoItemFlags
-
-                return QtCore.Qt.ItemIsEnabled
+        self._verify()
 
     @staticmethod
     def _set_icon(button, icon_type):
@@ -498,7 +323,12 @@ class TestProgramWizard(BaseDialog):
         self.parametersInput.setEnabled(False)
         self.parametersOutput.setEnabled(False)
 
-        self._update_tables_with_standard_values(item.text(), item.text())
+        self.selectedTests.blockSignals(True)
+        self.selectedTests.clearSelection()
+        self.selectedTests.blockSignals(False)
+
+        self._fill_input_parameter_table()
+        self._fill_output_parameter_table()
 
     @QtCore.pyqtSlot()
     def _available_table_clicked(self):
@@ -509,118 +339,40 @@ class TestProgramWizard(BaseDialog):
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _test_selected(self, item):
-        self.parametersInput.setEnabled(True)
-        self.parametersOutput.setEnabled(True)
+        self.selectedTests.blockSignals(True)
+        if not self.read_only:
+            self.parametersInput.setEnabled(True)
+            self.parametersOutput.setEnabled(True)
+
+        self.availableTests.blockSignals(True)
+        self.availableTests.clearSelection()
+        self.availableTests.blockSignals(False)
 
         row = item.row()
         self.selectedTests.item(row, 0).setSelected(True)
         self.selectedTests.item(row, 1).setSelected(True)
 
-        self.selected_cell = item
+        test_name = self.selectedTests.item(row, 1).text()
+        self._validate_test_parameters(test_name)
 
-        self._handle_selection(self.availableTests, item)
+        self._fill_input_parameter_table()
+        self._fill_output_parameter_table()
 
-    def _handle_selection(self, test_list, item):
-        test_name = self.selectedTests.item(item.row(), 0).text()
-        test_instance_name = self.selectedTests.item(item.row(), 1).text()
-        self._deselect_items(test_list)
-        self._update_tables_with_custom_parameters(test_name, test_instance_name)
+        self.selectedTests.blockSignals(False)
 
-    def _deselect_items(self, selected_list):
-        for index in range(selected_list.count()):
-            selected_list.item(index).setSelected(False)
-
-    def _deselect_table_items(self):
-        for row in range(self.selectedTests.rowCount()):
-            for col in range(self.selectedTests.columnCount()):
-                self.selectedTests.item(row, col).setSelected(False)
+    def _validate_test_parameters(self, test_name):
+        self._custom_parameter_handler.validate_test_parameters(test_name, self._standard_parameter_handler)
 
     @staticmethod
     def _extract_base_test_name(indexed_test_name):
         return indexed_test_name.split('_')[0]
 
-    def _update_tables_with_standard_values(self, test_name, test_instance_name):
-        self.input_parameters, self.output_parameters = self._get_in_output_paramters(test_name)
-        for test in self.available_tests:
-            if test['description'] != test_instance_name:
-                continue
-
-            for parameter in test['input_parameters'].items():
-                param = copy.deepcopy(parameter)
-                self.input_parameters[param[0]].update({'Default': {'Value': self.input_parameters[param[0]]['Default'],
-                                                                    'validity': ParameterState.Valid()}})
-                self.input_parameters[param[0]].update({'is_valid': ParameterState.Valid()})
-
-            for param in test['output_parameters'].items():
-                self.output_parameters[param[0]].update({'is_valid': ParameterState.Valid()})
-
-            break
-
-        self._fill_input_parameter_table()
-        self._fill_output_parameter_table()
-
     def _get_in_output_paramters(self, test_name):
         name = self._extract_base_test_name(test_name)
         self.current_selected_test = name
         parameters = self._get_test_parameters(name)
-        self._add_is_valid_flag(parameters)
 
         return parameters['input_parameters'], parameters['output_parameters']
-
-    @staticmethod
-    def _add_is_valid_flag(parameters):
-        for _, parameter in parameters['input_parameters'].items():
-            parameter.update({'is_valid': ParameterState.New()})
-
-        for _, parameter in parameters['output_parameters'].items():
-            parameter.update({'is_valid': ParameterState.New()})
-
-    def _update_tables_with_custom_parameters(self, test_name, test_instance_name):
-        self.input_parameters, self.output_parameters = self._get_in_output_paramters(test_name)
-
-        # update table content if content changed
-        for test in self.selected_tests:
-            name = test['description']
-            if name != test_instance_name:
-                continue
-
-            self._update_input_parameters(test['input_parameters'])
-            self._update_output_parameters(test['output_parameters'])
-            break
-
-        self._fill_input_parameter_table()
-        self._fill_output_parameter_table()
-
-    def _update_input_parameters(self, input_parameters):
-        for parameter in input_parameters.items():
-            param = copy.deepcopy(parameter)
-            if not self.input_parameters.get(param[0]):
-                self.input_parameters.update({param[0]: self._generate_invalid_input_parameter(param[1])})
-                continue
-
-            self.input_parameters[param[0]]['Default'] = param[1]
-            self.input_parameters[param[0]].update({'is_valid': param[1]['validity']})
-
-    def _update_output_parameters(self, output_parameters):
-        for parameter in output_parameters.items():
-            param = copy.deepcopy(parameter)
-            if not self.output_parameters.get(param[0]):
-                self.output_parameters.update({param[0]: self._generate_invalid_output_parameter(param[1]['LTL'], param[1]['UTL'])})
-                continue
-
-            self.output_parameters[param[0]]['LTL'], self.output_parameters[param[0]]['UTL'] = \
-                output_parameters[param[0]]['LTL'], \
-                output_parameters[param[0]]['UTL']
-
-            self.output_parameters[param[0]].update({'is_valid': param[1]['validity']})
-
-    @staticmethod
-    def _generate_invalid_input_parameter(temp):
-        return {'Shmoo': True, 'Min': 'nan', 'Default': temp, 'Max': 'nan', '10ᵡ': '', 'Unit': 'nan', 'fmt': '.0f', 'is_valid': ParameterState.Invalid()}
-
-    @staticmethod
-    def _generate_invalid_output_parameter(ltl, utl):
-        return {'LSL': 'nan', 'LTL': ltl, 'Nom': 0.0, 'UTL': utl, 'USL': 'nan', '10ᵡ': '', 'Unit': 'nan', 'fmt': '.0f', 'is_valid': ParameterState.Invalid()}
 
     # ToDo: Improve Exception handling, as all exceptions
     #       thrown in handlers will be discarded and replaced
@@ -638,6 +390,8 @@ class TestProgramWizard(BaseDialog):
         except Exception as e:
             raise e
 
+        self._verify()
+
     @staticmethod
     def _is_test_selected(test_list):
         selected_items = len(test_list.selectedItems())
@@ -647,6 +401,7 @@ class TestProgramWizard(BaseDialog):
 
     @QtCore.pyqtSlot()
     def _move_up(self):
+        self.selectedTests.blockSignals(True)
         selected = self.selectedTests.selectedItems()
         if not len(selected):
             self._update_feedback(ErrorMessage.NotSelected())
@@ -654,97 +409,111 @@ class TestProgramWizard(BaseDialog):
 
         row = selected[0].row()
         if row == 0:
-            return
+            pass
+        else:
+            test_name = self.selectedTests.item(row, 1).text()
+            self._custom_parameter_handler.reorder_test(test_name, Action.Up())
+            self._switch_item_names(row, row - 1)
 
-        index = row
-        self._fit_test_sequence(index, index - 1)
-
-        self._update_test_list_table()
-
-    # ToDo: Naming: What does this method actually do`?
-    def _fit_test_sequence(self, index, new_index):
-        clicked_item = self.selected_tests[index]
-        element2 = self.selected_tests[new_index]
-
-        self.selected_tests.insert(new_index, clicked_item)
-        del self.selected_tests[new_index + 1]
-
-        self.selected_tests.insert(index, element2)
-        del self.selected_tests[index + 1]
+        self.selectedTests.selectRow(row - 1)
+        self.selectedTests.blockSignals(False)
 
     @QtCore.pyqtSlot()
     def _move_down(self):
+        self.selectedTests.blockSignals(True)
         selected = self.selectedTests.selectedItems()
-        if not len(selected):
-            self._update_feedback(ErrorMessage.NotSelected())
-            return
-
         row = selected[0].row()
-        if row == self.selectedTests.rowCount() - 1:
-            return
+        if not len(selected) or row == self.selectedTests.rowCount() - 1:
+            self._update_feedback(ErrorMessage.NotSelected())
+        else:
+            test_name = self.selectedTests.item(row, 1).text()
+            self._custom_parameter_handler.reorder_test(test_name, Action.Down())
+            self._switch_item_names(row, row + 1)
 
-        index = row
-        self._fit_test_sequence(index, index + 1)
+        self.selectedTests.blockSignals(False)
+        self.selectedTests.selectRow(row + 1)
 
-        self._update_test_list_table()
+    def _switch_item_names(self, row, next_row):
+        item_base = self.selectedTests.takeItem(row, 0)
+        item_instance = self.selectedTests.takeItem(row, 1)
+
+        switch_item_base = self.selectedTests.takeItem(next_row, 0)
+        switch_item_instance = self.selectedTests.takeItem(next_row, 1)
+
+        self.selectedTests.setItem(row, 0, switch_item_base)
+        self.selectedTests.setItem(row, 1, switch_item_instance)
+
+        self.selectedTests.setItem(next_row, 0, item_base)
+        self.selectedTests.setItem(next_row, 1, item_instance)
 
     @QtCore.pyqtSlot()
     def _remove_from_testprogram(self):
-        # blocking signals for selectedTests table prevent any callback event to fire
         self.selectedTests.blockSignals(True)
-        selected_items = self.selectedTests.selectedItems()
-        if not len(selected_items):
+        if not self._is_test_selected(self.selectedTests):
             self._update_feedback(ErrorMessage.NotSelected())
             return
 
         self.parametersInput.setRowCount(0)
         self.parametersOutput.setRowCount(0)
 
-        test_index = self.selectedTests.currentRow()
-        del self.selected_tests[test_index]
-        self._update_test_list_table()
+        item = self.selectedTests.selectedItems()[0]
+        row = item.row()
+        test_name = self.selectedTests.item(row, 1).text()
+        self._custom_parameter_handler.remove_test(test_name)
+        self.selectedTests.removeRow(row)
+
         self.selectedTests.blockSignals(False)
 
     @QtCore.pyqtSlot()
     def _add_to_testprogram(self):
+        self.availableTests.blockSignals(True)
         if not self._is_test_selected(self.availableTests):
             self._update_feedback(ErrorMessage.NotSelected())
             return
 
         for item in self.availableTests.selectedItems():
             self._add_test_tuple_items(item.text())
-
-        self.selectedTests.setRowCount(len(self.selected_tests))
-        self._validate_selected_test(self.selected_tests[-1], len(self.selected_tests) - 1)
-        self._verify()
+        self.availableTests.blockSignals(False)
 
     @QtCore.pyqtSlot(str)
     def _verify_temperature(self, text):
         self.parametersInput.setRowCount(0)
         self.parametersOutput.setRowCount(0)
-        self._deselect_items(self.availableTests)
-        self._deselect_table_items()
+
+        self.availableTests.clearSelection()
+        self.selectedTests.clearSelection()
 
         if not text:
             self.temperature_feedback.setText(ErrorMessage.TemperatureMissed())
+        else:
+            temps = []
+            if self.sequencer_type == Sequencer.Static():
+                temps = [text]
+                if not len(self.temperature.text()):
+                    self.temperature_feedback.setText(ErrorMessage.InvalidTemperature())
+                    return
 
-        if self.sequencer_type == Sequencer.Static():
-            if not len(self.temperature.text()):
-                self.temperature_feedback.setText(ErrorMessage.InvalidTemperature())
+            if self.sequencer_type == Sequencer.Dynamic():
+                temps = self._get_dynamic_temp(text)
+                if temps is None:
+                    self.temperature_feedback.setText(ErrorMessage.InvalidTemperature())
+                    return
 
-        if self.sequencer_type == Sequencer.Dynamic():
-            if self._get_dynamic_temp(text) is None:
-                self.temperature_feedback.setText(ErrorMessage.InvalidTemperature())
-
-        self._update_test_list_table()
-        self._update_test_list()
+            self._custom_parameter_handler.set_temperature(temps)
+            self._insert_tests_to_selected_list()
+            self._update_test_list()
+        self._verify()
 
     def _update_test_list(self):
         self.availableTests.clear()
         alltests = self._get_available_tests()
         for t in alltests:
             self.availableTests.addItem(t.name)
-            self.available_tests.append(self._generate_test_struct(t.name, t.name))
+            self._fill_standard_parameter_handler(t.name, t.name)
+
+    def _fill_standard_parameter_handler(self, test_name, test_instance_name):
+        self.input_parameters, self.output_parameters = self._get_in_output_paramters(test_name)
+        self._standard_parameter_handler.add_test(test_instance_name, test_name, self.input_parameters, self.output_parameters)
 
     def _validate_temperature_input(self, text, pattern):
         index = text.rfind(pattern)
@@ -824,7 +593,7 @@ class TestProgramWizard(BaseDialog):
             self.target_feedback.setText(ErrorMessage.TargetMissed())
             success = False
 
-        if self.selectedTests.rowCount() == 0:
+        if not self.selectedTests.rowCount():
             self._update_feedback(ErrorMessage.EmtpyTestList())
             success = False
 
@@ -832,8 +601,12 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.NoValidTestRange())
             success = False
 
-        if not self.temperature.text() or not self._is_valid_temperature():
+        if not self.temperature.text():
             self.temperature_feedback.setText(ErrorMessage.TemperatureNotValidated())
+            success = False
+
+        if not self._custom_parameter_handler.are_all_tests_valid():
+            self._update_feedback(ErrorMessage.ParameterNotValid())
             success = False
 
         if success:
@@ -844,38 +617,6 @@ class TestProgramWizard(BaseDialog):
             self.OKButton.setEnabled(True)
         else:
             self.OKButton.setEnabled(False)
-
-    def _verify_tests(self):
-        self._update_feedback('')
-        self.OKButton.setEnabled(True)
-
-        for test in self.selected_tests:
-            parameters = self._get_test_parameters(test['name'])
-            if not self._verify_input_parameters(test['input_parameters'], parameters) \
-               or not self._verify_output_parameters(test['output_parameters'], parameters):
-                return
-
-    def _verify_input_parameters(self, input_parameters, parameters):
-        for param, val, in input_parameters.items():
-            if not self._is_input_limit_valid(param, val['Value'], parameters):
-                self._update_feedback(f'input parameter, {param} is not valid')
-                self.OKButton.setEnabled(False)
-                return False
-
-        return True
-
-    def _verify_output_parameters(self, output_parameters, parameters):
-        for param, val in output_parameters.items():
-            if not self._is_output_limit_valid(param, val['LTL'], 'LTL', parameters) \
-               or not self._is_output_limit_valid(param, val['UTL'], 'UTL', parameters):
-                self._update_feedback(f'output parameter, {param} is not valid')
-                self.OKButton.setEnabled(False)
-                return False
-
-        return True
-
-    def _is_valid_temperature(self):
-        return self.is_valid_temperature
 
     @property
     def program_name(self):
@@ -891,244 +632,102 @@ class TestProgramWizard(BaseDialog):
         else:
             self.Feedback.setText('')
 
-    # ToDo Encapsulate temperature range into class
-    def _is_temperature_in_range(self, test, temps):
-        if temps is None:
-            return Range.In_Range()
-
-        min, max = self.project_info.get_test_temp_limits(test, self.project_info.active_hardware, self.project_info.active_base)
-        temps.sort()
-
-        in_range_list = [x for x in temps if x >= min and x <= max]
-
-        if len(in_range_list) == len(temps):
-            return Range.In_Range()
-        elif not len(in_range_list):
-            self.is_valid_temperature = False
-            return Range.Out_Of_Range()
-        else:
-            return Range.Limited_Range()
-
     @staticmethod
     def _generate_color(color):
         return QtGui.QBrush(QtGui.QColor(color[0], color[1], color[2]))
+
+    def _set_input_fields(self, table, input_parameter_filed, row, col):
+        item = QtWidgets.QTableWidgetItem(str(input_parameter_filed.get_value()))
+        if col == 0:
+            item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        else:
+            item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+        flag = input_parameter_filed.get_editable_flag_value()
+        if flag == ParameterEditability.NotEditable():
+            item.setFlags(QtCore.Qt.NoItemFlags)
+        elif flag == ParameterEditability.Selectable():
+            item.setFlags(QtCore.Qt.ItemIsEnabled)
+        else:
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+
+        try:
+            color = {ParameterState.Invalid(): RED,
+                     ParameterState.Changed(): RED,
+                     ParameterState.Removed(): RED,
+                     ParameterState.PartValid(): ORANGE,
+                     ParameterState.New(): GREEN}[input_parameter_filed.get_state()]
+            self._set_widget_color(item, color)
+        except KeyError:
+            pass
+
+        table.setItem(row, col, item)
 
     def _set_widget_color(self, item, color):
         item.setBackground(self._generate_color(color))
         item.setForeground(QtCore.Qt.black)
 
-    def _get_test_info(self, fmt):
-        if not len(self.temperature.text()):
-            return '', []
-
-        if self.sequencer_type == Sequencer.Static():
-            temps = [int(self.temperature.text())]
-            text = '' if not len(temps) else self._get_text(temps[0], fmt)
-        else:
-            temps = self._get_dynamic_temp(self.temperature.text())
-            temps.sort()
-            text = '' if temps is None else f"{self._get_text(temps[0], fmt)}..{self._get_text(temps[len(temps) - 1], fmt)}"
-
-        return text, temps
-
-    def _generate_temperature_item(self, fmt):
-        text, temps = self._get_test_info(fmt)
-
-        item = QtWidgets.QTableWidgetItem(text)
-        if len(text):
-            which_range = self._is_temperature_in_range(self.current_selected_test, temps)
-            if which_range == Range.Out_Of_Range():
-                self._set_widget_color(item, RED)
-
-            if which_range == Range.Limited_Range():
-                self._set_widget_color(item, ORANGE)
-
-        return item
-
     def _fill_input_parameter_table(self):
-        self._clear_table_content(self.parametersInput)
-        self.parametersInput.setRowCount(len(self.input_parameters))
-        self.parametersInput.setColumnCount(6)
-        fmt = '.0f'  # set format to zero as default
-        row = 0
-        for key, value in self.input_parameters.items():
-            for col in range(self.parametersInput.columnCount()):
-                parameter_name = list(self.input_parameters.items())[row][0]
-                if parameter_name:
-                    fmt = self.input_parameters[parameter_name]['fmt']
+        self.parametersInput.setRowCount(0)
+        if len(self.selectedTests.selectedItems()):
+            parameter_handler = self._custom_parameter_handler
+            test_instance = self._selected_test_instance()
+        else:
+            parameter_handler = self._standard_parameter_handler
+            test_instance = self.availableTests.selectedItems()[0].text()
 
-                if col == 0:
-                    name_item = QtWidgets.QTableWidgetItem(key)
-                    name_item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-                    name_item.setFlags(QtCore.Qt.NoItemFlags)
-                    self.parametersInput.setItem(row, col, name_item)
-                    continue
-                elif col == 1:
-                    item = QtWidgets.QTableWidgetItem(str(self._get_text(value['Min'], fmt)))
-                elif col == 2:
-                    if key == 'Temperature':
-                        item = self._generate_temperature_item(fmt)
-                        item.setFlags(QtCore.Qt.NoItemFlags)
-                    else:
-                        item = self._generate_configurable_table_cell(self.parametersInput, value['Default']['Value'], fmt, 2)
-                        if value['Default']['validity'] not in (ParameterState.Valid(), ParameterState.New()):
-                            item.setFlags(QtCore.Qt.NoItemFlags)
+        input_parameters = parameter_handler.get_test_inputs_parameters(test_instance)
+        self.parametersInput.setRowCount(len(input_parameters))
+        self.parametersInput.setColumnCount(7)
 
-                        try:
-                            if self.selected_cell is not None and not self._is_input_limit_valid(parameter_name, value['Default']['Value'], self._get_test_parameters(self.selected_cell.text())):
-                                self._set_widget_color(item, RED)
-                        except Exception:
-                            pass
-
-                elif col == 3:
-                    item = QtWidgets.QTableWidgetItem(str(self._get_text(value['Max'], fmt)))
-                elif col == 4:
-                    item = QtWidgets.QTableWidgetItem(value['Unit'])
-                elif col == 5:
-                    item = QtWidgets.QTableWidgetItem(value['fmt'])
-
-                if col in (1, 3, 4, 5):
-                    item.setFlags(QtCore.Qt.NoItemFlags)
-
-                item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-                self.parametersInput.setItem(row, col, item)
-
-            row += 1
-
-        self._validate_table(self.parametersInput, self.input_parameters)
-
-    @staticmethod
-    def _is_input_limit_valid(param_name, limit, parameters):
-        try:
-            if parameters['input_parameters'][param_name]['Min'] > limit \
-               or parameters['input_parameters'][param_name]['Max'] < limit:
-                return False
-        except KeyError:
-            # keyError exception is a sign that the parameter looking for was deleted from the associated test and we could ignore it
-            return True
-
-        return True
-
-    def _validate_table(self, table, elements):
-        for param_name, element in elements.items():
-            for row in range(table.rowCount()):
-                if not table.item(row, 0):
-                    continue
-
-                if table.item(row, 0).text() == param_name:
-                    if element['is_valid'] == ParameterState.Invalid():
-                        self._highlight_invalid_row(row, table, RED)
-                    if element['is_valid'] == ParameterState.New():
-                        self._highlight_invalid_row(row, table, GREEN)
-
-    def _highlight_invalid_row(self, row, table, color):
-        cols = table.columnCount()
-        for col in range(cols):
-            self._set_widget_color(table.item(row, col), color)
-
-    def _get_text(self, value, fmt):
-        return ('%' + fmt) % float(value)
-
-    def _clear_table_content(self, table):
-        for row in range(table.rowCount()):
-            for col in range(table.columnCount()):
-                table.removeCellWidget(row, col)
+        for row, (_, inputs) in enumerate(input_parameters.items()):
+            input_parameter = inputs.get_parameters()
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Name()], row, InputFieldsPosition.Name())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Min()], row, InputFieldsPosition.Min())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Value()], row, InputFieldsPosition.Value())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Max()], row, InputFieldsPosition.Max())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Unit()], row, InputFieldsPosition.Unit())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Format()], row, InputFieldsPosition.Format())
+            self._set_input_fields(self.parametersInput, input_parameter[InputFieldsPosition.Type()], row, InputFieldsPosition.Type())
 
     def _fill_output_parameter_table(self):
-        self._clear_table_content(self.parametersOutput)
-        self.parametersOutput.setRowCount(len(self.output_parameters))
-        self.parametersOutput.setColumnCount(7)
-        row = 0
+        self.parametersOutput.setRowCount(0)
         header = self.parametersOutput.horizontalHeader()
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-        for key, value in self.output_parameters.items():
-            for col in range(self.parametersOutput.columnCount()):
-                parameter_name = list(self.output_parameters.items())[row][0]
-                fmt = self.output_parameters[parameter_name]['fmt']
 
-                if col == 0:
-                    name_item = QtWidgets.QTableWidgetItem(key)
-                    name_item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-                    name_item.setFlags(QtCore.Qt.NoItemFlags)
-                    self.parametersOutput.setItem(row, col, name_item)
-                    continue
-                elif col == 1:
-                    item = QtWidgets.QTableWidgetItem(str(self._get_text(value['LSL'], fmt)))
-                elif col == 2:
-                    item = self._generate_configurable_table_cell(self.parametersOutput, value['LTL'], fmt, col)
-                    if value['is_valid'] not in (ParameterState.Valid(), ParameterState.New()):
-                        item.setFlags(QtCore.Qt.NoItemFlags)
+        if len(self.selectedTests.selectedItems()):
+            parameter_handler = self._custom_parameter_handler
+            test_instance = self._selected_test_instance()
+        else:
+            parameter_handler = self._standard_parameter_handler
+            test_instance = self.availableTests.selectedItems()[0].text()
 
-                    try:
-                        if self.selected_cell is not None and not self._is_output_limit_valid(parameter_name, value['LTL'], 'LTL', self._get_test_parameters(self.selected_cell.text())):
-                            self._set_widget_color(item, RED)
-                    except Exception:
-                        pass
-                # TODO: should the nom be a part of the table
-                # elif col == 3:
-                #     item = QtWidgets.QTableWidgetItem(str(value['NOM']))
-                elif col == 3:
-                    item = self._generate_configurable_table_cell(self.parametersOutput, value['UTL'], fmt, col)
-                    if value['is_valid'] not in (ParameterState.Valid(), ParameterState.New()):
-                        item.setFlags(QtCore.Qt.NoItemFlags)
-                    try:
-                        if self. selected_cell is not None and not self._is_output_limit_valid(parameter_name, value['UTL'], 'UTL', self._get_test_parameters(self.selected_cell.text())):
-                            self._set_widget_color(item, RED)
-                    except Exception:
-                        pass
-                elif col == 4:
-                    item = QtWidgets.QTableWidgetItem(str(self._get_text(value['USL'], fmt)))
-                elif col == 5:
-                    item = QtWidgets.QTableWidgetItem(value['Unit'])
-                elif col == 6:
-                    item = QtWidgets.QTableWidgetItem(value['fmt'])
+        output_parameters = parameter_handler.get_test_outputs_parameters(test_instance)
+        self.parametersOutput.setRowCount(len(output_parameters))
+        self.parametersOutput.setColumnCount(7)
+        for row, (_, inputs) in enumerate(output_parameters.items()):
+            output_parameter = inputs.get_parameters()
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Name()], row, OutputFieldsPosition.Name())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Lsl()], row, OutputFieldsPosition.Lsl())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Ltl()], row, OutputFieldsPosition.Ltl())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Utl()], row, OutputFieldsPosition.Utl())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Usl()], row, OutputFieldsPosition.Usl())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Unit()], row, OutputFieldsPosition.Unit())
+            self._set_input_fields(self.parametersOutput, output_parameter[OutputFieldsPosition.Format()], row, OutputFieldsPosition.Format())
 
-                if col in (1, 4, 5, 6):
-                    item.setFlags(QtCore.Qt.NoItemFlags)
-
-                item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-                self.parametersOutput.setItem(row, col, item)
-
-            row += 1
-
-        self._validate_table(self.parametersOutput, self.output_parameters)
+    @staticmethod
+    def _get_text(value, fmt):
+        return ('%' + fmt) % float(value)
 
     def _get_test_parameters(self, test_name):
         return self.project_info.get_test_table_content(self._extract_base_test_name(test_name), self.project_info.active_hardware, self.project_info.active_base)
-
-    @staticmethod
-    def _is_output_limit_valid(param_name, limit, type, parameters):
-        try:
-            if type == 'LTL' and parameters['output_parameters'][param_name]['LSL'] > limit:
-                return False
-
-            if type == 'UTL' and parameters['output_parameters'][param_name]['USL'] < limit:
-                return False
-        except KeyError:
-            # keyError exception is a sign that the parameter looking for was deleted from the associated test and we could ignore it for now
-            return True
-
-        return True
-
-    def _generate_configurable_table_cell(self, parameter_table, value, fmt, cell):
-        if isinstance(value, str) and not len(value):
-            return
-        text = str(self._get_text(value, fmt))
-        item = QtWidgets.QTableWidgetItem(text)
-
-        self._resize_table_cell(parameter_table, cell, item)
-
-        if self.read_only:
-            item.setFlags(QtCore.Qt.NoItemFlags)
-
-        return item
 
     def _resize_table_cell(self, parameter_table, cell, item):
         font = QtGui.QFont()
         metric = QtGui.QFontMetrics(font)
         text_size = metric.boundingRect(item.text()).width()
-        colum_size = self.parametersInput.columnWidth(1)
+        colum_size = 1
         if (text_size + colum_size) > self.cell_size:
             self.cell_size = text_size + colum_size
 
@@ -1137,6 +736,13 @@ class TestProgramWizard(BaseDialog):
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_input_param(self, item):
         test_name = self.selectedTests.item(self.selectedTests.currentRow(), 0).text()
+        test_instance = self.selectedTests.item(self.selectedTests.currentRow(), 1).text()
+        param_name = self.parametersInput.item(item.row(), 0).text()
+
+        parameter = self._custom_parameter_handler.get_input_parameter(test_instance, param_name)
+        if parameter.get_editable_flag_value(item.column()) != ParameterEditability.Editable():
+            return
+
         self._create_checkable_cell(test_name, self.parametersInput, 'input', item, self.positive_float_validator)
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
@@ -1162,8 +768,8 @@ class TestProgramWizard(BaseDialog):
         if table_type == 'description':
             description = checkable_widget.text()
             if self._is_description_valid(table, description):
+                self._custom_parameter_handler.update_test_name(test_name, description)
                 self.selectedTests.item(row, column).setText(str(checkable_widget.text()))
-                self._update_test_description(row, checkable_widget.text())
             else:
                 self._update_feedback(ErrorMessage.TestDescriptionNotUnique())
 
@@ -1175,14 +781,26 @@ class TestProgramWizard(BaseDialog):
         else:
             param_type = table.item(row, 0).text()
             value = float(checkable_widget.text())
-            if table_type == 'input':
-                if not self._validate_input_parameter(test_name, value, param_type):
-                    return
-            else:
-                if not self._validate_output_parameter(test_name, value, param_type, column):
-                    return
+            test_instance = self.selectedTests.item(self.selectedTests.selectedItems()[0].row(), 1).text()
 
-            self._verify_tests()
+            if table_type == 'input':
+                parameter = self._custom_parameter_handler.get_input_parameter(test_instance, param_type)
+                parameter.set_value(value)
+                self._validate_input_parameter(parameter)
+            else:
+                parameter = self._custom_parameter_handler.get_output_parameter(test_instance, param_type)
+                parameter.set_limit(value, column)
+                self._validate_output_parameter(parameter)
+
+        self._verify()
+
+    def _validate_input_parameter(self, parameter):
+        if not parameter.is_valid_value():
+            self._update_feedback(ErrorMessage.OutOfRange())
+        else:
+            self._update_feedback('')
+
+        self._fill_input_parameter_table()
 
     @staticmethod
     def _is_description_valid(table, description):
@@ -1198,9 +816,6 @@ class TestProgramWizard(BaseDialog):
 
         return True
 
-    def _update_test_description(self, test_row, new_description):
-        self.selected_tests[test_row]['description'] = new_description
-
     def _update_row(self, row):
         test_name = self.selectedTests.item(row, 0).text()
         test_description = self.selectedTests.item(row, 1).text()
@@ -1208,329 +823,95 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.blockSignals(True)
         self.selectedTests.removeRow(row)
         self.selectedTests.insertRow(row)
-        self._insert_test_tuple_items(row, test_name, test_description)
+        self._insert_test_tuple_without_validation(row, test_name, test_description)
         self.selectedTests.blockSignals(False)
 
-    def _validate_output_parameter(self, test_name, value, param_type, column):
-        limits = (self.output_parameters[param_type]['LSL'], self.output_parameters[param_type]['USL'])
-        limit = 'UTL' if column == 3 else 'LTL'
+    def _insert_test_tuple_without_validation(self, row, test_name, test_description):
+        test_base_item = self._generate_test_name_item(test_name)
+        test_name_item = self._generate_test_description_item(test_description)
 
-        if not self._is_valid_value(value, limits) or \
-           not self._is_valid_output_value(value, param_type, limit):
-            self._fill_output_parameter_table()
-            self._update_feedback(ErrorMessage.OutOfRange())
-            return False
+        self.selectedTests.setItem(row, 0, test_base_item)
+        self.selectedTests.setItem(row, 1, test_name_item)
 
-        self._verify()
-        self.output_parameters[param_type][limit] = value
-        self._update_selected_tests_parameters('output_parameters',
-                                               param_type,
-                                               value,
-                                               limit)
-        self._fill_output_parameter_table()
-        return True
+    def _update_selected_test_list(self):
+        self._validate_tests_parameters()
+        self._insert_tests_to_selected_list()
 
-    def _is_valid_output_value(self, value, param_type, limit):
-        import numpy as np
+    def _insert_tests_to_selected_list(self):
+        self.selectedTests.blockSignals(True)
+        self.selectedTests.setRowCount(len(self._custom_parameter_handler.get_test_names()))
+        for index, test in enumerate(self._custom_parameter_handler.get_tests()):
+            self._validate_test_parameters(test.get_test_name())
+            self._insert_test_tuple_items(index, test.get_test_base(), test.get_test_name(), test.get_valid_flag())
 
-        if str(self.output_parameters[param_type]['UTL']) == str(np.nan) and limit != 'UTL' or \
-           str(self.output_parameters[param_type]['LTL']) == str(np.nan) and limit != 'LTL':
-            return True
+        self.selectedTests.blockSignals(False)
 
-        if limit == 'LTL':
-            return self.output_parameters[param_type]['UTL'] > value
-
-        if limit == 'UTL':
-            return self.output_parameters[param_type]['LTL'] < value
-
-        return False
-
-    def _validate_input_parameter(self, test_name, value, param_type):
-        limits = (self.input_parameters[param_type]['Min'], self.input_parameters[param_type]['Max'])
-        if not self._is_valid_value(value, limits):
-            self._fill_input_parameter_table()
-            self._update_feedback(ErrorMessage.OutOfRange())
-            return False
-
-        self._verify()
-        self.input_parameters[param_type]['Default']['Value'] = value
-        self._update_selected_tests_parameters('input_parameters',
-                                               param_type,
-                                               value)
-        self._fill_input_parameter_table()
-        return True
-
-    def _is_valid_value(self, value, limits):
-        left_limit = limits[0]
-        right_limit = limits[1]
-        if left_limit == '-inf' and right_limit == 'inf':
-            return True
-
-        if left_limit == '-inf':
-            return value <= float(right_limit)
-
-        if right_limit == 'inf':
-            return value >= float(left_limit)
-
-        return float(left_limit) <= value <= float(right_limit)
-
-    def _generate_test_struct(self, test_name, test_description):
-        struct = {'name': test_name,
-                  'input_parameters': {'In': {'Value': None, 'validity': ParameterState.Valid()}},
-                  'output_parameters': {'Out': {'UTL': '', 'LTL': '', 'Binning': {'bin': 10, 'result': Result.Fail()[1], 'context': ''}, 'validity': ParameterState.Valid()}},
-                  'description': test_description,
-                  'is_valid': True}
-        parameters = self.project_info.get_test_table_content(self._extract_base_test_name(test_name), self.hardware.currentText(), self.base.currentText())
-
-        inputs = self._generate_input_parameters(parameters)
-        do_binning = test_name != test_description
-        outputs = self._generate_output_parameters(parameters, do_binning)
-
-        struct.update({'input_parameters': inputs})
-        struct.update({'output_parameters': outputs})
-        return struct
-
-    def _generate_output_parameters(self, parameters, do_binning):
-        outputs = {}
-        for key, value in parameters['output_parameters'].items():
-            # TODO: use update function, to only update the wanted fields and
-            #       prevent overriding existing properties
-            if do_binning:
-                outputs.update(self._generate_output_dict(key, value['LTL'], value['UTL']))
-                self.bin_counter += 1
-            else:
-                outputs[key] = {'LTL': value['LTL'], 'UTL': value['UTL']}
-
-        return outputs
-
-    def _generate_output_dict(self, param_name, ltl, utl):
-        return {param_name: {'LTL': ltl, 'UTL': utl,
-                'Binning': {'bin': self.bin_counter,
-                            'result': Result.Fail()[1],
-                            'context': ''},
-                'validity': ParameterState.Valid()}}
-
-    @staticmethod
-    def _generate_input_dict(param_name, value):
-        return {param_name: {'Value': value, 'validity': ParameterState.Valid()}}
-
-    def _generate_input_parameters(self, parameters):
-        inputs = {}
-        for key, value in parameters['input_parameters'].items():
-            inputs.update(self._generate_input_dict(key, value['Default']))
-
-        return inputs
-
-    def _update_selected_tests_parameters(self, type, parameter_name, value, limit=''):
-        index = self.selectedTests.currentRow()
-        if not limit:
-            self.selected_tests[index][type][parameter_name]['Value'] = value
-        else:
-            self.selected_tests[index][type][parameter_name][limit] = value
-
-    def _create_new_params(self, parameter_name, limit, type, index, value, limit_type=''):
-        if not limit_type:
-            self.selected_tests[index][type][parameter_name].update({'Value': value})
-        else:
-            self.selected_tests[index][type][parameter_name][limit] = value
-
-    def _clear_test_list_table(self):
-        if not self.selectedTests.rowCount():
+    def _validate_tests_parameters(self):
+        if not self.prog_name:
             return
 
-        for row in range(self.selectedTests.rowCount()):
-            self.selectedTests.removeRow(row)
+        test_targets = self.project_info.get_changed_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
+        if not test_targets:
+            return
 
-    def _is_test_valid(self, test):
-        av_test = self._get_test(test['name'], self.available_tests)
-        if av_test is None:
-            return False
+        test_names = set([test.test for test in test_targets])
+        self._custom_parameter_handler.validate_tests(test_names)
 
-        if len(av_test['input_parameters']) < len(test['input_parameters']) \
-           or len(av_test['input_parameters']) > len(test['input_parameters']):
-            return False
+    def _insert_test_tuple_items(self, row, test_name, test_description, valid):
+        test_base_item = self._generate_test_name_item(test_name)
+        test_name_item = self._generate_test_description_item(test_description)
 
-        if len(av_test['output_parameters']) < len(test['output_parameters']) \
-           or len(av_test['output_parameters']) > len(test['output_parameters']):
-            return False
+        if valid in (ParameterState.Invalid(), ParameterState.Changed()):
+            self._set_widget_color(test_base_item, RED)
+            self._set_widget_color(test_name_item, RED)
 
-        if self._have_params_changed(av_test['input_parameters'], test['input_parameters']) \
-           or self._have_params_changed(av_test['output_parameters'], test['output_parameters']):
-            return False
+        if valid == ParameterState.PartValid():
+            self._set_widget_color(test_base_item, ORANGE)
+            self._set_widget_color(test_name_item, ORANGE)
 
-        parameters = self._get_test_parameters(test['name'])
-        if not self._are_input_parameters_valid(test['input_parameters'], parameters['input_parameters']) \
-           or not self._are_output_parameters_valid(test['output_parameters'], parameters['output_parameters']):
-            return False
+        self.selectedTests.setItem(row, 0, test_base_item)
+        self.selectedTests.setItem(row, 1, test_name_item)
 
-        return True
-
-    @staticmethod
-    def _get_test(test_name, test_list):
-        for test in test_list:
-            if test_name != test['name']:
-                continue
-
-            return test
-
-        return None
-
-    @staticmethod
-    def _are_input_parameters_valid(params, default_vals):
-        for param_name, val in params.items():
-            if val['Value'] < default_vals[param_name]['Min'] \
-               or val['Value'] > default_vals[param_name]['Max']:
-                return False
-
-        return True
-
-    @staticmethod
-    def _are_output_parameters_valid(params, default_vals):
-        for param_name, val in params.items():
-            if val['LTL'] < default_vals[param_name]['LSL'] \
-               or val['UTL'] > default_vals[param_name]['USL']:
-                return False
-
-        return True
-
-    @staticmethod
-    def _have_params_changed(av_test_input, test_input):
-        for av_k, k in zip(sorted(av_test_input.keys()), sorted(test_input.keys())):
-            if av_k != k:
-                return True
-
-        return False
-
-    def _format_selected_list(self):
-        for test in self.selected_tests:
-            input_struct = self._generate_formatted_input_parameters(test['input_parameters'])
-            output_struct = self._generate_formatted_output_parameters(test['output_parameters'])
-
-            test.update(input_struct)
-            test.update(output_struct)
-
-    def _generate_formatted_output_parameters(self, output_params):
-        output_struct = {'output_parameters': {}}
-        for out_param, val in output_params.items():
-            param = self._generate_output_dict(out_param, val['LTL'], val['UTL'])
-            param[out_param]['Binning'].update(val['Binning'])
-            output_struct['output_parameters'].update(param)
-
-        return output_struct
-
-    def _generate_formatted_input_parameters(self, input_params):
-        input_struct = {'input_parameters': {}}
-        for in_params, val in input_params.items():
-            param = self._generate_input_dict(in_params, val)
-            input_struct['input_parameters'].update(param)
-
-        return input_struct
-
-    def _update_test_list_table(self):
-        self.is_valid_temperature = True
-        self._clear_test_list_table()
-        self.selectedTests.setRowCount(len(self.selected_tests))
-        count = 0
-        for test in self.selected_tests:
-            self._validate_selected_test(test, count)
-            count += 1
-
-        self._set_parameter_validity()
-        self._verify()
-
-    def _validate_selected_test(self, test, count):
-        item_name = self._generate_test_name_item(test['name'])
-        item_description = self._generate_test_description_item(test['description'])
-        which_range = self._is_temperature_in_range(self._extract_base_test_name(test['name']), self._get_temps())
-
-        is_test_valid = self._is_test_valid(test)
-        if which_range == Range.Out_Of_Range() or not is_test_valid:
-            self._set_widget_color(item_name, RED)
-            self._set_widget_color(item_description, RED)
-
-        if which_range == Range.Limited_Range() and is_test_valid:
-            self._set_widget_color(item_name, ORANGE)
-            self._set_widget_color(item_description, ORANGE)
-
-        self.selectedTests.setItem(count, 0, item_name)
-        self.selectedTests.setItem(count, 1, item_description)
-
-    def _set_parameter_validity(self):
-        for test in self.selected_tests:
-            av_test = self._get_test(test['name'], self.available_tests)
-            if av_test is None:
-                continue
-
-            available_test = copy.deepcopy(av_test)
-            self._validate_input_parameters(test, available_test)
-            self._validate_output_parameters(test, available_test)
-
-    def _validate_output_parameters(self, test, available_test):
-        type = 'output_parameters'
-        output_params = [out_param for out_param in available_test[type].keys()]
-        self._do_mark_invalid_params(test[type], output_params)
-        self._add_missing_output_parameters(test[type], output_params, available_test)
-
-    def _validate_input_parameters(self, test, available_test):
-        type = 'input_parameters'
-        input_params = [in_param for in_param in available_test[type].keys()]
-        self._do_mark_invalid_params(test[type], input_params)
-        self._add_missing_input_parameters(test[type], input_params, available_test)
-
-    @staticmethod
-    def _generate_validity_dict(validity):
-        return {'validity': validity}
-
-    def _do_mark_invalid_params(self, parameter, available_params):
-        for param_name in parameter.keys():
-            valid_state = ParameterState.Valid() if param_name in available_params else ParameterState.Invalid()
-            if parameter[param_name]['validity'] == ParameterState.New():
-                continue
-            parameter[param_name].update(self._generate_validity_dict(valid_state))
-
-    @staticmethod
-    def _add_missing_input_parameters(parameter, input_params, available_params):
-        for param_name in input_params:
-            if not parameter.get(param_name):
-                parameter.update({param_name: available_params['input_parameters'][param_name]})
-                parameter[param_name].update({'validity': ParameterState.New()})
-
-    def _add_missing_output_parameters(self, parameter, output_params, available_params):
-        for param_name in output_params:
-            if not parameter.get(param_name):
-                parameter.update({param_name: {'LTL': available_params['output_parameters'][param_name]['LTL'], 'UTL': available_params['output_parameters'][param_name]['UTL'],
-                                               'Binning': {'bin': self.bin_counter,
-                                                           'result': Result.Fail()[1],
-                                                           'context': ''}, 'validity': ParameterState.New()}})
-                self.bin_counter += 1
-
-    def _get_temps(self):
-        if self.sequencer_type == Sequencer.Static():
-            if not len(self.temperature.text()):
-                temps = []
-            else:
-                temps = [int(self.temperature.text())]
+    def _validate_output_parameter(self, parameter):
+        if not parameter.is_valid_value():
+            self._update_feedback(ErrorMessage.OutOfRange())
         else:
-            temps = self._get_dynamic_temp(self.temperature.text())
-            temps.sort()
+            self._update_feedback('')
 
-        return temps
-
-    def _generate_selected_test_name(self, test_name):
-        count = 1
-        for test in self.selected_tests:
-            if test_name == test['name']:
-                count += 1
-
-        return f"{test_name}_{count}"
+        self._fill_output_parameter_table()
 
     def _add_test_tuple_items(self, test_name):
-        indexed_test = self._generate_selected_test_name(test_name)
-        self.selected_tests.append(self._generate_test_struct(test_name, indexed_test))
+        indexed_test = self._generate_test_name(test_name)
+        test_name = indexed_test.split('_')[0]
 
-    def _insert_test_tuple_items(self, row, test_name, test_description):
-        self.selectedTests.setItem(row, 0, self._generate_test_name_item(test_name))
-        self.selectedTests.setItem(row, 1, self._generate_test_description_item(test_description))
+        input_parameters, output_parameters = self._get_in_output_paramters(test_name)
+        self._custom_parameter_handler.add_test(indexed_test, test_name, input_parameters, output_parameters)
+        test_names = self._custom_parameter_handler.get_test_names()
+
+        self.selectedTests.setRowCount(len(test_names))
+        item_name = self._generate_test_name_item(test_name)
+        item_description = self._generate_test_description_item(indexed_test)
+        pos = len(test_names) - 1
+        self.selectedTests.setItem(pos, 0, item_name)
+        self.selectedTests.setItem(pos, 1, item_description)
+        bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
+        self._add_tests_to_bin_table(bin_info)
+
+    def _generate_test_name(self, test_base):
+        test_names = self._custom_parameter_handler.get_test_names()
+        test_indexes = [test.split('_')[1] for test in test_names if test_base in test]
+        numbers = []
+        for test_index in test_indexes:
+            try:
+                numbers.append(int(test_index))
+            except Exception:
+                pass
+
+        numbers.sort()
+        if not len(numbers):
+            return f"{test_base}_{1}"
+
+        return f"{test_base}_{numbers[-1] + 1}"
 
     @staticmethod
     def _generate_test_description_item(text):
@@ -1545,90 +926,153 @@ class TestProgramWizard(BaseDialog):
         name_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return name_item
 
-    def _add_binning_item(self, description, out_params, parent):
+    def _populate_binning_tree(self):
+        binning_infos = self._custom_parameter_handler.binning_information()
+        for test in binning_infos:
+            self._add_tests_to_bin_table(test)
+
+    def _add_tests_to_bin_table(self, test: TestParameters):
+        self.binning_tree.blockSignals(True)
+        parent = QtWidgets.QTreeWidgetItem(self.binning_tree)
+        parent.setExpanded(True)
+        parent.setText(0, test['name'])
+        parent.setText(1, str(self.bin_counter))
+        test_sbin = self.bin_counter
+        self.bin_counter += 1
+        parent.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+        self._add_binning_item(test['description'], test['output_parameters'], parent, test_sbin)
+        self.binning_tree.blockSignals(False)
+
+    def _add_binning_item(self, description, out_params, parent, test_sbin):
+        child = None
         for key, value in out_params.items():
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, description + '_' + key)
-            if not value.get('Binning'):
-                value.update(self._generate_binning_structure(self.bin_counter, Result.Fail()[1], ''))
+            if not value.bin.get_value():
+                value.set_bin_infos(self.bin_counter, Result.Fail()[0])
+                self.bin_counter += 1
 
-            item.setText(1, str(value['Binning']['bin']))
-            item.setText(2, Result.Fail()[0] if value['Binning']['result'] == Result.Fail()[1] else Result.Pass()[0])
-            item.setText(3, value['Binning']['context'])
+            self._set_bin_flag(item, value.get_field_state())
 
-            self._validate_tree_item(item, value['validity'])
+            item.setText(1, str(value.bin.get_value()))
+            item.setText(2, Result.Fail()[0] if value.bin_result.get_value() == Result.Fail()[0] else Result.Pass()[0])
+            item.setText(3, '')
+
+            # hold last item to update the appropriate test with the correct sbin value
+            child = item
             parent.addChild(item)
 
-    def _validate_tree_item(self, item, validity):
+        self._update_test_bin(child, test_sbin)
+
+    def _set_bin_flag(self, item, validity):
+        if validity in (ParameterState.Valid(), ParameterState.Changed(), ParameterState.PartValid()):
+            return
+
+        color = RED
+        flags = QtCore.Qt.NoItemFlags
         if validity == ParameterState.New():
-            self._set_tree_item_color(item, GREEN)
+            color = GREEN
+            flags = QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
 
-        if validity == ParameterState.Invalid():
-            self._set_tree_item_color(item, RED)
+        item.setFlags(flags)
+        self._set_tree_item_color(item, 0, color)
+        self._set_tree_item_color(item, 1, color)
+        self._set_tree_item_color(item, 2, color)
 
-    def _set_tree_item_color(self, item, color):
-        for col in range(self.binning_tree.columnCount()):
-            item.setBackground(col, self._generate_color(color))
-            item.setForeground(col, QtCore.Qt.black)
+    def _set_tree_item_color(self, item, col, color):
+        item.setBackground(col, self._generate_color(color))
+        item.setForeground(col, QtCore.Qt.black)
 
-    def _populate_binning_tree(self):
-        tests = [{'name': test['name'], 'description': test['description'], 'output_parameters': test['output_parameters']} for test in self.selected_tests]
+    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem)
+    def _binning_item_changed(self, item: QtWidgets.QTreeWidgetItem):
+        if not item.text(1):
+            return
 
+        if item.childCount() != 0:
+            self._handle_changed_test_sbin(item)
+            return
+
+        self._update_feedback('')
+        out_param = self._get_binning_structure(item)
+
+        out_param.set_bin_infos(item.text(1), item.text(2))
+
+        if out_param.get_bin_state() != ParameterState.Valid():
+            self._update_feedback(ErrorMessage.SbinInvalid())
+            return
+
+        if not self._is_pass_grade(item.text(1)):
+            self._update_binning_tree(Result.Fail()[0], item, BinningColumns.Result())
+        else:
+            self._update_binning_tree(Result.Pass()[0], item, BinningColumns.Result())
+
+    def _handle_changed_test_sbin(self, item: QTableWidgetItem):
+        try:
+            test_sbin = int(item.text(1))
+        except ValueError:
+            self._update_feedback('test bin must be an integral value')
+            self.OKButton.setEnabled(False)
+            return
+
+        if test_sbin in [grade[1] for grade in GRADES]:
+            self._update_feedback('test bin cannot be a good graded bin')
+            self.OKButton.setEnabled(False)
+            return
+
+        self._update_test_bin(item.child(0), test_sbin)
+        item.setText(2, '')
+        item.setText(3, '')
+        self._verify()
+
+    def _update_test_bin(self, output_item: QTableWidgetItem, test_sbin: int):
+        tests = self._custom_parameter_handler.get_tests()
         for test in tests:
-            parent = QtWidgets.QTreeWidgetItem(self.binning_tree)
-            parent.setExpanded(True)
-            parent.setText(0, test['name'])
-            self._add_binning_item(test['description'], test['output_parameters'], parent)
-
-    def _get_configuration(self):
-        configuration = {'name': '',
-                         'hardware': self.hardware.currentText(),
-                         'base': self.base.currentText(),
-                         'target': self.target.currentText(),
-                         'usertext': self.usertext.text(),
-                         'sequencer_type': self.sequencer_type,
-
-                         'temperature': self.temperature.text() if self.sequencer_type == Sequencer.Static()
-                                 else self._get_dynamic_temp(self.temperature.text()),
-
-                         'sample': self.sample.suffix()}
-
-        definition = {'sequence': []}
-        for test in self.selected_tests:
-            test.pop('is_valid', None)
-
-            self._prepare_parameters(test['input_parameters'])
-            self._prepare_input_parameters(test['input_parameters'])
-
-            self._prepare_parameters(test['output_parameters'])
-
-            definition['sequence'].append(test)
-
-        return configuration, definition
-
-    @staticmethod
-    def _prepare_parameters(params):
-        invalids = []
-        for param, val in params.items():
-            if val['validity'] == ParameterState.Invalid():
-                invalids.append(param)
+            if test.get_test_name() not in output_item.text(0):
                 continue
 
-            val.pop('validity')
-
-        for invalid in invalids:
-            params.pop(invalid)
+            test.set_sbin(test_sbin)
 
     @staticmethod
-    def _prepare_input_parameters(input_params):
-        for in_param, val in input_params.items():
-            input_params[in_param] = val['Value']
+    def _is_pass_grade(text):
+        grade = int(text)
+        return grade >= 1 and grade <= 9
+
+    @staticmethod
+    def _update_binning_tree(text, item, pos):
+        item.setText(pos, text)
+
+    @staticmethod
+    def _get_bin_result(text):
+        if text == 'Fail':
+            return Result.Fail()
+        else:
+            return Result.Pass()
+
+    def _get_binning_structure(self, item: QTreeWidgetItem):
+        if item.childCount() != 0:
+            return
+
+        output_name = item.text(0).split('_')
+        test_name = output_name[0] + '_' + output_name[1]
+        param_name = item.text(0).replace(test_name, '')
+        return self._custom_parameter_handler.get_test_outputs_parameters(test_name)[param_name[1:]]
+
+    @staticmethod
+    def _get_binning_params(item):
+        return (item.text(1), item.text(2), item.text(3))
+
+    def _get_temperature_value(self):
+        return self.temperature.text() if self.sequencer_type == Sequencer.Static() else self._get_dynamic_temp(self.temperature.text())
+
+    def _get_caching_policy_value(self):
+        if self.cacheDrop.isChecked():
+            return "drop"
+        if self.cacheStore.isChecked():
+            return "store"
+        return "disable"
 
     def _save_configuration(self):
-        configuration, definition = self._get_configuration()
-
-        if configuration is None:
-            return
+        definition = self._custom_parameter_handler.build_defintion()
 
         if not self.read_only and self.enable_edit:
             owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner}"
@@ -1637,13 +1081,16 @@ class TestProgramWizard(BaseDialog):
 
             self.target_prefix = f"{self.target.currentText()}_{self.owner}_{count}"
 
-            self.project_info.insert_program(self.prog_name, configuration['hardware'], configuration['base'], configuration['target'],
-                                             configuration['usertext'], configuration['sequencer_type'], configuration['temperature'],
-                                             definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix)
+            self.project_info.insert_program(self.prog_name, self.hardware.currentText(), self.base.currentText(), self.target.currentText(),
+                                             self.usertext.text(), self.sequencer_type, self._get_temperature_value(),
+                                             definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix,
+                                             self.cacheType.currentText(), self._get_caching_policy_value())
         else:
-            self.project_info.update_program(self.prog_name, configuration['hardware'], configuration['base'],
-                                             configuration['target'], configuration['usertext'], configuration['sequencer_type'],
-                                             configuration['temperature'], definition, self.owner, self._get_target_name())
+            self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
+            self.project_info.update_program(self.prog_name, self.hardware.currentText(), self.base.currentText(),
+                                             self.target.currentText(), self.usertext.text(), self.sequencer_type,
+                                             self._get_temperature_value(), definition, self.owner, self._get_target_name(),
+                                             self.cacheType.currentText(), self._get_caching_policy_value())
 
         self.accept()
 
@@ -1667,6 +1114,121 @@ class TestProgramWizard(BaseDialog):
 
     def _cancel(self):
         self.reject()
+
+    def _get_input_parameter_types(self):
+        item = self.selectedTests.selectedItems()[0]
+        if item.row() == 0:
+            return {ResolverTypes.Static(): self._static_selected}
+
+        return {ResolverTypes.Static(): self._static_selected, ResolverTypes.Local(): self._local_selected}
+
+    def _set_out_params(self):
+        action = self.sender()
+        parent = action.parent()
+        item = self.parametersInput.currentItem()
+        input_name = self.parametersInput.item(item.row(), 0).text()
+        parameter = self._custom_parameter_handler.get_input_parameter(self._selected_test_instance(), input_name)
+        parameter.set_value(f'{parent.title()}.{action.text()}')
+        self._fill_input_parameter_table()
+
+    def _selected_test_instance(self):
+        row = self.selectedTests.selectedItems()[0].row()
+        return self.selectedTests.item(row, 1).text()
+
+    def _static_selected(self):
+        type_item = self.parametersInput.currentItem()
+        type_item.setText(ResolverTypes.Static())
+        self._update_value_cell(type_item, ParameterEditability.Editable(), ResolverTypes.Static())
+
+    def _local_selected(self):
+        type_item = self.parametersInput.currentItem()
+        type_item.setText(ResolverTypes.Local())
+        self._update_value_cell(type_item, ParameterEditability.Selectable(), ResolverTypes.Local())
+
+    def _update_value_cell(self, type_item, editability, resolver_type):
+        value_item = self.parametersInput.item(type_item.row(), 2)
+        self._set_editability(value_item, editability)
+        input_name = self.parametersInput.item(type_item.row(), 0).text()
+
+        parameter = self._custom_parameter_handler.get_input_parameter(self._selected_test_instance(), input_name)
+        parameter.set_type(resolver_type)
+        parameter.set_value_editability(editability)
+        self._fill_input_parameter_table()
+
+    @staticmethod
+    def _set_editability(item, editability):
+        if editability == ParameterEditability.Selectable():
+            item.setFlags(QtCore.Qt.ItemIsEnabled)
+        elif editability == ParameterEditability.Editable():
+            item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable)
+        else:
+            item.setFlags(QtCore.Qt.NoItemFlags)
+
+    def _context_menu_input_params(self, point):
+        item = self.parametersInput.itemAt(point)
+        if not item:
+            return
+
+        column = item.column()
+        row = item.row()
+        if column not in (6, 2) or row == 0:
+            return
+
+        type = self.parametersInput.item(row, 6).text()
+        if column == 2 and type == ResolverTypes.Local():
+            input_name = self.parametersInput.item(row, 0).text()
+            self._create_value_menu(self._get_local_test_output_parameters_names(input_name))
+        elif column == 6:
+            self._create_type_menu(self._get_input_parameter_types())
+
+        self._verify()
+
+    def _get_local_test_output_parameters_names(self, input_name):
+        available_tests = {}
+        current_item = self.selectedTests.selectedItems()[0]
+        test_name = self.selectedTests.item(current_item.row(), 1).text()
+        test_out_params = self._custom_parameter_handler.get_tests_outputs_parameters()
+        test_in_param = self._custom_parameter_handler.get_input_parameter(test_name, input_name)
+
+        for test_out_param in test_out_params:
+            for test, out_param in test_out_param.items():
+                if test == test_name:
+                    return available_tests
+
+                available_tests[test] = []
+                for output in out_param:
+                    if not self._custom_parameter_handler.is_valid_range(test, test_in_param, output):
+                        continue
+
+                    available_tests[test].append(output)
+
+        return available_tests
+
+    def _create_type_menu(self, components):
+        menu = QtWidgets.QMenu(self)
+        for pd, func in components.items():
+            item = menu.addAction(pd)
+            item.triggered.connect(func)
+            menu.addSeparator()
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def _create_value_menu(self, components):
+        menu = QtWidgets.QMenu(self)
+        for test_name, tests in components.items():
+            menu.addMenu(self._generate_test_menu(test_name, tests, menu))
+
+        menu.exec_(QtGui.QCursor.pos())
+
+    def _generate_test_menu(self, test_name, tests, parent):
+        menu = QtWidgets.QMenu(test_name, parent)
+        if not len(tests):
+            menu.setEnabled(False)
+        for test in tests:
+            item = menu.addAction(test)
+            item.triggered.connect(self._set_out_params)
+
+        return menu
 
 
 def new_program_dialog(project_info, owner, parent):

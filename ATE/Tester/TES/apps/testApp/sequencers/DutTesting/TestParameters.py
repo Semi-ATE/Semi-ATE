@@ -4,30 +4,36 @@ import numpy as np
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_PTR_dict, generate_TSR_dict)
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 
+MAX_HOLDED_MEASUREMENTS = 5000
+
 
 class InputParameter:
-    def __init__(self, name, shmoo, value):
+    def __init__(self, name, shmoo, value, min_value, max_value, exponent):
         self._value = value
-        self._shmoo = value
+        self._shmoo = shmoo
         self._name = name
+        self._min = min_value
+        self._max = max_value
+        self._exponent = exponent
 
     def __call__(self):
         return self._value
 
 
 class OutputParameter:
-    def __init__(self, name, lsl, ltl, nom, utl, usl):
+    def __init__(self, name, lsl, ltl, nom, utl, usl, exponent):
         self._name = name
         self._lsl = lsl
         self._ltl = ltl
         self._nom = nom
         self._utl = utl
         self._usl = usl
-        # initialize the measurement with a value,
-        # that is guaranteed to fail the test
-        # if the test fails to write the param.
-        self._measurements = []
-        self._measurement = self._lsl
+        self._exponent = int(exponent)
+        self._fmt = None
+        self._unit = None
+
+        self._measurements = [] * MAX_HOLDED_MEASUREMENTS
+        self._measurement = None
         self._id = 0
         self.bin = 0
         self.bin_result = Result.Fail()
@@ -36,11 +42,23 @@ class OutputParameter:
         self._alarmed_tests = 0
         self._test_description = ''
 
+    def set_format(self, fmt):
+        self._fmt = fmt
+
+    def set_unit(self, unit):
+        self._unit = unit
+
     def set_test_description(self, test_description):
         self._test_description = test_description
 
     def _get_PTR_test_name(self):
         return self._test_description + '.' + self._name
+
+    def get_measurement(self):
+        return self._measurement
+
+    def get_exponent(self):
+        return self._exponent
 
     def write(self, measurement):
         self._measurement = measurement
@@ -82,14 +100,20 @@ class OutputParameter:
         self.bin_result = bin_result
 
     def generate_ptr_record(self, is_pass, site_num):
+        l_limit, u_limit = self._get_limits()
         return generate_PTR_dict(test_num=self._id + 1, head_num=0, site_num=int(site_num),
                                  is_pass=is_pass == Result.Pass(), param_flag=0, measurement=self._measurement,
-                                 test_txt=self._get_PTR_test_name(), alarm_id='')
+                                 test_txt=self._get_PTR_test_name(), alarm_id='', l_limit=l_limit, u_limit=u_limit,
+                                 unit=self._unit, fmt=self._fmt, exponent=self._exponent, ls_limit=self._lsl,
+                                 us_limit=self._usl)
 
     def get_testresult(self):
         self._test_executions += 1
 
         ll, ul = self._get_limits()
+        if self._measurement is None:
+            raise Exception(f'no measured value is availabe for test parameter "{self._get_PTR_test_name()}"')
+
         if np.isnan(ll) and np.isnan(ul):
             return (Result.Pass(), 1)
 

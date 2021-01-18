@@ -17,6 +17,9 @@ class DCS6K:
         self.command_builder = CommandBuilder(comm_chan)
         pass
 
+    def is_connected(self):
+        return self.comm_chan.is_connected()
+
     def __send_receive(self, data_to_send, timeout):
         return send_receive(self.comm_chan, f"{data_to_send}\r\n", timeout)
 
@@ -320,7 +323,7 @@ class DCS6K:
         return self.make_set_value(value).execute(dry)
 
     def make_start_sequence(self, start, stop, rep, proc, runtime, contr, timeout):
-        return self.command_builder.init_command("SetSequenceLine") \
+        return self.command_builder.init_command("StartSequence") \
                    .constrain_numeric_parameter("start", 1, 65536, start) \
                    .constrain_numeric_parameter("stop", 1, 65536, stop) \
                    .constrain_numeric_parameter("rep", 1, 1024, rep) \

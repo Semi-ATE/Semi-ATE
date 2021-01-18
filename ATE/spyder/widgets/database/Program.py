@@ -11,15 +11,14 @@ from sqlalchemy import Boolean
 from sqlalchemy import Text
 from sqlalchemy.orm import relationship
 
-from ATE.spyder.widgets.database.Hardware import Hardware
 from ATE.spyder.widgets.database.ORM import Base
-from ATE.spyder.widgets.database.TestTarget import TestTarget
 
 
 class Program(Base):
     __tablename__ = 'programs'
     __table_args__ = (
         CheckConstraint("base=='PR' OR base=='FT'"),
+        CheckConstraint("caching_policy=='disable' OR caching_policy=='store' OR caching_policy=='drop'")
     )
 
     id = Column(Integer, primary_key=True)
@@ -33,18 +32,19 @@ class Program(Base):
     sequencer_type = Column(Text, nullable=False)
     temperature = Column(LargeBinary, nullable=False)
     is_valid = Column(Boolean)
-
+    cache_type = Column(Text)
+    caching_policy = Column(Text, nullable=False)
     hardware1 = relationship('Hardware')
     test_target = relationship('TestTarget')
 
     @staticmethod
-    def add(session, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target):
-        prog = Program(prog_name=name, hardware=hardware, base=base, target=target, usertext=usertext, sequencer_type=sequencer_typ, temperature=pickle.dumps(temperature), owner_name=owner_name, prog_order=order, is_valid=True)
+    def add(session, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy):
+        prog = Program(prog_name=name, hardware=hardware, base=base, target=target, usertext=usertext, sequencer_type=sequencer_typ, temperature=pickle.dumps(temperature), owner_name=owner_name, prog_order=order, is_valid=True, cache_type=cache_type, caching_policy=caching_policy)
         session.add(prog)
         session.commit()
 
     @staticmethod
-    def update(session, name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target):
+    def update(session, name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target, cache_type, caching_policy):
         prog = Program.get_by_name_and_owner(session, name, owner_name)
         prog.hardware = hardware
         prog.base = base
@@ -52,6 +52,8 @@ class Program(Base):
         prog.usertext = usertext
         prog.sequencer_type = sequencer_typ
         prog.temperature = pickle.dumps(temperature)
+        prog.cache_type = cache_type
+        prog.caching_policy = caching_policy
         session.commit()
 
     @staticmethod

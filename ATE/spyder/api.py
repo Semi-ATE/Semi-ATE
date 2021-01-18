@@ -1,3 +1,0 @@
-"""
-ATE Plugin API.
-"""

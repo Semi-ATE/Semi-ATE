@@ -13,7 +13,7 @@ class TemperatureProxy():
                    "parameters": {"temperature": temp_degrees, "timeout": 5}
                    }
 
-        has_timed_out, data = self.mqtt.publish_with_reply("io-control", json.dumps(message), 5.0)
+        has_timed_out, data = self.mqtt.publish_with_reply("Temperature", json.dumps(message), 5.0)
 
         if has_timed_out:
             pass
