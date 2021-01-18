@@ -1,3 +1,6 @@
+from ATE.spyder.widgets.actions_on.program.Binning.Utils import BinTableFieldName
+
+
 class YieldInformation:
     def __init__(self, types, site_id):
         self._site_id = site_id
@@ -47,17 +50,17 @@ class YieldInformationHandler:
     def extract_yield_information(self, param_data):
         # TODO: this must be done after receiving bin settings from every site
         if not self._bin_settings:
-            self.on_error("bin settings are not received yet")
+            return False, "bin settings are not received yet"
 
         param_data = param_data[-1]
         part_id = self._get_part_id(param_data)
 
         if not self.prr_rec_information.get(part_id):
             self.prr_rec_information[part_id] = param_data
-            self._accumulate_site_bin_info(param_data)
+            return self._accumulate_site_bin_info(param_data)
         else:
             self.prr_rec_information.update({part_id: param_data})
-            self._reaccumulate_bin_info()
+            return self._reaccumulate_bin_info()
 
     @staticmethod
     def _get_part_id(prr_record):
@@ -85,17 +88,16 @@ class YieldInformationHandler:
         site_num = str(data['SITE_NUM'])
         soft_bin = str(data['SOFT_BIN'])
         for typ, setting in self._bin_settings.items():
-            if int(soft_bin) not in setting['sbins']:
+            if soft_bin not in setting['sbins']:
                 continue
 
             if not self.sites_yield_information.get(site_num):
                 self.sites_yield_information[site_num] = YieldInformation(list(self._bin_settings.keys()), site_num)
 
             self.sites_yield_information[site_num].update_yield_info(typ)
-            self._accumulate_all_bin_info()
-            return
+            return self._accumulate_all_bin_info()
 
-        self.on_error(f"soft bin: '{soft_bin}'' could not be mapped to any of the setting's bins")
+        return False, f"soft bin: '{soft_bin}' could not be mapped to any of the setting's bins"
 
     def _accumulate_all_bin_info(self):
         all_id = '-1'
@@ -109,16 +111,27 @@ class YieldInformationHandler:
 
         all_yield_info._calculate_yield()
         self.sites_yield_information[all_id] = all_yield_info
+        return True, ''
 
     def _reaccumulate_bin_info(self):
         self.sites_yield_information.clear()
         for _, prr_rec in self.prr_rec_information.items():
-            self._accumulate_site_bin_info(prr_rec)
+            return self._accumulate_site_bin_info(prr_rec)
 
-        self._accumulate_all_bin_info()
+        return self._accumulate_all_bin_info()
 
-    def set_bin_settings(self, bin_settings):
-        self._bin_settings = bin_settings
+    def set_bin_settings(self, bin_table: dict):
+        self._bin_settings = self.get_bin_settings(bin_table)
+
+    @staticmethod
+    def get_bin_settings(bin_table: list) -> dict:
+        settings = {}
+
+        for bin_info in bin_table:
+            settings.setdefault(bin_info[BinTableFieldName.SBinGroup()], {'hbins': [], 'sbins': []})['hbins'].append(bin_info[BinTableFieldName.HBin()])
+            settings.setdefault(bin_info[BinTableFieldName.SBinGroup()], {'hbins': [], 'sbins': []})['sbins'].append(bin_info[BinTableFieldName.SBinNum()])
+
+        return settings
 
     def get_yield_messages(self):
         messages = []
@@ -129,3 +142,6 @@ class YieldInformationHandler:
 
     def get_site_yield_info_message(self, site):
         return self.sites_yield_information[site].generate_yield_messages()
+
+    def clear_yield_information(self):
+        self.sites_yield_information.clear()

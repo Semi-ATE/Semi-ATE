@@ -1,0 +1,9 @@
+@import "../../app/yield/yield.component.scss";
+
+.lotData {
+  @extend .yield;
+  .tableElement {
+    max-height: 288px;
+    overflow-y: auto;
+  }
+}

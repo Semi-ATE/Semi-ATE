@@ -62,19 +62,6 @@ class MultiSiteTestingModel:
             return True
         return False
 
-    def handle_bininfo(self, site_id: str, msg):
-        self._site_models[site_id].bininfo_received()
-        self._check_for_all_bin_info(site_id)
-
-    def _check_for_all_bin_info(self, site_id: str):
-        if all(site.is_bininfoconfirmed() for site in self._site_models.values()):
-            self._parent_model.all_binsettings_received_complete(None)
-            self._reset_after_receiving_bin_info()
-
-    def _reset_after_receiving_bin_info(self):
-        for site in self._site_models.values():
-            site.reset()
-
     def _check_for_all_remaing_sites_waiting_for_resource(self):
         if self.is_waiting_for_resource():
             return  # already transitioned to state

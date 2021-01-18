@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.actions_on.program.Binning.Utils import BinTableFieldName
 from ATE.common.logger import LogLevel
 import os
 import re
@@ -95,5 +96,26 @@ class FileSystemDataSource:
             if self.does_device_id_exist(value):
                 return True
 
-        self.log.log_message(LogLevel.Warning(), 'device id mismatch in station section')
+        self.log.log_message(LogLevel.Warning(), f'device id {self.device_id} mismatch in station section')
         return False
+
+    @staticmethod
+    def get_bin_table(data: list):
+        bin_table = []
+        for entry in data['BINTABLE']['ENTRY']:
+            bin_element = {}
+            for key, value in entry.items():
+                key = key.replace('@', '')
+                bin_element[key] = value
+
+            bin_table.append(bin_element)
+
+        return bin_table
+
+    @staticmethod
+    def get_binning_tuple(bin_table: list) -> dict:
+        binning_tuple = {}
+        for bin_info in bin_table:
+            binning_tuple.setdefault(bin_info[BinTableFieldName.HBin()], []).append(bin_info[BinTableFieldName.SBinNum()])
+
+        return binning_tuple

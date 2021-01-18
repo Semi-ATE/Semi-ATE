@@ -22,25 +22,35 @@
 .recordEntries {
   display: block;
   margin-top: 10px;
+  padding-right: 15px;
   overflow-y: auto;
-  height: 520px;
-  li {
-    padding: 5px;
-  }
-  .label {
-    color: $micronasBlue;
-    text-align: left;
-  }
+  max-height: 380px;
+  padding-top: 0;
+  padding-left: 10px;
+  padding-right: 15px;
+  margin-bottom: 0;
+}
+
+.ptrInformation {
+  background-color: #F9F8FF;
+  padding: 10px;
+  margin: 1px;
+}
+
+li {
+  color: $micronasBlue;
+  text-align: left;
+  font-size: $text;
   .value {
     float: right;
     color: black;
   }
+  #passFailStyle {
+    @extend .value;
+    font-weight: bold;
+  }
 }
 
-.normal {
-  color: black;
-}
-
-.alert {
-  color: red;
+:host::ng-deep app-multichoice label {
+  font-size: $text !important;
 }

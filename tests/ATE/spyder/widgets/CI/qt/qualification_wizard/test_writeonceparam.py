@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 from PyQt5 import QtWidgets
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.writeoncetextparam import WriteOnceTextParam
@@ -10,7 +11,7 @@ class WriteOnceParamWizard(wizardbase.wizardbase):
         # Note: The init call needs to come after we setup this variable, in order for
         # it to exist when init calls _get_wizard_params
         self.theParam = WriteOnceTextParam("Parameter1")
-        super().__init__(MockDBObject({}), None)
+        super().__init__(MockDBObject(), None)
 
     def _get_wizard_parameters(self) -> list:
         return [self.theParam]
@@ -37,7 +38,7 @@ def test_writeonce_param_can_find_line_edit(window, qtbot=None):
 
 @setup_method()
 def test_writeonce_param_line_edit_is_editable_if_empty(window, qtbot=None):
-    window.theParam.load_values(dict())
+    window.theParam.load_values(MockDBObject())
     paramField = window.findChild(QtWidgets.QLineEdit, "txtParameter1")
     assert(paramField.text() == "")
     assert(paramField.isEnabled() is True)
@@ -45,7 +46,7 @@ def test_writeonce_param_line_edit_is_editable_if_empty(window, qtbot=None):
 
 @setup_method()
 def test_writeonce_param_line_edit_is_populated_from_inserted_data_and_disabled(window, qtbot):
-    window.theParam.load_values({"Parameter1": "Foobar"})
+    window.theParam.load_values(FileOperator._make_db_object({"Parameter1": "Foobar"}))
     paramField = window.findChild(QtWidgets.QLineEdit, "txtParameter1")
     assert(paramField.text() == "Foobar")
     assert(paramField.isEnabled() is False)

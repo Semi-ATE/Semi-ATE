@@ -37,7 +37,9 @@ export interface ProgramFilterSetting {
 export interface YieldSetting {
   selectedTabIndex: number;
 }
-
+export interface LotDataSetting {
+  selectedTabIndex: number;
+}
 export interface LogLevelFilterSetting {
   logLevelFilter: Array<LogLevelString>;
 }
@@ -51,5 +53,6 @@ export enum SettingType {
   PassFailFilter = 'passFailFilter',
   ProgramFilter = 'programFilter',
   Yield = 'yield',
+  LotData =  'lotdata',
   LogLevelFilter = 'logLevelFilter'
 }

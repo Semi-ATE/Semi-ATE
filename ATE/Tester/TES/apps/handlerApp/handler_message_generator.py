@@ -1,3 +1,4 @@
+from ATE.common.logger import (LogLevel, Logger)
 import json
 import sys
 
@@ -10,7 +11,7 @@ NEW_WAFER_PARAMTERS = ["WaferId", "WaferWidth", "WaferHight"]
 
 
 class MessageGenerator:
-    def __init__(self, log):
+    def __init__(self, log: Logger):
         self._log = log
 
     def generate_status_msg(self, state: str, message: str) -> str:
@@ -30,7 +31,7 @@ class MessageGenerator:
                        "identify": lambda: self.__generate_identify_command(),
                        }[cmd_type]()
         except KeyError:
-            self._log.warning(f"failed to interpret command '{cmd_type}' in {sys._getframe().f_code.co_filename}")
+            self._log.log_message(LogLevel.Warning(), f"failed to interpret command '{cmd_type}' in {sys._getframe().f_code.co_filename}")
             return None
 
         return self.__dump_message(self.__generate_msg(cmd_type, command))
@@ -61,7 +62,7 @@ class MessageGenerator:
     def __get_config_parameters(self, config: dict, parameters: List[str]) -> Optional[str]:
         for param in parameters:
             if config.get(param) is None:
-                self._log.error(f"failed to get '{param}' parameter")
+                self.log.log_message(LogLevel.Error(), f"failed to get '{param}' parameter")
                 return None
 
         return config

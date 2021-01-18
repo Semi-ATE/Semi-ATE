@@ -70,6 +70,10 @@ export class DebugComponent implements OnInit {
     {
       description: 'Generate yield entries',
       value: 'Yield'
+    },
+    {
+      description: 'Generate lot data',
+      value: 'Lotdata'
     }
   ];
 
@@ -142,6 +146,10 @@ export class DebugComponent implements OnInit {
       case 'Yield':
         this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.YIELD_ENTRIES]);
+        break;
+      case 'Lotdata':
+        this.mss.setRepeatMessages(false);
+        this.mss.setMessages([constants.LOT_DATA]);
         break;
     }
   }

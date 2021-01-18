@@ -11,6 +11,7 @@ from ATE.spyder.widgets.actions_on.flow.HTOL.htolwizard import HTOLWizard
 from ATE.spyder.widgets.actions_on.tests.TestWizard import TestWizard
 from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 from ATE.spyder.widgets.actions_on.program.EditTestProgramWizard import EditTestProgramWizard
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow
@@ -74,7 +75,8 @@ definitions = {'hardware': 'HW0',
                'device': 'Device1',
                'product': 'Product1',
                'test': 'DBC',
-               'test1': 'CBA'}
+               'test1': 'CBA',
+               'test2': 'EFG'}
 
 
 # TODO: edit wizard is planned for future extension to cover more cases
@@ -279,7 +281,7 @@ def test_create_new_product_enter_name(product, qtbot):
 
 @pytest.fixture
 def flow(qtbot, mocker, project_navigation):
-    dialog = HTOLWizard(MockDBObject({"product": definitions['product']}), project_navigation)
+    dialog = HTOLWizard(FileOperator._make_db_object({"product": definitions['product']}), project_navigation)
     qtbot.addWidget(dialog)
     return dialog
 
@@ -361,6 +363,30 @@ def test_create_new_test_enter_name(new_test, qtbot):
     qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
 
 
+def test_create_and_edit_test(project_navigation, qtbot):
+    project_navigation.active_hardware = definitions['hardware']
+    project_navigation.active_base = 'PR'
+    new_test = TestWizard(project_navigation)
+    qtbot.addWidget(new_test)
+    with qtbot.waitSignal(new_test.TestName.textChanged, timeout=500):
+        qtbot.keyClicks(new_test.TestName, definitions['test2'])
+    qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
+
+    the_test = project_navigation.get_test(definitions['test2'], definitions['hardware'], 'PR')
+    edit_wizard = TestWizard(project_navigation, the_test.definition, True)
+    # Add an output parameter
+    edit_wizard.testTabs.currentIndex = 2
+    qtbot.mouseClick(edit_wizard.outputParameterAdd, QtCore.Qt.LeftButton)
+    qtbot.mouseClick(edit_wizard.OKButton, QtCore.Qt.LeftButton)
+    # Add an input parameter
+    edit_wizard.testTabs.currentIndex = 1
+    qtbot.mouseClick(edit_wizard.inputParameterAdd, QtCore.Qt.LeftButton)
+    qtbot.mouseClick(edit_wizard.OKButton, QtCore.Qt.LeftButton)
+    the_test = project_navigation.get_test(definitions['test2'], definitions['hardware'], 'PR')
+    assert(2 == len(the_test.definition["input_parameters"]))
+    assert(2 == len(the_test.definition["output_parameters"]))
+
+
 def test_does_test_exist(project_navigation):
     assert project_navigation.get_test(definitions['test'], definitions['hardware'], 'PR')
 
@@ -380,15 +406,37 @@ def test_create_new_test_program_cancel_before_enter_name(new_test_program, qtbo
     qtbot.mouseClick(new_test_program.CancelButton, QtCore.Qt.LeftButton)
 
 
-def test_create_new_test_program_enter_name(new_test_program, qtbot):
+def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard, qtbot):
     new_test_program._verify()
 
     new_test_program.availableTests.item(0).setSelected(True)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     new_test_program.availableTests.item(0).setSelected(False)
+    iterator = QtWidgets.QTreeWidgetItemIterator(new_test_program.binning_tree, QtWidgets.QTreeWidgetItemIterator.NoChildren)
+    while iterator.value():
+        item = iterator.value()
+
+        item.setText(1, 'bin_1')
+
+        iterator += 1
+
+    new_test_program.binning_table.setRowCount(1)
+    sb_name = QtWidgets.QTableWidgetItem()
+    sb_name.setText('bin_1')
+    new_test_program.binning_table.setItem(0, 0, sb_name)
+    sb_num = QtWidgets.QTableWidgetItem()
+    sb_num.setText('1')
+    new_test_program.binning_table.setItem(0, 1, sb_num)
+    sb_group = QtWidgets.QTableWidgetItem()
+    sb_group.setText('abc')
+    new_test_program.binning_table.setItem(0, 2, sb_group)
+    sb_desc = QtWidgets.QTableWidgetItem()
+    sb_desc.setText('')
+    new_test_program.binning_table.setItem(0, 3, sb_desc)
 
     generate_bin_table()
+    new_test_program._verify()
 
     qtbot.mouseClick(new_test_program.OKButton, QtCore.Qt.LeftButton)
 

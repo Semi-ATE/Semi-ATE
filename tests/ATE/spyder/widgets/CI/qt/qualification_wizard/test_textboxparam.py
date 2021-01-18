@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 from PyQt5 import QtWidgets
 import ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
@@ -11,7 +12,7 @@ class TextParamWizard(wizardbase.wizardbase):
         # Note: The init call needs to come after we setup this variable, in order for
         # it to exist when init calls _get_wizard_params
         self.theParam = TextBoxParam("Parameter1")
-        super().__init__(MockDBObject({}), None)
+        super().__init__(MockDBObject(), None)
 
     def _get_wizard_parameters(self) -> list:
         return [self.theParam]
@@ -38,14 +39,14 @@ def test_textbox_param_can_find_line_edit(window, qtbot=None):
 
 @setup_method()
 def test_textbox_param_line_edit_is_populated_with_default_value(window, qtbot=None):
-    window.theParam.load_values(dict())
+    window.theParam.load_values(MockDBObject())
     paramField = window.findChild(QtWidgets.QLineEdit, "txtParameter1")
     assert(paramField.text() == "")
 
 
 @setup_method()
 def test_textbox_param_line_edit_is_populated_from_inserted_data(window, qtbot):
-    window.theParam.load_values({"Parameter1": "Foobar"})
+    window.theParam.load_values(FileOperator._make_db_object({"Parameter1": "Foobar"}))
     paramField = window.findChild(QtWidgets.QLineEdit, "txtParameter1")
     assert(paramField.text() == "Foobar")
 
@@ -71,8 +72,8 @@ def test_textbox_param_set_param_to_valid_value_enables_button(window, qtbot):
 @setup_method()
 def test_textbox_param_save_values_stores_value(window, qtbot):
     testParam = ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.textboxparam.TextBoxParam("Parameter32")
-    d = {"Parameter32": "Some Value"}
+    d = FileOperator._make_db_object({"Parameter32": "Some Value"})
     testParam.load_values(d)
-    d2 = dict()
+    d2 = MockDBObject()
     testParam.store_values(d2)
-    assert(d2["Parameter32"] == "Some Value")
+    assert(d2.to_dict()["Parameter32"] == "Some Value")

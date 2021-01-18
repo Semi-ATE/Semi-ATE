@@ -71,10 +71,13 @@ JOB_LOT_NUMBER = '306426.001'  # load ./tests/le306426001.xml
 
 # this will generate the desired xml file and must be called before running the tests
 def create_xml_file(device_id):
+    if os.path.exists(XML_PATH_NEW):
+        os.remove(XML_PATH_NEW)
+
     et = tree.parse(XML_PATH)
     root = et.getroot()
     for cl in root.findall("CLUSTER"):
-        item = cl.find("TESTER")
+        item = cl.find("TESTER1")
         if item is not None:
             item.text = device_id
 
@@ -87,7 +90,6 @@ def create_xml_file(device_id):
         pr.text = TEST_PROGRAM
 
     et.write(XML_PATH_NEW)
-
 
 # TODO: Implement a graceful shutdown for subprocesses (linux can simply use SIGTERM, a portable soluation for windows is a pita)
 #       Note that this may be required in order to get reliable coverage results (which may be lost when a subprocess is killed before it can flush coverage reports)
@@ -116,7 +118,7 @@ async def handler_runner():
 
 # executed in own process with multiprocessing, no references to testenv state
 def run_master(device_id, sites, broker_host, broker_port, webui_port):
-    create_xml_file(DEVICE_ID)
+    create_xml_file(device_id)
 
     config = {
         "Handler": HANDLER_ID,
@@ -157,7 +159,8 @@ def run_testapp(device_id, site_id, broker_host, broker_port, thetestzipname):
         '--broker_host', broker_host,
         '--broker_port', str(broker_port),
         '--verbose',
-        '--thetestzip_name', thetestzipname
+        '--thetestzip_name', thetestzipname,
+        '--file', 'external'
     ])
 
 
@@ -458,7 +461,6 @@ def remove_adjacent_dups(iterable):
 @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
 async def test_load_run_unload(sites, process_manager, ws_connection):
     master, controls = create_sites(process_manager, sites)
-
     # allow webservice to start up before attempting to connect ws
     await asyncio.sleep(1.0)
 
@@ -476,7 +478,7 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
         # TODO: this assertion is commented out, because we don't see 'loading' reliably as well.
         #       the reason is that state changes are only propagated every 1ms (and only if the main loop is unblocked)
         # assert remove_dups(seen_states) == ['loading', 'ready']
-        assert not (set(seen_states) - {'loading', 'waitingforbintable', 'ready'})
+        assert not (set(seen_states) - {'loading', 'ready'})
 
         # STEP 3: run test
         await ws.send_json({'type': 'cmd', 'command': 'next'})
@@ -1008,7 +1010,7 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
 
         handler_runner.comm.put('load')
         await asyncio.sleep(3.0)
-        await read_messages_until_master_state(buffer, 'ready', 5.0, ['loading', 'waitingforbintable', 'ready'])
+        await read_messages_until_master_state(buffer, 'ready', 5.0, ['loading', 'ready'])
 
         handler_runner.comm.put('next', site_num=sites[1])
         # to make sure that test execution is done
@@ -1126,7 +1128,7 @@ async def test_master_states_during_load_and_unload(sites, process_manager, ws_c
 
         async with ws_connection() as ws:
             await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
-            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'waitingforbintable', 'ready'])
+            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
 
         async with ws_connection() as ws:
             await ws.send_json({'type': 'cmd', 'command': 'next'})
@@ -1146,7 +1148,7 @@ async def test_master_states_during_load_and_unload(sites, process_manager, ws_c
              if isinstance(msg, MqttStatusMessage)])
         assert all_seen_master_states == [
             'connecting', 'initialized',
-            'loading', 'waitingforbintable', 'ready',
+            'loading', 'ready',
             'testing', 'ready',
             'unloading', 'initialized',
             # 'connecting',  # STEP 5 commented out
@@ -1163,6 +1165,8 @@ async def test_standalone_testapp_start_and_terminate(process_manager):
     #       manually, which should be close to what the control does, but it's
     #       not exactly the same.
 
+    # simulate the control app, as it store the bin mapping in an environment variable
+    os.environ['smoke_test_HW0_PR_Die1_Production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, subscriptions) as mqtt:
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
@@ -1248,6 +1252,7 @@ async def test_standalone_testapp_test_process(process_manager):
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
         (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2)]
     site_id = '0'
+    os.environ['smoke_test_HW0_PR_Die1_Production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, subscriptions) as mqtt:
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 

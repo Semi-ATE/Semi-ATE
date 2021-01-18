@@ -23,9 +23,10 @@ class ParameterState(IntEnum):
 
 
 class BinningColumns(Enum):
-    Grade = 1
-    Result = 2
-    Context = 3
+    SBinName = 0
+    SBin = 1
+    SBinGroup = 2
+    SBinDescription = 3
 
     def __call__(self):
         return self.value
@@ -91,10 +92,11 @@ class ErrorMessage(Enum):
     EmtpyTestList = 'no test was chosen'
     NoValidTestRange = 'test range is not valid'
     TemperatureNotValidated = 'temperature(s) could not be validated'
-    SbinInvalid = 'sbin is invalid'
+    SbinInvalidOrMissing = 'soft bins are invalid or still missing'
     TestInvalid = 'test(s) is(are) invalid'
     TestDescriptionNotUnique = 'test description must be unique'
     ParameterNotValid = 'parameter are not valid'
+    BinTableNotfilled = 'make sure to fill bin table'
 
     def __call__(self):
         return self.value
@@ -103,6 +105,15 @@ class ErrorMessage(Enum):
 class ResolverTypes(Enum):
     Static = 'static'
     Local = 'local'
+    Remote = 'remote'
+
+    def __call__(self):
+        return self.value
+
+
+class ValidatorTypes(Enum):
+    NoValidation = 'novalidation'
+    FloatValidation = 'float'
 
     def __call__(self):
         return self.value
@@ -132,3 +143,16 @@ class OutputFieldsPosition(IntEnum):
 
     def __call__(self):
         return self.value
+
+
+ALARM_BIN_MIN = 60000
+ALARM_BIN_MAX = 65535
+BINGROUPS = ['Good', 'Contact Fail', 'Electric Fail', 'Alarm']
+GRADES = [("Grade_B", 2),
+          ("Grade_C", 3),
+          ("Grade_D", 4),
+          ("Grade_E", 5),
+          ("Grade_F", 6),
+          ("Grade_G", 7),
+          ("Grade_H", 8),
+          ("Grade_I", 9)]

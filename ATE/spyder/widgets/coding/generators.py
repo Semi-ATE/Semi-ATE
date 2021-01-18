@@ -23,7 +23,6 @@ all other generators are called by these 4 'top level' generators.
 """
 import os
 import shutil
-import getpass
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -105,9 +104,6 @@ def copydir(source, destination, ignore_dunder=True):
             shutil.copy(from_path, to_path)
 
 
-
-
-
 class test__init__generator(BaseTestGenerator):
     """Generator for the __init__.py file of a given test."""
 
@@ -151,6 +147,7 @@ def project_root_generator(project_path):
     project__main__generator(project_path)
     project__init__generator(project_path)
     project_gitignore_generator(project_path)
+    project_defintinion_generator(project_path)
 
 
 def project_doc_generator(project_path):
@@ -165,6 +162,30 @@ def project_doc_generator(project_path):
     doc_dst_path = os.path.join(project_path, 'doc')
 
     copydir(doc_src_path, doc_dst_path)
+
+
+def project_defintinion_generator(project_path):
+    definition_path = os.path.join(project_path, "definitions")
+    os.makedirs(definition_path, exist_ok=True)
+    _make_definition_dir(definition_path, "device")
+    _make_definition_dir(definition_path, "die")
+    _make_definition_dir(definition_path, "hardware")
+    _make_definition_dir(definition_path, "masksets")
+    _make_definition_dir(definition_path, "package")
+    _make_definition_dir(definition_path, "product")
+    _make_definition_dir(definition_path, "program")
+    _make_definition_dir(definition_path, "sequence")
+    _make_definition_dir(definition_path, "test")
+    _make_definition_dir(definition_path, "testtarget")
+    _make_definition_dir(definition_path, "qualification")
+
+
+def _make_definition_dir(root, dir_name):
+    os.makedirs(os.path.join(root, dir_name), exist_ok=True)
+    # add git markerfile so that this directory survives if the project is
+    # checked in while there are no relevant files there:
+    f = open(os.path.join(root, dir_name, ".gitkeep"), "a")
+    f.close()
 
 
 class BaseProjectGenerator:

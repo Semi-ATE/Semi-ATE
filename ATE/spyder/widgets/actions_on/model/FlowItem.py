@@ -153,7 +153,7 @@ class MultiInstanceQualiFlowItem(QualiFlowItemBase):
 
     def _generate_sub_items(self):
         for subflow in self.project_info.get_data_for_qualification_flow(self.flowname, self.project_info.active_target):
-            self.appendRow(QualiFlowSubitemInstance(self.project_info, subflow, self.project_info.active_target, subflow.get_definition(), self.modname, self))
+            self.appendRow(QualiFlowSubitemInstance(self.project_info, subflow, self.project_info.active_target, subflow, self.modname, self))
 
     def _get_menu_items(self):
         return [MenuActionTypes.Add()]

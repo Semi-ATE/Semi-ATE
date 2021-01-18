@@ -51,6 +51,7 @@ class ProductItemChild(StateItem):
 
     def _are_dependencies_fulfilled(self):
         dependency_list = {}
+        # ToDo: Avoid this, instead retrieve product and read out the properties needed.
         hw = self.project_info.get_product_hardware(self.text())
         device = self.project_info.get_product_device(self.text())
         hw_enabled = self.project_info.get_hardware_state(hw)

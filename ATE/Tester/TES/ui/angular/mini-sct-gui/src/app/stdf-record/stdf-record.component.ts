@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { StdfRecord, StdfRecordType, getStdfRecordDescription } from 'src/app/stdf/stdf-stuff';
+import { StdfRecord, StdfRecordType, getStdfRecordDescription, Stdf, stdfGetValue, STDF_RECORD_ATTRIBUTES, computePassedInformationForTestFlag } from 'src/app/stdf/stdf-stuff';
 import { initMultichoiceEntry, MultichoiceConfiguration, MultichoiceEntry } from '../basic-ui-elements/multichoice/multichoice-config';
 
 @Component({
@@ -11,11 +11,20 @@ export class StdfRecordComponent implements OnInit {
   @Input()
   stdfRecord: StdfRecord;
 
+  passOrFailTextColor: string;
+  passOrFail: string;
+  testFlag: number;
+  testFlagBitEncoding: string;
+
   constructor() {
     this.stdfRecord  = {
       type: StdfRecordType.Unknown,
       values: []
     };
+    this.passOrFailTextColor = '#0AC473';
+    this.passOrFail = 'P';
+    this.testFlag = 0;
+    this.testFlagBitEncoding = '0, 0, 0, 0, 0, 0, 0, 0';
   }
 
   ngOnInit(): void {
@@ -25,9 +34,76 @@ export class StdfRecordComponent implements OnInit {
     return getStdfRecordDescription(this.stdfRecord);
   }
 
+  getScaledResult(): string {
+    return Stdf.computeScaledResultFromSTDF(this.stdfRecord);
+  }
+
+  getScaledLowLimit(): string {
+    return Stdf.computeScaledLowLimitFromSTDF(this.stdfRecord);
+  }
+
+  getScaledHighLimit(): string {
+    return Stdf.computeScaledHighLimitFromSTDF(this.stdfRecord);
+  }
+
+  getPassStatus(): string {
+    let passStatus = computePassedInformationForTestFlag(stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_FLG) as number);
+    if (passStatus === true) {
+      this.passOrFail = 'P';
+      this.passOrFailTextColor = '#0AC473';
+    } else {
+      this.passOrFail = 'F';
+      this.passOrFailTextColor = '#BD2217';
+    }
+    return this.passOrFail;
+  }
+
+  getTestNumber(): number {
+    let testNumber = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_NUM) as number;
+    return testNumber;
+  }
+
+  getHeadNumber(): number {
+    let headNumber = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.HEAD_NUM) as number;
+    return headNumber;
+  }
+
+  getSiteNumber(): string {
+    let siteNumber = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.SITE_NUM) as number;
+    return this.siteNumberToLetter(siteNumber);
+  }
+
+  getTestText(): string {
+    let testText = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_TXT) as string;
+    return testText;
+  }
+
+  getTestFlag(): number {
+    this.testFlag = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_FLG) as number;
+    return this.testFlag;
+  }
+
+  private siteNumberToLetter(siteNumber: number): string {
+    let s: string;
+    let t: number;
+    if(siteNumber === 0) {
+      return 'A';
+    } else if(siteNumber > 0 && siteNumber < 17) {
+      while(siteNumber) {
+        t = (siteNumber - 1) % 26;
+        s = String.fromCharCode(66 + t);
+        siteNumber = (siteNumber - t)/26 | 0;
+      }
+      return s;
+    } else {
+      return undefined;
+    }
+  }
+
   computeMultichoiceConfigurationForTestFlagValue(testFlag: number): MultichoiceConfiguration {
     let bitEncoding = [...Array(8)].map( (_x , i )=> (testFlag >> i ) & 1 );
-    let label = `TEST_FLG: ${bitEncoding.reverse().toString()}`;
+    this.testFlagBitEncoding = bitEncoding.reverse().toString();
+    let label = 'Test Flag: ';
     let readonly = true;
     let items = new Array<MultichoiceEntry>();
 

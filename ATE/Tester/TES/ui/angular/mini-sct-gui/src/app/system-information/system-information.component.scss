@@ -1,10 +1,8 @@
 @import "../../styles.scss";
 
 app-card {
-  app-card {
-    display: flex;
-    width: 420px;
-  }
+  display: flex;
+  min-width: 420px;
 }
 
 .error {
@@ -52,9 +50,10 @@ h3 {
     margin-right: 15px;
   }
 
-  app-yield {
+  app-yield, app-lot-data{
     width: auto;
     min-height: 400px;
+    margin-right: 15px;
   }
 }
 
@@ -79,5 +78,3 @@ h3 {
 #reduceMargin {
   padding-top: -10px;
 }
-
-

@@ -4,7 +4,7 @@ from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbas
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
 
-from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 
 
 quali_flow_name = "qualification_HTSL_flow"
@@ -32,7 +32,7 @@ class HTSLWizard(wizardbase.wizardbase):
 
 
 def new_item(storage, product: str):
-    dialog = HTSLWizard(QualificationFlowDatum(product=product), storage)
+    dialog = HTSLWizard(FileOperator._make_db_object({"product": product}), storage)
     dialog.exec_()
     del(dialog)
 

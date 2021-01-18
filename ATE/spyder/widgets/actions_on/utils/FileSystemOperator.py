@@ -77,3 +77,11 @@ class FileSystemOperator(QtWidgets.QFileDialog):
     def rename(self):
         rename = RenameDialog(self.path, "Rename", self.parent)
         rename.show()
+
+    def get_path(self):
+        selected, _ = self.getOpenFileName(self, "Import File", self.path, options=self.options(), filter='JSON(*.json)')
+
+        if not selected:
+            return None
+
+        return selected

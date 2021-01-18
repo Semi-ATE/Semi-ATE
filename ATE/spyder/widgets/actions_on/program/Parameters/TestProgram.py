@@ -1,8 +1,11 @@
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
+from typing import Callable, List, Optional, Tuple
+from PyQt5.QtWidgets import QTableWidget
 import numpy as np
 import copy
 from ATE.spyder.widgets.actions_on.program.Utils import Action, ParameterState, ResolverTypes
 from ATE.spyder.widgets.actions_on.program.Parameters.InputParameter import InputParameter
-from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import OutputParameter
+from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import Bininfo, OutputParameter
 
 
 PARAM_PREFIX = '_ate_var_'
@@ -37,10 +40,10 @@ class TestParameters:
     def get_output_parameter(self, output_name):
         return self._output_parameters[output_name]
 
-    def get_input_parameters(self):
+    def get_input_parameters(self) -> dict:
         return self._input_parameters
 
-    def get_output_parameters(self):
+    def get_output_parameters(self) -> dict:
         return self._output_parameters
 
     def get_test_base(self):
@@ -117,15 +120,45 @@ class TestParameters:
     def get_sbin(self):
         return self._sbin
 
+    def display(self, ip_box, op_box):
+        ip_box.setRowCount(0)
+        op_box.setRowCount(0)
+
+        for _, ip in self._input_parameters.items():
+            ip.display(ip_box)
+
+        for _, op in self._output_parameters.items():
+            op.display(op_box)
+
+    def edit_ip(self, ip_name: str, value_index: int, complete_cb):
+        self._input_parameters[ip_name].edit(value_index, complete_cb)
+        return self._input_parameters[ip_name]
+
+    def edit_op(self, op_name: str, value_index: int, complete_cb):
+        self._output_parameters[op_name].edit(value_index, complete_cb)
+        return self._output_parameters[op_name]
+
 
 class TestProgram:
     def __init__(self):
         self._tests = []
 
-    def add_test(self, name, test_base, input_parameters, output_parameters):
+    def display_test(self, test_name: str, ip_box: QTableWidget, op_box: QTableWidget):
+        test, _ = self.get_test(test_name)
+        test.display(ip_box, op_box)
+
+    def edit_input_parameter(self, test_name: str, ip_name: str, value_index: int, complete_cb: Callable):
+        test, _ = self.get_test(test_name)
+        return test.edit_ip(ip_name, value_index, complete_cb)
+
+    def edit_output_parameter(self, test_name: str, op_name: str, value_index: int, complete_cb: Callable):
+        test, _index = self.get_test(test_name)
+        return test.edit_op(op_name, value_index, complete_cb)
+
+    def add_test(self, name: str, test_base: str, input_parameters: dict, output_parameters: dict):
         self._tests.append(TestParameters(name, test_base, input_parameters, output_parameters))
 
-    def get_test(self, test_name):
+    def get_test(self, test_name: str) -> Tuple[TestParameters, int]:
         for index, test in enumerate(self._tests):
             if test.get_test_name() != test_name:
                 continue
@@ -134,17 +167,17 @@ class TestProgram:
 
         return None, None
 
-    def update_test_name(self, test_name, new_name):
+    def update_test_name(self, test_name: str, new_name: str):
         _, index = self.get_test(test_name)
         test = self._tests.pop(index)
         test.update_test_name(new_name)
         self._tests.append(test)
 
-    def remove_test(self, test_name):
+    def remove_test(self, test_name: str):
         _, index = self.get_test(test_name)
         self._tests.pop(index)
 
-    def reorder_test(self, test_name, action):
+    def reorder_test(self, test_name: str, action: Action):
         reorder_index = 0
         if action == Action.Up():
             reorder_index -= 1
@@ -158,23 +191,23 @@ class TestProgram:
         self._tests.remove(test)
         self._tests.insert(index + reorder_index, test)
 
-    def get_input_parameter(self, test_name, input_name):
+    def get_input_parameter(self, test_name: str, input_name: str) -> InputParameter:
         test, _ = self.get_test(test_name)
         return test.get_input_parameter(input_name)
 
-    def get_output_parameter(self, test_name, output_name):
+    def get_output_parameter(self, test_name: str, output_name: str) -> OutputParameter:
         test, _ = self.get_test(test_name)
         return test.get_output_parameter(output_name)
 
-    def get_test_inputs_parameters(self, test_name):
+    def get_test_inputs_parameters(self, test_name: str) -> dict:
         test, _ = self.get_test(test_name)
         return test.get_input_parameters()
 
-    def get_test_outputs_parameters(self, test_name):
+    def get_test_outputs_parameters(self, test_name: str) -> dict:
         test, _ = self.get_test(test_name)
         return test.get_output_parameters()
 
-    def get_tests_outputs_parameters(self):
+    def get_tests_outputs_parameters(self) -> List:
         output_params = []
         for test in self._tests:
             test_out_param = {}
@@ -185,17 +218,17 @@ class TestProgram:
 
         return output_params
 
-    def get_tests(self):
+    def get_tests(self) -> List:
         return self._tests
 
-    def get_test_names(self):
+    def get_test_names(self) -> List:
         return [test.get_test_name() for test in self._tests]
 
     def set_temperature(self, temp):
         for test in self._tests:
             test.set_temperature(temp)
 
-    def build_defintion(self):
+    def build_defintion(self) -> List:
         definition = []
         for test in self._tests:
             struct = {}
@@ -217,9 +250,14 @@ class TestProgram:
                 if not value.is_valid():
                     continue
                 parameter_content = value.get_parameters_content()
+                bin_parameter: Bininfo = parameter_content['binning']
                 struct['output_parameters'][output] = {'UTL': parameter_content['utl'], 'LTL': parameter_content['ltl'],
                                                        'LSL': parameter_content['lsl'], 'USL': parameter_content['usl'],
-                                                       'Binning': {'bin': parameter_content['bin'], 'result': parameter_content['bin_result']},
+                                                       'Binning': {'bin': bin_parameter.bin_number,
+                                                                   'result': Result.Fail() if int(bin_parameter.bin_number) not in range(1, 10) else Result.Pass(),
+                                                                   'name': bin_parameter.bin_name,
+                                                                   'group': bin_parameter.bin_group,
+                                                                   'description': bin_parameter.bin_description},
                                                        'fmt': parameter_content['format'], 'Unit': parameter_content['unit'], '10ᵡ': parameter_content['exponent']}
 
             definition.append(struct)
@@ -228,14 +266,14 @@ class TestProgram:
 
     @staticmethod
     def _prepare_input_parameter(value, type):
-        if type == ResolverTypes.Static():
+        if type == ResolverTypes.Static() or ResolverTypes.Remote() in type:
             return value
         else:
             if PARAM_PREFIX in value:
                 return value
 
             value_parts = value.split('.')
-            return f'{PARAM_PREFIX}{value_parts[0]}.op.o_{value_parts[1]}'
+            return f'{PARAM_PREFIX}{value_parts[0]}.op.{value_parts[1]}'
 
     def binning_information(self):
         binning_info = []
@@ -250,7 +288,7 @@ class TestProgram:
         return self._get_binning_structure(test)
 
     @staticmethod
-    def _get_binning_structure(test):
+    def _get_binning_structure(test: TestParameters) -> dict:
         return {'name': test.get_test_base(), 'description': test.get_test_name(), 'output_parameters': test.get_output_parameters()}
 
     def import_tests_parameters(self, sequence_information):
@@ -302,3 +340,24 @@ class TestProgram:
     def is_valid_range(self, test, input_param, output_name):
         test, _ = self.get_test(test)
         return test.is_valid_range(input_param, output_name)
+
+    def get_output_parameter_from_test_instance(self, test_instance_name: str) -> Optional[OutputParameter]:
+        test: TestParameters = self.get_test_from_test_instance_name(test_instance_name)
+        if test:
+            out_params = test.get_output_parameters()
+            for out_param, value in out_params.items():
+                if out_param not in test_instance_name:
+                    continue
+
+                return value
+
+        return None
+
+    def get_test_from_test_instance_name(self, test_instance_name: str) -> Optional[TestParameters]:
+        for test in self._tests:
+            if test.get_test_name() not in test_instance_name:
+                continue
+
+            return test
+
+        return None

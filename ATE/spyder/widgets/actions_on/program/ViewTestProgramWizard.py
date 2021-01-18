@@ -1,4 +1,5 @@
 from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
+import os
 
 
 class ViewTestProgramWizard(TestProgramWizard):
@@ -33,6 +34,11 @@ class ViewTestProgramWizard(TestProgramWizard):
     def setup_view(dialog, name):
         dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
         dialog._update_selected_test_list()
+        dialog._load_bin_table(os.path.join(dialog.project_info.project_directory,
+                                            'src',
+                                            dialog.hardware.currentText(),
+                                            dialog.base.currentText(),
+                                            f'{name}_binning.json'))
         dialog._populate_binning_tree()
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         # TODO: can we edit any of the following property

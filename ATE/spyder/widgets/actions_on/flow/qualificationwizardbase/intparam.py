@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.textboxparam import TextBoxParam
 
 
@@ -36,11 +37,11 @@ class IntParam(TextBoxParam):
         except:
             return False
 
-    def load_values(self, src):
-        if self.name not in src:
+    def load_values(self, src: DBObject):
+        if not src.has_attribute(self.name):
             self.inputBox.setText(str(self.default))
         else:
             try:
-                self.inputBox.setText(str(int(src[self.name])))
+                self.inputBox.setText(str(int(src.read_attribute(self.name))))
             except:
                 self.inputBox.setText(str(self.default))

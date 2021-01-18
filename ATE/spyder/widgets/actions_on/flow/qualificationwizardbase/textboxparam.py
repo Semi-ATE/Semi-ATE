@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
@@ -63,11 +64,11 @@ class TextBoxParam(parameter):
     def _validate_impl(self) -> bool:
         return self.inputBox.text() != ""
 
-    def store_values(self, dst: dict):
-        dst[self.name] = self.inputBox.text()
+    def store_values(self, dst: DBObject):
+        dst.write_attribute(self.name, self.inputBox.text())
 
-    def load_values(self, src):
-        if self.name not in src:
+    def load_values(self, src: DBObject):
+        if not src.has_attribute(self.name):
             self.inputBox.setText("")
         else:
-            self.inputBox.setText(src[self.name])
+            self.inputBox.setText(src.read_attribute(self.name))

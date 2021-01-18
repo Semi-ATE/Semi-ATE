@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 from PyQt5 import QtWidgets
 import ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
@@ -11,7 +12,7 @@ class OptionParamWizard(wizardbase.wizardbase):
         # Note: The init call needs to come after we setup this variable, in order for
         # it to exist when init calls _get_wizard_params
         self.theParam = OptionParam("Parameter1", ["ChoiceA", "ChoiceB", "ChoiceC"])
-        super().__init__(MockDBObject({}), None)
+        super().__init__(MockDBObject(), None)
 
     def _get_wizard_parameters(self) -> list:
         return [self.theParam]
@@ -38,14 +39,14 @@ def test_option_param_can_find_combobox(window, qtbot=None):
 
 @setup_method()
 def test_textbox_param_line_edit_is_populated_with_default_value(window, qtbot=None):
-    window.theParam.load_values(dict())
+    window.theParam.load_values(MockDBObject())
     paramField = window.findChild(QtWidgets.QComboBox, "cbParameter1")
     assert(paramField.currentText() == "ChoiceA")
 
 
 @setup_method()
 def test_textbox_param_line_edit_is_populated_from_inserted_data(window, qtbot):
-    window.theParam.load_values({"Parameter1": "ChoiceB"})
+    window.theParam.load_values(FileOperator._make_db_object({"Parameter1": "ChoiceB"}))
     paramField = window.findChild(QtWidgets.QComboBox, "cbParameter1")
     assert(paramField.currentText() == "ChoiceB")
 
@@ -53,8 +54,8 @@ def test_textbox_param_line_edit_is_populated_from_inserted_data(window, qtbot):
 @setup_method()
 def test_int_param_save_values_stores_value(window, qtbot):
     testParam = ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.optionparam.OptionParam("Parameter32", ["A", "B", "C"])
-    d = {"Parameter32": "C"}
+    d = FileOperator._make_db_object({"Parameter32": "C"})
     testParam.load_values(d)
-    d2 = dict()
+    d2 = MockDBObject()
     testParam.store_values(d2)
-    assert(d2["Parameter32"] == "C")
+    assert(d2.to_dict()["Parameter32"] == "C")

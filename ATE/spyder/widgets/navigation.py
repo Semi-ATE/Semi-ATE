@@ -3,6 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+from ATE.spyder.widgets.FileBasedConfig.Types import Types
 import json
 import os
 import pickle
@@ -11,22 +12,24 @@ import platform
 from PyQt5.QtCore import QObject
 
 from ATE.spyder.widgets.constants import TableIds as TableId
-from ATE.spyder.widgets.database import ORM
-from ATE.spyder.widgets.database.Device import Device
-from ATE.spyder.widgets.database.Die import Die
-from ATE.spyder.widgets.database.Hardware import Hardware
-from ATE.spyder.widgets.database.Maskset import Maskset
-from ATE.spyder.widgets.database.Package import Package
-from ATE.spyder.widgets.database.Product import Product
-from ATE.spyder.widgets.database.Program import Program
-from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
-from ATE.spyder.widgets.database.Sequence import Sequence
-from ATE.spyder.widgets.database.Test import Test
-from ATE.spyder.widgets.database.TestTarget import TestTarget
+
+from ATE.spyder.widgets.FileBasedConfig.Device import Device
+from ATE.spyder.widgets.FileBasedConfig.Die import Die
+from ATE.spyder.widgets.FileBasedConfig.Hardware import Hardware
+from ATE.spyder.widgets.FileBasedConfig.Maskset import Maskset
+from ATE.spyder.widgets.FileBasedConfig.Package import Package
+from ATE.spyder.widgets.FileBasedConfig.Product import Product
+from ATE.spyder.widgets.FileBasedConfig.Program import Program
+from ATE.spyder.widgets.FileBasedConfig.QualificationFlow import QualificationFlowDatum
+from ATE.spyder.widgets.FileBasedConfig.Sequence import Sequence
+from ATE.spyder.widgets.FileBasedConfig.Test import Test
+from ATE.spyder.widgets.FileBasedConfig.TestTarget import TestTarget
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 
 
+definitions = {Types.Maskset(): Maskset}
 tables = {'hardwares': Hardware,
-          'masksets': Maskset,
+          Types.Maskset(): Maskset,
           'dies': Die,
           'packages': Package,
           'devices': Device,
@@ -71,7 +74,6 @@ class ProjectNavigation(QObject):
             self.active_base = ''
             self.project_name = ''
             self.project_quality = ''
-            self.db_file = ''
         else:
             self.project_directory = project_directory
             self.active_target = ''
@@ -79,11 +81,13 @@ class ProjectNavigation(QObject):
             self.active_base = ''
             self.project_name = os.path.basename(self.project_directory)
 
-            self.db_file = os.path.join(project_directory, f"{self.project_name}.sqlite3")
-
+            settings_file = os.path.join(project_directory, f".lastsettings")
             project_quality_file = os.path.join(self.project_directory, 'project_quality.pickle')
-
-            if not os.path.exists(self.db_file):  # brand new project, initialize it.
+            
+            # the .lastsettings file is used as a canary to detect if
+            # this folder already contains a project or if we have to generate
+            # a new project
+            if not os.path.exists(settings_file):  # brand new project, initialize it.
                 self.create_project_structure()
                 self.project_quality = project_quality
                 if project_quality != '':
@@ -98,8 +102,7 @@ class ProjectNavigation(QObject):
 
                 self._set_folder_structure()
 
-            self.orm = ORM.ORM(self.db_file)
-            self.orm.init_database()
+            self.file_operator = FileOperator(self.project_directory)
 
         if self.verbose:
             print("Navigator:")
@@ -113,7 +116,6 @@ class ProjectNavigation(QObject):
             print(f"  - active base = '{self.active_base}'")
             print(f"  - project name = '{self.project_name}'")
             print(f"  - project grade = '{self.project_quality}'")
-            print(f"  - project db file = '{self.db_file}'")
 
     def update_toolbar_elements(self, active_hardware, active_base, active_target):
         self.active_hardware = active_hardware
@@ -169,7 +171,7 @@ class ProjectNavigation(QObject):
         # TODO: cleaner impl.
         new_hardware = definition['hardware']
         definition.pop('hardware')
-        Hardware.add(self.get_session(), new_hardware, definition, is_enabled)
+        Hardware.add(self.get_file_operator(), new_hardware, definition, is_enabled)
 
         self.parent.hardware_added.emit(new_hardware)
         self.parent.database_changed.emit(TableId.Hardware())
@@ -203,26 +205,19 @@ class ProjectNavigation(QObject):
 
         # blob do not have to contain hardware name it's already our primary key
         definition.pop('hardware')
-        Hardware.update(self.get_session(), hardware, definition)
+        Hardware.update(self.get_file_operator(), hardware, definition)
 
-    def get_session(self):
-        return self.orm.session()
-
-    def get_hardwares_info(self):
-        '''
-        This method will return a DICTIONARY with as key all hardware names,
-        and as key the definition.
-        '''
-        return self.get_session().query(Hardware)
+    def get_file_operator(self):
+        return self.file_operator
 
     def get_active_hardware_names(self):
-        return [hw.name for hw in Hardware.get_all(self.get_session()) if hw.is_enabled]
+        return [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
 
     def get_hardware_names(self):
         '''
         This method will return a list of all hardware names available
         '''
-        return [hardware.name for hardware in Hardware.get_all(self.get_session())]
+        return [hardware.name for hardware in Hardware.get_all(self.get_file_operator())]
 
     def get_next_hardware(self):
         '''
@@ -250,10 +245,10 @@ class ProjectNavigation(QObject):
         this method retreives the hwr_data for hwr_nr.
         if hwr_nr doesn't exist, an empty dictionary is returned
         '''
-        return Hardware.get_definition(self.get_session(), name)
+        return Hardware.get_definition(self.get_file_operator(), name)
 
     def remove_hardware(self, name):
-        Hardware.remove(self.get_session(), name)
+        Hardware.remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Hardware())
         self.parent.hardware_removed.emit(name)
         import shutil
@@ -265,23 +260,26 @@ class ProjectNavigation(QObject):
         database, but prior it will check if 'name' already exists, if so
         it will trow a KeyError
         '''
-        Maskset.add(self.get_session(), name, customer, definition, is_enabled)
+        Maskset.add(self.get_file_operator(), name, customer, definition, is_enabled)
         self.parent.database_changed.emit(TableId.Maskset())
 
     def update_maskset(self, name, definition, customer):
         '''
         this method will update the definition of maskset 'name' to 'definition'
         '''
-        Maskset.update(self.get_session(), name, customer, definition)
+        Maskset.update(self.get_file_operator(), name, customer, definition)
 
     def get_masksets(self):
+        # ToDo: Docstring is a blatand lie
         '''
         this method returns a DICTIONARY with as key all maskset names,
         and as value the tuple (customer, definition)
         '''
-        return Maskset.get_all(self.get_session())
+        return Maskset.get_all(self.get_file_operator())
 
     def get_available_maskset_names(self):
+        # ToDo: Docstring is a blatand lie, check how and why this
+        # method is used as opposed to get_maskset_names
         '''
         this method returns a DICTIONARY with as key all maskset names,
         and as value the tuple (customer, definition)
@@ -298,29 +296,29 @@ class ProjectNavigation(QObject):
         '''
         this method lists all 'ASIC' masksets
         '''
-        return Maskset.get_ASIC_masksets(self.get_session())
+        return Maskset.get_ASIC_masksets(self.get_file_operator())
 
     def get_ASSP_masksets(self):
         '''
         this method lists all 'ASSP' masksets
         '''
-        return Maskset.get_ASSP_masksets(self.get_session())
+        return Maskset.get_ASSP_masksets(self.get_file_operator())
 
     def get_maskset_definition(self, name):
         '''
         this method will return the definition of maskset 'name'
         '''
-        return Maskset.get_definition(self.get_session(), name)
+        return Maskset.get_definition(self.get_file_operator(), name)
 
     def get_maskset_customer(self, name):
         '''
         this method will return the customer of maskset 'name'
         (empty string means no customer, thus 'ASSP')
         '''
-        return Maskset.get(self.get_session(), name).customer
+        return Maskset.get(self.get_file_operator(), name).customer
 
     def remove_maskset(self, name):
-        Maskset.remove(self.get_session(), name)
+        Maskset.remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Maskset())
 
     def add_die(self, name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled=True):
@@ -333,7 +331,7 @@ class ProjectNavigation(QObject):
         if grade is not 'A', then grade_reference can not be an empty string,
         and it must reference another (existing) die with grade 'A'!
         '''
-        Die.add(self.get_session(), name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled)
+        Die.add(self.get_file_operator(), name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled)
 
         self.parent.database_changed.emit(TableId.Die())
 
@@ -341,23 +339,24 @@ class ProjectNavigation(QObject):
         '''
         this method updates both maskset and hardware for die with 'name'
         '''
-        Die.update(self.get_session(), name, hardware, maskset, quality, grade, grade_reference, type, customer)
+        Die.update(self.get_file_operator(), name, hardware, maskset, quality, grade, grade_reference, type, customer)
 
     def get_dies(self):
         '''
         this method will return a DICTIONARY with as keys all existing die names,
         and as value the tuple (hardware, maskset, grade, grade_reference, customer)
         '''
-        return Die.get_all(self.get_session())
+        return Die.get_all(self.get_file_operator())
 
     def get_active_die_names(self):
         return [die.name for die in self.get_dies() if die.is_enabled]
 
-    def get_die_names(self):
-        '''
-        this method will return a LIST of all dies
-        '''
-        return [die.name for die in self.get_dies()]
+    # ToDo: Seems to be unused
+    # def get_die_names(self):
+    #     '''
+    #     this method will return a LIST of all dies
+    #     '''
+    #     return [die.name for die in self.get_dies()]
 
     def get_active_die_names_for_hardware(self, hardware):
         '''
@@ -370,7 +369,7 @@ class ProjectNavigation(QObject):
         this method returns a tuple (hardware, maskset, grade, grade_reference, customer) for die 'name'
         if name doesn't exist, a KeyError will be raised.
         '''
-        return Die.get_die(self.get_session(), name)
+        return Die.get_die(self.get_file_operator(), name)
 
     def get_die_maskset(self, name):
         '''
@@ -385,11 +384,9 @@ class ProjectNavigation(QObject):
         return self.get_die(name).hardware
 
     def remove_die(self, name):
-        Die.remove(self.get_session(), name)
+        Die.remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Die())
         self.parent.update_target.emit()
-
-# Packages
 
     def add_package(self, name, leads, is_naked_die, is_enabled=True):
         '''
@@ -397,30 +394,33 @@ class ProjectNavigation(QObject):
         database, but prior it will check if 'name' already exists, if so
         it will trow a KeyError
         '''
-        Package.add(self.get_session(), name, leads, is_naked_die, is_enabled)
+        Package.add(self.get_file_operator(), name, leads, is_naked_die, is_enabled)
 
         self.parent.database_changed.emit(TableId.Package())
 
     def update_package(self, name, leads, is_naked_die, is_enabled=True):
-        Package.update(self.get_session(), name, leads, is_naked_die, is_enabled)
+        Package.update(self.get_file_operator(), name, leads, is_naked_die, is_enabled)
 
     def does_package_name_exist(self, name):
         return self.get_package(name) is not None
 
     def get_package(self, name):
-        return Package.get(self.get_session(), name)
+        return Package.get(self.get_file_operator(), name)
 
     def is_package_a_naked_die(self, package):
         return self.get_package(package).is_naked_die
 
     def get_packages_info(self):
+        # ToDO: Docstring is a lie!
         '''
         this method will return a DICTIONARY with ALL packages as key and
         the number of leads as value
         '''
-        return Package.get_all(self.get_session())
+        return Package.get_all(self.get_file_operator())
 
     def get_available_packages(self):
+          # ToDO: Docstring is a lie, name suggest different behavior, from
+          # whats actually happening -> this function should be called "get_package_names"
         '''
         this method will return a DICTIONARY with ALL packages as key and
         the number of leads as value
@@ -433,7 +433,6 @@ class ProjectNavigation(QObject):
         '''
         return list(self.get_packages_info())
 
-# Devices
     def add_device(self, name, hardware, package, definition, is_enabled=True):
         '''
         this method will add device 'name' with 'package' and 'definition'
@@ -441,41 +440,42 @@ class ProjectNavigation(QObject):
         if 'name' already exists, a KeyError is raised
         if 'package' doesn't exist, a KeyError is raised
         '''
-        Device.add(self.get_session(), name, hardware, package, definition, is_enabled)
+        Device.add(self.get_file_operator(), name, hardware, package, definition, is_enabled)
         self.parent.database_changed.emit(TableId.Device())
 
     def update_device(self, name, hardware, package, definition):
-        Device.update(self.get_session(), name, hardware, package, definition)
+        Device.update(self.get_file_operator(), name, hardware, package, definition)
 
     def get_device_names(self):
         '''
-        this method lists all available devices
+        this method lists all available devices names
         '''
-        return [device.name for device in Device.get_all(self.get_session())]
+        return [device.name for device in Device.get_all(self.get_file_operator())]
 
     def get_active_device_names_for_hardware(self, hardware_name):
         '''
         this method will return a list of devices for 'hardware_name'
         '''
-        return [device.name for device in Device.get_all(self.get_session()) if device.hardware == hardware_name and device.is_enabled]
+        # ToDo: Add function in device that implements the filter
+        return [device.name for device in Device.get_all(self.get_file_operator()) if device.hardware == hardware_name and device.is_enabled]
 
     def get_devices_for_hardwares(self):
-        return [device.name for device in Device.get_all(self.get_session())]
+        return [device.name for device in Device.get_all(self.get_file_operator())]
 
     def get_device_hardware(self, name):
-        return Device.get(self.get_session(), name).hardware
+        return Device.get(self.get_file_operator(), name).hardware
 
     def get_device_package(self, name):
         '''
         this method will return the package of device 'name'
         '''
-        return Device.get(self.get_session(), name).package
+        return Device.get(self.get_file_operator(), name).package
 
     def get_device_definition(self, name):
         '''
         this method will return the definition of device 'name'
         '''
-        return Device.get_definition(self.get_session(), name)
+        return Device.get_definition(self.get_file_operator(), name)
 
     def get_device(self, name):
         return {'hardware': self.get_device_hardware(name),
@@ -487,7 +487,7 @@ class ProjectNavigation(QObject):
         return definition['dies_in_package']
 
     def remove_device(self, name):
-        Device.remove(self.get_session(), name)
+        Device.remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Device())
         self.parent.update_target.emit()
 
@@ -497,44 +497,46 @@ class ProjectNavigation(QObject):
         in the the database, but before it will check if 'name' already exists, if so
         it will trow a KeyError
         '''
-        session = self.get_session()
+        session = self.get_file_operator()
         Product.add(session, name, device, hardware, quality, grade, grade_reference, type, customer, is_enabled)
         self.parent.database_changed.emit(TableId.Product())
 
     def update_product(self, name, device, hardware, quality, grade, grade_reference, type, customer):
-        Product.update(self.get_session(), name, device, hardware, quality, grade, grade_reference, type, customer)
+        Product.update(self.get_file_operator(), name, device, hardware, quality, grade, grade_reference, type, customer)
 
     def get_products_info(self):
-        return Product.get_all(self.get_session())
+        return Product.get_all(self.get_file_operator())
 
     def get_products(self):
+        # ToDo this method should be called get_product_names
         '''
         this method will return a list of all products
         '''
         return [product.name for product in self.get_products_info()]
 
     def get_product(self, name):
-        return Product.get(self.get_session(), name)
+        return Product.get(self.get_file_operator(), name)
 
     def get_product_device(self, name):
-        return Product.get(self.get_session(), name).device
+        return Product.get(self.get_file_operator(), name).device
 
     def get_products_for_device(self, device_name):
-        return [product.name for product in Product.get_for_device(self.get_session(), device_name)]
+        return [product.name for product in Product.get_for_device(self.get_file_operator(), device_name)]
 
     def get_product_hardware(self, name):
-        return Product.get(self.get_session(), name).hardware
+        return Product.get(self.get_file_operator(), name).hardware
 
-    def remove_product(self, name):
-        Product.remove(self.get_session(), name)
-        self.parent.database_changed.emit(TableId.Product())
+# ToDo: Not used?!?!?
+    # def remove_product(self, name):
+    #     Product.remove(self.get_file_operator(), name)
+    #     self.parent.database_changed.emit(TableId.Product())
 
     def tests_get_standard_tests(self, hardware, base):
         '''
         given 'hardware' and 'base', this method will return a LIST
         of all existing STANDARD TESTS.
         '''
-        return Test.get_all(self.get_session(), hardware, base, 'standard')
+        return Test.get_all(self.get_file_operator(), hardware, base, 'standard')
 
     def add_standard_test(self, name, hardware, base):
         import runpy
@@ -576,33 +578,33 @@ class ProjectNavigation(QObject):
             raise Exception("not a 'custom' test!!!")
 
         self._generate_test_code(definition)
-        Test.add(self.get_session(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
+        Test.add(self.get_file_operator(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
         self.parent.database_changed.emit(TableId.NewTest())
 
     def update_custom_test(self, definition, is_enabled=True):
         self._update_test_code(definition)
-        Test.update(self.get_session(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
+        Test.update(self.get_file_operator(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
 
         self._update_test_target_code(definition)
         self._update_programs_state_for_test(definition['name'])
 
     def _update_programs_state_for_test(self, test_name):
-        programs = Sequence.get_programs_for_test(self.get_session(), test_name)
+        programs = Sequence.get_programs_for_test(self.get_file_operator(), test_name)
         programs = set([program.prog_name for program in programs])
 
         from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         for program in programs:
-            if not Program.get(self.get_session(), program).is_valid:
+            if not Program.get(self.get_file_operator(), program).is_valid:
                 continue
 
-            Program.set_program_validity(self.get_session(), program, False)
+            Program.set_program_validity(self.get_file_operator(), program, False)
             test_program_generator.append_exception_code(self._generate_program_path(program))
 
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
 
     def is_test_program_valid(self, program_name):
-        program = Program.get(self.get_session(), program_name)
+        program = Program.get(self.get_file_operator(), program_name)
         return program.is_valid
 
     def _update_test_target_code(self, definition):
@@ -650,9 +652,9 @@ class ProjectNavigation(QObject):
         return retval
 
     def get_test_table_content(self, name, hardware, base):
-        table = Test.get(self.get_session(), name, hardware, base)
+        table = Test.get(self.get_file_operator(), name, hardware, base)
         infos = {'name': table.name, 'hardware': table.hardware, 'type': table.type, 'base': table.base}
-        infos.update(table.get_definition())
+        infos.update(table.definition)
 
         return infos
 
@@ -675,21 +677,21 @@ class ProjectNavigation(QObject):
         if test_type not in ('standard', 'custom', 'all'):
             raise Exception('unknown test type !!!')
 
-        return Test.get_all(self.get_session(), hardware, base, test_type)
+        return Test.get_all(self.get_file_operator(), hardware, base, test_type)
 
     def remove_test(self, name):
-        Test.remove(self.get_session(), name)
+        Test.remove(self.get_file_operator(), name)
 
-        Sequence.remove_test_from_sequence(self.get_session(), name)
+        Sequence.remove_test_from_sequence(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Test())
 
     # ToDo Seems to be unused!
-    def delete_test_from_program(self, test_name):
-        Sequence.remove_test_from_sequence(self.get_session(), test_name)
-        self.parent.database_changed.emit(TableId.Test())
+    # def delete_test_from_program(self, test_name):
+    #     Sequence.remove_test_from_sequence(self.get_file_operator(), test_name)
+    #     self.parent.database_changed.emit(TableId.Test())
 
     def get_data_for_qualification_flow(self, quali_flow_type, product):
-        return QualificationFlowDatum.get_data_for_flow(self.get_session(), quali_flow_type, product)
+        return QualificationFlowDatum.get_data_for_flow(self.get_file_operator(), quali_flow_type, product)
 
     def get_unique_data_for_qualifcation_flow(self, quali_flow_type, product):
         '''
@@ -699,8 +701,7 @@ class ProjectNavigation(QObject):
         '''
         items = self.get_data_for_qualification_flow(quali_flow_type, product)
         if(len(items) == 0):
-            data = QualificationFlowDatum()
-            data.product = product
+            data = FileOperator._make_db_object({"product": product})
             return data
         elif(len(items) == 1):
             return items[0]
@@ -713,11 +714,11 @@ class ProjectNavigation(QObject):
             updating any already existing data with the same "name" field. Note
             that we expect a "type" field to be present.
         '''
-        QualificationFlowDatum.add_or_update_qualification_flow_data(self.get_session(), quali_flow_data)
+        QualificationFlowDatum.add_or_update_qualification_flow_data(self.get_file_operator(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
     def delete_qualification_flow_instance(self, quali_flow_data):
-        QualificationFlowDatum.remove(self.get_session(), quali_flow_data)
+        QualificationFlowDatum.remove(self.get_file_operator(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
     def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy):
@@ -725,7 +726,7 @@ class ProjectNavigation(QObject):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
 
-        Program.add(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy)
+        Program.add(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, order, cache_type, caching_policy)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
@@ -738,24 +739,23 @@ class ProjectNavigation(QObject):
 
     def _insert_sequence_informations(self, owner_name, prog_name, definition):
         for index, test in enumerate(definition):
-            # ToDo: Why protocol version 4?
-            Sequence.add_sequence_information(self.get_session(), owner_name, prog_name, test['name'], index, test)
+            Sequence.add_sequence_information(self.get_file_operator(), owner_name, prog_name, test['name'], index, test)
 
     def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
 
-        Program.update(self.get_session(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, test_target, cache_type, caching_policy)
+        Program.update(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, cache_type, caching_policy)
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
-        Program.set_program_validity(self.get_session(), name, True)
+        Program.set_program_validity(self.get_file_operator(), name, True)
 
         self.parent.database_changed.emit(TableId.Flow())
 
     def _get_tests_for_target(self, hardware, base, test_target):
-        return [test.test for test in TestTarget.get_tests(self.get_session(), hardware, base, test_target)]
+        return [test.test for test in TestTarget.get_tests(self.get_file_operator(), hardware, base, test_target)]
 
     def _update_test_targets_list(self, program_name, test_target, hardware, base, definition):
         tests = []
@@ -777,7 +777,7 @@ class ProjectNavigation(QObject):
             self.remove_test_target(test_target, test_name, hardware, base)
 
     def _delete_program_sequence(self, prog_name, owner_name):
-        Sequence.remove_program_sequence(self.get_session(), prog_name, owner_name)
+        Sequence.remove_program_sequence(self.get_file_operator(), prog_name, owner_name)
 
     def _generate_program_name(self, program_name, index):
         prog_name = program_name[:-1]
@@ -786,8 +786,8 @@ class ProjectNavigation(QObject):
     def delete_program(self, program_name, owner_name, program_order, emit_event):
         self._remove_test_targets_for_test_program(program_name)
 
-        Program.remove(self.get_session(), program_name, owner_name)
-        Sequence.remove_for_program(self.get_session(), program_name)
+        Program.remove(self.get_file_operator(), program_name, owner_name)
+        Sequence.remove_for_program(self.get_file_operator(), program_name)
 
         self._remove_file(self._generate_program_path(program_name))
         if emit_event:
@@ -806,30 +806,30 @@ class ProjectNavigation(QObject):
     def _update_test_program_sequence(self, program_name, program_order, owner_name):
         for index in range(program_order + 1, self.get_program_owner_element_count(owner_name) + 1):
             new_name = self._generate_program_name(program_name, index)
-            Program.update_program_order_and_name(self.get_session(), new_name, index - 1, owner_name, index)
+            Program.update_program_order_and_name(self.get_file_operator(), new_name, index - 1, owner_name, index)
 
             name = self._generate_program_name(program_name, index + 1)
-            Sequence.update_progname(self.get_session(), name, owner_name, new_name)
+            Sequence.update_progname(self.get_file_operator(), name, owner_name, new_name)
 
-            TestTarget.update_program_name(self.get_session(), name, new_name)
+            TestTarget.update_program_name(self.get_file_operator(), name, new_name)
 
             self._remove_file(self._generate_program_path(name))
             from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
             test_program_generator(new_name, owner_name, self)
 
     def _remove_test_targets_for_test_program(self, prog_name):
-        tests = set([seq.test for seq in Sequence.get_for_program(self.get_session(), prog_name)])
-        targets = [target.name for target in TestTarget.get_for_program(self.get_session(), prog_name)]
-        TestTarget.remove_for_test_program(self.get_session(), prog_name)
+        tests = set([seq.test for seq in Sequence.get_for_program(self.get_file_operator(), prog_name)])
+        targets = [target.name for target in TestTarget.get_for_program(self.get_file_operator(), prog_name)]
+        TestTarget.remove_for_test_program(self.get_file_operator(), prog_name)
 
         for target, test in zip(targets, tests):
             self.parent.test_target_deleted.emit(target, test)
 
     def move_program(self, program_name, owner_name, program_order, is_up):
-        session = self.get_session()
+        session = self.get_file_operator()
         prog = Program.get_by_name_and_owner(session, program_name, owner_name)
-        order = prog.prog_order  # result[0]
-        prog_id = prog.id  # result[1]
+        order = prog.prog_order
+        prog_id = prog.id
 
         count = self.get_program_owner_element_count(owner_name)
         if is_up:
@@ -845,48 +845,34 @@ class ProjectNavigation(QObject):
 
         self.parent.database_changed.emit(TableId.Flow())
 
-    def _get_program_ids_from_sequence(self, prog_name, owner_name):
-        return Sequence.get_for_program(self.get_session(), prog_name)
-
-    def _update_program_name_for_sequence(self, new_prog_name, owner_name, ids):
-        Sequence.update_program_name_for_sequence(self.get_session(), new_prog_name, owner_name, ids)
-
-    def _update_sequence(self, prog_name, new_prog_name, owner_name, prog_id):
-        prog_ids = [prog_id.id for prog_id in self._get_program_ids_from_sequence(prog_name, owner_name)]
-        new_prog_ids = [prog_id.id for prog_id in self._get_program_ids_from_sequence(new_prog_name, owner_name)]
-
-        self._update_program_name_for_sequence(new_prog_name, owner_name, prog_ids)
-        self._update_program_name_for_sequence(prog_name, owner_name, new_prog_ids)
-
+    def _update_sequence(self, prog_name, new_prog_name, owner_name):
+        Sequence.switch_sequences(self.get_file_operator(), prog_name, new_prog_name)
         self.parent.database_changed.emit(TableId.Flow())
 
     def _get_test_program_name(self, prog_order, owner_name):
-        return Program.get_by_order_and_owner(self.get_session(), prog_order, owner_name).prog_name
-
-    def _update_test_program_name(self, prog_name, new_name):
-        Program.update_program_name(self.get_session(), prog_name, new_name)
+        return Program.get_by_order_and_owner(self.get_file_operator(), prog_order, owner_name).prog_name
 
     def _update_elements(self, prog_name, owner_name, prev_order, order, id):
         neighbour = self._get_test_program_name(order, owner_name)
-        self._update_sequence(prog_name, neighbour, owner_name, id)
+        self._update_sequence(prog_name, neighbour, owner_name)
 
         self._update_program_order(owner_name, prev_order, order, neighbour)
         self._update_program_order_neighbour(owner_name, order, prev_order, prog_name, id)
 
     def _update_program_order_neighbour(self, owner_name, prev_order, order, new_name, id):
-        Program._update_program_order_neighbour(self.get_session(), owner_name, prev_order, order, new_name, id)
+        Program._update_program_order_neighbour(self.get_file_operator(), owner_name, prev_order, order, new_name, id)
 
     def _update_program_order(self, owner_name, prev_order, order, new_name):
-        Program._update_program_order(self.get_session(), owner_name, prev_order, order, new_name)
+        Program._update_program_order(self.get_file_operator(), owner_name, prev_order, order, new_name)
 
     def get_program_owner_element_count(self, owner_name):
-        return Program.get_program_owner_element_count(self.get_session(), owner_name)
+        return Program.get_program_owner_element_count(self.get_file_operator(), owner_name)
 
     def get_programs_for_owner(self, owner_name):
-        return Program.get_programs_for_owner(self.get_session(), owner_name)
+        return Program.get_programs_for_owner(self.get_file_operator(), owner_name)
 
     def get_program_configuration_for_owner(self, owner_name, prog_name):
-        prog = Program.get_by_name_and_owner(self.get_session(), prog_name, owner_name)
+        prog = Program.get_by_name_and_owner(self.get_file_operator(), prog_name, owner_name)
         retval = {}
         retval.update({"hardware": prog.hardware})
         retval.update({"base": prog.base})
@@ -896,25 +882,26 @@ class ProjectNavigation(QObject):
         retval.update({"caching_policy": prog.caching_policy})
         retval.update({"cache_type": prog.cache_type})
         if prog.sequencer_type == 'Fixed Temperature':
-            retval.update({"temperature": str(pickle.loads(prog.temperature))})
-        else:
-            retval.update({"temperature": ','.join(str(x) for x in pickle.loads(prog.temperature))})
+            retval.update({"temperature": prog.temperature})
+        # ToDo: Fix Me!
+        # else:
+        #     retval.update({"temperature": ','.join(str(x) for x in pickle.loads(prog.temperature))})
 
         return retval
 
     def get_program_test_configuration(self, program, owner):
-        sequence = Sequence.get_for_program(self.get_session(), program)
+        sequence = Sequence.get_for_program(self.get_file_operator(), program)
         retval = []
         for sequence_entry in sequence:
-            retval.append(sequence_entry.get_definition())
+            retval.append(sequence_entry.definition)
 
         return retval
 
     def get_tests_for_program(self, prog_name, owner_name):
-        return Sequence.get_for_program(self.get_session(), prog_name)
+        return Sequence.get_for_program(self.get_file_operator(), prog_name)
 
     def get_programs_for_node(self, type, name):
-        all = Program.get_programs_for_target(self.get_session(), name)
+        all = Program.get_programs_for_target(self.get_file_operator(), name)
         retval = {}
 
         for row in all:
@@ -926,7 +913,7 @@ class ProjectNavigation(QObject):
         return retval
 
     def get_programs_for_test(self, test_name):
-        all = Sequence.get_programs_for_test(self.get_session(), test_name)
+        all = Sequence.get_programs_for_test(self.get_file_operator(), test_name)
         retval = {}
 
         for row in all:
@@ -938,7 +925,7 @@ class ProjectNavigation(QObject):
         return retval
 
     def get_programs_for_hardware(self, hardware):
-        data = [(program.prog_name, program.owner_name) for program in Program.get_programs_for_hardware(self.get_session(), hardware)]
+        data = [(program.prog_name, program.owner_name) for program in Program.get_programs_for_hardware(self.get_file_operator(), hardware)]
         retval = {}
 
         for row in data:
@@ -947,37 +934,37 @@ class ProjectNavigation(QObject):
         return retval
 
     def add_test_target(self, prog_name, name, hardware, base, test, is_default, is_enabled=False):
-        if TestTarget.exists(self.get_session(), name, hardware, base, test, prog_name):
+        if TestTarget.exists(self.get_file_operator(), name, hardware, base, test, prog_name):
             return
 
-        TestTarget.add(self.get_session(), name, prog_name, hardware, base, test, is_default, is_enabled)
+        TestTarget.add(self.get_file_operator(), name, prog_name, hardware, base, test, is_default, is_enabled)
         self.parent.database_changed.emit(TableId.Test())
 
     def remove_test_target(self, name, test, hardware, base):
-        TestTarget.remove(self.get_session(), name, test, hardware, base)
+        TestTarget.remove(self.get_file_operator(), name, test, hardware, base)
         self.parent.test_target_deleted.emit(name, test)
 
     def set_test_target_default_state(self, name, hardware, base, test, is_default):
         if not is_default:
             self._generate_test_target_file(name, test, hardware, base)
 
-        TestTarget.set_default_state(self.get_session(), name, hardware, base, test, is_default)
+        TestTarget.set_default_state(self.get_file_operator(), name, hardware, base, test, is_default)
         self.parent.database_changed.emit(TableId.TestItem())
 
     def set_test_target_state(self, name, hardware, base, test, is_enabled):
-        TestTarget.toggle(self.get_session(), name, hardware, base, test, is_enabled)
+        TestTarget.toggle(self.get_file_operator(), name, hardware, base, test, is_enabled)
 
     def is_test_target_set_to_default(self, name, hardware, base, test):
-        return TestTarget.get(self.get_session(), name, hardware, base, test).is_default
+        return TestTarget.get(self.get_file_operator(), name, hardware, base, test).is_default
 
     def get_available_test_targets(self, hardware, base, test):
-        return [test.name for test in TestTarget.get_for_hardware_base_test(self.get_session(), hardware, base, test)]
+        return [test.name for test in TestTarget.get_for_hardware_base_test(self.get_file_operator(), hardware, base, test)]
 
     def get_test_targets_for_program(self, prog_name):
-        return TestTarget.get_for_program(self.get_session(), prog_name)
+        return TestTarget.get_for_program(self.get_file_operator(), prog_name)
 
     def get_test_targets_for_test(self, test_name):
-        return TestTarget.get_for_test(self.get_session(), test_name)
+        return TestTarget.get_for_test(self.get_file_operator(), test_name)
 
     def get_depandant_test_target_for_program(self, prog_name):
         dependants = {}
@@ -995,9 +982,9 @@ class ProjectNavigation(QObject):
 
     # TODO: use following arguments after fixing test behaviour (hardware, base)
     def _generate_test_target_file(self, target_name, test, hardware, base, do_update=False):
-        test_target = TestTarget.get(self.get_session(), target_name, hardware, base, test)
-        test_target.update_test_changed_flag(self.get_session(), target_name, hardware, base, test, is_changed=True)
-        testdefinition = Test.get(self.get_session(), test, hardware, base).get_definition()
+        test_target = TestTarget.get(self.get_file_operator(), target_name, hardware, base, test)
+        TestTarget.update_test_changed_flag(self.get_file_operator(), target_name, hardware, base, test, is_changed=True)
+        testdefinition = Test.get(self.get_file_operator(), test, hardware, base).definition
         testdefinition['base'] = base
         testdefinition['base_class'] = test
         testdefinition['name'] = target_name
@@ -1009,10 +996,10 @@ class ProjectNavigation(QObject):
         self._update_programs_state_for_test(test)
 
     def get_changed_test_targets(self, hardware, base, prog_name):
-        return TestTarget.get_changed_test_targets(self.get_session(), hardware, base, prog_name)
+        return TestTarget.get_changed_test_targets(self.get_file_operator(), hardware, base, prog_name)
 
     def update_changed_state_test_targets(self, hardware, base, prog_name):
-        TestTarget.update_changed_state_test_targets(self.get_session(), hardware, base, prog_name)
+        TestTarget.update_changed_state_test_targets(self.get_file_operator(), hardware, base, prog_name)
 
     def get_available_testers(self):
         # TODO: implement once the pluggy stuff is in place.
@@ -1037,7 +1024,7 @@ class ProjectNavigation(QObject):
 
         tree = {}
         for dep in dependant_objects:
-            all = tables[dep].get_all_for_hardware(self.get_session(), hardware)
+            all = tables[dep].get_all_for_hardware(self.get_file_operator(), hardware)
             for row in all:
                 if tree.get(dep) is None:
                     tree[dep] = [row.name]
@@ -1055,7 +1042,7 @@ class ProjectNavigation(QObject):
         dependant_objects = ['dies']
         tree = {}
         for dep in dependant_objects:
-            all = tables[dep].get_all_for_maskset(self.get_session(), maskset)
+            all = tables[dep].get_all_for_maskset(self.get_file_operator(), maskset)
             for row in all:
                 if tree.get(dep) is None:
                     tree[dep] = [row.name]
@@ -1070,7 +1057,8 @@ class ProjectNavigation(QObject):
         devices = self.get_device_names()
         for name in devices:
             definition = self.get_device_definition(name)['dies_in_package']
-            if die in definition:
+            elements = [die_text for die_text in definition if die in die_text]
+            if len(elements):
                 deps['devices'].append(name)
 
         if deps['devices']:
@@ -1109,10 +1097,10 @@ class ProjectNavigation(QObject):
         return self.get_programs_for_test(test)
 
     def _get_state(self, name, type):
-        return tables[type].get(self.get_session(), name).is_enabled
+        return tables[type].get(self.get_file_operator(), name).is_enabled
 
     def _update_state(self, name, state, type):
-        tables[type].update_state(self.get_session(), name, state)
+        tables[type].update_state(self.get_file_operator(), name, state)
 
     def get_hardware_state(self, name):
         return self._get_state(name, 'hardwares')
@@ -1125,13 +1113,13 @@ class ProjectNavigation(QObject):
             self.parent.hardware_added.emit(name)
 
     def get_maskset_state(self, name):
-        return Maskset.get(self.get_session(), name).is_enabled
+        return Maskset.get(self.get_file_operator(), name).is_enabled
 
     def update_maskset_state(self, name, state):
-        Maskset.update_state(self.get_session(), name, state)
+        Maskset.update_state(self.get_file_operator(), name, state)
 
     def get_die_state(self, name):
-        return Die.get(self.get_session(), name).is_enabled
+        return Die.get(self.get_file_operator(), name).is_enabled
 
     def update_die_state(self, name, state):
         self._update_state(name, state, 'dies')
@@ -1144,20 +1132,20 @@ class ProjectNavigation(QObject):
         self._update_state(name, state, 'packages')
 
     def get_device_state(self, name):
-        return Device.get(self.get_session(), name).is_enabled
+        return Device.get(self.get_file_operator(), name).is_enabled
 
     def update_device_state(self, name, state):
         self._update_state(name, state, 'devices')
         self.parent.update_target.emit()
 
     def get_product_state(self, name):
-        return Product.get(self.get_session(), name).is_enabled
+        return Product.get(self.get_file_operator(), name).is_enabled
 
     def update_product_state(self, name, state):
         self._update_state(name, state, 'products')
 
     def get_test(self, name, hardware, base):
-        return Test.get(self.get_session(), name, hardware, base)
+        return Test.get(self.get_file_operator(), name, hardware, base)
 
     def store_plugin_cfg(self, hw, object_name, cfg):
         file_dir = os.path.join(self.project_directory, "src", hw)
@@ -1184,14 +1172,19 @@ class ProjectNavigation(QObject):
         self.clean_up()
 
     def clean_up(self):
-        del self.orm
         self.active_hardware = ''
         self.active_base = ''
         self.active_target = ''
 
     def delete_item(self, type, name):
-        tables[type].remove(self.get_session(), name)
+        tables[type].remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Definition())
+
+        # TODO: exception should be removed later
+        try:
+            definitions[type].remove(self.get_file_operator(), name)
+        except KeyError:
+            pass
 
     def last_project_setting(self):
         return os.path.join(self.project_directory, '.lastsettings')

@@ -1,5 +1,4 @@
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
-from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR_dict)
 from abc import ABC, abstractmethod
 import time
 
@@ -15,7 +14,7 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
     def __init__(self, num_cycles):
         self.num_cycles = num_cycles
 
-    def run(self, sequencer_instance):
+    def run(self, sequencer_instance: object):
         for _ in range(self.num_cycles):
             test_index = 0
             start = time.time()

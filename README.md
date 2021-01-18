@@ -63,28 +63,8 @@ the xml file name.
     ---
 
 4) in case you generate your own test-program you need to make sure
-to create the binmapping file which is used from the test-program
-to map soft-bins(**SBINS**) to hard-bins(**HBINS**).
-the file name should be as follow: 'binmapping.json'
+that the bin mapping inside the XML-file mappe those sbins the test-program uses.
 
-    with using the default generated soft-bins the file should look as
-    bellow:
-
-    ```json
-        {
-         // HBIN        SBINS
-            "1":        [0, 1],
-            "2":        [10],
-            "3":        [11]
-        }
-    ```
-
-    ---
-    __NOTE__
-    </br>
-    As soon as a new soft-bin is used make sure to fit the confiuration file('binmapping.json')
-
-    ---
 5) make sure you got an mqtt-broker runs in your local machine.
 mosquitto can be used for this purpos.
 

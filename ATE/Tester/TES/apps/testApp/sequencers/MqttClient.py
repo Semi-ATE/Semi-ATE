@@ -16,7 +16,7 @@ class MqttClient():
     _topic_factory: TopicFactory
     _resource_msg_queue: queue.Queue
 
-    def __init__(self, broker_host, broker_port, topic_factory: TopicFactory, submit_callback):
+    def __init__(self, broker_host: str, broker_port: str, topic_factory: TopicFactory, submit_callback: callable):
         self._topic_factory = topic_factory
         self._client = self._create_mqtt_client(topic_factory)
         self._client.connect_async(broker_host, int(broker_port), 60)
@@ -41,7 +41,7 @@ class MqttClient():
         # in MQTT311 disconnect always tells the broker to discard the will message
         self._client.disconnect()
 
-    def publish_status(self, alive: TheTestAppStatusAlive, statedict) -> mqtt.MQTTMessageInfo:
+    def publish_status(self, alive: TheTestAppStatusAlive, statedict: dict) -> mqtt.MQTTMessageInfo:
         payload = self._topic_factory.test_status_payload(alive)
         payload.update(statedict)
         return self._client.publish(
@@ -86,13 +86,6 @@ class MqttClient():
         return self._client.publish(
             topic=self._topic_factory.test_log_topic(),
             payload=json.dumps(self._topic_factory.test_log_payload(log)),
-            qos=2,
-            retain=False),
-
-    def publish_bin_settings(self, bin_settings) -> mqtt.MQTTMessageInfo:
-        return self._client.publish(
-            topic=self._topic_factory.test_bin_settings(),
-            payload=json.dumps(bin_settings),
             qos=2,
             retain=False),
 
@@ -173,7 +166,7 @@ class MqttClient():
         self.response_topic = message.topic
         self.event.set()
 
-    def do_request_response(self, request_topic, response_topic, payload, timeout):
+    def do_request_response(self, request_topic: str, response_topic: str, payload: dict, timeout: int):
         self.event.clear()
         self._client.publish(request_topic, payload, 2)
 

@@ -1,11 +1,13 @@
 import copy
-from ATE.spyder.widgets.actions_on.program.Utils import (ParameterState, ParameterEditability, ResolverTypes, Range, InputFieldsPosition)
+
+from ATE.spyder.widgets.actions_on.program.Utils import (ParameterState, ParameterEditability, ResolverTypes, ValidatorTypes, Range, InputFieldsPosition)
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 
+from ATE.spyder.widgets.actions_on.program.Parameters.ParameterBase import ParameterBase
 PARAM_PREFIX = '_ate_var_'
 
 
-class InputParameter:
+class InputParameter(ParameterBase):
     class InputParameterFieldType(ParameterField):
         def __init__(self, value, editable):
             editable = ParameterEditability.Selectable() if editable == ParameterEditability.Editable() else editable
@@ -26,13 +28,22 @@ class InputParameter:
         self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=editable)
         self.default = ParameterField(self.format_value(input_params['Default']), editable=editable)
         self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(self._get_value(input_params))
-
-        self.editable = ParameterEditability.Editable()
         self.valid = True
+
+        self._select_editability_for_resolvertype(editable)
+
+    def _select_editability_for_resolvertype(self, editable):
+        if editable is not ParameterEditability.NotEditable():
+            if self.type == ResolverTypes.Static():
+                self.set_value_editability(ParameterEditability.Editable)
+            elif self.type == ResolverTypes.Local():
+                self.set_value_editability(ParameterEditability.Selectable)
+            else:
+                self.set_value_editability(ParameterEditability.Editable)
 
     @staticmethod
     def _get_value(input_params):
-        if PARAM_PREFIX in input_params['value']:
+        if PARAM_PREFIX in str(input_params['value']):
             return input_params['content']
 
         return input_params['value']
@@ -43,23 +54,24 @@ class InputParameter:
             resolver_type = ResolverTypes.Static()
             formatted = self.format_value(value)
             self.value.set_value(formatted)
-            self._set_validity_flag(resolver_type)
 
             if self.min > float(value) or float(value) > self.max:
                 self.value.set_validity(ParameterState.Invalid())
-        else:
+        elif self.type.get_value() == ResolverTypes.Local():
             resolver_type = ResolverTypes.Local()
             self.value.set_value(value)
-            self._set_validity_flag(resolver_type)
+        else:
+            # Remote!
+            resolver_type = self.type.get_value()
+            self.value(value)
+
+        self._set_validity_flag(resolver_type)
 
     def set_validity(self, validity):
         for field in self.get_parameters():
             field.set_validity(validity)
 
-        if validity in (ParameterState.Invalid(), ParameterState.Removed()):
-            self.valid = False
-        else:
-            self.valid = True
+        self.valid = validity not in (ParameterState.Invalid(), ParameterState.Removed())
 
     def set_value_editability(self, editable_flag):
         self.value.set_editable(editable_flag)
@@ -80,20 +92,28 @@ class InputParameter:
             self.value.set_value(self.default.get_value())
         if type == ResolverTypes.Local() and convertable:
             self.value.set_validity(ParameterState.Invalid())
+        if ResolverTypes.Remote() in type:
+            self.value.set_validity(ParameterState.Valid())
 
-    def _get_input_field(self, filed_col):
+    def _get_input_field(self, field_column):
         try:
-            input_filed = {InputFieldsPosition.Name(): self.name,
+            input_field = {InputFieldsPosition.Name(): self.name,
                            InputFieldsPosition.Min(): self.min,
                            InputFieldsPosition.Value(): self.value,
                            InputFieldsPosition.Max(): self.max,
                            InputFieldsPosition.Unit(): self.unit,
                            InputFieldsPosition.Format(): self.format,
-                           InputFieldsPosition.Type(): self.type}[filed_col]
+                           InputFieldsPosition.Type(): self.type}[field_column]
 
-            return input_filed
+            return input_field
         except KeyError:
             return None
+
+    def _get_validator_type(self) -> str:
+        if ResolverTypes.Remote() in self.type.get_value():
+            return ValidatorTypes.NoValidation
+        else:
+            return ValidatorTypes.FloatValidation
 
     def get_editable_flag_value(self, field_col):
         return self._get_input_field(field_col).get_editable_flag_value()
@@ -167,25 +187,25 @@ class InputParameter:
         else:
             return Range.Limited_Range()
 
-    def _is_temperature_in_range(self, test, temps):
-        if temps is None:
-            return Range.In_Range()
-
-        min, max = self.project_info.get_test_temp_limits(test, self.project_info.active_hardware, self.project_info.active_base)
-        temps.sort()
-
-        in_range_list = [x for x in temps if x >= min and x <= max]
-
-        if len(in_range_list) == len(temps):
-            return Range.In_Range()
-        elif not len(in_range_list):
-            return Range.Out_Of_Range()
-        else:
-            return Range.Limited_Range()
-
     def get_limits(self):
         return float(self.min.get_value()), float(self.max.get_value())
 
     def get_range_infos(self):
         l_limit, u_limit = self.get_limits()
         return l_limit, u_limit, int(self.exponent.get_value())
+
+    def _display_impl(self):
+        self._set_input_fields(self.name, self.table_row, InputFieldsPosition.Name())
+        self._set_input_fields(self.min, self.table_row, InputFieldsPosition.Min())
+        self._set_input_fields(self.value, self.table_row, InputFieldsPosition.Value())
+        self._set_input_fields(self.max, self.table_row, InputFieldsPosition.Max())
+        self._set_input_fields(self.unit, self.table_row, InputFieldsPosition.Unit())
+        self._set_input_fields(self.format, self.table_row, InputFieldsPosition.Format())
+        self._set_input_fields(self.type, self.table_row, InputFieldsPosition.Type())
+
+    def on_edit_done_impl(self, new_text, _):
+        try:
+            float_val = float(new_text)
+            self.value.set_value(float_val)
+        except ValueError:
+            self.value.set_value(new_text)

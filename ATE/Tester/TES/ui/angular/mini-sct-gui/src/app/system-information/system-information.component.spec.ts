@@ -18,6 +18,8 @@ import { YieldComponent } from '../yield/yield.component';
 import { TabComponent } from '../basic-ui-elements/tab/tab.component';
 import { yieldReducer } from '../reducers/yield.reducer';
 import { TableComponent } from '../basic-ui-elements/table/table.component';
+import { lotdataReducer } from '../reducers/lotdata.reducer';
+import { LotDataComponent } from '../lot-data/lot-data.component';
 
 describe('SystemInformationComponent', () => {
   let component: SystemInformationComponent;
@@ -36,10 +38,11 @@ describe('SystemInformationComponent', () => {
           results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
           consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
           userSettings: userSettingsReducer, // key must be equal to the key define in interface AppState, i.e. userSettings
-          yield: yieldReducer
+          yield: yieldReducer,
+          lotData: lotdataReducer
         })
       ],
-      declarations: [ SystemInformationComponent, CardComponent, InformationComponent, YieldComponent, TabComponent, TableComponent ],
+      declarations: [ SystemInformationComponent, CardComponent, InformationComponent, YieldComponent, TabComponent, TableComponent, LotDataComponent ],
     })
     .compileComponents();
   }));

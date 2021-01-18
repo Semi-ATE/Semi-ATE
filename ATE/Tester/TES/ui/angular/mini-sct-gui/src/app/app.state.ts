@@ -4,6 +4,7 @@ import { StdfRecord, SiteHead } from 'src/app/stdf/stdf-stuff';
 import { UserSettings } from './models/usersettings.model';
 import { YieldData } from './models/yield.model';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { LotData } from './models/lotdata.model';
 
 export interface AppState {
   readonly systemStatus: Status;
@@ -12,6 +13,7 @@ export interface AppState {
   readonly userSettings: UserSettings;
   readonly connectionId: string;
   readonly yield: YieldData;
+  readonly lotData: LotData;
 }
 
 export const getDeviceId = createFeatureSelector<Status>('systemStatus');

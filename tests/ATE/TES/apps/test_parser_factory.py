@@ -1,32 +1,15 @@
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.Tester.TES.apps.masterApp.parameter_parser.xml_parameter_parser import XmlParameterParser
 from ATE.Tester.TES.apps.masterApp.parameter_parser.filesystem_data_source import FileSystemDataSource
-import xml.etree.ElementTree as tree
+from utils import (create_xml_file, DEVICE_ID)
 
 
-DEVICE_ID = 'SCT-81'
 BASE_PATH = './tests/ATE/TES/apps'
 XML_PATH = './tests/ATE/TES/apps/le306426001_template.xml'
 XML_PATH_NEW = './tests/ATE/TES/apps/le306426001.xml'
 
 
-def create_xml_file(device_id):
-    et = tree.parse(XML_PATH)
-    root = et.getroot()
-    for cl in root.findall("CLUSTER"):
-        item = cl.find("TESTER")
-        if item is not None:
-            item.text = device_id
-
-    for st in root.findall("STATION"):
-        item = st.find("STATION1")
-        ts = item.find('TESTER1')
-        ts.text = device_id
-
-    et.write(XML_PATH_NEW)
-
-
-create_xml_file(DEVICE_ID)
+create_xml_file(XML_PATH, XML_PATH_NEW, DEVICE_ID)
 
 
 def get_logger():
@@ -35,7 +18,6 @@ def get_logger():
 
 
 class TestParserFactory:
-
     def test_create_parser_yields_xml_parser_for_xmlmicronas(self):
         jobformat = 'xml.micronas'
         parser = parser_factory.CreateParser(jobformat)

@@ -61,11 +61,12 @@ class ControlAppMachine:
                     '--broker_host', self._conhandler.broker_host,
                     '--broker_port', str(self._conhandler.broker_port),
                     '--parent-pid', str(os.getpid()),  # TODO: this should be configurable in future: it will make the testapp kill itself if this parent process dies
-                    '--binstrategytype', 'file',
+                    '--binstrategytype', 'external',
                     # '--ptvsd-enable-attach',  # uncomment this to enable attaching the remote debugger
                     # '--ptvsd-wait-for-attach',  # uncomment this to enable attaching the remote debugger AND waiting for an remote debugger to be attached before initialization
                     *testapp_params.get('testapp_script_args', [])]
 
+            os.environ[testapp_params['testapp_script_path'].split('.')[0]] = f"{testapp_params['bin_table']}"
             self.process = await asyncio.create_subprocess_exec(*args,
                                                                 cwd=testapp_params.get('cwd'),
                                                                 stdout=asyncio.subprocess.PIPE,
@@ -110,7 +111,7 @@ class ControlAppMachine:
             if self.process:
                 self._terminate()
         except Exception as e:
-            self.log.error(f"could not terminate testapp properly: {e}")
+            self.log.log_message(LogLevel.Error(), f"could not terminate testapp properly: {e}")
 
         self.to_idle(_)
 

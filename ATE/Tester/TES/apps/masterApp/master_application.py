@@ -18,7 +18,7 @@ from ATE.Tester.TES.apps.masterApp.master_connection_handler import MasterConnec
 from ATE.Tester.TES.apps.masterApp.master_webservice import webservice_setup_app
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
-from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetTestResultsCommand, GetUserSettings, GetYields)
+from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings, GetYields)
 from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
 
 from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
@@ -27,6 +27,7 @@ from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler impo
 from ATE.Tester.TES.apps.masterApp.peripheral_controller import PeripheralController
 
 from ATE.Tester.TES.apps.masterApp.statemachines.MultiSite import (MultiSiteTestingModel, MultiSiteTestingMachine)
+from ATE.Tester.TES.apps.masterApp.utils.site_information import SiteInformationHandler
 
 
 INTERFACE_VERSION = 1
@@ -102,13 +103,12 @@ class MasterApplication(MultiSiteTestingModel):
 
     # multiple space code style "error" will be ignored for a better presentation of the possible state machine transitions
     transitions = [
-        {'source': 'startup',            'dest': 'connecting',             'trigger': "startup_done",                'after': "on_startup_done"},               # noqa: E241
-        {'source': 'connecting',         'dest': 'initialized',            'trigger': 'all_sites_detected',          'after': "on_allsitesdetected"},           # noqa: E241
-        {'source': 'connecting',         'dest': 'error',                  'trigger': 'bad_interface_version'},                                                 # noqa: E241
+        {'source': 'startup',            'dest': 'connecting',  'trigger': "startup_done",                'after': "on_startup_done"},               # noqa: E241
+        {'source': 'connecting',         'dest': 'initialized', 'trigger': 'all_sites_detected',          'after': "on_allsitesdetected"},           # noqa: E241
+        {'source': 'connecting',         'dest': 'error',       'trigger': 'bad_interface_version'},                                                 # noqa: E241
 
-        {'source': 'initialized',        'dest': 'loading',                'trigger': 'load_command',                'after': 'on_loadcommand_issued'},         # noqa: E241
-        {'source': 'loading',            'dest': 'waitingforbintable',     'trigger': 'all_siteloads_complete',      'after': 'on_allsiteloads_complete'},      # noqa: E241
-        {'source': 'waitingforbintable', 'dest': 'ready',       'trigger': 'all_binsettings_received_complete',      'after': 'on_all_bin_settings_received'},  # noqa: E241
+        {'source': 'initialized',        'dest': 'loading',     'trigger': 'load_command',                'after': 'on_loadcommand_issued'},         # noqa: E241
+        {'source': 'loading',            'dest': 'ready',       'trigger': 'all_siteloads_complete',      'after': 'on_allsiteloads_complete'},      # noqa: E241
         {'source': 'loading',            'dest': 'initialized', 'trigger': 'load_error',                             'after': 'on_load_error'},                 # noqa: E241
 
         # TODO: properly limit source states to valid states where usersettings are allowed to be modified
@@ -164,14 +164,13 @@ class MasterApplication(MultiSiteTestingModel):
         self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
-
-        # TODO: bin settings should be initialized in an other stage
-        self._bin_settings = {'type 1': {'sbins': [1, 2, 3], 'hbins': [1]}}
         self._yield_info_handler = YieldInformationHandler()
-        self._yield_info_handler.set_bin_settings(self._bin_settings)
         self.test_results = []
 
+        self._site_info_handler = SiteInformationHandler(self.sites)
         self.dummy_partid = 1
+        self._first_part_tested = False
+        self._stdf_aggregator = None
 
     def init(self):
         self.siteStates = {site_id: CONTROL_STATE_UNKNOWN for site_id in self.configuredSites}
@@ -313,9 +312,6 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
         self.disarm_timeout()
 
-    def on_all_bin_settings_received(self, _):
-        self.disarm_timeout()
-
     def publish_state(self, site_id=None, param_data=None):
         if self.prev_state == self.state:
             return
@@ -352,6 +348,12 @@ class MasterApplication(MultiSiteTestingModel):
                 return
 
             data = source.get_test_information(param_data)
+            bin_table = source.get_bin_table(data)
+            self._yield_info_handler.set_bin_settings(bin_table)
+            self._site_info_handler.set_sites_information(bin_table)
+            # used to reduce the size of data to be transfered to the TP
+            data['BINTABLE'] = source.get_binning_tuple(bin_table)
+
             self.log.log_message(LogLevel.Debug(), f'testprogram information: {data}')
 
         self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
@@ -373,7 +375,7 @@ class MasterApplication(MultiSiteTestingModel):
             'testapp_script_path': os.path.join(os.path.basename(os.fspath(Path(data['PROGRAM_DIR'])))),
             'testapp_script_args': ['--verbose'],
             'cwd': os.path.dirname(data['PROGRAM_DIR']),
-            'XML': data                                                                 # optional/unused for now
+            'bin_table': data['BINTABLE']                                                           # optional/unused for now
         }
 
     def on_allsiteloads_complete(self, paramData=None):
@@ -383,7 +385,6 @@ class MasterApplication(MultiSiteTestingModel):
         self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname)
         self._stdf_aggregator.write_header_records()
         self._send_set_log_level()
-        self._send_get_bin_settings()
 
     def _send_set_log_level(self):
         level = {
@@ -396,14 +397,12 @@ class MasterApplication(MultiSiteTestingModel):
         self.log.log_message(LogLevel.Info(), f'set loglevel to {level}')
         self.connectionHandler.send_set_log_level(self.loglevel)
 
-    def _send_get_bin_settings(self):
-        self.connectionHandler.send_get_bin_settings()
-        self.arm_timeout(RESPONSE_TIMEOUT, lambda: self.timeout("not all sites send bin settings"))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_IDLE], self.configuredSites, lambda: None,
-                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during waiting of bin settings to {state}"))
-        self.log.log_message(LogLevel.Info(), 'Master sent get_bin_settings command')
-
     def on_next_command_issued(self, param_data: dict):
+        if not self._first_part_tested:
+            self._stdf_aggregator.set_first_part_test_time()
+            self._first_part_tested = True
+            self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message()))
+
         self.received_site_test_results = []
         self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TESTING, TEST_STATE_IDLE], self.configuredSites, lambda: None,
@@ -447,6 +446,8 @@ class MasterApplication(MultiSiteTestingModel):
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TERMINATED], self.configuredSites, lambda: None, lambda site, state: None)
         self.error_message = ''
         self.connectionHandler.send_terminate_to_all_sites()
+        self._yield_info_handler.clear_yield_information()
+        self._first_part_tested = False
 
     def on_reset_received(self, param_data: dict):
         self.arm_timeout(UNLOAD_TIMEOUT, lambda: self.timeout("not all sites do report state idle after reset"))
@@ -476,20 +477,31 @@ class MasterApplication(MultiSiteTestingModel):
         self.connectionHandler.send_test_results(self.test_results)
 
     def on_site_test_result_received(self, site_id, param_data):
-        self._write_stdf_data(param_data['payload'])
+        payload = param_data['payload']
+        self._write_stdf_data(payload)
 
+        prr_record = None
         # hack: (-)inf could not be parsed into a json object, so we cast it to string
-        for index, rec in enumerate(param_data['payload']):
+        for index, rec in enumerate(payload):
             for key, value in rec.items():
                 if str(value) in ('inf', '-inf'):
-                    param_data['payload'][index][key] = str(value)
+                    payload[index][key] = str(value)
 
-        self.received_sites_test_results.append(param_data['payload'])
+            if rec['type'] == 'PRR':
+                prr_record = rec
+
+        assert prr_record
+
+        self.received_sites_test_results.append(payload)
         self.received_site_test_results.append(param_data)
-        self._yield_info_handler.extract_yield_information(param_data['payload'])
+        success, msg = self._yield_info_handler.extract_yield_information(payload)
+        if not success:
+            self.on_error(msg)
 
         if site_id in self.sites_to_test:
-            self.test_results.append(self._yield_info_handler.get_site_result(param_data['payload']))
+            self.test_results.append(self._yield_info_handler.get_site_result(payload))
+
+        self._site_info_handler.store_test_result(site_id, prr_record)
 
     def _write_stdf_data(self, stdf_data):
         self._stdf_aggregator.append_test_results(stdf_data)
@@ -527,11 +539,6 @@ class MasterApplication(MultiSiteTestingModel):
     def on_log_message(self, siteid: str, log_msg: dict):
         self.log.append_log(log_msg['payload'])
 
-    def on_testapp_bininfo_message(self, siteid: str, msg: dict):
-        # TODO: gathering bin settings must happen here
-        if self.is_waitingforbintable():
-            self.handle_bininfo(siteid, msg)
-
     def on_testapp_testresult_changed(self, siteid: str, status_msg: dict):
         if self.is_testing(allow_substates=True):
             self.handle_testresult(siteid, status_msg)
@@ -540,6 +547,7 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_error(f"Received unexpected testresult from site {siteid}")
 
     def on_testapp_testsummary_changed(self, status_msg: dict):
+        self._stdf_aggregator.append_soft_and_hard_bin_record(self._site_info_handler.get_summary_information())
         self._stdf_aggregator.append_test_summary(status_msg['payload'])
         self.summary_counter += 1
 
@@ -686,6 +694,9 @@ class MasterApplication(MultiSiteTestingModel):
         self.command_queue.put_nowait(GetTestResultsCommand(self.received_sites_test_results, connection_id))
         self.command_queue.put_nowait(GetYields(lambda: self._generate_yield_message(), connection_id))
 
+        if self._stdf_aggregator:
+            self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message(), connection_id))
+
     async def _master_background_task(self, app):
         try:
             while True:
@@ -751,6 +762,9 @@ class MasterApplication(MultiSiteTestingModel):
         usersetting.update(log_level)
 
         return usersetting
+
+    def _generate_lot_data_message(self):
+        return self._stdf_aggregator._create_MIR().to_dict()
 
     async def _master_background_task_ctx(self, app):
         task = asyncio.create_task(self._master_background_task(app))

@@ -5,9 +5,13 @@ import itertools
 import os
 
 from ATE.data.STDF.records import records_from_file
-from ATE.data.STDF.records import FAR, MIR, PIR, PTR, PRR, PCR, MRR, STDR
-#ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
-from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR, generate_PRR, generate_PTR, generate_TSR)
+from ATE.data.STDF.records import FAR, MIR, PCR, MRR, STDR
+
+# ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
+from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR,
+                                                          generate_PRR, generate_PTR,
+                                                          generate_TSR, generate_HBR,
+                                                          generate_SBR)
 
 
 class StdfPartTestContext:
@@ -27,6 +31,7 @@ class StdfTestResultAggregator:
         self.completed_part_records = []
         self.num_good_parts = 0
         self.setup_timestamp = int(time.time())
+        self.start_timestamp = 0
         self.node_name = node_name
         self.lot_id = lot_id
         self.job_name = job_name
@@ -121,7 +126,7 @@ class StdfTestResultAggregator:
         rec = MIR(self.version, self.endian)
 
         rec.set_value('SETUP_T', self.setup_timestamp)
-        rec.set_value('START_T', self.setup_timestamp)
+        rec.set_value('START_T', self.start_timestamp)
         rec.set_value('STAT_NUM', 0)
         rec.set_value('LOT_ID', self.lot_id)
         rec.set_value('PART_TYP', 'MyPart')
@@ -130,6 +135,9 @@ class StdfTestResultAggregator:
         rec.set_value('JOB_NAM', self.job_name)
 
         return rec
+
+    def set_first_part_test_time(self):
+        self.start_timestamp = int(time.time())
 
     def _create_PCR(self, num_good_parts: int, num_parts_tested: int):
         rec = PCR(self.version, self.endian)
@@ -197,6 +205,37 @@ class StdfTestResultAggregator:
         for test_summary in tests_summary:
             rec = self._generate_TSR(test_summary)
             self.write_records_to_file([rec])
+
+    def append_soft_and_hard_bin_record(self, bin_informations: dict):
+        self.write_bin_info(bin_informations,
+                            lambda head_num, site_num, bin_num, count, bin_name, bin_pf:
+                                generate_SBR(head_num, site_num, bin_num, count, bin_name, bin_pf),
+                            0)
+
+        self.write_bin_info(bin_informations,
+                            lambda head_num, site_num, bin_num, count, bin_name, bin_pf:
+                                generate_HBR(head_num, site_num, bin_num, count, bin_name, bin_pf),
+                            1)
+
+    def write_bin_info(self, bin_informations: dict, func: callable, bin_pos: int):
+        for bin_name, bin_info in bin_informations.items():
+            record_summary = [None] * 6
+            record_summary[0] = 255         # head num
+            record_summary[1] = 0           # site num
+            record_summary[3] = 0           # count
+            record_summary[4] = bin_name    # bin name
+            record_summary[5] = 'F'         # test flag
+
+            for site_id, bin in bin_info.items():
+                self.write_records_to_file([func(bin[4], int(site_id), bin[bin_pos], bin[2], bin_name, bin[3])])
+                record_summary[3] += bin[2]
+                record_summary[2] = bin[bin_pos]
+                record_summary[5] = bin[3]
+                record_summary[1] = int(site_id)
+
+            self.write_records_to_file([func(record_summary[0], record_summary[1],
+                                             record_summary[2], record_summary[3],
+                                             record_summary[4], record_summary[5])])
 
     @staticmethod
     def _generate_TSR(test_summary):

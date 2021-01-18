@@ -38,8 +38,6 @@ class test_program_generator(BaseGenerator):
             os.remove(self.abs_path_to_file)
 
         program_configuration = self.datasource.get_program_configuration_for_owner(owner, prog_name)
-        program_configuration["cache_type"] = program_configuration["cache_type"].replace(" ", "_").replace(".", "_")
-
         test_list, test_imports = self.build_test_entry_list(datasource, owner, prog_name)
 
         output = template.render(test_list=test_list, test_imports=test_imports, program_configuration=program_configuration)
@@ -60,9 +58,7 @@ class test_program_generator(BaseGenerator):
         for program_entry in tests_in_program:
             test_class = self.resolve_class_for_test(program_entry.test, test_targets)
             test_module = self.resolve_module_for_test(program_entry.test, test_targets)
-
-            import pickle
-            params = pickle.loads(program_entry.definition)
+            params = program_entry.definition
 
             for op in params['output_parameters']:
                 params['output_parameters'][op]['id'] = self.current_param_id

@@ -1,3 +1,4 @@
+from ATE.spyder.widgets.FileBasedConfig.Types import Types
 from ATE.spyder.widgets.actions_on.maskset.EditMasksetWizard import edit_maskset_dialog
 from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import new_maskset_dialog
 from ATE.spyder.widgets.actions_on.maskset.ViewMasksetSettings import display_maskset_settings_dialog
@@ -22,8 +23,8 @@ class MasksetItem(BaseItem):
 
     def new_item(self):
         handle_excpetions(self.project_info.parent,
-                         lambda: new_maskset_dialog(self.project_info),
-                         ExceptionTypes.Maskset())
+                          lambda: new_maskset_dialog(self.project_info),
+                          ExceptionTypes.Maskset())
 
     def _get_menu_items(self):
         return [MenuActionTypes.Add()]
@@ -35,7 +36,7 @@ class MasksetItemChild(StateItem):
 
     @property
     def type(self):
-        return "masksets"
+        return Types.Maskset()
 
     @property
     def dependency_list(self):
@@ -43,8 +44,8 @@ class MasksetItemChild(StateItem):
 
     def edit_item(self):
         handle_excpetions(self.project_info.parent,
-                         lambda: edit_maskset_dialog(self.project_info, self.text()),
-                         ExceptionTypes.Maskset())
+                          lambda: edit_maskset_dialog(self.project_info, self.text()),
+                          ExceptionTypes.Maskset())
 
     def display_item(self):
         handle_excpetions(self.project_info.parent,
