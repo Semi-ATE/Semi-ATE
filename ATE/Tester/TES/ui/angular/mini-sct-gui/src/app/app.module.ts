@@ -46,6 +46,8 @@ import { TabComponent } from './basic-ui-elements/tab/tab.component';
 import { YieldComponent } from './yield/yield.component';
 import { MultichoiceComponent } from './basic-ui-elements/multichoice/multichoice.component';
 import { SystemHandlingComponent } from './system-control/system-handling/system-handling/system-handling.component';
+import { LotDataComponent } from './lot-data/lot-data.component';
+import { lotdataReducer } from './reducers/lotdata.reducer';
 
 @NgModule({
   declarations: [
@@ -81,7 +83,8 @@ import { SystemHandlingComponent } from './system-control/system-handling/system
     TableComponent,
     YieldComponent,
     MultichoiceComponent,
-    SystemHandlingComponent
+    SystemHandlingComponent,
+    LotDataComponent
   ],
   imports: [
     BrowserModule,
@@ -93,6 +96,7 @@ import { SystemHandlingComponent } from './system-control/system-handling/system
       userSettings: userSettingsReducer, // key must be equal to the key defined in interface AppState, i.e. userSettings
       connectionId: connectionIdReducer, // key must be equal to the key defined in interface AppState, i.e. connectionId
       yield: yieldReducer,
+      lotData: lotdataReducer
     }),
     RouterModule.forRoot(MINISCT_ROUTES)
   ],

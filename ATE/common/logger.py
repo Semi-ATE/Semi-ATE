@@ -93,18 +93,6 @@ class Logger:
     def get_logger():
         return logging.getLogger()
 
-    def warning(self, *args):
-        self.logger.warning(*args)
-
-    def info(self, *args):
-        self.logger.info(*args)
-
-    def debug(self, *args):
-        self.logger.debug(*args)
-
-    def error(self, *args):
-        self.logger.error(*args)
-
     def log_message(self, type, message):
         try:
             {

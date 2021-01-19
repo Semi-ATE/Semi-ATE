@@ -1,14 +1,15 @@
+from ATE.Tester.TES.apps.testApp.sequencers.MqttClient import MqttClient
 import json
 
 
 class AcuatorBase:
-    def __init__(self, mqtt_client, actuator_type, device_id):
+    def __init__(self, mqtt_client: MqttClient, actuator_type: str, device_id: str):
         self.mqtt = mqtt_client
         self.actuator_type = actuator_type
         self.device_id = device_id
         self.site_id = 0
 
-    def do_io_control(self, ioctl_name, parameters, timeout):
+    def do_io_control(self, ioctl_name: str, parameters: dict, timeout: int):
         message = {"type": "io-control-request",
                    "periphery_type": self.actuator_type,
                    "ioctl_name": ioctl_name,

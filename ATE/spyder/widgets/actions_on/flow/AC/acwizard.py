@@ -2,7 +2,7 @@
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
-from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 
 
 quali_flow_name = "qualification_AC_flow"
@@ -34,7 +34,7 @@ class ACWizard(wizardbase.wizardbase):
 
 
 def new_item(storage, product: str):
-    dialog = ACWizard(QualificationFlowDatum(product=product), storage)
+    dialog = ACWizard(FileOperator._make_db_object({"product": product}), storage)
     dialog.exec_()
     del(dialog)
 

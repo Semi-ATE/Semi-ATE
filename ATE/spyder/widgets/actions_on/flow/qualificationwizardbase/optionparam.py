@@ -71,10 +71,10 @@ class OptionParam(parameter):
         self.combobox.setEnabled(False)
 
     def store_values(self, dst: dict):
-        dst[self.name] = self.combobox.currentText()
+        dst.to_dict()[self.name] = self.combobox.currentText()
 
     def load_values(self, src):
-        if(self.name in src):
-            self.combobox.setCurrentIndex(self.combobox.findData(src[self.name]))
+        if(self.name in src.to_dict()):
+            self.combobox.setCurrentIndex(self.combobox.findData(src.read_attribute(self.name)))
         else:
             self.combobox.setCurrentIndex(0)

@@ -154,7 +154,7 @@ class TestItemChild(TestBaseItem):
 
     def delete_item(self):
         from ATE.spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
-        if not ItemTrace(self.dependency_list, self.text(), self.project_info.parent, message=f"Are you sure you want to delete ?").exec_():
+        if not ItemTrace(self.dependency_list, self.text(), self.project_info.parent, message="Are you sure you want to delete ?").exec_():
             return
 
         # emit event to update tab view

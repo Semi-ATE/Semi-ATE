@@ -15,6 +15,7 @@ class MessageTypes(Enum):
     Logs = 'logs'
     Logfile = 'logfile'
     Yield = 'yield'
+    LotData = 'lotdata'
     Configuration = 'masterconfiguration'
 
     def __call__(self):
@@ -85,6 +86,10 @@ class WebsocketCommunicationHandler:
         yields_message = self._create_yield_message(yields)
         await self.send_message_to_all(yields_message)
 
+    async def send_lotdata(self, lotdata):
+        lotdata_message = self._create_lotdata_message(lotdata)
+        await self.send_message_to_all(lotdata_message)
+
     async def _send_connection_id_to_ws(self, ws, connection_id):
         connection_id_message = self._create_connection_id_message(connection_id)
         await ws.send_json(connection_id_message)
@@ -111,6 +116,9 @@ class WebsocketCommunicationHandler:
 
     def _create_yield_message(self, yields):
         return self._create_message(MessageTypes.Yield(), yields)
+
+    def _create_lotdata_message(self, lotdata):
+        return self._create_message(MessageTypes.LotData(), lotdata)
 
     def _create_status_message(self, state, error_message):
         payload = {'device_id': self._app['master_app'].device_id,

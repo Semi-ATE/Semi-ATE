@@ -1,11 +1,12 @@
+from ATE.Tester.TES.apps.testApp.sequencers.MqttClient import MqttClient
 import json
 
 
 class TemperatureProxy():
-    def set_mqtt_client(self, mqtt):
+    def set_mqtt_client(self, mqtt: MqttClient):
         self.mqtt = mqtt
 
-    def set_temperature(self, temp_degrees):
+    def set_temperature(self, temp_degrees: list):
         print(f"TemperatureProxy: Set Temperature to {temp_degrees}")
         message = {"type": "io-control-request",
                    "periphery_type": "Temperature",

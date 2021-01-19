@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
-
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import optionparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import writeoncetextparam
-from ATE.spyder.widgets.database.QualificationFlow import QualificationFlowDatum
+from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
 
 quali_flow_name = "qualification_HTOL_flow"
 quali_flow_listentry_name = "HTOL"
@@ -34,23 +30,24 @@ class HTOLWizard(wizardbase.wizardbase):
         return quali_flow_name
 
     def _get_possible_references(self) -> []:
-        htols = self.storage.get_data_for_qualification_flow(self._get_data_type(), self.datasource["product"])
+        htols = self.storage.get_data_for_qualification_flow(self._get_data_type(), self.datasource.product)
         usedHtols = ["ZHM"]
         for htol in htols:
-            if "name" in self.datasource.keys():
-                if htol.name == self.datasource["name"]:
+            if self.datasource.has_attribute("name"):
+                if htol.name == self.datasource.name:
                     continue
             usedHtols.append(htol.name)
         return usedHtols
 
 
 def new_item(storage, product: str):
-    dialog = HTOLWizard(QualificationFlowDatum(product=product), storage)
+    dialog = HTOLWizard(FileOperator._make_db_object({"product": product}), storage)
     dialog.exec_()
     del(dialog)
 
 
 def edit_item(storage, data):
+    print(data)
     dialog = HTOLWizard(data, storage)
     dialog.exec_()
     del(dialog)
@@ -68,12 +65,12 @@ def check_delete_constraints(storage, data):
     # No other HTOL entries may refer to it.
     htols = storage.get_data_for_qualification_flow(quali_flow_name, storage.active_target)
     for htol in htols:
-        if htol.get_definition()["Reference Measurement"] == data.name:
+        if htol.read_attribute("Reference Measurement") == data.name:
             dependencyName = data.name
             from PyQt5.QtWidgets import QMessageBox
             msg = QMessageBox()
             msg.setWindowTitle("Error")
-            msg.setText(f"Cannot delete HTOL Entry {dependencyName}. The HTOL entry {htol[0]} depends on it.")
+            msg.setText(f"Cannot delete HTOL Entry {dependencyName}. The HTOL entry {htol.name} depends on it.")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_()
             return False

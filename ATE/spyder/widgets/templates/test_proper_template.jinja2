@@ -14,6 +14,13 @@ else:
 class {{ definition['name'] }}({{ definition['name'] }}_BC):
 
     '''
+    for debug puposes, a logger is available to log infomration and porpagate them to the UI.
+    logging can be used as described below:
+    self.log_info(<message>)
+    self.log_debug(<message>)
+    self.log_warning(<message>)
+    self.log_error(<message>)
+
 {{ do_not_touch_section }}
     '''
 
@@ -26,7 +33,7 @@ class {{ definition['name'] }}({{ definition['name'] }}_BC):
         time.sleep(2)
 
         {% for output_parameter in definition['output_parameters'] %}
-        self.op.o_{{ output_parameter }}.randn()
+        self.op.{{ output_parameter }}.randn()
         {% endfor %}
 
 

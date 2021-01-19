@@ -518,8 +518,8 @@ class NewMasksetWizard(BaseDialog):
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
 
-    def nameChanged(self, MaskSetName):
-        self.validate(MaskSetName)
+    def nameChanged(self, _):
+        self.validate()
 
     def typeChanged(self, SelectedType):
         if SelectedType == 'ASSP':
@@ -619,20 +619,16 @@ class NewMasksetWizard(BaseDialog):
         # TODO: Implement the validation of the table
         return retval
 
-    def validate(self, MaskSetName=''):
+    def validate(self):
         self.feedback.setText('')
         # MasksetName
-        if MaskSetName == '':
-            MaskSetName = self.masksetName.text()
-        if MaskSetName == '':
+        if not self.masksetName.text():
             self.feedback.setText("Supply a Maskset name")
         else:
-            if not self.read_only and MaskSetName in self.existing_masksets:
+            if not self.read_only and self.masksetName.text() in self.existing_masksets:
                 self.feedback.setText("Maskset name already defined")
-            if not is_valid_maskset_name(MaskSetName):
+            if not is_valid_maskset_name(self.masksetName.text()):
                 self.feedback.setText("Invalid Maskset name")
-
-        self.feedback.setText('')
 
         # DieSizeX
         if self.feedback.text() == '':

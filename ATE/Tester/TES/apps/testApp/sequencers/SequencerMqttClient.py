@@ -1,3 +1,5 @@
+from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
+from ATE.common.logger import LogLevel, Logger
 import concurrent.futures
 
 import logging
@@ -80,26 +82,24 @@ class SequencerMqttClient(Harness.Harness):
         # TODO: execution policy should not be hard coded
         self._execution_policy = SingleShotExecutionPolicy()
         self.logger = None
-        self._bin_settings = None
 
-    def set_logger(self, logger):
+    def set_logger(self, logger: Logger):
         self.logger = logger
 
-    def apply_parameters(self, test_app_params):
+    def apply_parameters(self, test_app_params: list):
         self.params = test_app_params if test_app_params is not None else CommandLineParser()
 
     @classmethod
-    def run_from_command_line(cls, params):
-        from ATE.Tester.sequencers.SequencerBase import SequencerBase
+    def run_from_command_line(cls, params: list):
+        from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
         the_sequencer = SequencerBase(None)
         testApp = SequencerMqttClient(params, the_sequencer)
         testApp.run()
 
-    def run_from_command_line_with_sequencer(self, bin_setting):
-        self._bin_settings = bin_setting
+    def run_from_command_line_with_sequencer(self):
         self.run()
 
-    def init_mqtt_client(self, params, sequencer):
+    def init_mqtt_client(self, params: list, sequencer: SequencerBase):
         self._sequencer_instance = sequencer
         self._sequencer_instance.set_site_id(params.site_id)
         self.apply_parameters(params)
@@ -120,8 +120,8 @@ class SequencerMqttClient(Harness.Harness):
                     cb(*args, **kwargs)
                 except Exception as e:
                     if self._statemachine is not None:
-                        self.logger.error(e)
-                        self.logger.error('exception in mqtt callback')
+                        self.logger.log_message(LogLevel.Error(), e)
+                        self.logger.log_message(LogLevel.Error(), 'exception in mqtt callback')
                         self._statemachine.fail(str(e))
                     else:
                         raise
@@ -131,7 +131,7 @@ class SequencerMqttClient(Harness.Harness):
                 try:
                     f.result()
                 except Exception:
-                    self.logger.error("executor exception")
+                    self.logger.log_message(LogLevel.Error(), "executor exception")
                     # TODO: we probably don't want to keep running if any
                     #       exception escaped. using os._exit may not be
                     #       the best way to do this (because no cleanup/io
@@ -150,7 +150,7 @@ class SequencerMqttClient(Harness.Harness):
             pass
         executor.shutdown(wait=True)
 
-    def _generate_mqtt_connection(self, topic_factory, submit_callback):
+    def _generate_mqtt_connection(self, topic_factory: TopicFactory, submit_callback: callable):
         mqtt = MqttClient(self.params.broker_host,
                           self.params.broker_port,
                           topic_factory,
@@ -173,17 +173,10 @@ class SequencerMqttClient(Harness.Harness):
             #       after fixing problems in subsribers)
             self._mqtt.publish_status(TheTestAppStatusAlive.ALIVE, {'state': self._statemachine.state, 'payload': {'state': self._statemachine.state, 'message': ''}})
 
-    def _send_bin_settings(self):
-        if not self._bin_settings:
-            self.logger.error('bin settings are not set yet')
-            raise Exception
-
-        self._mqtt.publish_bin_settings(self._bin_settings)
-
     def _on_disconnect(self):
         self._disconnected = True
 
-    def _on_command(self, cmd, payload):
+    def _on_command(self, cmd: str, payload: dict):
         self._execute_command(cmd, payload)
 
     def _execute_command(self, cmd: str, payload: dict):
@@ -202,17 +195,15 @@ class SequencerMqttClient(Harness.Harness):
             self._statemachine.cmd_terminate()
         elif cmd == 'setloglevel':
             self._execute_cmd_setloglevel(payload['level'])
-        elif cmd == 'setting':
-            self._execute_cmd_setting(payload['name'])
         else:
             raise Exception(f'invalid command: "{cmd}"')
 
     def _execute_cmd_init(self):
-        self.logger.debug('COMMAND: init')
+        self.logger.log_message(LogLevel.Debug(), 'COMMAND: init')
         # ToDo: How should we perform the selftest?
-        self.logger.info('running self test...')
+        self.logger.log_message(LogLevel.Info(), 'running self test...')
         selftest_result = self._sequencer_instance.init()
-        self.logger.info(f'self test completed: {selftest_result}')
+        self.logger.log_message(LogLevel.Info(), f'self test completed: {selftest_result}')
 
         self.send_status("IDLE")
 
@@ -223,7 +214,7 @@ class SequencerMqttClient(Harness.Harness):
             self._mqtt.publish_status(TheTestAppStatusAlive.INITFAIL, {'state': self._statemachine.state, 'payload': {'state': self._statemachine.state, 'message': 'selftest is failed'}})
 
     def _execute_cmd_next(self, job_data: Optional[dict]):
-        self.logger.debug('COMMAND: next')
+        self.logger.log_message(LogLevel.Debug(), 'COMMAND: next')
 
         self.send_status("TESTING")
         result = self._sequencer_instance.run(self._execution_policy, job_data)
@@ -231,24 +222,16 @@ class SequencerMqttClient(Harness.Harness):
 
         self.send_testresult(result)
 
-    def _execute_cmd_setloglevel(self, level):
+    def _execute_cmd_setloglevel(self, level: LogLevel):
         self._sequencer_instance.set_logger_level(level)
 
-    def _execute_cmd_setting(self, name):
-        try:
-            {
-                'binsettings': lambda: self._send_bin_settings(),
-            }[name]()
-        except Exception:
-            self.log.warning(f'setting {name} is not supported')
-
-    def send_testresult(self, stdfdata):
+    def send_testresult(self, stdfdata: object):
         self._mqtt.publish_result(stdfdata)
 
-    def send_summary(self, summary):
+    def send_summary(self, summary: object):
         self._mqtt.publish_tests_summary(summary)
 
-    def send_log(self, log):
+    def send_log(self, log: object):
         self._mqtt.publish_log_information(log)
 
     def send_status(self, status):
@@ -257,37 +240,37 @@ class SequencerMqttClient(Harness.Harness):
         pass
 
     def _execute_cmd_terminate(self):
-        self.logger.debug('COMMAND: terminate')
+        self.logger.log_message(LogLevel.Debug(), 'COMMAND: terminate')
         result = self._sequencer_instance.aggregate_tests_summary()
         self.send_summary(result)
 
     # Hack: Since we can only distribute the SequencerMqttClient to actuators, but they
     # need access to some sort of mqtt we reimplement this method as pass through here.
-    def publish_with_reply(self, actuator_type, payload, response_timeout):
+    def publish_with_reply(self, actuator_type: str, payload: object, response_timeout: int):
         request_topic = "ate/" + self.params.device_id + f"/TestApp/io-control/site{self.params.site_id}/request"
         response_topic = "ate/" + self.params.device_id + f"/Master/{actuator_type}/response"
         return self._mqtt.do_request_response(request_topic, response_topic, payload, response_timeout)
 
-    def do_request_response(self, request_topic, response_topic, payload, timeout):
+    def do_request_response(self, request_topic: str, response_topic: str, payload: object, timeout: int):
         return self._mqtt.do_request_response(request_topic, response_topic, payload, timeout)
 
-    def register_route(self, route, callback):
+    def register_route(self, route: str, callback: callable):
         self.router.register_route(route, callback)
 
-    def subscribe_and_register(self, route, callback):
+    def subscribe_and_register(self, route: str, callback: callable):
         self.subscribe(route)
         self._router.register(route, callback)
 
-    def unsubscribe(self, topic):
+    def unsubscribe(self, topic: str):
         self._mqtt.unsubscribe(topic)
 
-    def unregister_route(self, route, callback):
+    def unregister_route(self, route: str, callback: callable):
         self._router.unregister_route(route, callback)
 
-    def subscribe(self, topic):
+    def subscribe(self, topic: str):
         self.mqtt_client.subscribe(topic)
 
-    def publish(self, topic, payload=None, qos=0, retain=False):
+    def publish(self, topic: str, payload: object = None, qos: int = 0, retain: bool = False):
         self.mqtt_client.publish(topic, payload, qos, retain)
 
 

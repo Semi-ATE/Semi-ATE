@@ -3,10 +3,11 @@ import asyncio
 import json
 
 from ATE.utils.mqtt_router import MqttRouter
+from ATE.common.logger import LogLevel, Logger
 
 
 class MqttConnection:
-    def __init__(self, host, port, mqtt_client_id, logger):
+    def __init__(self, host: str, port: str, mqtt_client_id: str, logger: Logger):
         self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         self.mqtt_client.reconnect_delay_set(10, 15)
         self.log = logger
@@ -38,7 +39,7 @@ class MqttConnection:
             payload = json.loads(payload_bytes)
             return payload
         except json.JSONDecodeError as error:
-            self.log.error(f'{error}')
+            self.log.log_message(LogLevel.Error(), f'{error}')
 
         return None
 

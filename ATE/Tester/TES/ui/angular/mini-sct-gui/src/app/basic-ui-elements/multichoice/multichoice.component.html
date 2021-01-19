@@ -1,6 +1,9 @@
 <div class="multichoice">
   <label *ngIf="multichoiceConfig.label !== ''">
     {{multichoiceConfig.label}}
+    <span>
+      <ng-content></ng-content>
+    </span>
   </label>
   <div class="items" [ngClass]="{'readonly': multichoiceConfig.readonly}">
     <ul>

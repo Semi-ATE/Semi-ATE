@@ -1,5 +1,5 @@
 class ResolverBase:
-    def _is_valid_value(self, value, power):
+    def _is_valid_value(self, value: float, power: int):
         min_base = self._min * power
         max_base = self._max * power
 
@@ -15,6 +15,6 @@ class ResolverBase:
         raise Exception("input value cannot be extracted")
 
     @staticmethod
-    def _get_power(exponent_input, exponent_output):
+    def _get_power(exponent_input: int, exponent_output: int):
         exponent = abs(exponent_input - exponent_output)
         return pow(10, exponent)

@@ -210,10 +210,11 @@ class HardwareWizard(BaseDialog):
         self.availableInstruments.itemSelectionChanged.connect(self.availableInstrumentsSelectionChanged)
         self.availableInstruments.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.availableInstruments.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.usedFunctions.doubleClicked.connect(self.__display_gpfunction_config_dialog)
+        self.usedFunctions.doubleClicked.connect(lambda: self.__display_config_dialog(self.usedFunctions))
 
         self.usedInstruments.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.usedInstruments.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.usedInstruments.doubleClicked.connect(lambda: self.__display_config_dialog(self.usedInstruments))
 
         # Actuator
         self.checkActuators.clicked.connect(self.checkActuatorUsage)
@@ -691,9 +692,9 @@ class HardwareWizard(BaseDialog):
     def checkInstrumentUsage(self):
         print("check Instrument Usage")
 
-    def __display_gpfunction_config_dialog(self):
-        function_row = self.usedFunctions.currentItem().row()
-        item = self.usedFunctions.item(function_row, 2)
+    def __display_config_dialog(self, table):
+        function_row = table.currentItem().row()
+        item = table.item(function_row, 2)
         function_name = item.text()
         cfgs = get_plugin_manager().hook.get_configuration_options(object_name=function_name)[0]
         from ATE.spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
@@ -707,6 +708,7 @@ class HardwareWizard(BaseDialog):
     def populate_selected_actuators(self, actuator_settings):
         for row in range(0, self.usedActuators.rowCount()):
             actuator_type = self.usedActuators.item(row, 0).text()
+            actuator_type = actuator_type.replace(' ', '_')
             if 'PR' in actuator_settings:
                 if actuator_type in actuator_settings['PR']:
                     self.usedActuators.item(row, 1).setCheckState(2)

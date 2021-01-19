@@ -9,8 +9,8 @@ from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.textboxparam imp
 # be empty
 class WriteOnceTextParam(TextBoxParam):
     def load_values(self, src):
-        if self.name not in src:
+        if not src.has_attribute(self.name):
             self.inputBox.setText("")
         else:
-            self.inputBox.setText(src[self.name])
+            self.inputBox.setText(src.read_attribute(self.name))
             self.inputBox.setEnabled(False)

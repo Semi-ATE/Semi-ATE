@@ -1,9 +1,13 @@
+from ATE.common.logger import Logger
 from ATE.semiateplugins.hookspec import hookimpl
 from TDKMicronas.Testers import MiniSCT
 from TDKMicronas.Flatcache import Flatcache
 
 
 class BusinessObjectStandin:
+    def __init__(self, logger: Logger = None):
+        self.logger = logger
+
     def do_import(self):
         return False
 
@@ -63,17 +67,7 @@ class Plugin:
             {"display_name": "Dummy Instrument",
              "version": "0.0",
              "manufacturer": "ACME International",
-             "name": "TDKMicronas.DummyInstrument"},
-
-            {"display_name": "Flux Compensator",
-             "version": "0.0",
-             "manufacturer": "ACME International",
-             "name": "TDKMicronas.FluxCompensator"},
-
-            {"display_name": "Blackhole Generator",
-             "version": "0.0",
-             "manufacturer": "CI Systems",
-             "name": "TDKMicronas.BlackholeGen"}]
+             "name": "TDKMicronas.DummyInstrument"}]
 
     @hookimpl
     def get_tester_names():
@@ -116,8 +110,8 @@ class Plugin:
             return BusinessObjectStandin()
 
     @hookimpl
-    def get_instrument(instrument_name):
-        return BusinessObjectStandin()
+    def get_instrument(instrument_name: str, logger: Logger):
+        return BusinessObjectStandin(logger)
 
     @hookimpl
     def get_instrument_proxy(instrument_name):
@@ -129,7 +123,7 @@ class Plugin:
             return MiniSCT.MiniSCT()
 
     @hookimpl
-    def get_general_purpose_function(func_name):
+    def get_general_purpose_function(func_name: str, logger: Logger):
         print(f"Get General Purpose Function: {func_name}")
         if func_name == "TDKMicronas.Flatcache":
             return Flatcache.Flatcache()
@@ -139,4 +133,8 @@ class Plugin:
     def get_configuration_options(object_name):
         if object_name == "TDKMicronas.Flatcache":
             return ["ip", "port"]
+
+        if object_name == "TDKMicronas.DummyInstrument":
+            return ["ip", "port"]
+
         return ["ip", "port", "api_key"]

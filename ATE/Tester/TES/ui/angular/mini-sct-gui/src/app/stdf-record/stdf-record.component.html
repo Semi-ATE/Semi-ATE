@@ -4,15 +4,35 @@
     <h2 id="value">{{getLongType()}}</h2>
   </div>
   <span><hr class="blueDivider"></span>
+  <div class="ptrInformation">
+    <ul *ngIf="stdfRecord.type === 'PTR'">
+      <li>Test Nr.: <span class="value">{{getTestNumber()}}</span></li>
+      <li>Head: <span class="value">{{getHeadNumber()}}</span></li>
+      <li>Site: <span class="value">{{getSiteNumber()}}</span></li>
+      <li>Test Result:<span class="value">{{getScaledResult()}}</span></li>
+      <li>Pass/Fail:<span id="passFailStyle" [style.color]="passOrFailTextColor">{{getPassStatus()}}</span></li>
+      <li>Test Text: <span class="value">{{getTestText()}}</span></li>
+      <li>Low Limit: <span class="value">{{getScaledLowLimit()}}</span></li>
+      <li>High Limit: <span class="value">{{getScaledHighLimit()}}</span></li>
+      <li>
+        <div *ngIf="testFlag === 0; else testFlgNotEqualNull">
+          Test Flag:
+          <span class="value">{{getTestFlag()}}</span>
+        </div>
+        <ng-template #testFlgNotEqualNull>
+          <div class="multichoice">
+            <app-multichoice [multichoiceConfig]="computeMultichoiceConfigurationForTestFlagValue(getTestFlag())"><span>{{testFlag}}</span></app-multichoice>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+  </div>
   <ul class="recordEntries">
     <li *ngFor="let property of stdfRecord.values">
-      <div *ngIf="property.key !=='TEST_FLG'; else testflg" class="label">
+      <div class="label">
         {{property.key}}:
         <span class="value">{{property.value}}</span>
       </div>
-      <ng-template #testflg>
-        <app-multichoice [multichoiceConfig]="computeMultichoiceConfigurationForTestFlagValue(property.value)"></app-multichoice>
-      </ng-template>
     </li>
   </ul>
 </div>

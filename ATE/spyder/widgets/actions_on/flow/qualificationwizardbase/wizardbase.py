@@ -21,7 +21,7 @@ class wizardbase(BaseDialog):
         # The dialog will modify the provided data, persisting
         # the data has to be done by the calling code that
         # generated the data in the first place.
-        self.datasource = datasource.get_definition()
+        self.datasource = datasource
         self.storage = storage
         self.enable_save = True
         self.setup_parameters()
@@ -102,8 +102,8 @@ class wizardbase(BaseDialog):
         #       allow free naming shall overwrite the
         #       'name' value with a parameter. or in
         #       the "_custom_store_data" method
-        self.datasource["name"] = self.__class__.__name__
-        self.datasource["type"] = self._get_data_type()
+        self.datasource.write_attribute("name", self.__class__.__name__)
+        self.datasource.write_attribute("type", self._get_data_type())
 
         for x in self.wizard_parameters:
             x.store_values(self.datasource)

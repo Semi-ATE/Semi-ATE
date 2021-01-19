@@ -1,4 +1,5 @@
 
+from ATE.common.logger import Logger
 import pluggy
 hookspec = pluggy.HookspecMarker("ate.org")
 hookimpl = pluggy.HookimplMarker("ate.org")
@@ -55,7 +56,7 @@ class ATEPlugin:
         pass
 
     @hookspec
-    def get_instrument(instrument_name):
+    def get_instrument(instrument_name, logger: Logger):
         pass
 
     @hookspec
@@ -63,7 +64,7 @@ class ATEPlugin:
         pass
 
     @hookspec
-    def get_general_purpose_function(func_name):
+    def get_general_purpose_function(func_name, logger: Logger):
         pass
 
     @hookspec

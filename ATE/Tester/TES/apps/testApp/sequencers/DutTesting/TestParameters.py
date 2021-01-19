@@ -8,7 +8,7 @@ MAX_HOLDED_MEASUREMENTS = 5000
 
 
 class InputParameter:
-    def __init__(self, name, shmoo, value, min_value, max_value, exponent):
+    def __init__(self, name: str, shmoo: bool, value: float, min_value: float, max_value: float, exponent: int):
         self._value = value
         self._shmoo = shmoo
         self._name = name
@@ -21,7 +21,7 @@ class InputParameter:
 
 
 class OutputParameter:
-    def __init__(self, name, lsl, ltl, nom, utl, usl, exponent):
+    def __init__(self, name: str, lsl: float, ltl: float, nom: float, utl: float, usl: float, exponent: int):
         self._name = name
         self._lsl = lsl
         self._ltl = ltl
@@ -42,13 +42,13 @@ class OutputParameter:
         self._alarmed_tests = 0
         self._test_description = ''
 
-    def set_format(self, fmt):
+    def set_format(self, fmt: str):
         self._fmt = fmt
 
-    def set_unit(self, unit):
+    def set_unit(self, unit: str):
         self._unit = unit
 
-    def set_test_description(self, test_description):
+    def set_test_description(self, test_description: str):
         self._test_description = test_description
 
     def _get_PTR_test_name(self):
@@ -60,7 +60,7 @@ class OutputParameter:
     def get_exponent(self):
         return self._exponent
 
-    def write(self, measurement):
+    def write(self, measurement: float):
         self._measurement = measurement
         self._measurements.append(measurement)
 
@@ -84,7 +84,7 @@ class OutputParameter:
 
         self.write(np.random.normal(μ, σ))
 
-    def set_limits(self, id, ltl, utl):
+    def set_limits(self, id: int, ltl: float, utl: float):
         self._id = id
         if(ltl > utl):
             raise ValueError("LTL must be smaller than UTL")
@@ -95,11 +95,11 @@ class OutputParameter:
         self._ltl = ltl
         self._utl = utl
 
-    def set_bin(self, bin, bin_result):
+    def set_bin(self, bin: int, bin_result: int):
         self.bin = bin
         self.bin_result = bin_result
 
-    def generate_ptr_record(self, is_pass, site_num):
+    def generate_ptr_record(self, is_pass: bool, site_num: int):
         l_limit, u_limit = self._get_limits()
         return generate_PTR_dict(test_num=self._id + 1, head_num=0, site_num=int(site_num),
                                  is_pass=is_pass == Result.Pass(), param_flag=0, measurement=self._measurement,
@@ -146,13 +146,13 @@ class OutputParameter:
 
         return ll, ul
 
-    def generate_tsr_record(self, head_num, site_num, execution_time):
-        if execution_time > 0:
+    def generate_tsr_record(self, head_num: int, site_num: int, execution_time: float):
+        if execution_time > 0 and len(self._measurements) != 0:
             return self._generate_valid_tsr_record(head_num, site_num, execution_time)
         else:
             return self._generate_empty_tsr_record(head_num, site_num, execution_time)
 
-    def _generate_valid_tsr_record(self, head_num, site_num, execution_time):
+    def _generate_valid_tsr_record(self, head_num: int, site_num: int, execution_time: float):
         return generate_TSR_dict(head_num=head_num, site_num=site_num, test_typ='P',
                                  test_num=self._id, exec_cnt=self._test_executions, fail_cnt=self._test_failures,
                                  alarm_cnt=1, test_nam=self._test_description, seq_name='seq_name',
@@ -164,7 +164,7 @@ class OutputParameter:
                                  tst_sums=self._sum_of_test_result_values(),
                                  tst_sqrs=self._sum_of_squares_of_test_result_values())
 
-    def _generate_empty_tsr_record(self, head_num, site_num, execution_time):
+    def _generate_empty_tsr_record(self, head_num: int, site_num: int, execution_time: float):
         return generate_TSR_dict(head_num=head_num, site_num=site_num, test_typ='P',
                                  test_num=self._id, exec_cnt=self._test_executions, fail_cnt=self._test_failures,
                                  alarm_cnt=1, test_nam=self._test_description, seq_name='seq_name',

@@ -1,7 +1,7 @@
 
 
 class RemoteResolver:
-    def __init__(self, value_name, resolver_plugin_instance):
+    def __init__(self, value_name: str, resolver_plugin_instance: object):
         self._name = value_name
         self.plugin_instance = resolver_plugin_instance
 

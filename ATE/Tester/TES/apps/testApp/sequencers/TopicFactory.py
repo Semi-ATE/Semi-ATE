@@ -6,7 +6,7 @@ FRAMEWORK_VERSION = 1
 
 class TopicFactory:
 
-    def __init__(self, device_id, site_id):
+    def __init__(self, device_id: str, site_id: str):
         self._device_id = device_id
         self._site_id = site_id
 
@@ -45,9 +45,6 @@ class TopicFactory:
 
     def test_log_topic(self):
         return f'ate/{self._device_id}/TestApp/log/site{self._site_id}'
-
-    def test_bin_settings(self):
-        return f'ate/{self._device_id}/TestApp/binsettings/site{self._site_id}'
 
     def test_status_payload(self, alive: TheTestAppStatusAlive):
         return {

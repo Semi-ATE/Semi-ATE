@@ -1,8 +1,9 @@
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import OutputParameter
 from ATE.Tester.TES.apps.testApp.parameters.ResolverBase import ResolverBase
 
 
 class LocalResolver(ResolverBase):
-    def __init__(self, name, shmoo, op, min_value, max_value, exponent):
+    def __init__(self, name: str, shmoo: bool, op: OutputParameter, min_value: float, max_value: float, exponent: bool):
         super().__init__()
         self._name = name
         self._shmoo = shmoo

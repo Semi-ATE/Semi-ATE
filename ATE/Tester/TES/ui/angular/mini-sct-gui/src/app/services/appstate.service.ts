@@ -9,8 +9,9 @@ import * as ConsoleActions from './../actions/console.actions';
 import * as UserSettingsActions from './../actions/usersettings.actions';
 import * as ConnectionIdActions from './../actions/connectionid.actions';
 import * as YieldActions from './../actions/yield.actions';
+import * as LotDataActions from './../actions/lotdata.actions';
 import { ConsoleEntry } from '../models/console.model';
-import { StdfRecord, StdfRecordType, StdfRecordPropertyValue, PrrRecord } from 'src/app/stdf/stdf-stuff';
+import { StdfRecord, StdfRecordType, StdfRecordPropertyValue, PrrRecord, STDF_MIR_ATTRIBUTES, MirRecord } from 'src/app/stdf/stdf-stuff';
 import { Subject, Subscription } from 'rxjs';
 import { LogLevel, TestOptionSetting, TestOptionType, UserSettings } from '../models/usersettings.model';
 import { TestOptionValue } from '../system-control/test-option/test-option.component';
@@ -25,7 +26,8 @@ export enum MessageTypes {
   Logdata = 'logs',
   Logfile = 'logfile',
   ConnectionId = 'connectionid',
-  Yield = 'yield'
+  Yield = 'yield',
+  Lotdata = 'lotdata'
 }
 
 @Injectable({
@@ -59,6 +61,7 @@ export class AppstateService implements OnDestroy {
     this.handleLogfile(serverMessage);
     this.updateConnectionId(serverMessage);
     this.updateYield(serverMessage);
+    this.updateLotData(serverMessage);
   }
 
   private updateSystemStatus(serverMessage: any) {
@@ -192,6 +195,23 @@ export class AppstateService implements OnDestroy {
   private updateYield(serverMessage: any): void {
     if (serverMessage.type === MessageTypes.Yield && serverMessage.payload) {
       this.store.dispatch(YieldActions.updateYield({yieldData: serverMessage.payload}));
+    }
+  }
+
+  private updateLotData(serverMessage: any): void {
+    if (serverMessage.type === MessageTypes.Lotdata && serverMessage.payload) {
+      const mirAttributeKeys = Object.keys(STDF_MIR_ATTRIBUTES);
+      const mir = new MirRecord();
+      // add all defined mir attributes
+      mirAttributeKeys.forEach( k => {
+        if (serverMessage.payload[k]) {
+          mir.values.push({
+            key: k,
+            value: serverMessage.payload[k]
+          });
+        }
+      });
+      this.store.dispatch(LotDataActions.updateLotData({lotData: mir}));
     }
   }
 }

@@ -1,4 +1,4 @@
-from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR)
+from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR, SBR, HBR)
 
 
 ENDIAN = '<'
@@ -8,7 +8,7 @@ def generate_PTR_dict(test_num, head_num, site_num,
                       is_pass, param_flag, measurement,
                       test_txt, alarm_id, l_limit, u_limit,
                       fmt, exponent, unit, ls_limit, us_limit,
-                      opt_flag=255):
+                      opt_flag=2):
     record = {'type': 'PTR'}
     ptr_record = generate_PTR(test_num, head_num, site_num,
                               is_pass, param_flag, measurement,
@@ -26,7 +26,7 @@ def generate_PTR(test_num, head_num, site_num,
                  is_pass, param_flag, measurement,
                  test_txt, alarm_id, l_limit, u_limit,
                  unit, fmt, exponent, ls_limit, us_limit,
-                 opt_flag=255):
+                 opt_flag=2):
     rec = PTR('V4', ENDIAN)
 
     format = f'%7{fmt}' if '%7' not in fmt else fmt
@@ -42,15 +42,15 @@ def generate_PTR(test_num, head_num, site_num,
     rec.set_value('TEST_TXT', test_txt)
     rec.set_value('ALARM_ID', alarm_id)
 
+    rec.set_value('C_RESFMT', format)
+    rec.set_value('C_LLMFMT', format)
+    rec.set_value('C_HLMFMT', format)
+
     rec.set_value('LO_LIMIT', l_limit)
     rec.set_value('HI_LIMIT', u_limit)
 
     rec.set_value('LO_SPEC', ls_limit)
     rec.set_value('HI_SPEC', us_limit)
-
-    rec.set_value('C_RESFMT', format)
-    rec.set_value('C_LLMFMT', format)
-    rec.set_value('C_HLMFMT', format)
 
     rec.set_value('RES_SCAL', prefix)
     rec.set_value('LLM_SCAL', prefix)
@@ -196,3 +196,25 @@ def generate_FTR_dict(test_num, head_num, site_num, exception):
     ftr_record['OPT_FLAG'] = flag_array_to_int(ftr_record['OPT_FLAG'], ENDIAN)
     record.update(ftr_record)
     return record
+
+
+def generate_SBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> dict:
+    rec = SBR('V4', endian=ENDIAN)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('SBIN_NUM', bin_num)
+    rec.set_value('SBIN_CNT', count)
+    rec.set_value('SBIN_PF', bin_pf)
+    rec.set_value('SBIN_NAM', bin_name)
+    return rec
+
+
+def generate_HBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> dict:
+    rec = HBR('V4', endian=ENDIAN)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('HBIN_NUM', bin_num)
+    rec.set_value('HBIN_CNT', count)
+    rec.set_value('HBIN_PF', bin_pf)
+    rec.set_value('HBIN_NAM', bin_name)
+    return rec

@@ -71,7 +71,7 @@ class dummy_cache():
 
 @pytest.fixture
 def sequencer():
-    bin_strategy = BinStrategy(BIN_SETTINGS, CONFIG_FILE)
+    bin_strategy = BinStrategy(CONFIG_FILE)
     return SequencerBase("Testprog", bin_strategy)
 
 
@@ -99,7 +99,21 @@ def test_can_register_test(sequencer):
     sequencer.register_test(dummy_test_case())
 
 
+class Logger:
+    @staticmethod
+    def log_message(loglevel, msg):
+        print(f'{loglevel}|{msg}')
+
+
+class Context:
+    def __init__(self):
+        self.logger: Logger = Logger()
+
+
 class testTypeA(DutTestCaseABC):
+    def __init__(self):
+        super().__init__(Context())
+
     def run(self, site_num):
         return (True, 0, [])
 
@@ -111,6 +125,9 @@ class testTypeA(DutTestCaseABC):
 
 
 class testTypeB(DutTestCaseABC):
+    def __init__(self):
+        super().__init__(Context())
+
     def run(self, site_num):
         return (True, 0, [])
 

@@ -26,7 +26,6 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
   informationCardConfiguration: CardConfiguration;
   identifyCardConfiguration: CardConfiguration;
   infoContentCardConfiguration: CardConfiguration;
-  yieldCardConfiguration: CardConfiguration;
 
   systemInformationConfiguration: InformationConfiguration;
   numberOfSitesConfiguration: InformationConfiguration;
@@ -42,7 +41,6 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     this.informationCardConfiguration = new CardConfiguration();
     this.identifyCardConfiguration = new CardConfiguration();
     this.infoContentCardConfiguration = new CardConfiguration();
-    this.yieldCardConfiguration = new CardConfiguration();
 
     this.systemInformationConfiguration = new InformationConfiguration();
     this.numberOfSitesConfiguration = new InformationConfiguration();
@@ -57,7 +55,6 @@ export class SystemInformationComponent implements OnInit, OnDestroy {
     this.informationCardConfiguration.initCard(false, CardStyle.COLUMN_STYLE_FOR_COMPONENT, 'Information');
     this.identifyCardConfiguration.initCard( true, CardStyle.COLUMN_STYLE, 'System Identification');
     this.infoContentCardConfiguration.initCard(true, CardStyle.COLUMN_STYLE, '');
-    this.yieldCardConfiguration.initCard(true, CardStyle.COLUMN_STYLE, 'Yield');
 
     this.systemInformationConfiguration.labelText = systemInformationLabelText.systemLabelText;
     this.numberOfSitesConfiguration.labelText = systemInformationLabelText.sitesLabelText;

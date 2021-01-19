@@ -3,7 +3,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import Inp
 from ATE.Tester.TES.apps.testApp.parameters.RemoteResolver import RemoteResolver
 
 
-def create_parameter_resolver(type, name, shmoo, value, min_value, max_value, power, context):
+def create_parameter_resolver(type, name: str, shmoo: bool, value: object, min_value: float, max_value: float, power: int, context: str):
     # Value contains the actual object to use to resolve the value,
     # or the plain value in case of a static resolver.
     # For remote resolvers the value contains the name of

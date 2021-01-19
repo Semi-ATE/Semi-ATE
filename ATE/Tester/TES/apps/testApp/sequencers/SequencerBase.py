@@ -1,4 +1,6 @@
 # # -*- coding: utf-8 -*-
+from ATE.common.logger import Logger
+from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategyExternal import BinStrategyExternal
 from ATE.Tester.TES.apps.testApp.sequencers.ExecutionPolicy import ExecutionPolicyABC
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import (DutTestCaseABC, DutTestCaseBase)
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR_dict, generate_PIR_dict, generate_PRR_dict)
@@ -8,7 +10,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.constants import Trigger_Out_Pulse_W
 
 
 class SequencerBase:
-    def __init__(self, program_name, bin_strategy):
+    def __init__(self, program_name: str, bin_strategy: BinStrategyExternal):
         self.test_cases = []
         self.instance_counts = {}
         self.param_counts = 0
@@ -26,27 +28,27 @@ class SequencerBase:
         self.cache_policy = "disable"
         self.program_name = program_name
 
-    def set_caching_policy(self, policy):
+    def set_caching_policy(self, policy: str):
         if policy not in ["disable", "store", "drop"]:
             raise ValueError("Bad caching policy")
         self.cache_policy = policy
 
-    def set_site_id(self, site_id):
+    def set_site_id(self, site_id: int):
         self.site_id = site_id
 
-    def __get_instance_count(self, test_class_name):
+    def __get_instance_count(self, test_class_name: str):
         if test_class_name not in self.instance_counts.keys():
             return 0
         return self.instance_counts[test_class_name]
 
-    def __increase_instance_count(self, test_class_name):
+    def __increase_instance_count(self, test_class_name: str):
         if test_class_name not in self.instance_counts.keys():
             self.instance_counts[test_class_name] = 0
         self.instance_counts[test_class_name] = (
             self.instance_counts[test_class_name] + 1
         )
 
-    def register_test(self, test_instance):
+    def register_test(self, test_instance: DutTestCaseABC):
         if test_instance is None:
             raise Exception("Cannot use none as a testcase.")
 
@@ -60,7 +62,7 @@ class SequencerBase:
 
         self.test_cases.append(test_instance)
 
-    def set_tester_instance(self, tester_instance):
+    def set_tester_instance(self, tester_instance: DutTestCaseABC):
         self.tester_instance = tester_instance
 
     def set_cache_instance(self, cache_instance):
@@ -92,7 +94,7 @@ class SequencerBase:
 
         self.cache_instance.do_fetch(self.part_id)
 
-    def run(self, execution_policy, test_settings={}):
+    def run(self, execution_policy: object, test_settings: dict = {}):
         # TODO: raise an exception if test_settings is None !?
         if test_settings:
             self.test_settings = test_settings
@@ -111,7 +113,7 @@ class SequencerBase:
 
         return self.stdf_data
 
-    def _extract_test_information(self, test_settings):
+    def _extract_test_information(self, test_settings: dict):
         for site in test_settings['sites_info']:
             if site['siteid'] != self.site_id:
                 continue
@@ -125,7 +127,7 @@ class SequencerBase:
         self.soft_bin = 1
         self.stdf_data.append(generate_PIR_dict(head_num=0, site_num=int(self.site_id)))
 
-    def after_test_cb(self, test_index, test_result, test_num, exception):
+    def after_test_cb(self, test_index: int, test_result: tuple, test_num: int, exception: bool):
         """
         This function is called after the execution
         of each individual test by the execution policy
@@ -158,7 +160,7 @@ class SequencerBase:
             return self.test_settings["stop_on_fail"]["active"]
         return False
 
-    def do_trigger_on_fail(self, failed):
+    def do_trigger_on_fail(self, failed: bool):
         if not failed:
             return
         if not self.__is_trigger_on_fail_enabled():
@@ -166,7 +168,7 @@ class SequencerBase:
 
         self.tester_instance.pulse_trigger_out(Trigger_Out_Pulse_Width)
 
-    def do_trigger_on_test(self, test_index):
+    def do_trigger_on_test(self, test_index: int):
         # Check if the next test is our trigger_on_Test id
         # Note: This is not the perfect solution, as we can
         # never trigger on the first test.
@@ -185,12 +187,11 @@ class SequencerBase:
 
         self.tester_instance.pulse_trigger_out(Trigger_Out_Pulse_Width)
 
-    def after_cycle_cb(self, execution_time, num_tests, test_result):
+    def after_cycle_cb(self, execution_time: float, num_tests: int, test_result: Result):
         """
         This function is called after the execution
         of a complete cylce of all tests the execution policy
         """
-        # TODO: send request to get the hbin for the corresponding sbin
         # TODO: map correct field values instead of using hard codded values
         is_pass = test_result == Result.Pass()
         hard_bin = self.bin_strategy.get_hard_bin(self.soft_bin)
@@ -206,10 +207,10 @@ class SequencerBase:
 
         return tests_summary
 
-    def set_logger(self, logger):
+    def set_logger(self, logger: Logger):
         self.logger = logger
 
-    def set_logger_level(self, level):
+    def set_logger_level(self, level: int):
         if self.logger is None:
             return
 

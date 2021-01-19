@@ -1,3 +1,4 @@
+from ATE.Tester.TES.apps.testApp.sequencers.MqttClient import MqttClient
 import logging
 from transitions import Machine
 from ATE.Tester.TES.apps.testApp.sequencers.TheTestAppStatusAlive import TheTestAppStatusAlive
@@ -7,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class TheTestAppMachine:
 
-    def __init__(self, mqtt):
+    def __init__(self, mqtt: MqttClient):
         self._mqtt = mqtt
 
         states = ['starting', 'idle', 'testing', 'selftesting', 'terminated', 'error']

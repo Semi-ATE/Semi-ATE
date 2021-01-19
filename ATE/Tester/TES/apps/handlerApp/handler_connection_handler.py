@@ -63,7 +63,7 @@ class HandlerConnectionHandler:
             self.subscribe(self._generate_response_topic(device_id))
 
     def _on_disconnect(self, client, userdata, rc) -> None:
-        self._log.debug("disconnected")
+        self._log.log_message(LogLevel.Debug(), "disconnected")
 
     def dispatch_masterapp_message(self, topic, message) -> None:
         master_id = topic.split('/')[1]

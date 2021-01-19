@@ -1,6 +1,7 @@
 import requests
 import json
 
+
 class Flatcache:
     def __init__(self):
         self.target_ip = ""
@@ -9,14 +10,20 @@ class Flatcache:
         self.fetched_data = {}
         self.subdoc_cache = {}
 
-    def read_value(self, value_name):
-        pass
-
     def apply_configuration(self, data: dict):
         self.target_ip = data["ip"]
         self.target_port = data["port"]
 
-    def get_value(self, part_id: str, value_name: str):
+        # Canary request -> check if service is available (i.e. requests succeeds)
+        # and if it reports the correct API version.
+        url = f"http://{self.target_ip}:{self.target_port}/api"
+        r = requests.get(url)
+        api_version = json.loads(r.content)
+        version = api_version["version"]
+        if version != 1:
+            raise ValueError(f"Expected flatcache api version to be 1, but is {version}")
+
+    def get_value(self, part_id: str, value_name: str) -> dict:
         if self.last_part_id != part_id:
             self.do_fetch(part_id)
 

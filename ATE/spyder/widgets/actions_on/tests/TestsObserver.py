@@ -14,14 +14,17 @@ class EventHandler(EventHandlerBase):
         if not self._is_python_file(path):
             return
 
-        # is test_program
-        if '_' in os.path.basename(path):
+        base_name = os.path.basename(path)
+        if '_' in os.path.basename(base_name):
+            # is test_program
             return
 
-        base_name = os.path.basename(os.path.dirname(path))
+        if '.py' not in base_name:
+            # we only care if it's a python file
+            return
 
         # TODO: workaround
-        if self.section_root.get_child(base_name) is None:
+        if self.section_root.get_child(os.path.splitext(base_name)[0]) is None:
             if not modify:
                 self.section_root.add_file_item(base_name, os.path.dirname(path))
             else:
@@ -37,7 +40,6 @@ class EventHandler(EventHandlerBase):
 
     def _on_moved(self, path, dest_path):
         # TODO: workaround
-
         self._on_file_created(dest_path, modify=True)
 
     def _is_python_file(self, path):

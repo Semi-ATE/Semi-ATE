@@ -49,22 +49,39 @@ OUTPUT_LTL_COLUMN_INDEX = 2
 OUTPUT_NOM_COLUMN_INDEX = 3
 OUTPUT_UTL_COLUMN_INDEX = 4
 OUTPUT_USL_COLUMN_INDEX = 5
-OUTPUT_FMT_COLUMN_INDEX = 6
 OUTPUT_UNIT_COLUMN_INDEX = 7
+OUTPUT_FMT_COLUMN_INDEX = 8
 
 
 class Delegator(QtWidgets.QStyledItemDelegate):
     """General Custom Delegator Class that works with regex."""
 
-    def __init__(self, regex, parent=None):
+    def __init__(self, regex, table=None, column=None, parent=None):
         QtWidgets.QStyledItemDelegate.__init__(self, parent)
+        self.table: QtWidgets.QTableView = table
+        self.column = column
         self.validator = QtGui.QRegExpValidator(QtCore.QRegExp(regex))
 
     def createEditor(self, parent, option, index):
         """Overloading to customize."""
         line_edit = QtWidgets.QLineEdit(parent)
         line_edit.setValidator(self.validator)
+        line_edit.editingFinished.connect(lambda: self.validate_text(line_edit))
+
         return line_edit
+
+    def validate_text(self, line_edit: QtWidgets.QLineEdit):
+        if not keyword.iskeyword(line_edit.text()):
+            return
+
+        if self.table is None or self.column is None:
+            return
+
+        col = self.table.selectionModel().currentIndex().column()
+        row = self.table.selectionModel().currentIndex().row()
+        if col == self.column:
+            item = self.table.model().item(row, col)
+            item.setText("")
 
 
 class NameDelegator(Delegator):
@@ -129,7 +146,6 @@ class TestWizard(BaseDialog):
         self.description.setPlainText('\n'.join(test_content['docstring']))
 
     # Delegators
-        self.nameDelegator = Delegator(valid_test_parameter_name_regex, self)
         self.fmtDelegator = Delegator(valid_fmt_regex, self)
         self.minDelegator = Delegator(valid_min_float_regex, self)
         self.defaultDelegator = Delegator(valid_default_float_regex, self)
@@ -164,6 +180,7 @@ class TestWizard(BaseDialog):
         self.inputParameterModel = QtGui.QStandardItemModel()
         self.inputParameterModel.setObjectName('inputParameters')
         self.inputParameterModel.setHorizontalHeaderLabels(inputParameterHeaderLabels)
+        self.nameDelegator_input_parameters_view = Delegator(valid_test_parameter_name_regex, parent=self, table=self.inputParameterView, column=INPUT_NAME_COLUMN_INDEX)
 
         self.inputParameterView.horizontalHeader().setVisible(True)
         self.inputParameterView.verticalHeader().setVisible(True)
@@ -172,7 +189,7 @@ class TestWizard(BaseDialog):
         self.inputParameterView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionMode-enum
         self.inputParameterView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
 
-        self.inputParameterView.setItemDelegateForColumn(INPUT_NAME_COLUMN_INDEX, self.nameDelegator)
+        self.inputParameterView.setItemDelegateForColumn(INPUT_NAME_COLUMN_INDEX, self.nameDelegator_input_parameters_view)
         self.inputParameterView.setItemDelegateForColumn(INPUT_MIN_COLUMN_INDEX, self.minDelegator)
         self.inputParameterView.setItemDelegateForColumn(INPUT_DEFAULT_COLUMN_INDEX, self.defaultDelegator)
         self.inputParameterView.setItemDelegateForColumn(INPUT_MAX_COLUMN_INDEX, self.maxDelegator)
@@ -213,8 +230,9 @@ class TestWizard(BaseDialog):
         self.outputParameterView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionBehavior-enum
         self.outputParameterView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionMode-enum
         self.outputParameterView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
+        self.nameDelegator_output_parameters_view = Delegator(valid_test_parameter_name_regex, parent=self, table=self.outputParameterView, column=0)
 
-        self.outputParameterView.setItemDelegateForColumn(0, self.nameDelegator)
+        self.outputParameterView.setItemDelegateForColumn(0, self.nameDelegator_output_parameters_view)
         self.outputParameterView.setItemDelegateForColumn(1, self.LSLDelegator)
         self.outputParameterView.setItemDelegateForColumn(2, self.LTLDelegator)
         self.outputParameterView.setItemDelegateForColumn(3, self.NomDelegator)
@@ -519,6 +537,7 @@ class TestWizard(BaseDialog):
             name, attributes = self.getInputParameter(row)
             self.setInputParameter(name, attributes, row)
 
+        self.verify()
         # shmooed_parameters = 0
         # for item_row in range(self.inputParameterModel.rowCount()):
         #     name_item = self.inputParameterModel.item(item_row, 0)
@@ -819,20 +838,20 @@ class TestWizard(BaseDialog):
         name_item.setData(name, QtCore.Qt.DisplayRole)  # https://doc.qt.io/qt-5/qt.html#ItemDataRole-enum
         name_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
 
-    #shmoo
+    # shmoo
         shmoo_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
         if name == 'Temperature':  # Shmoo is always enabled, user can not change
             shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)  # https://doc.qt.io/qt-5/qt.html#CheckState-enum
-            shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable| QtCore.Qt.ItemIsUserCheckable)  # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
+            shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsUserCheckable)  # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
         else:
             if Min <= Default <= Max and Min != -np.Inf and Max != np.Inf:
                 shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
             else:
                 shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled)
 
-            #shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
+            # shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
 
-        if  attributes['Shmoo'] is True:
+        if attributes['Shmoo'] is True:
             shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
         else:
             shmoo_item.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
@@ -977,6 +996,7 @@ class TestWizard(BaseDialog):
         name = f'new_parameter{new_parameter_index}'
         attributes = {'Shmoo': False, 'Min': '-∞', 'Default': 0, 'Max': '+∞', '10ᵡ': '˽', 'Unit': '˽', 'fmt': '.3f'}
         self.setInputParameter(name, attributes)
+        self.verify()
 
     def unselectInputParameter(self):
         self.inputParameterView.clearSelection()
@@ -1021,7 +1041,6 @@ class TestWizard(BaseDialog):
     def outputParameterContextMenu(self, point):
         index = self.outputParameterView.indexAt(point)
         col = index.column()
-        row = index.row()
         formatSetter = self.setOutputParameterFormat
         valueSetter = self.setOutputParameterValue
         multiplierSetter = self.setOutputParameterMultiplier
@@ -1070,8 +1089,10 @@ class TestWizard(BaseDialog):
         else:  # process only the one line
             row = item.row()
             name, attributes = self.getOutputParameter(row)
+
             self.setOutputParameter(name, attributes, row)
 
+        self.verify()
         self.outputParameterView.clearSelection()
 
     def outputParameterSelectionChanged(self):
@@ -1375,7 +1396,7 @@ class TestWizard(BaseDialog):
         the result is always a float (might be np.inf or np.nan) for LSL, LTL, Nom, UTL and USL (rest is string)
         the source is in the model, and always a string.
         '''
-        attributes = attributes = {'LSL': None, 'LTL': None, 'Nom': None, 'UTL': None, 'USL': None, '10ᵡ': '˽', 'Unit': '˽', 'fmt': ''}
+        attributes = {'LSL': None, 'LTL': None, 'Nom': None, 'UTL': None, 'USL': None, '10ᵡ': '˽', 'Unit': '˽', 'fmt': ''}
 
         name_item = self.outputParameterModel.item(row, 0)
         name = name_item.data(QtCore.Qt.DisplayRole)
@@ -1482,6 +1503,8 @@ class TestWizard(BaseDialog):
             self.testTabs.setCurrentWidget(self.inputParametersTab)
             self.testTabs.setCurrentWidget(self.outputParametersTab)
 
+        self.verify()
+
     def unselectOutputParameter(self):
         self.outputParameterView.clearSelection()
 
@@ -1583,12 +1606,41 @@ class TestWizard(BaseDialog):
         #         self.Feedback.setText(f"Describe the test in at least {minimal_docstring_length} characters (spaces don't count, you have {docstring_length} characters)")
 
         # 9. Check the input parameters
+        if self.Feedback.text() == "":
+            self._validate_input_parameters()
+
         # 10. Check the output parameters
+        if self.Feedback.text() == "":
+            self._validate_output_parameters()
+
         # 11. Enable/disable the OKButton
         if self.Feedback.text() == "":
             self.OKButton.setEnabled(True)
         else:
             self.OKButton.setEnabled(False)
+
+    def _validate_output_parameters(self):
+        rows = self.outputParameterModel.rowCount()
+        for row in range(rows):
+            name, attributes = self.getOutputParameter(row)
+            self._validate_attributes(name, attributes, 'output')
+
+    def _validate_input_parameters(self):
+        rows = self.inputParameterModel.rowCount()
+        for row in range(rows):
+            name, attributes = self.getInputParameter(row)
+            self._validate_attributes(name, attributes, 'input')
+
+    def _validate_attributes(self, name: str, attributes: dict, type: str):
+        if name == '':
+            self.Feedback.setText(f"name attribute in {type} parameter table is missing")
+            return
+
+        for attribute, value in attributes.items():
+            if value != '':
+                continue
+
+            self.Feedback.setText(f"attribute {attribute} in parameter {name} is invalid")
 
     def _does_test_exist(self, test_name):
         tests = [test.name for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]

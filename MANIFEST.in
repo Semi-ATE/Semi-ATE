@@ -42,6 +42,7 @@ recursive-include requirements *.txt
 recursive-include tests *.py
 recursive-include ATE/TES *.*
 recursive-include Plugins *.*
+recursive-include tests *.gitkeep
 include .flake8
 include .gitlab-ci.yml
 

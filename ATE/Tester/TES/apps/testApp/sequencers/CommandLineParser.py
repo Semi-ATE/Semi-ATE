@@ -26,18 +26,18 @@ class CommandLineParser:
             if key in self.__slots__ and v is not None:
                 setattr(self, key, v)
 
-    def update_from_file(self, filename):
+    def update_from_file(self, filename: str):
         with open(filename, 'r') as infile:
             self.update_from_json(infile.read())
 
-    def update_from_parsed_argparse_args(self, args):  # args = argparse.ArgumentParser().parse_args()
+    def update_from_parsed_argparse_args(self, args: list):  # args = argparse.ArgumentParser().parse_args()
         self.update_from_kwargs(**vars(args))
 
     def add_argparse_arguments(self, parser: argparse.ArgumentParser):
         for key in self.__slots__:
             parser.add_argument('--' + key)
 
-    def init_from_command_line(self, argv):
+    def init_from_command_line(self, argv: list):
         parser = argparse.ArgumentParser(prog=argv[0], formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         self.add_argparse_arguments(parser)
         parser.add_argument('config_file', metavar='config-file', nargs='?')

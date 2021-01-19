@@ -99,12 +99,6 @@ class MasterConnectionHandler:
         for topic in topics:
             self.mqtt.publish(topic, json.dumps(default_message), 0, False)
 
-    def send_get_bin_settings(self):
-        topic = f'ate/{self.device_id}/TestApp/cmd'
-        message = self._generate_command_message('setting')
-        message.update({'name': 'binsettings'})
-        self.mqtt.publish(topic, json.dumps(message), 0, False)
-
     def send_handler_get_temperature_command(self):
         message = self._generate_message('temperature', {})
         self.send_handler_command(message)
@@ -257,8 +251,6 @@ class MasterConnectionHandler:
             self.status_consumer.on_testapp_status_changed(siteid, msg)
         elif "log" in topic:
             self.status_consumer.on_log_message(siteid, msg)
-        elif "binsettings" in topic:
-            self.status_consumer.on_testapp_bininfo_message(siteid, msg)
         else:
             assert False
 
