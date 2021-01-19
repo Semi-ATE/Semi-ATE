@@ -42,22 +42,7 @@ recursive-include requirements *.txt
 recursive-include tests *.py
 recursive-include ATE/TES *.*
 recursive-include Plugins *.*
-tests/ATE/spyder/FilesysBasedConfig/definitions/adddelete/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/device/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/die/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/dummydata/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/dummydata2/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/flow/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/hardware/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/masksets/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/package/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/product/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/program/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/qualification/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/sequence/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/test/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/testtarget/.gitkeep
-tests/ATE/spyder/FilesysBasedConfig/definitions/updateitem/.gitkeep
+recursive-include tests *.gitkeep
 include .flake8
 include .gitlab-ci.yml
 
