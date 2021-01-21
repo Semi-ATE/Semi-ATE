@@ -495,26 +495,26 @@ class TestApplication:
         cfg = self.default_configuration()
         app = master_application.MasterApplication(cfg)
         bin_settings = self.get_bin_settings()
-        app._yield_info_handler.set_bin_settings(bin_settings)
+        app._result_info_handler.set_bin_settings(bin_settings)
 
         prr = self._generate_PRR('abc', 1)
-        app._yield_info_handler.extract_yield_information([prr])
+        app._result_info_handler.handle_result(prr)
 
         prr = self._generate_PRR('eft', 2)
-        app._yield_info_handler.extract_yield_information([prr])
+        app._result_info_handler.handle_result(prr)
 
         prr = self._generate_PRR('zzz', 4)
-        app._yield_info_handler.extract_yield_information([prr])
+        app._result_info_handler.handle_result(prr)
 
         site_num = str(prr['SITE_NUM'])
-        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+        site_yield_info = app._result_info_handler.get_site_yield_info_message(site_num)
 
         assert site_yield_info == [{'name': 'type1', 'value': 66.66666666666666, 'count': 2, 'siteid': site_num},
                                    {'name': 'type2', 'value': 33.33333333333333, 'count': 1, 'siteid': site_num},
                                    {'name': 'sum', 'value': 100.0, 'count': 3, 'siteid': site_num},
                                    ]
 
-        yield_info = app._yield_info_handler.get_yield_messages()
+        yield_info = app._result_info_handler.get_yield_messages()
         all_site_num = '-1'
         assert yield_info == [{'name': 'type1', 'value': 66.66666666666666, 'count': 2, 'siteid': site_num},
                               {'name': 'type2', 'value': 33.33333333333333, 'count': 1, 'siteid': site_num},
@@ -528,12 +528,13 @@ class TestApplication:
         cfg = self.default_configuration()
         app = master_application.MasterApplication(cfg)
         bin_settings = self.get_bin_settings()
-        app._yield_info_handler.set_bin_settings(bin_settings)
+        app._result_info_handler.set_bin_settings(bin_settings)
 
         prr = self._generate_PRR('abc', 1)
-        app._yield_info_handler.extract_yield_information([prr])
+        app._result_info_handler.handle_result(prr)
         site_num = str(prr['SITE_NUM'])
-        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+
+        site_yield_info = app._result_info_handler.get_site_yield_info_message(site_num)
 
         assert site_yield_info == [{'name': 'type1', 'value': 100.0, 'count': 1, 'siteid': site_num},
                                    {'name': 'type2', 'value': 0.0, 'count': 0, 'siteid': site_num},
@@ -541,10 +542,10 @@ class TestApplication:
                                    ]
 
         prr = self._generate_PRR('abc', 4)
-        app._yield_info_handler.extract_yield_information([prr])
+        app._result_info_handler.handle_result(prr)
 
         site_num = str(prr['SITE_NUM'])
-        site_yield_info = app._yield_info_handler.get_site_yield_info_message(site_num)
+        site_yield_info = app._result_info_handler.get_site_yield_info_message(site_num)
         assert site_yield_info == [{'name': 'type1', 'value': 0.00, 'count': 0, 'siteid': site_num},
                                    {'name': 'type2', 'value': 100.00, 'count': 1, 'siteid': site_num},
                                    {'name': 'sum', 'value': 100.00, 'count': 1, 'siteid': site_num},

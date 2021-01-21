@@ -58,10 +58,6 @@ export class MenuComponent implements OnInit, OnDestroy {
   private resultsDisabled(): boolean {
     switch (this.status.state) {
       case SystemState.connecting:
-      case SystemState.initialized:
-      case SystemState.unloading:
-      case SystemState.loading:
-      case SystemState.waitingForBinTable:
         return true;
     }
     return false;

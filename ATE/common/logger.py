@@ -3,14 +3,14 @@ from logging.handlers import RotatingFileHandler
 import logging
 import os
 import time
-from enum import Enum
+from enum import IntEnum
 
 
 MAX_NUM_OF_LOGS = 4000
 LOG_FILE_LIFETIME_DAYS = 14
 
 
-class LogLevel(Enum):
+class LogLevel(IntEnum):
     Info = logging.INFO
     Warning = logging.WARNING
     Debug = logging.DEBUG
@@ -101,9 +101,8 @@ class Logger:
                 LogLevel.Warning(): lambda: self.logger.warning(message),
                 LogLevel.Error(): lambda: self.logger.error(message)
             }[type]()
-        except Exception:
-            # TODO: should we raise error or ignore unknown types ??
-            pass
+        except Exception as e:
+            raise Exception(f"message type could not be handled: {e}")
 
     def get_logs(self):
         self.clear_logs()

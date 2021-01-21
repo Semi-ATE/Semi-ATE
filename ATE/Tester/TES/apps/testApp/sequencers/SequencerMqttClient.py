@@ -103,11 +103,12 @@ class SequencerMqttClient(Harness.Harness):
         self._sequencer_instance = sequencer
         self._sequencer_instance.set_site_id(params.site_id)
         self.apply_parameters(params)
+        self._init_app_components()
 
-    def run(self):
+    def _init_app_components(self):
         topic_factory = TopicFactory(self.params.device_id,
                                      self.params.site_id)
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
         def submit_callback(cb, *args, **kwargs):
             # ignore unbound callbacks
@@ -138,17 +139,18 @@ class SequencerMqttClient(Harness.Harness):
                     #       flushing at all)
                     os._exit(1)
 
-            f = executor.submit(wrapped_callback)
+            f = self.executor.submit(wrapped_callback)
             f.add_done_callback(handle_uncaught_exceptions_from_executor)
 
         self._mqtt = self._generate_mqtt_connection(topic_factory, submit_callback)
         self._statemachine = TheTestAppMachine(self._mqtt)
 
+    def run(self):
         try:
             self._mqtt.loop_forever()
         except KeyboardInterrupt:
             pass
-        executor.shutdown(wait=True)
+        self.executor.shutdown(wait=True)
 
     def _generate_mqtt_connection(self, topic_factory: TopicFactory, submit_callback: callable):
         mqtt = MqttClient(self.params.broker_host,

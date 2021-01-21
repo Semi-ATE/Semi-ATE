@@ -147,6 +147,8 @@ class OutputFieldsPosition(IntEnum):
 
 ALARM_BIN_MIN = 60000
 ALARM_BIN_MAX = 65535
+GOOD_BIN_MIN = 1
+GOOD_BIN_MAX = 9
 BINGROUPS = ['Good', 'Contact Fail', 'Electric Fail', 'Alarm']
 GRADES = [("Grade_B", 2),
           ("Grade_C", 3),

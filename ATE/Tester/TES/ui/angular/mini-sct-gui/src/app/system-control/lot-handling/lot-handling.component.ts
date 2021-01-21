@@ -8,6 +8,8 @@ import { Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/app.state';
 import { takeUntil } from 'rxjs/operators';
+import * as ResultActions from './../../actions/result.actions';
+import { AppstateService } from 'src/app/services/appstate.service';
 
 @Component({
   selector: 'app-lot-handling',
@@ -22,7 +24,7 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   private status: Status;
   private readonly ngUnsubscribe: Subject<void>; // needed for unsubscribing an preventing memory leaks
 
-  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
+  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>, private readonly appStateService: AppstateService) {
     this.lotCardConfiguration = new CardConfiguration();
     this.lotNumberInputConfig = new InputConfiguration();
     this.unloadLotButtonConfig = new ButtonConfiguration();
@@ -56,6 +58,8 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
           command: 'load',
           lot_number: this.lotNumberInputConfig.value
       });
+      this.lotNumberInputConfig.errorMsg = '';
+      this.clearStoredStdfRecords();
     } else {
       this.lotNumberInputConfig.errorMsg = errorMsg.errorText;
     }
@@ -63,6 +67,11 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
 
   unloadLot() {
     this.communicationService.send({type: 'cmd', command: 'unload'});
+  }
+
+  private clearStoredStdfRecords(): void {
+    this.appStateService.clearStdfRecords();
+    this.store.dispatch(ResultActions.clearResult());
   }
 
   private updateStatus(status: Status) {

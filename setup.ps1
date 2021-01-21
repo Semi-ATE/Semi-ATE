@@ -91,6 +91,7 @@ if (($confirmation -eq $confirm) -or (!$confirmation))
     Write-Host "generate web-UI distribution"
     Invoke-Expression "ng build"
     Set-Location -Path $root_location
+}
 Write-Host "new configuration file for master and control Apps will be generated"
 $confirmation = Read-Host "are you sure you want proceed and create new configuration files [y/n]"
 if (($confirmation -eq $confirm) -or (!$confirmation))
@@ -98,11 +99,11 @@ if (($confirmation -eq $confirm) -or (!$confirmation))
     Set-Location -Path $apps_location
 
     Write-Host "generate control_app configuration file"
-    Invoke-Expression "python auto_script.py control SCT-81-1F -conf"
+    Invoke-Expression "python auto_script.py control SCT-82-1F -conf"
     Write-Host "done"
 
     Write-Host "generate master_app configuration file"
-    Invoke-Expression "python auto_script.py master SCT-81-1F -conf"
+    Invoke-Expression "python auto_script.py master SCT-82-1F -conf"
     Write-Host "done"
 
     Invoke-Expression "cp le123456000_template.xml le123456000.xml"

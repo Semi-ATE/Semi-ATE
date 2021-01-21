@@ -1,4 +1,4 @@
-from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR, SBR, HBR)
+from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR, SBR, HBR, MRR, MIR, PCR, FAR, SDR)
 
 
 ENDIAN = '<'
@@ -198,7 +198,7 @@ def generate_FTR_dict(test_num, head_num, site_num, exception):
     return record
 
 
-def generate_SBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> dict:
+def generate_SBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> SBR:
     rec = SBR('V4', endian=ENDIAN)
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
@@ -209,7 +209,7 @@ def generate_SBR(head_num: int, site_num: int, bin_num: int, count: int, bin_nam
     return rec
 
 
-def generate_HBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> dict:
+def generate_HBR(head_num: int, site_num: int, bin_num: int, count: int, bin_name: str, bin_pf: str) -> HBR:
     rec = HBR('V4', endian=ENDIAN)
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
@@ -217,4 +217,57 @@ def generate_HBR(head_num: int, site_num: int, bin_num: int, count: int, bin_nam
     rec.set_value('HBIN_CNT', count)
     rec.set_value('HBIN_PF', bin_pf)
     rec.set_value('HBIN_NAM', bin_name)
+    return rec
+
+
+def generate_MRR(end_timestamp: int) -> MRR:
+    rec = MRR('V4', endian=ENDIAN)
+    rec.set_value('FINISH_T', end_timestamp)
+    return rec
+
+
+def generate_MIR(setup_time: int, start_time: int, stat_num: int, lot_id: str, part_typ: str,
+                 node_name: str, tstr_typ: str, job_name: str) -> MIR:
+    rec = MIR('V4', endian=ENDIAN)
+
+    rec.set_value('SETUP_T', setup_time)
+    rec.set_value('START_T', start_time)
+    rec.set_value('STAT_NUM', stat_num)
+    rec.set_value('LOT_ID', lot_id)
+    rec.set_value('PART_TYP', part_typ)
+    rec.set_value('NODE_NAM', node_name)
+    rec.set_value('TSTR_TYP', tstr_typ)
+    rec.set_value('JOB_NAM', job_name)
+
+    return rec
+
+
+def generate_PCR(head_num: int, site_num: int, part_count: int, retest_count: int,
+                 abort_count: int, good_count: int, functional_count: int) -> PCR:
+    rec = PCR('V4', endian=ENDIAN)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+
+    rec.set_value('PART_CNT', part_count)
+    rec.set_value('RTST_CNT', retest_count)
+    rec.set_value('ABRT_CNT', abort_count)
+    rec.set_value('GOOD_CNT', good_count)
+    rec.set_value('FUNC_CNT', functional_count)
+
+    return rec
+
+
+def generate_FAR(cpu_type: int, stdf_ver: int) -> FAR:
+    rec = FAR('V4', endian=ENDIAN)
+    rec.set_value('CPU_TYPE', cpu_type)
+    rec.set_value('STDF_VER', stdf_ver)
+    return rec
+
+
+def generate_SDR(head_num: int, site_grp: int, site_cnt: int, site_nums: list) -> SDR:
+    rec = SDR('V4', endian=ENDIAN)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_GRP', site_grp)
+    rec.set_value('SITE_CNT', site_cnt)
+    rec.set_value('SITE_NUM', [int(site_num) for site_num in site_nums])
     return rec
