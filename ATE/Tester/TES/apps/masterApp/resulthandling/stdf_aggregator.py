@@ -9,9 +9,11 @@ from ATE.data.STDF.records import FAR, MIR, PCR, MRR, STDR
 
 # ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR,
-                                                          generate_PRR, generate_PTR,
+                                                          generate_PRR, generate_PTR, generate_SDR,
                                                           generate_TSR, generate_HBR,
-                                                          generate_SBR)
+                                                          generate_SBR, generate_MRR,
+                                                          generate_MIR, generate_PCR,
+                                                          generate_FAR)
 
 
 class StdfPartTestContext:
@@ -25,7 +27,7 @@ STDF_PATH = 'temp_final_stdf_file_on_unload.stdf'
 class StdfTestResultAggregator:
     completed_part_records: List[List[STDR]]
 
-    def __init__(self, node_name: str, lot_id: str, job_name: str, file_path: str = ''):
+    def __init__(self, node_name: str, lot_id: str, job_name: str, sites: list, file_path: str = ''):
         self.version = 'V4'
         self.endian = '<'
         self.completed_part_records = []
@@ -37,6 +39,7 @@ class StdfTestResultAggregator:
         self.job_name = job_name
         self.end_timestamp = 0
         self.path = STDF_PATH if not file_path else file_path
+        self.sites = sites
 
         self._clean_up()
 
@@ -49,15 +52,6 @@ class StdfTestResultAggregator:
     def finalize(self):
         self.end_timestamp = int(time.time())
 
-    def add_parttest_records(self, parttest_records: List[STDR], ispass: bool, site_num: int):
-        assert self._is_expected_list_of_single_parttest_records(parttest_records)
-        for rec in parttest_records:
-            rec.set_value('HEAD_NUM', 0)
-            rec.set_value('SITE_NUM', site_num)
-        if ispass:
-            self.num_good_parts += 1
-        self.completed_part_records.append(parttest_records)
-
     def write_to_file(self, filepath):
         full_file_records = self._stdf_header_records() + list(itertools.chain.from_iterable(self.completed_part_records)) + self._stdf_footer_records()
         with open(filepath, "wb") as f:
@@ -68,94 +62,28 @@ class StdfTestResultAggregator:
             f.write(self.serialize_records(record))
 
     def write_header_records(self):
+        self.set_first_part_test_time()
         self.write_records_to_file(self._stdf_header_records())
 
     def write_footer_records(self):
         self.write_records_to_file(self._stdf_footer_records())
 
-    def _stdf_header_records(self):
-        # FAR, MIR
-        # optional/TODO: SDR
-        return [self._create_FAR(), self._create_MIR()]
+    def _stdf_header_records(self) -> list:
+        return [generate_FAR(2, 4),
+                self.generate_MIR(),
+                generate_SDR(0, 0, len(self.sites), self.sites)]
 
-    def _stdf_footer_records(self):
-        # optional (statistics): TSR, SBR
-        # PCR, MRR
-        return [self._create_PCR(self.num_good_parts, len(self.completed_part_records)), self._create_MRR()]
+    def generate_MIR(self) -> MIR:
+        return generate_MIR(self.setup_timestamp, self.start_timestamp, 0, self.lot_id, 'MyPart', self.node_name, 'MINISCT', self.job_name)
 
-    def _unpack_parttest_records_from_stdf_blob(self, stdf_blob: bytes):
-        with io.BytesIO(stdf_blob) as stream:
-            return [record for _, _, _, record in records_from_file(
-                stream, unpack=True, of_interest=['PIR', 'PTR', 'PRR'])]
+    def get_MIR_dict(self) -> dict:
+        return self.generate_MIR().to_dict()
 
-    def _is_expected_list_of_single_parttest_records(self, records: List[STDR]):
-        return (len(records) >= 3
-                and records[0].id == 'PIR'
-                and all(rec.id == 'PTR' for rec in records[1: -1])
-                and records[-1].id == 'PRR'
-                and all(rec.get_value('HEAD_NUM') == 1 for rec in records)
-                and all(rec.get_value('SITE_NUM') == 1 for rec in records))
-
-    def _assert_is_expected_list_of_single_parttest_records(self, records: List[STDR]):
-        if len(records) < 3:
-            raise ValueError(f'minimal records for valid part test is 3, but only got {len(records)}')
-        if records[0].id != 'PIR':
-            raise ValueError(f'first record was not PIR, but {records[0].id}')
-        if records[-1].id != 'PRR':
-            raise ValueError(f'last record was not PRR, but {records[-1].id}')
-        non_ptr_records = [rec.id for rec in records[1: -1] if rec.id != 'PTR']
-        if non_ptr_records:
-            raise ValueError(f'non-PTR record in list of records: {non_ptr_records}')
-        if any(rec.get_value('HEAD_NUM') != 1 for rec in records):
-            raise ValueError(f'HEAD_NUM wass not 1')
-        if any(rec.get_value('SITE_NUM') != 1 for rec in records):
-            raise ValueError(f'SITE_NUM wass not 1')
-
-    def parse_parttest_stdf_blob(self, stdf_blob: bytes):
-        records = self._unpack_parttest_records_from_stdf_blob(stdf_blob)
-        self._assert_is_expected_list_of_single_parttest_records(records)
-        return records
-
-    def _create_FAR(self):
-        rec = FAR(self.version, self.endian)
-        rec.set_value('CPU_TYPE', 2)
-        rec.set_value('STDF_VER', 4)
-        return rec
-
-    def _create_MIR(self):
-        rec = MIR(self.version, self.endian)
-
-        rec.set_value('SETUP_T', self.setup_timestamp)
-        rec.set_value('START_T', self.start_timestamp)
-        rec.set_value('STAT_NUM', 0)
-        rec.set_value('LOT_ID', self.lot_id)
-        rec.set_value('PART_TYP', 'MyPart')
-        rec.set_value('NODE_NAM', self.node_name)
-        rec.set_value('TSTR_TYP', 'MyTester')
-        rec.set_value('JOB_NAM', self.job_name)
-
-        return rec
+    def _stdf_footer_records(self) -> list:
+        return [generate_MRR(self.end_timestamp)]
 
     def set_first_part_test_time(self):
         self.start_timestamp = int(time.time())
-
-    def _create_PCR(self, num_good_parts: int, num_parts_tested: int):
-        rec = PCR(self.version, self.endian)
-        rec.set_value('HEAD_NUM', 255)  # this is supposed to be a single record for parts across all sites
-        rec.set_value('SITE_NUM', 0)
-
-        rec.set_value('PART_CNT', num_parts_tested)
-        rec.set_value('RTST_CNT', 0)
-        rec.set_value('ABRT_CNT', 0)
-        rec.set_value('GOOD_CNT', num_good_parts)
-        rec.set_value('FUNC_CNT', num_parts_tested)
-
-        return rec
-
-    def _create_MRR(self):
-        rec = MRR(self.version, self.endian)
-        rec.set_value('FINISH_T', self.end_timestamp)
-        return rec
 
     def append_test_results(self, test_results):
         for test_result in test_results:
@@ -169,7 +97,7 @@ class StdfTestResultAggregator:
             self.write_records_to_file([rec])
 
     @staticmethod
-    def _generate_PRR(prr_record):
+    def _generate_PRR(prr_record: dict):
         part_fix = [0] * 8
         rec = generate_PRR(prr_record['HEAD_NUM'], prr_record['SITE_NUM'], False, prr_record['NUM_TEST'],
                            prr_record['HARD_BIN'], prr_record['SOFT_BIN'], prr_record['X_COORD'],
@@ -181,27 +109,24 @@ class StdfTestResultAggregator:
         return rec
 
     @staticmethod
-    def _generate_PTR(ptr_record):
-        rec = generate_PTR(ptr_record['TEST_NUM'], ptr_record['HEAD_NUM'], ptr_record['SITE_NUM'],
-                           False, ptr_record['PARM_FLG'], ptr_record['RESULT'], ptr_record['TEST_TXT'],
-                           ptr_record['ALARM_ID'], ptr_record['LO_LIMIT'], ptr_record['HI_LIMIT'],
-                           ptr_record['UNITS'], ptr_record['C_RESFMT'], ptr_record['RES_SCAL'],
-                           ptr_record['LO_SPEC'], ptr_record['HI_SPEC'], ptr_record['OPT_FLAG'])
-
-        return rec
+    def _generate_PTR(ptr_record: dict) -> dict:
+        return generate_PTR(ptr_record['TEST_NUM'], ptr_record['HEAD_NUM'], ptr_record['SITE_NUM'],
+                            False, ptr_record['PARM_FLG'], ptr_record['RESULT'], ptr_record['TEST_TXT'],
+                            ptr_record['ALARM_ID'], ptr_record['LO_LIMIT'], ptr_record['HI_LIMIT'],
+                            ptr_record['UNITS'], ptr_record['C_RESFMT'], ptr_record['RES_SCAL'],
+                            ptr_record['LO_SPEC'], ptr_record['HI_SPEC'], ptr_record['OPT_FLAG'])
 
     @staticmethod
-    def _generate_FTR(ftr_record):
+    def _generate_FTR(ftr_record: dict) -> dict:
         rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], False)
-
         rec.set_value('TEST_FLG', ftr_record['TEST_FLG'])
         return rec
 
     @staticmethod
-    def _generate_PIR(pir_record):
+    def _generate_PIR(pir_record: dict) -> dict:
         return generate_PIR(pir_record['HEAD_NUM'], pir_record['SITE_NUM'])
 
-    def append_test_summary(self, tests_summary):
+    def append_test_summary(self, tests_summary: list):
         for test_summary in tests_summary:
             rec = self._generate_TSR(test_summary)
             self.write_records_to_file([rec])
@@ -218,8 +143,8 @@ class StdfTestResultAggregator:
                             1)
 
     def write_bin_info(self, bin_informations: dict, func: callable, bin_pos: int):
+        record_summary = [None] * 6
         for bin_name, bin_info in bin_informations.items():
-            record_summary = [None] * 6
             record_summary[0] = 255         # head num
             record_summary[1] = 0           # site num
             record_summary[3] = 0           # count
@@ -237,8 +162,18 @@ class StdfTestResultAggregator:
                                              record_summary[2], record_summary[3],
                                              record_summary[4], record_summary[5])])
 
+    def append_part_count_infos(self, part_infos: list):
+        pcr_recs = []
+        for part_info in part_infos:
+            pcr_recs.append(generate_PCR(int(part_info['head_num']), int(part_info['site_num']),
+                                         part_info['part_count'], part_info['retest_count'],
+                                         part_info['abort_count'], part_info['good_count'],
+                                         part_info['functional_count']))
+
+        self.write_records_to_file(pcr_recs)
+
     @staticmethod
-    def _generate_TSR(test_summary):
+    def _generate_TSR(test_summary: dict) -> dict:
         return generate_TSR(test_summary['HEAD_NUM'], test_summary['SITE_NUM'], test_summary['TEST_TYP'],
                             test_summary['TEST_NUM'], test_summary['EXEC_CNT'], test_summary['FAIL_CNT'],
                             test_summary['ALRM_CNT'], test_summary['TEST_NAM'], test_summary['SEQ_NAME'],

@@ -1,6 +1,7 @@
 """ master App """
 
 # External imports
+from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import ResultInformationHandler
 from aiohttp import web
 from transitions.core import MachineError
 from transitions.extensions import HierarchicalMachine as Machine
@@ -19,7 +20,6 @@ from ATE.Tester.TES.apps.masterApp.master_webservice import webservice_setup_app
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
 from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings, GetYields)
-from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
 
 from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
 from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler import ResultsCollector
@@ -27,7 +27,6 @@ from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler impo
 from ATE.Tester.TES.apps.masterApp.peripheral_controller import PeripheralController
 
 from ATE.Tester.TES.apps.masterApp.statemachines.MultiSite import (MultiSiteTestingModel, MultiSiteTestingMachine)
-from ATE.Tester.TES.apps.masterApp.utils.site_information import SiteInformationHandler
 
 
 INTERFACE_VERSION = 1
@@ -164,10 +163,10 @@ class MasterApplication(MultiSiteTestingModel):
         self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
-        self._yield_info_handler = YieldInformationHandler()
+        self._result_info_handler = ResultInformationHandler(self.sites)
+
         self.test_results = []
 
-        self._site_info_handler = SiteInformationHandler(self.sites)
         self.dummy_partid = 1
         self._first_part_tested = False
         self._stdf_aggregator = None
@@ -321,6 +320,8 @@ class MasterApplication(MultiSiteTestingModel):
         self.connectionHandler.publish_state(self.external_state)
 
     def on_loadcommand_issued(self, param_data: dict):
+        self._result_info_handler.clear_all()
+
         jobname = param_data['lot_number']
         # TODO: see no difference !!
         self.loaded_jobname = str(jobname)
@@ -349,8 +350,8 @@ class MasterApplication(MultiSiteTestingModel):
 
             data = source.get_test_information(param_data)
             bin_table = source.get_bin_table(data)
-            self._yield_info_handler.set_bin_settings(bin_table)
-            self._site_info_handler.set_sites_information(bin_table)
+            self._result_info_handler.set_bin_settings(bin_table)
+
             # used to reduce the size of data to be transfered to the TP
             data['BINTABLE'] = source.get_binning_tuple(bin_table)
 
@@ -382,8 +383,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
         self.disarm_timeout()
 
-        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname)
-        self._stdf_aggregator.write_header_records()
+        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname, self.sites)
         self._send_set_log_level()
 
     def _send_set_log_level(self):
@@ -399,7 +399,7 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_next_command_issued(self, param_data: dict):
         if not self._first_part_tested:
-            self._stdf_aggregator.set_first_part_test_time()
+            self._stdf_aggregator.write_header_records()
             self._first_part_tested = True
             self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message()))
 
@@ -429,6 +429,7 @@ class MasterApplication(MultiSiteTestingModel):
 
     def _generate_default_sites_configuration(self):
         sites_info = []
+        self.sites_to_test = self.sites
         for index in range(len(self.sites)):
             sites_info.append({'siteid': str(index), 'partid': str(self.dummy_partid), 'binning': -1})
             self.dummy_partid += 1
@@ -446,7 +447,6 @@ class MasterApplication(MultiSiteTestingModel):
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TERMINATED], self.configuredSites, lambda: None, lambda site, state: None)
         self.error_message = ''
         self.connectionHandler.send_terminate_to_all_sites()
-        self._yield_info_handler.clear_yield_information()
         self._first_part_tested = False
 
     def on_reset_received(self, param_data: dict):
@@ -494,14 +494,12 @@ class MasterApplication(MultiSiteTestingModel):
 
         self.received_sites_test_results.append(payload)
         self.received_site_test_results.append(param_data)
-        success, msg = self._yield_info_handler.extract_yield_information(payload)
+        success, msg = self._result_info_handler.handle_result(prr_record)
+
         if not success:
             self.on_error(msg)
 
-        if site_id in self.sites_to_test:
-            self.test_results.append(self._yield_info_handler.get_site_result(payload))
-
-        self._site_info_handler.store_test_result(site_id, prr_record)
+        self.test_results.append(self._result_info_handler.get_site_result_response(prr_record))
 
     def _write_stdf_data(self, stdf_data):
         self._stdf_aggregator.append_test_results(stdf_data)
@@ -547,12 +545,15 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_error(f"Received unexpected testresult from site {siteid}")
 
     def on_testapp_testsummary_changed(self, status_msg: dict):
-        self._stdf_aggregator.append_soft_and_hard_bin_record(self._site_info_handler.get_summary_information())
-        self._stdf_aggregator.append_test_summary(status_msg['payload'])
         self.summary_counter += 1
 
         if self.summary_counter == len(self.configuredSites):
             self._stdf_aggregator.finalize()
+
+            self._stdf_aggregator.append_soft_and_hard_bin_record(self._result_info_handler.get_hbin_soft_bin_report())
+            self._stdf_aggregator.append_test_summary(status_msg['payload'])
+            self._stdf_aggregator.append_part_count_infos(self._result_info_handler.get_part_count_infos())
+
             self._stdf_aggregator.write_footer_records()
             self._stdf_aggregator = None
             self.summary_counter = 0
@@ -747,7 +748,7 @@ class MasterApplication(MultiSiteTestingModel):
             await ws_comm_handler.send_logs_to_all(available_logs)
 
     def _generate_yield_message(self):
-        return self._yield_info_handler.get_yield_messages()
+        return self._result_info_handler.get_yield_messages()
 
     def _generate_usersettings_message(self, usersettings):
         settings = []
@@ -764,7 +765,7 @@ class MasterApplication(MultiSiteTestingModel):
         return usersetting
 
     def _generate_lot_data_message(self):
-        return self._stdf_aggregator._create_MIR().to_dict()
+        return self._stdf_aggregator.get_MIR_dict()
 
     async def _master_background_task_ctx(self, app):
         task = asyncio.create_task(self._master_background_task(app))

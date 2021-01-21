@@ -11,7 +11,8 @@ const reducer = createReducer(
     let key: SiteHead = computeSiteHeadFromRecord(prr);
     state.set(key, prr);
     return new Map<SiteHead, PrrRecord>(state);
-  })
+  }),
+  on(ResultActions.clearResult, _state => new Map<SiteHead, PrrRecord>())
 );
 
 export function resultReducer(state: Map<SiteHead, PrrRecord> | undefined, action: Action) {

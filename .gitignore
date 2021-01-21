@@ -149,3 +149,4 @@ tests/ATE/spyder/FilesysBasedConfig/definitions/test/test.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/testtarget/testtarget.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/updateitem/updateitem.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/qualification/qualification.json
+smoketest/

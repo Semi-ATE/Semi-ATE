@@ -17,11 +17,13 @@ import { consoleReducer } from '../reducers/console.reducer';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 import { SystemHandlingComponent } from './system-handling/system-handling/system-handling.component';
 import { DropdownComponent } from '../basic-ui-elements/dropdown/dropdown.component';
+import { MockServerService } from '../services/mockserver.service';
 
 describe('SystemControlComponent', () => {
   let component: SystemControlComponent;
   let fixture: ComponentFixture<SystemControlComponent>;
   let debugElement: DebugElement;
+  let mockServerService: MockServerService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -51,11 +53,16 @@ describe('SystemControlComponent', () => {
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach( () => {
+    mockServerService = TestBed.inject(MockServerService);
     fixture = TestBed.createComponent(SystemControlComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
     fixture.detectChanges();
+  });
+
+  afterEach( () => {
+    mockServerService.ngOnDestroy();
   });
 
   it('should create system control component', () => {

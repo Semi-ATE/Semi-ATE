@@ -48,7 +48,6 @@ class YieldInformationHandler:
         self.sites_yield_information = {}
 
     def extract_yield_information(self, param_data):
-        # TODO: this must be done after receiving bin settings from every site
         if not self._bin_settings:
             return False, "bin settings are not received yet"
 
@@ -76,17 +75,17 @@ class YieldInformationHandler:
 
         return part_id
 
-    def get_site_result(self, param_data):
-        prr_record = param_data[-1]
+    def get_site_result(self, prr_record):
         part_id = self._get_part_id(prr_record)
         hard_bin = prr_record['HARD_BIN']
         siteid = str(prr_record['SITE_NUM'])
 
         return {'siteid': siteid, 'partid': part_id, 'binning': hard_bin, 'logflag': 0, 'additionalinfo': 0}
 
-    def _accumulate_site_bin_info(self, data):
-        site_num = str(data['SITE_NUM'])
-        soft_bin = str(data['SOFT_BIN'])
+    def _accumulate_site_bin_info(self, site_num, soft_bin):
+        if not self._bin_settings:
+            return False, "bin settings are not received yet"
+
         for typ, setting in self._bin_settings.items():
             if soft_bin not in setting['sbins']:
                 continue
@@ -113,15 +112,17 @@ class YieldInformationHandler:
         self.sites_yield_information[all_id] = all_yield_info
         return True, ''
 
-    def _reaccumulate_bin_info(self):
+    def _reaccumulate_bin_info(self, prr_rec_information):
         self.sites_yield_information.clear()
-        for _, prr_rec in self.prr_rec_information.items():
-            return self._accumulate_site_bin_info(prr_rec)
+        for _, prr_rec in prr_rec_information.items():
+            site_num = str(prr_rec['SITE_NUM'])
+            soft_bin = str(prr_rec['SOFT_BIN'])
+            return self._accumulate_site_bin_info(site_num, soft_bin)
 
         return self._accumulate_all_bin_info()
 
-    def set_bin_settings(self, bin_table: dict):
-        self._bin_settings = self.get_bin_settings(bin_table)
+    def set_bin_settings(self, bin_settings: dict):
+        self._bin_settings = bin_settings
 
     @staticmethod
     def get_bin_settings(bin_table: list) -> dict:
@@ -140,7 +141,7 @@ class YieldInformationHandler:
 
         return messages
 
-    def get_site_yield_info_message(self, site):
+    def get_site_yield_info_message(self, site: str):
         return self.sites_yield_information[site].generate_yield_messages()
 
     def clear_yield_information(self):

@@ -116,7 +116,7 @@ class ControlAppMachine:
         self.to_idle(_)
 
     def before_error(self, info):
-        self.log.log_message('error', f'{info}')
+        self.log.log_message(LogLevel.Error(), f'{info}')
 
         if self._task is not None:
             self._task.cancel()
@@ -210,15 +210,15 @@ class ControlConnectionHandler:
             cmd = data['command']
             sites = data['sites']
 
-            self.log.log_message('debug', f'received command: {cmd}')
+            self.log.log_message(LogLevel.Debug(), f'received command: {cmd}')
 
             if self.site_id not in sites:
-                self.log.log_message('warning', f'ignoring TestApp cmd for other sites {sites} (current site_id is {self.site_id})')
+                self.log.log_message(LogLevel.Warning(), f'ignoring TestApp cmd for other sites {sites} (current site_id is {self.site_id})')
                 return
 
             to_exec_command = self.commands.get(cmd)
             if to_exec_command is None:
-                self.log.log_message('warning', 'received command not found')
+                self.log.log_message(LogLevel.Warning(), 'received command not found')
                 return
 
             to_exec_command(data)

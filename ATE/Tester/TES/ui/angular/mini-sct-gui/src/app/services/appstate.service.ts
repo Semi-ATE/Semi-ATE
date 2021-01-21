@@ -52,6 +52,11 @@ export class AppstateService implements OnDestroy {
     this.subscriptionCommunication.unsubscribe();
   }
 
+  clearStdfRecords(): void {
+    this.stdfRecords = [];
+    this.rebuildRecords$.next(true);
+  }
+
   private handleServerMessage(serverMessage: any) {
     // update system status must be called first
     this.updateSystemStatus(serverMessage);
