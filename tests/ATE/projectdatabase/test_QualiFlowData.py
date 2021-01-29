@@ -1,8 +1,8 @@
 import os
 from pytest import fixture
 
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
-from ATE.spyder.widgets.FileBasedConfig.QualificationFlow import QualificationFlowDatum
+from ATE.projectdatabase.FileOperator import FileOperator
+from ATE.projectdatabase.QualificationFlow import QualificationFlowDatum
 from tests.ATE.spyder.widgets.CI.qt.qualification_wizard.mock_db_object import MockDBObject
 CURRENT_DIR = os.path.join(os.path.dirname(__file__))
 

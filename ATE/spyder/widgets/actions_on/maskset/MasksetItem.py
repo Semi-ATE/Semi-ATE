@@ -1,4 +1,4 @@
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
+from ATE.projectdatabase.Types import Types
 from ATE.spyder.widgets.actions_on.maskset.EditMasksetWizard import edit_maskset_dialog
 from ATE.spyder.widgets.actions_on.maskset.NewMasksetWizard import new_maskset_dialog
 from ATE.spyder.widgets.actions_on.maskset.ViewMasksetSettings import display_maskset_settings_dialog

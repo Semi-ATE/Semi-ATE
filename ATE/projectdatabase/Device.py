@@ -1,5 +1,5 @@
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject, FileOperator
+from ATE.projectdatabase.Types import Types
+from ATE.projectdatabase.FileOperator import DBObject, FileOperator
 
 
 class Device:

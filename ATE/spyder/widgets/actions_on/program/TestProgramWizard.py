@@ -909,12 +909,14 @@ class TestProgramWizard(BaseDialog):
             item = QTreeWidgetItem()
             item.setText(0, description + '_' + key)
             self._set_bin_flag(item, value.get_field_state())
-            # TODO: uncoment this if there is not need to asign output to soft-bins automaticaly
-            # value: OutputParameter = value
-            # bin_info = value.get_bin_infos()
-            # item.setText(1, bin_info.bin_name)
-            # TODO: remove this afterwards
-            item.setText(1, self.binning_table.item(0, 0).text())
+            # TODO: uncomment this if there is not need to assign output to soft-bins automatically
+            value: OutputParameter = value
+            bin_info = value.get_bin_infos()
+            if bin_info.bin_name:
+                item.setText(1, bin_info.bin_name)
+            else:
+                # TODO: remove this afterwards
+                item.setText(1, self.binning_table.item(0, 0).text())
 
             parent.addChild(item)
 

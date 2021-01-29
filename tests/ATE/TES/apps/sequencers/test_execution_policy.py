@@ -26,6 +26,9 @@ class BooleanTest(DutTestCaseBase):
     def aggregate_test_result(self, site_num):
         pass
 
+    def get_test_nums(self) -> int:
+        return 2
+
     def do(self):
         pass
 

@@ -103,6 +103,7 @@ unittests:
    - Enable-Venv $venvPath
    - pytest --cov=. tests\ATE\TES\apps
    - pytest --cov=. tests\ATE\data
+   - pytest --cov=. tests\ATE\projectdatabase
    - pytest --cov=. tests\ATE\TCC
    - pytest --cov=. tests\ATE\spyder
   dependencies:

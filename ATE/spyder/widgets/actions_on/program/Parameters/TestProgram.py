@@ -302,26 +302,28 @@ class TestProgram:
                 continue
 
             input_parameters = available_tests_handler.get_test_inputs_parameters(test.get_test_base())
-            custom_input_parameters = test.get_input_parameters()
-
-            removed_parameters = set(custom_input_parameters.keys()) - set(input_parameters.keys())
-            for removed_parameter in removed_parameters:
-                custom_input_parameters[removed_parameter].set_validity(ParameterState.Removed())
-
-            missing_parameters = set(input_parameters.keys()) - set(custom_input_parameters.keys())
-            for missing_parameter in missing_parameters:
-                test.append_new_input_parameter(missing_parameter, copy.deepcopy(input_parameters[missing_parameter]))
-
             output_parameters = available_tests_handler.get_test_outputs_parameters(test.get_test_base())
-            custom_output_parameters = test.get_output_parameters()
 
-            removed_parameters = set(custom_output_parameters.keys()) - set(output_parameters.keys())
-            for removed_parameter in removed_parameters:
-                custom_output_parameters[removed_parameter].set_validity(ParameterState.Removed())
+            self._update_parameters(input_parameters, test.get_input_parameters(), lambda missing_param, param_content: test.append_new_input_parameter(missing_param, param_content))
+            self._update_parameters(output_parameters, test.get_output_parameters(), lambda missing_param, param_content: test.append_new_output_parameter(missing_param, param_content))
 
-            missing_parameters = set(output_parameters.keys()) - set(custom_output_parameters.keys())
-            for missing_parameter in missing_parameters:
-                test.append_new_output_parameter(missing_parameter, copy.deepcopy(output_parameters[missing_parameter]))
+            self._update_parameters_fields(input_parameters, test.get_input_parameters())
+            self._update_parameters_fields(output_parameters, test.get_output_parameters())
+
+    @staticmethod
+    def _update_parameters(parameters: dict, custom_parameters: dict, callback: Callable):
+        removed_parameters = set(custom_parameters.keys()) - set(parameters.keys())
+        for removed_parameter in removed_parameters:
+            custom_parameters[removed_parameter].set_validity(ParameterState.Removed())
+
+        missing_parameters = set(parameters.keys()) - set(custom_parameters.keys())
+        for missing_parameter in missing_parameters:
+            callback(missing_parameter, copy.deepcopy(parameters[missing_parameter]))
+
+    @staticmethod
+    def _update_parameters_fields(parameters, custom_parameters):
+        for name, custom_parameter in custom_parameters.items():
+            custom_parameter.update_parameters(parameters[name])
 
     def are_all_tests_valid(self):
         for test in self._tests:
@@ -332,7 +334,7 @@ class TestProgram:
 
     def validate_tests(self, test_names):
         for test in self._tests:
-            if test.get_test_base() not in (test_names):
+            if test.get_test_base() not in test_names:
                 continue
 
             test.set_valid_flag(ParameterState.Changed())

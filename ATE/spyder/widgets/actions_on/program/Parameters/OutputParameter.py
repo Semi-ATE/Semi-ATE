@@ -39,6 +39,13 @@ class OutputParameter(ParameterBase):
                                          parameter['Binning']['group'],
                                          parameter['Binning']['description'])
 
+    def update_parameters(self, param):
+        self.lsl = param.lsl
+        self.usl = param.usl
+        self.exponent = param.exponent
+        self.unit = param.unit
+        self.format = param.format
+
     def set_bin_infos(self, bin_name: str, bin_num: str, bin_group: str, bin_description: str):
         self.bin_parameter.bin_number = bin_num
         self.bin_parameter.bin_name = bin_name

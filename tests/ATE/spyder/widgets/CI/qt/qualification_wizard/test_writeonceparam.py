@@ -1,4 +1,4 @@
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.FileOperator import FileOperator
 from PyQt5 import QtWidgets
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.writeoncetextparam import WriteOnceTextParam

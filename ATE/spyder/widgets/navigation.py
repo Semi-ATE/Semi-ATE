@@ -3,7 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
+from ATE.projectdatabase.Types import Types
 import json
 import os
 import pickle
@@ -13,18 +13,18 @@ from PyQt5.QtCore import QObject
 
 from ATE.spyder.widgets.constants import TableIds as TableId
 
-from ATE.spyder.widgets.FileBasedConfig.Device import Device
-from ATE.spyder.widgets.FileBasedConfig.Die import Die
-from ATE.spyder.widgets.FileBasedConfig.Hardware import Hardware
-from ATE.spyder.widgets.FileBasedConfig.Maskset import Maskset
-from ATE.spyder.widgets.FileBasedConfig.Package import Package
-from ATE.spyder.widgets.FileBasedConfig.Product import Product
-from ATE.spyder.widgets.FileBasedConfig.Program import Program
-from ATE.spyder.widgets.FileBasedConfig.QualificationFlow import QualificationFlowDatum
-from ATE.spyder.widgets.FileBasedConfig.Sequence import Sequence
-from ATE.spyder.widgets.FileBasedConfig.Test import Test
-from ATE.spyder.widgets.FileBasedConfig.TestTarget import TestTarget
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.Device import Device
+from ATE.projectdatabase.Die import Die
+from ATE.projectdatabase.Hardware import Hardware
+from ATE.projectdatabase.Maskset import Maskset
+from ATE.projectdatabase.Package import Package
+from ATE.projectdatabase.Product import Product
+from ATE.projectdatabase.Program import Program
+from ATE.projectdatabase.QualificationFlow import QualificationFlowDatum
+from ATE.projectdatabase.Sequence import Sequence
+from ATE.projectdatabase.Test import Test
+from ATE.projectdatabase.TestTarget import TestTarget
+from ATE.projectdatabase.FileOperator import FileOperator
 
 
 definitions = {Types.Maskset(): Maskset}
@@ -83,7 +83,7 @@ class ProjectNavigation(QObject):
 
             settings_file = os.path.join(project_directory, f".lastsettings")
             project_quality_file = os.path.join(self.project_directory, 'project_quality.pickle')
-            
+
             # the .lastsettings file is used as a canary to detect if
             # this folder already contains a project or if we have to generate
             # a new project
@@ -419,8 +419,8 @@ class ProjectNavigation(QObject):
         return Package.get_all(self.get_file_operator())
 
     def get_available_packages(self):
-          # ToDO: Docstring is a lie, name suggest different behavior, from
-          # whats actually happening -> this function should be called "get_package_names"
+        # ToDO: Docstring is a lie, name suggest different behavior, from
+        # whats actually happening -> this function should be called "get_package_names"
         '''
         this method will return a DICTIONARY with ALL packages as key and
         the number of leads as value
@@ -753,6 +753,7 @@ class ProjectNavigation(QObject):
         Program.set_program_validity(self.get_file_operator(), name, True)
 
         self.parent.database_changed.emit(TableId.Flow())
+        self.parent.database_changed.emit(TableId.Test())
 
     def _get_tests_for_target(self, hardware, base, test_target):
         return [test.test for test in TestTarget.get_tests(self.get_file_operator(), hardware, base, test_target)]
@@ -945,10 +946,11 @@ class ProjectNavigation(QObject):
         self.parent.test_target_deleted.emit(name, test)
 
     def set_test_target_default_state(self, name, hardware, base, test, is_default):
+        TestTarget.set_default_state(self.get_file_operator(), name, hardware, base, test, is_default)
+
         if not is_default:
             self._generate_test_target_file(name, test, hardware, base)
 
-        TestTarget.set_default_state(self.get_file_operator(), name, hardware, base, test, is_default)
         self.parent.database_changed.emit(TableId.TestItem())
 
     def set_test_target_state(self, name, hardware, base, test, is_enabled):
@@ -980,7 +982,6 @@ class ProjectNavigation(QObject):
     def get_tests_for_test_target(self, hardware, base, test):
         return self.get_available_test_targets(hardware, base, test)
 
-    # TODO: use following arguments after fixing test behaviour (hardware, base)
     def _generate_test_target_file(self, target_name, test, hardware, base, do_update=False):
         test_target = TestTarget.get(self.get_file_operator(), target_name, hardware, base, test)
         TestTarget.update_test_changed_flag(self.get_file_operator(), target_name, hardware, base, test, is_changed=True)

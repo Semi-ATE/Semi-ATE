@@ -226,18 +226,27 @@ def generate_MRR(end_timestamp: int) -> MRR:
     return rec
 
 
-def generate_MIR(setup_time: int, start_time: int, stat_num: int, lot_id: str, part_typ: str,
-                 node_name: str, tstr_typ: str, job_name: str) -> MIR:
+def generate_MIR(setup_time: int, start_time: int, stat_num: int, lot_id: str,
+                 part_typ: str, node_name: str, tstr_typ: str, job_name: str,
+                 operator_name: str, test_temp: str, user_text: str,
+                 package_type: str, sublot_id: str) -> MIR:
     rec = MIR('V4', endian=ENDIAN)
 
     rec.set_value('SETUP_T', setup_time)
     rec.set_value('START_T', start_time)
     rec.set_value('STAT_NUM', stat_num)
+    rec.set_value('MODE_COD', 'P')  # TODO: maybe testprogram can provide this information
     rec.set_value('LOT_ID', lot_id)
     rec.set_value('PART_TYP', part_typ)
     rec.set_value('NODE_NAM', node_name)
     rec.set_value('TSTR_TYP', tstr_typ)
     rec.set_value('JOB_NAM', job_name)
+    rec.set_value('SBLOT_ID', sublot_id)
+    rec.set_value('OPER_NAM', operator_name)
+    rec.set_value('EXEC_VER', job_name)
+    rec.set_value('TST_TEMP', test_temp)
+    rec.set_value('USER_TXT', user_text)
+    rec.set_value('PKG_TYP', package_type)
 
     return rec
 

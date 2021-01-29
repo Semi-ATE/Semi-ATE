@@ -37,6 +37,9 @@ class {{ definition['name'] }}_OP:
         output.set_test_description(test_desc)
         self.num_outputs += 1
 
+    def get_output_nums(self) -> int:
+        return self.num_outputs
+
 class {{ definition['name']}}_IP:
     """Class definition for the input parameters of {{ definition['name'] }}."""
 
@@ -114,3 +117,6 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
 
     def log_error(self, message: str):
         self.logger.log_message(LogLevel.Error(), message)
+
+    def get_test_nums(self) -> int:
+        return self.op.get_output_nums()

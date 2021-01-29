@@ -1287,12 +1287,12 @@
            </attribute>
            <column>
             <property name="text">
-             <string>Test Name</string>
+             <string>Test Class</string>
             </property>
            </column>
            <column>
             <property name="text">
-             <string>Description</string>
+             <string>Instance Name</string>
             </property>
            </column>
           </widget>

@@ -49,6 +49,7 @@ OUTPUT_LTL_COLUMN_INDEX = 2
 OUTPUT_NOM_COLUMN_INDEX = 3
 OUTPUT_UTL_COLUMN_INDEX = 4
 OUTPUT_USL_COLUMN_INDEX = 5
+OUTPUT_POWER_COLUMN_INDEX = 6
 OUTPUT_UNIT_COLUMN_INDEX = 7
 OUTPUT_FMT_COLUMN_INDEX = 8
 
@@ -1072,7 +1073,7 @@ class TestWizard(BaseDialog):
                 item.triggered.connect(special_value[1])
             menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() == OUTPUT_FMT_COLUMN_INDEX:  # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
+        elif index.column() == OUTPUT_POWER_COLUMN_INDEX:  # multiplier --> reference = STDF V4.pdf @ page 50 & https://en.wikipedia.org/wiki/Order_of_magnitude
             menu = self.multiplierContextMenu(multiplierSetter)
             menu.exec_(QtGui.QCursor.pos())
 
@@ -1171,7 +1172,7 @@ class TestWizard(BaseDialog):
         selection = self.outputParameterView.selectedIndexes()
 
         for index in selection:
-            if index.column() == OUTPUT_FMT_COLUMN_INDEX:
+            if index.column() in (OUTPUT_FMT_COLUMN_INDEX, OUTPUT_POWER_COLUMN_INDEX):
                 self.outputParameterModel.setData(index, text, QtCore.Qt.DisplayRole)
                 self.outputParameterModel.setData(index, tooltip, QtCore.Qt.ToolTipRole)
         self.outputParameterView.clearSelection()

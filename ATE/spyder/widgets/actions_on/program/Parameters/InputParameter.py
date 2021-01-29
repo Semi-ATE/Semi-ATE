@@ -32,6 +32,11 @@ class InputParameter(ParameterBase):
 
         self._select_editability_for_resolvertype(editable)
 
+    def update_parameters(self, param):
+        self.exponent = param.exponent
+        self.unit = param.unit
+        self.format = param.format
+
     def _select_editability_for_resolvertype(self, editable):
         if editable is not ParameterEditability.NotEditable():
             if self.type == ResolverTypes.Static():

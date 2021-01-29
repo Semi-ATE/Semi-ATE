@@ -1,7 +1,7 @@
 import ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.wizardbase
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.intparam import IntParam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.FileOperator import FileOperator
 
 from mock_db_object import MockDBObject
 from PyQt5 import QtWidgets

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject
+from ATE.projectdatabase.FileOperator import DBObject
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 

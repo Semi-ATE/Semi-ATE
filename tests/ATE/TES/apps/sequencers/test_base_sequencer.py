@@ -43,6 +43,9 @@ class dummy_test_case(DutTestCaseBase):
     def get_test_num(self):
         return 911
 
+    def get_test_nums(self) -> int:
+        return 2
+
     def aggregate_test_result(self, site_num):
         pass
 
@@ -175,7 +178,7 @@ def test_trigger_on_test_will_pulse_triggerout(sequencer):
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
     sequencer.register_test(dummy_test_case())
-    test_settings = {"trigger_on_test": {'active': True, 'value': 2}}
+    test_settings = {"trigger_on_test": {'active': True, 'value': 1}}
     test_settings.update(SITE_INFO)
     sequencer.run(SingleShotExecutionPolicy(), test_settings)
     assert(trigger.was_triggered)

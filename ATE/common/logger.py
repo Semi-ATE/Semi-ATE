@@ -78,6 +78,10 @@ class Logger:
         self.set_logger_level(logging.WARNING)
         self.clean_up_log_files_if_needed()
 
+    def cleanup(self):
+        # remove all used handler
+        self.logger.handlers = []
+
     def get_logger_for_component(self, component_name):
         if component_name in self.active_loggers:
             return self.active_loggers[component_name]
