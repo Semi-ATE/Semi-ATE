@@ -57,4 +57,5 @@ if __name__ == '__main__':
 
     context.mqtt.set_logger(logger)
     context.mqtt.run_from_command_line_with_sequencer()
+    logger.cleanup()
 

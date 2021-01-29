@@ -335,7 +335,7 @@ class MasterApplication(MultiSiteTestingModel):
                                                  self.log)
 
         if self.configuration.get('skip_jobdata_verification', False):
-            data = {"DEBUG_OPTION": "no content because skip_jobdata_verification enabled"}
+            self._test_program_data = {"DEBUG_OPTION": "no content because skip_jobdata_verification enabled"}
         else:
             param_data = source.retrieve_data()
             if param_data is None:
@@ -348,14 +348,14 @@ class MasterApplication(MultiSiteTestingModel):
                 self.load_error()
                 return
 
-            data = source.get_test_information(param_data)
-            bin_table = source.get_bin_table(data)
+            self._test_program_data = source.get_test_information(param_data)
+            bin_table = source.get_bin_table(self._test_program_data)
             self._result_info_handler.set_bin_settings(bin_table)
 
-            # used to reduce the size of data to be transfered to the TP
-            data['BINTABLE'] = source.get_binning_tuple(bin_table)
+            # used to reduce the size of data to be transferred to the TP
+            self._test_program_data['BINTABLE'] = source.get_binning_tuple(bin_table)
 
-            self.log.log_message(LogLevel.Debug(), f'testprogram information: {data}')
+            self.log.log_message(LogLevel.Debug(), f'testprogram information: {self._test_program_data}')
 
         self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
         self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_LOADING, CONTROL_STATE_BUSY], self.configuredSites, lambda: None,
@@ -364,7 +364,7 @@ class MasterApplication(MultiSiteTestingModel):
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during load to {state}"))
         self.error_message = ''
 
-        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(data))
+        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(self._test_program_data))
         self._store_user_settings(UserSettings.get_defaults())
 
     @staticmethod
@@ -384,6 +384,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.disarm_timeout()
 
         self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname, self.sites)
+        self._stdf_aggregator.set_test_program_data(self._test_program_data)
         self._send_set_log_level()
 
     def _send_set_log_level(self):

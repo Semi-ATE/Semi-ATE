@@ -54,9 +54,14 @@ class FileSystemDataSource:
                 and self.does_handler_id_exist(param_data.get("CLUSTER")))
 
     def get_test_information(self, param_data: dict):
+        test_information = {}
+        test_information['PACKAGE_ID'] = param_data['MAIN']['PACKAGEID_SHORT']
+        test_information['SUBLOT_ID'] = param_data['MAIN']['LOTNUMBER'].split('.')[1]
         for _, value in param_data.get("STATION").items():
             if self.does_device_id_exist(value):
-                return self.remove_digit_from_keys(value)
+                test_information.update(self.remove_digit_from_keys(value))
+                test_information['PART_ID'] = f"{param_data['MAIN']['MATCHCODE']}_{test_information['TESTERPRG']}"
+                return test_information
 
         self.log.log_message(LogLevel.Warning(), 'device information in station section are missed')
         return None

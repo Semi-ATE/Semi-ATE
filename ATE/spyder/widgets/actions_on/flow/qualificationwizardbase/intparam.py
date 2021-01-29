@@ -1,4 +1,4 @@
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject
+from ATE.projectdatabase.FileOperator import DBObject
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase.textboxparam import TextBoxParam
 
 

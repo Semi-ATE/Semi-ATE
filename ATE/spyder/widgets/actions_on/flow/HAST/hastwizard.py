@@ -5,7 +5,7 @@ from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
 
 quali_flow_name = "qualification_hast_flow"
 quali_flow_listentry_name = "HAST"
-quali_flow_tooltip = "Highley Accelerated Stress Test"
+quali_flow_tooltip = "Highly Accelerated Stress Test"
 
 
 class HASTWizard(wizardbase.wizardbase):

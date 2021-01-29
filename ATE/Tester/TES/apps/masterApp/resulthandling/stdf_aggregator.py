@@ -1,11 +1,9 @@
 from typing import List
-import io
 import time
 import itertools
 import os
 
-from ATE.data.STDF.records import records_from_file
-from ATE.data.STDF.records import FAR, MIR, PCR, MRR, STDR
+from ATE.data.STDF.records import MIR, STDR
 
 # ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR,
@@ -73,8 +71,22 @@ class StdfTestResultAggregator:
                 self.generate_MIR(),
                 generate_SDR(0, 0, len(self.sites), self.sites)]
 
+    def set_test_program_data(self, test_information: dict):
+        self.user_text = test_information['USERTEXT']
+        self.program_dir = test_information['PROGRAM_DIR']
+        self.temperature = test_information['TEMP']
+        self.tester_program = test_information['TESTERPRG']
+        self.part_id = test_information['PART_ID']
+        self.package_id = test_information['PACKAGE_ID']
+        self.sublot_id = test_information['SUBLOT_ID']
+
     def generate_MIR(self) -> MIR:
-        return generate_MIR(self.setup_timestamp, self.start_timestamp, 0, self.lot_id, 'MyPart', self.node_name, 'MINISCT', self.job_name)
+        node_num = 81  # TODO: this is not specified yet
+        operator_name = 'sct'  # TODO: standard value
+        return generate_MIR(self.setup_timestamp, self.start_timestamp, 0,
+                            self.lot_id, f'{self.part_id}', self.node_name, f'MSCT-{node_num}',
+                            self.job_name, operator_name, self.temperature,
+                            self.user_text, f'{self.package_id}', self.sublot_id)
 
     def get_MIR_dict(self) -> dict:
         return self.generate_MIR().to_dict()

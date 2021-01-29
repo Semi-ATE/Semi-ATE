@@ -29,13 +29,13 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
                     end = time.time()
                     break
 
-                test_index += 1
+                test_index += test_case.get_test_nums()
 
                 if not exception:
                     test_result = test_case._select_testresult(test_result, result)
 
             end = time.time()
-            execution_time = int(end - start)
+            execution_time = int((end - start) * 1000.0)
             sequencer_instance.after_cycle_cb(execution_time, test_index, test_result)
 
 

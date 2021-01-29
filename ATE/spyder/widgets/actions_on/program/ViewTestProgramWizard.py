@@ -32,14 +32,6 @@ class ViewTestProgramWizard(TestProgramWizard):
 
     @staticmethod
     def setup_view(dialog, name):
-        dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
-        dialog._update_selected_test_list()
-        dialog._load_bin_table(os.path.join(dialog.project_info.project_directory,
-                                            'src',
-                                            dialog.hardware.currentText(),
-                                            dialog.base.currentText(),
-                                            f'{name}_binning.json'))
-        dialog._populate_binning_tree()
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         # TODO: can we edit any of the following property
         dialog.hardware.clear()
@@ -56,6 +48,14 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog.usertext.setText(configuration['usertext'])
         dialog.cacheType.setCurrentText(configuration['cache_type'])
 
+        dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
+        dialog._update_selected_test_list()
+        dialog._load_bin_table(os.path.join(dialog.project_info.project_directory,
+                                            'src',
+                                            dialog.hardware.currentText(),
+                                            dialog.base.currentText(),
+                                            f'{name}_binning.json'))
+        dialog._populate_binning_tree()
         caching_policy = configuration['caching_policy']
         # cacheDisable is checked by default, we just check
         # the others, if they apply.

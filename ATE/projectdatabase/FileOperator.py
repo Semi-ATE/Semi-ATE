@@ -1,7 +1,8 @@
 from typing import Callable
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
 import os
 import json
+
+from ATE.projectdatabase.Types import Types
 
 CONFIG_DIR_NAME = 'definitions'
 
@@ -73,8 +74,8 @@ class FileOperator:
                     for item in loaded_data:
                         return_val.append(self._make_db_object(item))
                 self.data_cache[f.name] = return_val
-            except:
-                self.data_cache[f] = []
+            except Exception:
+                self.data_cache[f.name] = []
 
         # nastyness: if nothing was found in the FS we atleast create
         # the file thet specifies our filename:

@@ -1,5 +1,5 @@
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.Types import Types
+from ATE.projectdatabase.FileOperator import FileOperator
 
 
 class Sequence:

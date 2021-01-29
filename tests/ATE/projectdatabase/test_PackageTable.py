@@ -1,8 +1,8 @@
 import os
 from pytest import fixture
 
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
-from ATE.spyder.widgets.FileBasedConfig.Package import Package
+from ATE.projectdatabase.FileOperator import FileOperator
+from ATE.projectdatabase.Package import Package
 
 CURRENT_DIR = os.path.join(os.path.dirname(__file__))
 

@@ -1,8 +1,8 @@
 import os
 from pytest import fixture
 
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
-from ATE.spyder.widgets.FileBasedConfig.Maskset import Maskset
+from ATE.projectdatabase.FileOperator import FileOperator
+from ATE.projectdatabase.Maskset import Maskset
 
 CURRENT_DIR = os.path.join(os.path.dirname(__file__))
 

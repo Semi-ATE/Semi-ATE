@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import intparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import optionparam
 from ATE.spyder.widgets.actions_on.flow.qualificationwizardbase import wizardbase
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.FileOperator import FileOperator
 
 
 quali_flow_name = "qualification_esd_flow"

@@ -1,5 +1,5 @@
-from ATE.spyder.widgets.FileBasedConfig.Types import Types
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import DBObject, FileOperator
+from ATE.projectdatabase.Types import Types
+from ATE.projectdatabase.FileOperator import DBObject, FileOperator
 
 
 class TestTarget:
@@ -75,6 +75,8 @@ class TestTarget:
                        .all()
         for test in tests:
             test.is_changed = False
+
+        session.commit()
 
     @staticmethod
     def set_default_state(session: FileOperator, name: str, hardware: str, base: str, test: str, is_default: bool):

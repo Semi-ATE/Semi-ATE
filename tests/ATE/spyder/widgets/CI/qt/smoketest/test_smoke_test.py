@@ -11,7 +11,7 @@ from ATE.spyder.widgets.actions_on.flow.HTOL.htolwizard import HTOLWizard
 from ATE.spyder.widgets.actions_on.tests.TestWizard import TestWizard
 from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 from ATE.spyder.widgets.actions_on.program.EditTestProgramWizard import EditTestProgramWizard
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.FileOperator import FileOperator
 
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow

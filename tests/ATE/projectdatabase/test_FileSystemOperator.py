@@ -1,7 +1,7 @@
 import os
 from pytest import fixture
 
-from ATE.spyder.widgets.FileBasedConfig.FileOperator import FileOperator
+from ATE.projectdatabase.FileOperator import FileOperator
 
 CURRENT_DIR = os.path.join(os.path.dirname(__file__))
 
@@ -21,18 +21,21 @@ def test_can_load_data(fsoperator):
 
 def test_can_get_all_data(fsoperator):
     fsoperator.query_with_subtype("dummydata", "test1").filter(lambda x: True).delete().commit()
+    fsoperator.query_with_subtype("dummydata", "test1").insert([{'foo': 'bar'}, {'foo': "fork"}]).commit()
     data = fsoperator.query("dummydata").all()
     assert (len(data) == 2)
 
 
 def test_can_get_specific_data(fsoperator):
     fsoperator.query_with_subtype("dummydata", "test1").filter(lambda x: True).delete().commit()
+    fsoperator.query_with_subtype("dummydata", "test1").insert([{'id': 'bar'}, {'id': "fork"}]).commit()
     data = fsoperator.query("dummydata").filter(lambda x: x.id == "bar").all()
     assert(len(data) == 1)
 
 
 def test_can_get_unique_item(fsoperator):
     fsoperator.query_with_subtype("dummydata", "test1").filter(lambda x: True).delete().commit()
+    fsoperator.query_with_subtype("dummydata", "test1").insert([{'id': 'bar'}, {'id': "fork"}]).commit()
     data = fsoperator.query("dummydata").filter(lambda x: x.id == "bar").one()
     data.id == "bar"
 
