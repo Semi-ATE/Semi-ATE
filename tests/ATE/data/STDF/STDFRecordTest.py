@@ -3,7 +3,9 @@ import struct
 import math
 
 class STDFRecordTest:
-
+    """
+    helper class for testing
+    """
     def __init__(self , file, endian, debug = False):
         
         self.file = file
