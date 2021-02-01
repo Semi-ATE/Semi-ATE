@@ -8,7 +8,7 @@ import re
 import struct
 import sys
 
-from ATE.data.STDF.records import *
+#from ATE.data.STDF.records import *
 from ATE.utils.compression import default_compression
 from ATE.utils.compression import get_deflated_file_size
 from ATE.utils.compression import supported_compressions
