@@ -1,4 +1,4 @@
-from ATE.data.STDF.records import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR,
+from ATE.data.STDF import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR,
                                    MIR, MPR, MRR, PCR, PGR, PIR, PLR, PMR,
                                    PRR, PTR, RDR, SBR, SDR, TSR, WCR, WIR,
                                    WRR, get_STDF_setup_from_file, records_from_file)

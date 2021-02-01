@@ -2812,61 +2812,60 @@ def is_even(Number):
 #     footer = fd.read(REC_LEN)
 #     return REC_LEN, REC_TYP, REC_SUB, header+footer
 
-# class records_from_file(object):
-#     '''
-#     Generator class to run over the records in FileName.
-#     The return values are 4-fold : REC_LEN, REC_TYP, REC_SUB and REC
-#     REC is the complete record (including REC_LEN, REC_TYP & REC_SUB)
-#     if unpack indicates if REC is to be the raw record or the unpacked object.
-#     of_interest can be a list of records to return. By default of_interest is void
-#     meaning all records (of FileName's STDF Version) are used.
-#     '''
-#     debug = False
+class records_from_file(object):
+    '''
+    Generator class to run over the records in FileName.
+    The return values are 4-fold : REC_LEN, REC_TYP, REC_SUB and REC
+    REC is the complete record (including REC_LEN, REC_TYP & REC_SUB)
+    if unpack indicates if REC is to be the raw record or the unpacked object.
+    of_interest can be a list of records to return. By default of_interest is void
+    meaning all records (of FileName's STDF Version) are used.
+    '''
+    debug = False
 
-#     def __init__(self, FileName, unpack=False, of_interest=None):
-#         if self.debug: print("initializing 'records_from_file")
-#         if isinstance(FileName, str):
-#             self.keep_open = False
-#             if not os.path.exists(FileName):
-#                 raise STDFError("'%s' does not exist")
-#             self.endian = get_STDF_setup_from_file(FileName)[0]
-#             self.version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
-#             self.fd = open(FileName, 'rb')
-#         elif isinstance(FileName, io.IOBase):
-#             self.keep_open = True
-#             self.fd = FileName
-#             ptr = self.fd.tell()
-#             self.fd.seek(4)
-#             buff = self.fd.read(2)
-#             CPU_TYPE, STDF_VER = struct.unpack('BB', buff)
-#             if CPU_TYPE == 1: self.endian = '>'
-#             elif CPU_TYPE == 2: self.endian = '<'
-#             else: self.endian = '?'
-#             self.version = 'V%s' % STDF_VER
-#             self.fd.seek(ptr)
-#         else:
-#             raise STDFError("'%s' is not a string or an open file descriptor")
-#         self.unpack = unpack
-#         self.fmt = '%sHBB' % self.endian
-#         TS2ID = ts_to_id(self.version)
-#         if of_interest==None:
-#             self.records_of_interest = TS2ID
-#         elif isinstance(of_interest, list):
-#             ID2TS = id_to_ts(self.version)
-#             tmp_list = []
-#             for item in of_interest:
-#                 if isinstance(item, str):
-#                     if item in ID2TS:
-#                         if ID2TS[item] not in tmp_list:
-#                             tmp_list.append(ID2TS[item])
-#                 elif isinstance(item, tuple) and len(item)==2:
-#                     if item in TS2ID:
-#                         if item not in tmp_list:
-#                             tmp_list.append(item)
-#             self.records_of_interest = tmp_list
-#         else:
-#             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-
+    def __init__(self, FileName, unpack=False, of_interest=None):
+        if self.debug: print("initializing 'records_from_file")
+        if isinstance(FileName, str):
+            self.keep_open = False
+            if not os.path.exists(FileName):
+                raise STDFError("'%s' does not exist")
+            self.endian = get_STDF_setup_from_file(FileName)[0]
+            self.version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
+            self.fd = open(FileName, 'rb')
+        elif isinstance(FileName, io.IOBase):
+            self.keep_open = True
+            self.fd = FileName
+            ptr = self.fd.tell()
+            self.fd.seek(4)
+            buff = self.fd.read(2)
+            CPU_TYPE, STDF_VER = struct.unpack('BB', buff)
+            if CPU_TYPE == 1: self.endian = '>'
+            elif CPU_TYPE == 2: self.endian = '<'
+            else: self.endian = '?'
+            self.version = 'V%s' % STDF_VER
+            self.fd.seek(ptr)
+        else:
+            raise STDFError("'%s' is not a string or an open file descriptor")
+        self.unpack = unpack
+        self.fmt = '%sHBB' % self.endian
+        TS2ID = ts_to_id(self.version)
+        if of_interest==None:
+            self.records_of_interest = TS2ID
+        elif isinstance(of_interest, list):
+            ID2TS = id_to_ts(self.version)
+            tmp_list = []
+            for item in of_interest:
+                if isinstance(item, str):
+                    if item in ID2TS:
+                        if ID2TS[item] not in tmp_list:
+                            tmp_list.append(ID2TS[item])
+                elif isinstance(item, tuple) and len(item)==2:
+                    if item in TS2ID:
+                        if item not in tmp_list:
+                            tmp_list.append(item)
+            self.records_of_interest = tmp_list
+        else:
+            raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
 #     def __del__(self):
 #         if not self.keep_open:
 #             self.fd.close()
@@ -3194,21 +3193,21 @@ def is_even(Number):
 #     footer = fd.read(REC_LEN)
 #     return header+footer
 
-# def get_STDF_setup_from_file(FileName):
-#     '''
-#     This function will determine the endian and the version of a given STDF file
-#     it must *NOT* be guaranteed that FileName exists or is an STDF File.
-#     '''
-#     endian = None
-#     version = None
-#     if os.path.exists(FileName) and os.path.isfile(FileName):
-#         if is_file_with_stdf_magicnumber(FileName):
-#             CPU_TYP, STDF_VER = struct.unpack('BB', get_bytes_from_file(FileName, 4, 2))
-#             if CPU_TYP == 1: endian = '>'
-#             elif CPU_TYP == 2: endian = '<'
-#             else: endian = '?'
-#             version = "V%s" % STDF_VER
-#     return endian, version
+def get_STDF_setup_from_file(FileName):
+    '''
+    This function will determine the endian and the version of a given STDF file
+    it must *NOT* be guaranteed that FileName exists or is an STDF File.
+    '''
+    endian = None
+    version = None
+    if os.path.exists(FileName) and os.path.isfile(FileName):
+        if is_file_with_stdf_magicnumber(FileName):
+            CPU_TYP, STDF_VER = struct.unpack('BB', get_bytes_from_file(FileName, 4, 2))
+            if CPU_TYP == 1: endian = '>'
+            elif CPU_TYP == 2: endian = '<'
+            else: endian = '?'
+            version = "V%s" % STDF_VER
+    return endian, version
 
 # def get_MIR_from_file(FileName):
 #     '''
