@@ -2780,21 +2780,21 @@ class STDR(ABC):
 #         self._default_init(endian, record)
 
 
-# def is_odd(Number):
-#     '''
-#     This function will return True if the Number is odd, False otherwise
-#     '''
-#     if ((Number % 2) == 1):
-#         return True
-#     return False
+def is_odd(Number):
+    '''
+    This function will return True if the Number is odd, False otherwise
+    '''
+    if ((Number % 2) == 1):
+        return True
+    return False
 
-# def is_even(Number):
-#     '''
-#     This function will return True if the Number is EVEN, False otherwise.
-#     '''
-#     if ((Number % 2) == 1):
-#         return False
-#     return True
+def is_even(Number):
+    '''
+    This function will return True if the Number is EVEN, False otherwise.
+    '''
+    if ((Number % 2) == 1):
+        return False
+    return True
 
 # def read_record(fd, RHF):
 #     '''

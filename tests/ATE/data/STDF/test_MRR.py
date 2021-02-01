@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import MRR
+from ATE.data.STDF.MRR import MRR
 
 #   Master Results Record
 #   Function:

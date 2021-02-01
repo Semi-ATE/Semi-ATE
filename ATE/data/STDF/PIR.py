@@ -1,5 +1,5 @@
 import sys
-from ATE.data.STDF.records import STDR
+from ATE.data.STDF.STDR import STDR
 
 class PIR(STDR):
     def __init__(self, version=None, endian=None, record = None):

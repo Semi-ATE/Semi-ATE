@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import TSR
+from ATE.data.STDF.TSR import TSR
 
 #   Test Synopsis Record
 #   Function:

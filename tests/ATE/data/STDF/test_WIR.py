@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import WIR
+from ATE.data.STDF.WIR import WIR
 
 #   Wafer Information Record
 #   Function:

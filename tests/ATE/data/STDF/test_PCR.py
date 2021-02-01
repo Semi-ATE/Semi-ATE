@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import PCR
+from ATE.data.STDF.PCR import PCR
 
 #   Part Count Record
 #   Function:

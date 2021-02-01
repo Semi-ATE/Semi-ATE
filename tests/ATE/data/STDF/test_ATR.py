@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import ATR
+from ATE.data.STDF.ATR import ATR
 
 #   Audit Trail Record
 #   Function:

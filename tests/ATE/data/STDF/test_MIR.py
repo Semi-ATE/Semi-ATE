@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import MIR
+from ATE.data.STDF.MIR import MIR
 
 #   Master Information Record
 #   Function:

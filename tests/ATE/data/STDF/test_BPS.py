@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import BPS
+from ATE.data.STDF.BPS import BPS
 
 #   Begin Program Section Record
 #   Function:

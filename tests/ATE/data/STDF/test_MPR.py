@@ -2,7 +2,7 @@ import os
 import math
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import MPR
+from ATE.data.STDF.MPR import MPR
 
 
 #   Multiple-Result Parametric Record

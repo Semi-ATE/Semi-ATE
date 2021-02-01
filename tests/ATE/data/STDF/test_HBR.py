@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import HBR
+from ATE.data.STDF.HBR import HBR
 
 #   Hardware Bin Record
 #   Function:

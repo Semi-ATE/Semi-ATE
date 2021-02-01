@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF import PGR
+from ATE.data.STDF.PGR import PGR
 
 #   Pin Group Record
 #   Function:
