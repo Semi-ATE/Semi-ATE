@@ -3,7 +3,9 @@ import time
 import itertools
 import os
 
-from ATE.data.STDF.records import MIR, STDR
+#from ATE.data.STDF.records import MIR, STDR
+from ATE.data.STDF.MIR import MIR
+from ATE.data.STDF.STDR import STDR
 
 # ToDo: Move these methods to somewhere sane, e.g. ATE.data.STDF.utils or similar
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_FTR, generate_PIR,
