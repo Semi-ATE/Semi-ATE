@@ -26,4 +26,4 @@ from .TSR import *
 from .WCR import *
 from .WIR import *
 from .WRR import *
-from .utils import *
+from .utils import create_record_object, records_from_file
