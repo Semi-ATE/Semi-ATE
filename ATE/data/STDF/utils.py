@@ -13,9 +13,9 @@ from ATE.data.STDF import ts_to_id
 from ATE.data.STDF import supported
 from ATE.data.STDF import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR, MIR, MPR, MRR, PCR, PGR, PIR, PLR, PMR, PRR, PTR, RDR, SBR, SDR, TSR, WIR, WCR, WRR)
 
-from ATE.utils.compression import default_compression
-from ATE.utils.compression import get_deflated_file_size
-from ATE.utils.compression import supported_compressions
+#from ATE.utils.compression import default_compression
+#from ATE.utils.compression import get_deflated_file_size
+#from ATE.utils.compression import supported_compressions
 from ATE.utils.compression import supported_compressions_extensions
 from ATE.utils.magicnumber import extension_from_magic_number_in_file
 from ATE.utils.magicnumber import is_compressed_file
