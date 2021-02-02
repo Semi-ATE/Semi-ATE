@@ -2,7 +2,7 @@ import os
 import math
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.FTR import FTR
+from ATE.data.STDF import FTR
 
 #   Functional Test Record
 #   Function:

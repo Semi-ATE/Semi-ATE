@@ -33,6 +33,7 @@ import time
 from abc import ABC
 from mimetypes import guess_type
 
+
 if sys.version_info[0] < 3:
     raise Exception("The STDF library is made for Python 3")
 
@@ -2839,160 +2840,162 @@ def objects_from_indexed_file(FileName, index, records_of_interest=None):
             for fp in index[REC_ID]:
                 OBJ = create_record_object(version, endian, REC_ID, get_record_from_file_at_position(fd, fp, RLF))
                 yield OBJ
-# # class xrecords_from_file(object):
-# #     '''
-# #     This is a *FAST* iterator class that returns the next record from an STDF file each time it is called.
-# #     It is fast because it doesn't check versions, extensions and it doesn't unpack the record and skips unknown records.
-# #     '''
-# #
-# #     def __init__(self, FileName, of_interest=None):
-# #         #TODO: add a record_list of records to return
-# #         if isinstance(FileName, str):
-# #             try:
-# #                 stdf_file = File(FileName)
-# #             except:
-# #                 raise StopIteration
-# #             self.fd = stdf_file.open()
-# #         elif isinstance(FileName, File):
-# #             stdf_file = FileName
-# #             self.fd = FileName.open()
-# #         else:
-# #             raise STDFError("records_from_file(%s) : Unsupported 'FileName'" % FileName)
-# #         self.endian = stdf_file.endian
-# #         self.version = stdf_file.version
-# #         TS2ID = ts_to_id(self.version)
-# #         if of_interest==None:
-# #             self.of_interest = list(TS2ID.keys())
-# #         elif isinstance(of_interest, list):
-# #             ID2TS = id_to_ts(self.version)
-# #             tmp_list = []
-# #             for item in of_interest:
-# #                 if isinstance(item, str):
-# #                     if item in ID2TS:
-# #                         if ID2TS[item] not in tmp_list:
-# #                             tmp_list.append(ID2TS[item])
-# #                 elif isinstance(item, tuple) and len(item)==2:
-# #                     if item in TS2ID:
-# #                         if item not in tmp_list:
-# #                             tmp_list.append(item)
-# #             self.of_interest = tmp_list
-# #         else:
-# #             raise STDFError("records_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-# #
-# #     def __del__(self):
-# #         self.fd.close()
-# #
-# #     def __iter__(self):
-# #         return self
-# #
-# #     def __next__(self):
-# #         while self.fd!=None:
-# #             while True:
-# #                 header = self.fd.read(4)
-# #                 if len(header)!=4:
-# #                     raise StopIteration
-# #                 REC_LEN, REC_TYP, REC_SUB = struct.unpack('HBB', header)
-# #                 footer = self.fd.read(REC_LEN)
-# #                 if len(footer)!=REC_LEN:
-# #                     raise StopIteration
-# #                 if (REC_TYP, REC_SUB) in self.of_interest:
-# #                     return REC_LEN, REC_TYP, REC_SUB, header+footer
-# #
-# # class xobjects_from_file(object):
-# #     '''
-# #     This is an iterator class that returns the next object (unpacked) from an STDF file.
-# #     It will take care of versions and extensions, and unrecognized records will simply be skipped.
-# #     '''
-# #     def __init__(self, FileName, of_interest=None):
-# #         if isinstance(FileName, str):
-# #             try:
-# #                 stdf_file = File(FileName)
-# #             except:
-# #                 raise STDFError("objects_from_file(%s, %s) : File doesn't exist" % (FileName, of_interest))
-# #             self.fd = stdf_file.open()
-# #         elif isinstance(FileName, File):
-# #             self.fd = FileName.open()
-# #         else:
-# #             raise STDFError("objects_from_file(%s) : Unsupported 'FileName'" % FileName)
-# #         self.endian = stdf_file.endian
-# #         self.version = stdf_file.version
-# #         TS2ID = ts_to_id(self.version)
-# #         if of_interest==None:
-# #             of_interest = TS2ID
-# #         elif isinstance(of_interest, list):
-# #             ID2TS = id_to_ts(self.version)
-# #             tmp_list = []
-# #             for item in of_interest:
-# #                 if isinstance(item, str):
-# #                     if item in ID2TS:
-# #                         if ID2TS[item] not in tmp_list:
-# #                             tmp_list.append(ID2TS[item])
-# #                 elif isinstance(item, tuple) and len(item)==2:
-# #                     if item in TS2ID:
-# #                         if item not in tmp_list:
-# #                             tmp_list.append(item)
-# #             of_interest = tmp_list
-# #         else:
-# #             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-# #         self.of_interest = of_interest
-# #         self.fmt = '%sHBB' % self.endian
-# #
-# #     def __del__(self):
-# #         self.fd.close()
-# #
-# #     def __iter__(self):
-# #         return self
-# #
-# #     def __next__(self):
-# #         while True:
-# #             header = self.fd.read(4)
-# #             if len(header)!=4:
-# #                 raise StopIteration
-# #             else:
-# #                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
-# #                 footer = self.fd.read(REC_LEN)
-# #                 if len(footer)!=REC_LEN:
-# #                     raise StopIteration
-# #                 else:
-# #                     record = header + footer
-# #                     if (REC_TYP, REC_SUB) in self.of_interest:
-# #                         recobj = create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), record)
-# #                         return (recobj)
+
+# class xrecords_from_file(object):
+#     '''
+#     This is a *FAST* iterator class that returns the next record from an STDF file each time it is called.
+#     It is fast because it doesn't check versions, extensions and it doesn't unpack the record and skips unknown records.
+#     '''
+#
+#     def __init__(self, FileName, of_interest=None):
+#         #TODO: add a record_list of records to return
+#         if isinstance(FileName, str):
+#             try:
+#                 stdf_file = File(FileName)
+#             except:
+#                 raise StopIteration
+#             self.fd = stdf_file.open()
+#         elif isinstance(FileName, File):
+#             stdf_file = FileName
+#             self.fd = FileName.open()
+#         else:
+#             raise STDFError("records_from_file(%s) : Unsupported 'FileName'" % FileName)
+#         self.endian = stdf_file.endian
+#         self.version = stdf_file.version
+#         TS2ID = ts_to_id(self.version)
+#         if of_interest==None:
+#             self.of_interest = list(TS2ID.keys())
+#         elif isinstance(of_interest, list):
+#             ID2TS = id_to_ts(self.version)
+#             tmp_list = []
+#             for item in of_interest:
+#                 if isinstance(item, str):
+#                     if item in ID2TS:
+#                         if ID2TS[item] not in tmp_list:
+#                             tmp_list.append(ID2TS[item])
+#                 elif isinstance(item, tuple) and len(item)==2:
+#                     if item in TS2ID:
+#                         if item not in tmp_list:
+#                             tmp_list.append(item)
+#             self.of_interest = tmp_list
+#         else:
+#             raise STDFError("records_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+#
+#     def __del__(self):
+#         self.fd.close()
+#
+#     def __iter__(self):
+#         return self
+#
+#     def __next__(self):
+#         while self.fd!=None:
+#             while True:
+#                 header = self.fd.read(4)
+#                 if len(header)!=4:
+#                     raise StopIteration
+#                 REC_LEN, REC_TYP, REC_SUB = struct.unpack('HBB', header)
+#                 footer = self.fd.read(REC_LEN)
+#                 if len(footer)!=REC_LEN:
+#                     raise StopIteration
+#                 if (REC_TYP, REC_SUB) in self.of_interest:
+#                     return REC_LEN, REC_TYP, REC_SUB, header+footer
+#
+# class xobjects_from_file(object):
+#     '''
+#     This is an iterator class that returns the next object (unpacked) from an STDF file.
+#     It will take care of versions and extensions, and unrecognized records will simply be skipped.
+#     '''
+#     def __init__(self, FileName, of_interest=None):
+#         if isinstance(FileName, str):
+#             try:
+#                 stdf_file = File(FileName)
+#             except:
+#                 raise STDFError("objects_from_file(%s, %s) : File doesn't exist" % (FileName, of_interest))
+#             self.fd = stdf_file.open()
+#         elif isinstance(FileName, File):
+#             self.fd = FileName.open()
+#         else:
+#             raise STDFError("objects_from_file(%s) : Unsupported 'FileName'" % FileName)
+#         self.endian = stdf_file.endian
+#         self.version = stdf_file.version
+#         TS2ID = ts_to_id(self.version)
+#         if of_interest==None:
+#             of_interest = TS2ID
+#         elif isinstance(of_interest, list):
+#             ID2TS = id_to_ts(self.version)
+#             tmp_list = []
+#             for item in of_interest:
+#                 if isinstance(item, str):
+#                     if item in ID2TS:
+#                         if ID2TS[item] not in tmp_list:
+#                             tmp_list.append(ID2TS[item])
+#                 elif isinstance(item, tuple) and len(item)==2:
+#                     if item in TS2ID:
+#                         if item not in tmp_list:
+#                             tmp_list.append(item)
+#             of_interest = tmp_list
+#         else:
+#             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+#         self.of_interest = of_interest
+#         self.fmt = '%sHBB' % self.endian
+#
+#     def __del__(self):
+#         self.fd.close()
+#
+#     def __iter__(self):
+#         return self
+#
+#     def __next__(self):
+#         while True:
+#             header = self.fd.read(4)
+#             if len(header)!=4:
+#                 raise StopIteration
+#             else:
+#                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
+#                 footer = self.fd.read(REC_LEN)
+#                 if len(footer)!=REC_LEN:
+#                     raise StopIteration
+#                 else:
+#                     record = header + footer
+#                     if (REC_TYP, REC_SUB) in self.of_interest:
+#                         recobj = create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), record)
+#                         return (recobj)
 
 
-# # class open(object):
-# #     '''
-# #     file opener that opens an STDF file transparently (gzipped or not)
-# #     '''
-# #     def __init__(self, fname):
-# #         f = open(fname)
-# #         # Read magic number (the first 2 bytes) and rewind.
-# #         magic_number = f.read(2)
-# #         f.seek(0)
-# #         # Encapsulated 'self.f' is a file or a GzipFile.
-# #         if magic_number == '\x1f\x8b':
-# #             self.f = gzip.GzipFile(fileobj=f)
-# #         else:
-# #             self.f = f
-# #
-# #         # Define '__enter__' and '__exit__' to use in 'with' blocks.
-# #         def __enter__(self):
-# #             return self
-# #         def __exit__(self, type, value, traceback):
-# #             try:
-# #                 self.f.fileobj.close()
-# #             except AttributeError:
-# #                 pass
-# #             finally:
-# #                 self.f.close()
-# #
-# #         # Reproduce the interface of an open file by encapsulation.
-# #         def __getattr__(self, name):
-# #             return getattr(self.f, name)
-# #         def __iter__(self):
-# #             return iter(self.f)
-# #         def next(self):
-# #             return next(self.f)
+# class open(object):
+#     '''
+#     file opener that opens an STDF file transparently (gzipped or not)
+#     '''
+#     def __init__(self, fname):
+#         f = open(fname)
+#         # Read magic number (the first 2 bytes) and rewind.
+#         magic_number = f.read(2)
+#         f.seek(0)
+#         # Encapsulated 'self.f' is a file or a GzipFile.
+#         if magic_number == '\x1f\x8b':
+#             self.f = gzip.GzipFile(fileobj=f)
+#         else:
+#             self.f = f
+#
+#         # Define '__enter__' and '__exit__' to use in 'with' blocks.
+#         def __enter__(self):
+#             return self
+#         def __exit__(self, type, value, traceback):
+#             try:
+#                 self.f.fileobj.close()
+#             except AttributeError:
+#                 pass
+#             finally:
+#                 self.f.close()
+#
+#         # Reproduce the interface of an open file by encapsulation.
+#         def __getattr__(self, name):
+#             return getattr(self.f, name)
+#         def __iter__(self):
+#             return iter(self.f)
+#         def next(self):
+#             return next(self.f)
+
 
 
 # def wafer_map(data, parameter=None):

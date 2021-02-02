@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.RDR import RDR
+from ATE.data.STDF import RDR
 
 #   Retest Data Record
 #   Function:

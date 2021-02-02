@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.GDR import GDR
+from ATE.data.STDF import GDR
 
 #   Generic Data Record
 #   Function:

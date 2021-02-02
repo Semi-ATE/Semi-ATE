@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.PLR import PLR
+from ATE.data.STDF import PLR
 
 #   Pin List Record
 #   Function:

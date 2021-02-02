@@ -1,16 +1,4 @@
-from ATE.data.STDF.PTR import PTR
-from ATE.data.STDF.PRR import PRR
-from ATE.data.STDF.PIR import PIR
-from ATE.data.STDF.TSR import TSR
-from ATE.data.STDF.FTR import FTR
-from ATE.data.STDF.SBR import SBR
-from ATE.data.STDF.HBR import HBR
-from ATE.data.STDF.MRR import MRR
-from ATE.data.STDF.MIR import MIR
-from ATE.data.STDF.PCR import PCR
-from ATE.data.STDF.FAR import FAR
-from ATE.data.STDF.SDR import SDR
-
+from ATE.data.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR)
 
 ENDIAN = '<'
 

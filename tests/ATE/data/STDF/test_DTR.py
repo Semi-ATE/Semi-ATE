@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.DTR import DTR
+from ATE.data.STDF import DTR
 
 #   Datalog Text Record
 #   Function:

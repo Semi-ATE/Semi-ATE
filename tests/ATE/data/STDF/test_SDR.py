@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
-from ATE.data.STDF.SDR import SDR
+from ATE.data.STDF import SDR
 
 #   Site Description Record
 #   Function:
