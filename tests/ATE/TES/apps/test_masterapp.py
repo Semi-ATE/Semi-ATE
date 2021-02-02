@@ -471,7 +471,7 @@ class TestApplication:
 
     @staticmethod
     def _generate_PRR(part_id, sbin):
-        from ATE.data.STDF.records import PRR
+        from ATE.data.STDF.PRR import PRR
         endian = '<'
         version = 'V4'
         rec = PRR(version, endian)

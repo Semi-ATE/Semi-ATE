@@ -1,5 +1,3 @@
-#from ATE.data.STDF.records import (PTR, PRR, PIR, TSR, FTR, SBR, HBR, MRR, MIR, PCR, FAR, SDR)
-
 from ATE.data.STDF.PTR import PTR
 from ATE.data.STDF.PRR import PRR
 from ATE.data.STDF.PIR import PIR

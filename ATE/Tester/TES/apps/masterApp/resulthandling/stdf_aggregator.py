@@ -3,7 +3,6 @@ import time
 import itertools
 import os
 
-#from ATE.data.STDF.records import MIR, STDR
 from ATE.data.STDF.MIR import MIR
 from ATE.data.STDF.STDR import STDR
 
