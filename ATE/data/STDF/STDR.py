@@ -1906,6 +1906,7 @@ class STDR(ABC):
         # they can be skipped (including the OPT_FLAG field)
         for field in self.fields:
             sequence[self.fields[field]['#']] = field
+            # to be done
 #            if field == 'OPT_FLAG':
 #                is_optional_flag = True
 #                if self.fields[field]['Value'] != None:
