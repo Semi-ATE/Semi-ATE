@@ -291,68 +291,7 @@ def test_PTR():
 #   Test ATDF output
     assert inst.to_atdf() == expected_atdf
     
-#   Test rest and OPT_FLAG    
-    rec_len = 0;
-    record.reset()
-
-    test_num = 123
-    record.set_value('TEST_NUM', test_num)
-    rec_len += 4;
-    expected_atdf += str(test_num) +"|"
-
-    head_num = 1 
-    record.set_value('HEAD_NUM', head_num)
-    rec_len += 1;
-    expected_atdf += str(head_num) +"|"
-
-    site_num = 1
-    record.set_value('SITE_NUM', site_num)
-    rec_len += 1;
-    expected_atdf += str(site_num) + "|"
-
-
-    test_flg = ['1', '1', '1', '1', '1', '1', '1', '1']
-    record.set_value('TEST_FLG', test_flg)
-    rec_len += 1;
-
-    parm_flg = ['1', '1', '1', '1', '1', '1', '1', '1']
-    record.set_value('PARM_FLG', parm_flg)
-    rec_len += 1;
-
-    result = 2.345
-    record.set_value('RESULT', result)
-    rec_len += 4;
-    expected_atdf += str(result) + "|"
-
-#    TEST_FLG bits 6 and 7
-#    PARM_FLG bit 5
-    expected_atdf += ' ' + "|"
-#    TEST_FLG bits 0, 2, 3, 4, 5
-#    PARM_FLG bits 0, 1, 2, 3, 4
-    expected_atdf += 'AUTNXSDOHL' + "|"
-
-    test_txt = 'IDDQ during pattern exection' 
-    record.set_value('TEST_TXT', test_txt)
-    rec_len += len(test_txt) + 1;
-    expected_atdf += test_txt + "|"
-
-    alarm_id = 'CRASH_ALARM_ID' 
-    record.set_value('ALARM_ID', alarm_id)
-    rec_len += len(alarm_id) + 1;
-    expected_atdf += alarm_id + "|"
-
-    f = open(tf.name, "wb")
-    w_data = record.__repr__()
-    f.write(w_data)
-    f.close
-
-    f = open(tf.name, "rb")
-    
-    stdfRecTest = STDFRecordTest(f, "<")
-
-    inst = PTR('V4', '<', w_data)
-#   rec_len, rec_type, rec_sub
-    stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 10)
+#   ToDo: Test reset method and OPT_FLAG
 
 #   ToDo: Test JSON output
     

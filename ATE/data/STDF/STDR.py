@@ -1003,20 +1003,20 @@ class STDR(ABC):
             if field == 'REC_LEN' : continue
             if field == 'REC_TYP' : continue
             if field == 'REC_SUB' : continue
-#            When a record contains the OPT_FLAG, the fields after OPT_FLAG are 
+#            When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
 #            not mandatory always. They have to be set in the first instance of 
 #            the record as "default values" and after that if there are no changes
 #            they can be skipped (including the OPT_FLAG field)
-            if field == 'OPT_FLAG':
-                is_optional_flag = True
-                if self.fields[field]['Value'] != None:
-                    reclen += self._type_size(field)
-                continue
-            if is_optional_flag:
-                if self.fields[field]['Value'] != None:
-                    reclen += self._type_size(field)
-            else:
-                reclen += self._type_size(field)
+#            if field == 'OPT_FLAG':
+#                is_optional_flag = True
+#                if self.fields[field]['Value'] != None:
+#                    reclen += self._type_size(field)
+#                continue
+#            if is_optional_flag:
+#                if self.fields[field]['Value'] != None:
+#                    reclen += self._type_size(field)
+#            else:
+            reclen += self._type_size(field)
 
         if self.local_debug: print("%s._update_rec_len() = %s" % (self.id, reclen))
         self.fields['REC_LEN']['Value'] = reclen
@@ -1106,8 +1106,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'I': # (list of) Signed integer(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1125,8 +1125,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'R': # (list of) floating point number(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1142,8 +1142,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'C': # (list of) string(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1156,8 +1156,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'S': # (list of) long string(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1170,8 +1170,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'B': # (list of) list of n*8 times '0' or '1'
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1191,8 +1191,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
 
         elif Type == 'D': # (list of) list of bits being '0' or '1'
 
@@ -1218,8 +1218,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
 
         elif Type == 'N': # a list of nibbles
             if TypeMultiplier: ValueMask = Value
@@ -1244,8 +1244,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'V': # (list of) variable types
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1312,8 +1312,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         else:
             if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
             else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
@@ -1363,7 +1363,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xI': # list of signed integers
@@ -1380,7 +1380,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xR': # list of floating point numbers
@@ -1395,7 +1395,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xC': # list of strings
@@ -1425,7 +1425,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xB': # list of list of '0' or '1'
@@ -1437,7 +1437,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xD': # list of list of '0' or '1'
@@ -1449,7 +1449,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xN': # list of a list of nibbles
@@ -1473,7 +1473,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xV': # list of 2-element tuples
@@ -1554,7 +1554,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
                 else:
                     raise STDFError("%s._pack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
@@ -1574,7 +1574,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'I': # signed integer
@@ -1592,7 +1592,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'R': # float
@@ -1608,7 +1608,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     leading = round(result,0)
                     len_lead = len(str(leading))
                     result = round(result, 9 - len_lead)
@@ -1639,7 +1639,7 @@ class STDR(ABC):
                         result = working_buffer.decode()
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'B': # list of single character strings being '0' or '1' (max length = 255*8 = 2040 bits)
@@ -1673,7 +1673,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'D': # list of single character strings being '0' and '1'(max length = 65535 bits)
@@ -1700,7 +1700,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'N': # list of integers
@@ -1724,7 +1724,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'V': # tuple (type, value) where type is defined in spec page 62
@@ -1751,7 +1751,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._pack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 else:
@@ -1763,13 +1763,13 @@ class STDR(ABC):
         '''
         self.buffer = record
 
-        if self.local_debug: print("%s._unpack(%s) with buffer length = %s" % (self.id, hexify(record), len(record)))
+        if self.local_debug: print("%s._unpack(%s) with buffer length = %s" % (self.id, self.hexify(record), len(record)))
 
         if record[2] != self.fields['REC_TYP']['Value']:
-            raise STDFError("%s_unpack(%s) : REC_TYP doesn't match record" % hexify(record))
+            raise STDFError("%s_unpack(%s) : REC_TYP doesn't match record" % self.hexify(record))
 
         if record[3] != self.fields['REC_SUB']['Value']:
-            raise STDFError("%s_unpack(%s) : REC_SUB doesn't match record" % (self.id, hexify(record)))
+            raise STDFError("%s_unpack(%s) : REC_SUB doesn't match record" % (self.id, hexify(record)))    
 
         items = {}
         for index in self.fields:
@@ -1895,29 +1895,29 @@ class STDR(ABC):
         '''
         sequence = {}
         sequence_wo_opt_data = {}
-        use_optional_data = False
+        use_optional_data = True
         is_optional_flag = False
         header = b''
         body = b''
 
-        # When a record contains the OPT_FLAG, the fields after OPT_FLAG are 
+        # When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
         # not mandatory always. They have to be set in the first instance of 
         # the record as "default values" and after that if there are no changes
         # they can be skipped (including the OPT_FLAG field)
         for field in self.fields:
             sequence[self.fields[field]['#']] = field
-            if field == 'OPT_FLAG':
-                is_optional_flag = True
-                if self.fields[field]['Value'] != None:
-                    sequence_wo_opt_data[self.fields[field]['#']] = field                
-                continue
-            if is_optional_flag and self.fields[field]['Value'] != None:
-                use_optional_data = True
-            if is_optional_flag == False and use_optional_data == False:
-                sequence_wo_opt_data[self.fields[field]['#']] = field                
-        
-        if is_optional_flag and use_optional_data == False:
-            sequence = sequence_wo_opt_data
+#            if field == 'OPT_FLAG':
+#                is_optional_flag = True
+#                if self.fields[field]['Value'] != None:
+#                    sequence_wo_opt_data[self.fields[field]['#']] = field                
+#                continue
+#            if is_optional_flag and self.fields[field]['Value'] != None:
+#                use_optional_data = False
+#            if is_optional_flag == False and use_optional_data == False:
+#                sequence_wo_opt_data[self.fields[field]['#']] = field                
+#        
+#        if is_optional_flag and use_optional_data == False:
+#            sequence = sequence_wo_opt_data
             
         # pack the body
         for item in range(3, len(sequence)):
@@ -1935,7 +1935,7 @@ class STDR(ABC):
         # assemble the record
         retval = header + body
 
-        if self.local_debug: print("%s.pack()\n   '%s'\n   %s bytes" % (self.id, hexify(retval), len(retval)))
+        if self.local_debug: print("%s.pack()\n   '%s'\n   %s bytes" % (self.id, self.hexify(retval), len(retval)))
         return retval
 
 
