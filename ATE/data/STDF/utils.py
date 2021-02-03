@@ -7,11 +7,15 @@ import os
 import re
 import struct
 import sys
+import io
 
-#from ATE.data.STDF.records import *
-from ATE.utils.compression import default_compression
-from ATE.utils.compression import get_deflated_file_size
-from ATE.utils.compression import supported_compressions
+from ATE.data.STDF import ts_to_id
+from ATE.data.STDF import supported
+from ATE.data.STDF import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR, MIR, MPR, MRR, PCR, PGR, PIR, PLR, PMR, PRR, PTR, RDR, SBR, SDR, TSR, WIR, WCR, WRR)
+
+#from ATE.utils.compression import default_compression
+#from ATE.utils.compression import get_deflated_file_size
+#from ATE.utils.compression import supported_compressions
 from ATE.utils.compression import supported_compressions_extensions
 from ATE.utils.magicnumber import extension_from_magic_number_in_file
 from ATE.utils.magicnumber import is_compressed_file
@@ -1921,6 +1925,169 @@ class records_from_file(object):
                 if len(footer)!=REC_LEN:
                     raise StopIteration
                 return REC_LEN, REC_TYP, REC_SUB, header+footer
+
+class records_from_file(object):
+    '''
+    Generator class to run over the records in FileName.
+    The return values are 4-fold : REC_LEN, REC_TYP, REC_SUB and REC
+    REC is the complete record (including REC_LEN, REC_TYP & REC_SUB)
+    if unpack indicates if REC is to be the raw record or the unpacked object.
+    of_interest can be a list of records to return. By default of_interest is void
+    meaning all records (of FileName's STDF Version) are used.
+    '''
+    debug = False
+
+    def __init__(self, FileName, unpack=False, of_interest=None):
+        if self.debug: print("initializing 'records_from_file")
+        if isinstance(FileName, str):
+            self.keep_open = False
+            if not os.path.exists(FileName):
+                raise STDFError("'%s' does not exist")
+            self.endian = get_STDF_setup_from_file(FileName)[0]
+            self.version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
+            self.fd = open(FileName, 'rb')
+        elif isinstance(FileName, io.IOBase):
+            self.keep_open = True
+            self.fd = FileName
+            ptr = self.fd.tell()
+            self.fd.seek(4)
+            buff = self.fd.read(2)
+            CPU_TYPE, STDF_VER = struct.unpack('BB', buff)
+            if CPU_TYPE == 1: self.endian = '>'
+            elif CPU_TYPE == 2: self.endian = '<'
+            else: self.endian = '?'
+            self.version = 'V%s' % STDF_VER
+            self.fd.seek(ptr)
+        else:
+            raise STDFError("'%s' is not a string or an open file descriptor")
+        self.unpack = unpack
+        self.fmt = '%sHBB' % self.endian
+        TS2ID = ts_to_id(self.version)
+        if of_interest==None:
+            self.records_of_interest = TS2ID
+        elif isinstance(of_interest, list):
+            ID2TS = id_to_ts(self.version)
+            tmp_list = []
+            for item in of_interest:
+                if isinstance(item, str):
+                    if item in ID2TS:
+                        if ID2TS[item] not in tmp_list:
+                            tmp_list.append(ID2TS[item])
+                elif isinstance(item, tuple) and len(item)==2:
+                    if item in TS2ID:
+                        if item not in tmp_list:
+                            tmp_list.append(item)
+            self.records_of_interest = tmp_list
+        else:
+            raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+
+    def __del__(self):
+        if not self.keep_open:
+            self.fd.close()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self.fd!=None:
+            header = self.fd.read(4)
+            if len(header)!=4:
+                raise StopIteration
+            else:
+                REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
+                footer = self.fd.read(REC_LEN)
+                if (REC_TYP, REC_SUB) in self.records_of_interest:
+                    if len(footer)!=REC_LEN:
+                        raise StopIteration()
+                    else:
+                        if self.unpack:
+                            return REC_LEN, REC_TYP, REC_SUB, create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), header+footer)
+                        else:
+                            return REC_LEN, REC_TYP, REC_SUB, header+footer
+
+
+def create_record_object(Version, Endian, REC_ID, REC=None):
+    '''
+    This function will create and return the appropriate Object for REC
+    based on REC_ID. REC_ID can be a 2-element tuple or a string.
+    If REC is not None, then the record will also be unpacked.
+    '''
+    retval = None
+    REC_TYP=-1
+    REC_SUB=-1
+    if Version not in supported().versions():
+        raise STDFError("Unsupported STDF Version : %s" % Version)
+    if Endian not in ['<', '>']:
+        raise STDFError("Unsupported Endian : '%s'" % Endian)
+    if isinstance(REC_ID, tuple) and len(REC_ID)==2:
+        TS2ID = ts_to_id(Version)
+        if (REC_ID[0], REC_ID[1]) in TS2ID:
+            REC_TYP = REC_ID[0]
+            REC_SUB = REC_ID[1]
+            REC_ID = TS2ID[(REC_TYP, REC_SUB)]
+    elif isinstance(REC_ID, str):
+        ID2TS = id_to_ts(Version)
+        if REC_ID in ID2TS:
+            (REC_TYP, REC_SUB) = ID2TS[REC_ID]
+    else:
+        raise STDFError("Unsupported REC_ID : %s" % REC_ID)
+
+    if REC_TYP!=-1 and REC_SUB!=-1:
+        if REC_ID == 'PTR': retval = PTR(Version, Endian, REC)
+        elif REC_ID == 'FTR': retval = FTR(Version, Endian, REC)
+        elif REC_ID == 'MPR': retval = MPR(Version, Endian, REC)
+        elif REC_ID == 'STR': retval = STR(Version, Endian, REC)
+        elif REC_ID == 'MTR': retval = MTR(Version, Endian, REC)
+        elif REC_ID == 'PIR': retval = PIR(Version, Endian, REC)
+        elif REC_ID == 'PRR': retval = PRR(Version, Endian, REC)
+        elif REC_ID == 'FAR': retval = FAR(Version, Endian, REC)
+        elif REC_ID == 'ATR': retval = ATR(Version, Endian, REC)
+        elif REC_ID == 'VUR': retval = VUR(Version, Endian, REC)
+        elif REC_ID == 'MIR': retval = MIR(Version, Endian, REC)
+        elif REC_ID == 'MRR': retval = MRR(Version, Endian, REC)
+        elif REC_ID == 'WCR': retval = WCR(Version, Endian, REC)
+        elif REC_ID == 'WIR': retval = WIR(Version, Endian, REC)
+        elif REC_ID == 'WRR': retval = WRR(Version, Endian, REC)
+        elif REC_ID == 'ADR': retval = ADR(Version, Endian, REC)
+        elif REC_ID == 'ASR': retval = ASR(Version, Endian, REC)
+        elif REC_ID == 'BPS': retval = BPS(Version, Endian, REC)
+        elif REC_ID == 'BRR': retval = BRR(Version, Endian, REC)
+        elif REC_ID == 'BSR': retval = BSR(Version, Endian, REC)
+        elif REC_ID == 'CNR': retval = CNR(Version, Endian, REC)
+        elif REC_ID == 'DTR': retval = DTR(Version, Endian, REC)
+        elif REC_ID == 'EPDR': retval = EPDR(Version, Endian, REC)
+        elif REC_ID == 'EPS': retval = EPS(Version, Endian, REC)
+        elif REC_ID == 'ETSR': retval = ETSR(Version, Endian, REC)
+        elif REC_ID == 'FDR': retval = FDR(Version, Endian, REC)
+        elif REC_ID == 'FSR': retval = FSR(Version, Endian, REC)
+        elif REC_ID == 'GDR': retval = GDR(Version, Endian, REC)
+        elif REC_ID == 'GTR': retval = GTR(Version, Endian, REC)
+        elif REC_ID == 'HBR': retval = HBR(Version, Endian, REC)
+        elif REC_ID == 'IDR': retval = IDR(Version, Endian, REC)
+        elif REC_ID == 'MCR': retval = MCR(Version, Endian, REC)
+        elif REC_ID == 'MMR': retval = MMR(Version, Endian, REC)
+        elif REC_ID == 'MSR': retval = MSR(Version, Endian, REC)
+        elif REC_ID == 'NMR': retval = NMR(Version, Endian, REC)
+        elif REC_ID == 'PCR': retval = PCR(Version, Endian, REC)
+        elif REC_ID == 'PDR': retval = PDR(Version, Endian, REC)
+        elif REC_ID == 'PGR': retval = PGR(Version, Endian, REC)
+        elif REC_ID == 'PLR': retval = PLR(Version, Endian, REC)
+        elif REC_ID == 'PMR': retval = PMR(Version, Endian, REC)
+        elif REC_ID == 'PSR': retval = PSR(Version, Endian, REC)
+        elif REC_ID == 'RDR': retval = RDR(Version, Endian, REC)
+        elif REC_ID == 'SBR': retval = SBR(Version, Endian, REC)
+        elif REC_ID == 'SCR': retval = SCR(Version, Endian, REC)
+        elif REC_ID == 'SDR': retval = SDR(Version, Endian, REC)
+        elif REC_ID == 'SHB': retval = SHB(Version, Endian, REC)
+        elif REC_ID == 'SSB': retval = SSB(Version, Endian, REC)
+        elif REC_ID == 'SSR': retval = SSR(Version, Endian, REC)
+        elif REC_ID == 'STS': retval = STS(Version, Endian, REC)
+        elif REC_ID == 'TSR': retval = TSR(Version, Endian, REC)
+        elif REC_ID == 'WTR': retval = WTR(Version, Endian, REC)
+        elif REC_ID == 'RR1': retval = RR1(Version, Endian, REC) # can not be reached because of -1
+        elif REC_ID == 'RR2': retval = RR2(Version, Endian, REC) # can not be reached because of -1
+    return retval
+
 
 
 if __name__ == '__main__':

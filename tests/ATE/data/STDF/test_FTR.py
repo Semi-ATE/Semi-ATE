@@ -377,47 +377,6 @@ def test_FTR():
  
     os.remove(tf.name)
 
-#   Test reset method and OPT_FLAG
-    rec_len = 0;
-    record.reset()
-
-    test_num = 11
-    record.set_value('TEST_NUM', test_num)
-    rec_len += 4;
-    expected_atdf += str(test_num) +"|"
-
-    head_num = 22
-    record.set_value('HEAD_NUM', head_num)
-    rec_len += 1;
-    expected_atdf += str(head_num) +"|"
-
-    site_num = 33
-    record.set_value('SITE_NUM', site_num)
-    rec_len += 1;
-    expected_atdf += str(site_num) + "|"
-
-    test_flg = ['0', '0', '0', '0', '0', '0', '0', '0']
-    record.set_value('TEST_FLG', test_flg)
-    rec_len += 1;
-    expected_atdf += "P|"
-    expected_atdf += "|"
-
-
-    opt_flag = ['1', '1', '1', '1', '1', '1', '1', '1']
-    record.set_value('OPT_FLAG', opt_flag)
-    rec_len += 1;
-
-    f = open(tf.name, "wb")
-    w_data = record.__repr__()
-    f.write(w_data)
-    f.close
-
-    f = open(tf.name, "rb")
-    
-    stdfRecTest = STDFRecordTest(f, "<")
-
-    inst = FTR('V4', '<', w_data)
-#   rec_len, rec_type, rec_sub
-    stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 20)
+#   ToDo: Test reset method and OPT_FLAG
 
 #   ToDo: Test JSON output

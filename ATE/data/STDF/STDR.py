@@ -1003,20 +1003,20 @@ class STDR(ABC):
             if field == 'REC_LEN' : continue
             if field == 'REC_TYP' : continue
             if field == 'REC_SUB' : continue
-#            When a record contains the OPT_FLAG, the fields after OPT_FLAG are 
+#            When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
 #            not mandatory always. They have to be set in the first instance of 
 #            the record as "default values" and after that if there are no changes
 #            they can be skipped (including the OPT_FLAG field)
-            if field == 'OPT_FLAG':
-                is_optional_flag = True
-                if self.fields[field]['Value'] != None:
-                    reclen += self._type_size(field)
-                continue
-            if is_optional_flag:
-                if self.fields[field]['Value'] != None:
-                    reclen += self._type_size(field)
-            else:
-                reclen += self._type_size(field)
+#            if field == 'OPT_FLAG':
+#                is_optional_flag = True
+#                if self.fields[field]['Value'] != None:
+#                    reclen += self._type_size(field)
+#                continue
+#            if is_optional_flag:
+#                if self.fields[field]['Value'] != None:
+#                    reclen += self._type_size(field)
+#            else:
+            reclen += self._type_size(field)
 
         if self.local_debug: print("%s._update_rec_len() = %s" % (self.id, reclen))
         self.fields['REC_LEN']['Value'] = reclen
@@ -1106,8 +1106,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'I': # (list of) Signed integer(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1125,8 +1125,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'R': # (list of) floating point number(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1142,8 +1142,8 @@ class STDR(ABC):
             for i in range(K):
                 pkg+=struct.pack(fmt, ValueMask[i])
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'C': # (list of) string(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1156,8 +1156,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'S': # (list of) long string(s)
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1170,8 +1170,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'B': # (list of) list of n*8 times '0' or '1'
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1191,8 +1191,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
 
         elif Type == 'D': # (list of) list of bits being '0' or '1'
 
@@ -1218,8 +1218,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
 
         elif Type == 'N': # a list of nibbles
             if TypeMultiplier: ValueMask = Value
@@ -1244,8 +1244,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         elif Type == 'V': # (list of) variable types
             if TypeMultiplier: ValueMask = Value
             else: ValueMask = [Value]
@@ -1312,8 +1312,8 @@ class STDR(ABC):
                 if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
                 else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
             if self.local_debug:
-                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), str(K) + TypeFormat, len(pkg)))
-                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, hexify(pkg), TypeFormat, len(pkg)))
+                if TypeMultiplier: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), str(K) + TypeFormat, len(pkg)))
+                else: print("%s._pack_item(%s)\n   '%s' [%s]\n   %s bytes" % (self.id, FieldKey, self.hexify(pkg), TypeFormat, len(pkg)))
         else:
             if TypeMultiplier: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, str(K) + TypeFormat))
             else: raise STDFError("%s._pack_item(%s) : Unsupported type-format '%s'" % (self.id, FieldKey, TypeFormat))
@@ -1363,7 +1363,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xI': # list of signed integers
@@ -1380,7 +1380,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xR': # list of floating point numbers
@@ -1395,7 +1395,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xC': # list of strings
@@ -1425,7 +1425,7 @@ class STDR(ABC):
                         working_buffer = self.buffer[0:int(Bytes)]
                         self.buffer = self.buffer[int(Bytes):]
                         result.append(struct.unpack(fmt, working_buffer)[0])
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xB': # list of list of '0' or '1'
@@ -1437,7 +1437,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xD': # list of list of '0' or '1'
@@ -1449,7 +1449,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xN': # list of a list of nibbles
@@ -1473,7 +1473,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
 
                 elif Type == 'xV': # list of 2-element tuples
@@ -1554,7 +1554,7 @@ class STDR(ABC):
                         raise STDFError("%s._unpack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), str(K) + '*'.join((Type, Bytes)), result))
                     self.set_value(FieldKey, result)
                 else:
                     raise STDFError("%s._pack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, str(K) + '*'.join((Type, Bytes))))
@@ -1574,7 +1574,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'I': # signed integer
@@ -1592,7 +1592,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'R': # float
@@ -1608,7 +1608,7 @@ class STDR(ABC):
                         result = struct.unpack(fmt, working_buffer)[0]
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     leading = round(result,0)
                     len_lead = len(str(leading))
                     result = round(result, 9 - len_lead)
@@ -1639,7 +1639,7 @@ class STDR(ABC):
                         result = working_buffer.decode()
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'B': # list of single character strings being '0' or '1' (max length = 255*8 = 2040 bits)
@@ -1673,7 +1673,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'D': # list of single character strings being '0' and '1'(max length = 65535 bits)
@@ -1700,7 +1700,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'N': # list of integers
@@ -1724,7 +1724,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._unpack_item(%s) : Unsupported type '%s'." % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 elif Type == 'V': # tuple (type, value) where type is defined in spec page 62
@@ -1751,7 +1751,7 @@ class STDR(ABC):
                         raise STDFError("%s._pack_item(%s) : Unimplemented type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
                     else:
                         raise STDFError("%s._pack_item(%s) : Unsupported type '%s'" % (self.id, FieldKey, '*'.join((Type, Bytes))))
-                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, hexify(pkg), '*'.join((Type, Bytes)), result))
+                    if self.local_debug: print("%s._unpack_item(%s)\n   '%s' [%s] -> %s" % (self.id, FieldKey, self.hexify(pkg), '*'.join((Type, Bytes)), result))
                     self.set_value(FieldID, result)
 
                 else:
@@ -1763,13 +1763,13 @@ class STDR(ABC):
         '''
         self.buffer = record
 
-        if self.local_debug: print("%s._unpack(%s) with buffer length = %s" % (self.id, hexify(record), len(record)))
+        if self.local_debug: print("%s._unpack(%s) with buffer length = %s" % (self.id, self.hexify(record), len(record)))
 
         if record[2] != self.fields['REC_TYP']['Value']:
-            raise STDFError("%s_unpack(%s) : REC_TYP doesn't match record" % hexify(record))
+            raise STDFError("%s_unpack(%s) : REC_TYP doesn't match record" % self.hexify(record))
 
         if record[3] != self.fields['REC_SUB']['Value']:
-            raise STDFError("%s_unpack(%s) : REC_SUB doesn't match record" % (self.id, hexify(record)))
+            raise STDFError("%s_unpack(%s) : REC_SUB doesn't match record" % (self.id, hexify(record)))    
 
         items = {}
         for index in self.fields:
@@ -1895,29 +1895,30 @@ class STDR(ABC):
         '''
         sequence = {}
         sequence_wo_opt_data = {}
-        use_optional_data = False
+        use_optional_data = True
         is_optional_flag = False
         header = b''
         body = b''
 
-        # When a record contains the OPT_FLAG, the fields after OPT_FLAG are 
+        # When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
         # not mandatory always. They have to be set in the first instance of 
         # the record as "default values" and after that if there are no changes
         # they can be skipped (including the OPT_FLAG field)
         for field in self.fields:
             sequence[self.fields[field]['#']] = field
-            if field == 'OPT_FLAG':
-                is_optional_flag = True
-                if self.fields[field]['Value'] != None:
-                    sequence_wo_opt_data[self.fields[field]['#']] = field                
-                continue
-            if is_optional_flag and self.fields[field]['Value'] != None:
-                use_optional_data = True
-            if is_optional_flag == False and use_optional_data == False:
-                sequence_wo_opt_data[self.fields[field]['#']] = field                
-        
-        if is_optional_flag and use_optional_data == False:
-            sequence = sequence_wo_opt_data
+            # to be done
+#            if field == 'OPT_FLAG':
+#                is_optional_flag = True
+#                if self.fields[field]['Value'] != None:
+#                    sequence_wo_opt_data[self.fields[field]['#']] = field                
+#                continue
+#            if is_optional_flag and self.fields[field]['Value'] != None:
+#                use_optional_data = False
+#            if is_optional_flag == False and use_optional_data == False:
+#                sequence_wo_opt_data[self.fields[field]['#']] = field                
+#        
+#        if is_optional_flag and use_optional_data == False:
+#            sequence = sequence_wo_opt_data
             
         # pack the body
         for item in range(3, len(sequence)):
@@ -1935,7 +1936,7 @@ class STDR(ABC):
         # assemble the record
         retval = header + body
 
-        if self.local_debug: print("%s.pack()\n   '%s'\n   %s bytes" % (self.id, hexify(retval), len(retval)))
+        if self.local_debug: print("%s.pack()\n   '%s'\n   %s bytes" % (self.id, self.hexify(retval), len(retval)))
         return retval
 
 
@@ -2780,21 +2781,21 @@ class STDR(ABC):
 #         self._default_init(endian, record)
 
 
-# def is_odd(Number):
-#     '''
-#     This function will return True if the Number is odd, False otherwise
-#     '''
-#     if ((Number % 2) == 1):
-#         return True
-#     return False
+def is_odd(Number):
+    '''
+    This function will return True if the Number is odd, False otherwise
+    '''
+    if ((Number % 2) == 1):
+        return True
+    return False
 
-# def is_even(Number):
-#     '''
-#     This function will return True if the Number is EVEN, False otherwise.
-#     '''
-#     if ((Number % 2) == 1):
-#         return False
-#     return True
+def is_even(Number):
+    '''
+    This function will return True if the Number is EVEN, False otherwise.
+    '''
+    if ((Number % 2) == 1):
+        return False
+    return True
 
 # def read_record(fd, RHF):
 #     '''
@@ -2812,45 +2813,59 @@ class STDR(ABC):
 #     footer = fd.read(REC_LEN)
 #     return REC_LEN, REC_TYP, REC_SUB, header+footer
 
-# class records_from_file(object):
-#     '''
-#     Generator class to run over the records in FileName.
-#     The return values are 4-fold : REC_LEN, REC_TYP, REC_SUB and REC
-#     REC is the complete record (including REC_LEN, REC_TYP & REC_SUB)
-#     if unpack indicates if REC is to be the raw record or the unpacked object.
-#     of_interest can be a list of records to return. By default of_interest is void
-#     meaning all records (of FileName's STDF Version) are used.
-#     '''
-#     debug = False
 
-#     def __init__(self, FileName, unpack=False, of_interest=None):
-#         if self.debug: print("initializing 'records_from_file")
+def objects_from_indexed_file(FileName, index, records_of_interest=None):
+    '''
+     This is a Generator of records (not in order!)
+    '''
+    if not isinstance(FileName, str): raise STDFError("'%s' is not a string.")
+    if not os.path.exists(FileName): raise STDFError("'%s' does not exist")
+    endian = get_STDF_setup_from_file(FileName)[0]
+    RLF = '%sH' % endian
+    version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
+    fd = open(FileName, 'rb')
+
+    ALL = list(id_to_ts(version).keys())
+    if records_of_interest==None:
+        roi = ALL
+    elif isinstance(records_of_interest, list):
+        roi = []
+        for item in records_of_interest:
+            if isinstance(item, str):
+                if (item in ALL) and (item not in roi):
+                    roi.append(item)
+    else:
+        raise STDFError("objects_from_indexed_file(%s, index, records_of_interest) : Unsupported records_of_interest" % (FileName, records_of_interest))
+    for REC_ID in roi:
+        if REC_ID in index:
+            for fp in index[REC_ID]:
+                OBJ = create_record_object(version, endian, REC_ID, get_record_from_file_at_position(fd, fp, RLF))
+                yield OBJ
+
+# class xrecords_from_file(object):
+#     '''
+#     This is a *FAST* iterator class that returns the next record from an STDF file each time it is called.
+#     It is fast because it doesn't check versions, extensions and it doesn't unpack the record and skips unknown records.
+#     '''
+#
+#     def __init__(self, FileName, of_interest=None):
+#         #TODO: add a record_list of records to return
 #         if isinstance(FileName, str):
-#             self.keep_open = False
-#             if not os.path.exists(FileName):
-#                 raise STDFError("'%s' does not exist")
-#             self.endian = get_STDF_setup_from_file(FileName)[0]
-#             self.version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
-#             self.fd = open(FileName, 'rb')
-#         elif isinstance(FileName, io.IOBase):
-#             self.keep_open = True
-#             self.fd = FileName
-#             ptr = self.fd.tell()
-#             self.fd.seek(4)
-#             buff = self.fd.read(2)
-#             CPU_TYPE, STDF_VER = struct.unpack('BB', buff)
-#             if CPU_TYPE == 1: self.endian = '>'
-#             elif CPU_TYPE == 2: self.endian = '<'
-#             else: self.endian = '?'
-#             self.version = 'V%s' % STDF_VER
-#             self.fd.seek(ptr)
+#             try:
+#                 stdf_file = File(FileName)
+#             except:
+#                 raise StopIteration
+#             self.fd = stdf_file.open()
+#         elif isinstance(FileName, File):
+#             stdf_file = FileName
+#             self.fd = FileName.open()
 #         else:
-#             raise STDFError("'%s' is not a string or an open file descriptor")
-#         self.unpack = unpack
-#         self.fmt = '%sHBB' % self.endian
+#             raise STDFError("records_from_file(%s) : Unsupported 'FileName'" % FileName)
+#         self.endian = stdf_file.endian
+#         self.version = stdf_file.version
 #         TS2ID = ts_to_id(self.version)
 #         if of_interest==None:
-#             self.records_of_interest = TS2ID
+#             self.of_interest = list(TS2ID.keys())
 #         elif isinstance(of_interest, list):
 #             ID2TS = id_to_ts(self.version)
 #             tmp_list = []
@@ -2863,300 +2878,126 @@ class STDR(ABC):
 #                     if item in TS2ID:
 #                         if item not in tmp_list:
 #                             tmp_list.append(item)
-#             self.records_of_interest = tmp_list
+#             self.of_interest = tmp_list
 #         else:
-#             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-
+#             raise STDFError("records_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+#
 #     def __del__(self):
-#         if not self.keep_open:
-#             self.fd.close()
-
+#         self.fd.close()
+#
 #     def __iter__(self):
 #         return self
-
+#
 #     def __next__(self):
 #         while self.fd!=None:
+#             while True:
+#                 header = self.fd.read(4)
+#                 if len(header)!=4:
+#                     raise StopIteration
+#                 REC_LEN, REC_TYP, REC_SUB = struct.unpack('HBB', header)
+#                 footer = self.fd.read(REC_LEN)
+#                 if len(footer)!=REC_LEN:
+#                     raise StopIteration
+#                 if (REC_TYP, REC_SUB) in self.of_interest:
+#                     return REC_LEN, REC_TYP, REC_SUB, header+footer
+#
+# class xobjects_from_file(object):
+#     '''
+#     This is an iterator class that returns the next object (unpacked) from an STDF file.
+#     It will take care of versions and extensions, and unrecognized records will simply be skipped.
+#     '''
+#     def __init__(self, FileName, of_interest=None):
+#         if isinstance(FileName, str):
+#             try:
+#                 stdf_file = File(FileName)
+#             except:
+#                 raise STDFError("objects_from_file(%s, %s) : File doesn't exist" % (FileName, of_interest))
+#             self.fd = stdf_file.open()
+#         elif isinstance(FileName, File):
+#             self.fd = FileName.open()
+#         else:
+#             raise STDFError("objects_from_file(%s) : Unsupported 'FileName'" % FileName)
+#         self.endian = stdf_file.endian
+#         self.version = stdf_file.version
+#         TS2ID = ts_to_id(self.version)
+#         if of_interest==None:
+#             of_interest = TS2ID
+#         elif isinstance(of_interest, list):
+#             ID2TS = id_to_ts(self.version)
+#             tmp_list = []
+#             for item in of_interest:
+#                 if isinstance(item, str):
+#                     if item in ID2TS:
+#                         if ID2TS[item] not in tmp_list:
+#                             tmp_list.append(ID2TS[item])
+#                 elif isinstance(item, tuple) and len(item)==2:
+#                     if item in TS2ID:
+#                         if item not in tmp_list:
+#                             tmp_list.append(item)
+#             of_interest = tmp_list
+#         else:
+#             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+#         self.of_interest = of_interest
+#         self.fmt = '%sHBB' % self.endian
+#
+#     def __del__(self):
+#         self.fd.close()
+#
+#     def __iter__(self):
+#         return self
+#
+#     def __next__(self):
+#         while True:
 #             header = self.fd.read(4)
 #             if len(header)!=4:
 #                 raise StopIteration
 #             else:
 #                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
 #                 footer = self.fd.read(REC_LEN)
-#                 if (REC_TYP, REC_SUB) in self.records_of_interest:
-#                     if len(footer)!=REC_LEN:
-#                         raise StopIteration()
-#                     else:
-#                         if self.unpack:
-#                             return REC_LEN, REC_TYP, REC_SUB, create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), header+footer)
-#                         else:
-#                             return REC_LEN, REC_TYP, REC_SUB, header+footer
+#                 if len(footer)!=REC_LEN:
+#                     raise StopIteration
+#                 else:
+#                     record = header + footer
+#                     if (REC_TYP, REC_SUB) in self.of_interest:
+#                         recobj = create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), record)
+#                         return (recobj)
 
-# def objects_from_indexed_file(FileName, index, records_of_interest=None):
+
+# class open(object):
 #     '''
-#      This is a Generator of records (not in order!)
+#     file opener that opens an STDF file transparently (gzipped or not)
 #     '''
-#     if not isinstance(FileName, str): raise STDFError("'%s' is not a string.")
-#     if not os.path.exists(FileName): raise STDFError("'%s' does not exist")
-#     endian = get_STDF_setup_from_file(FileName)[0]
-#     RLF = '%sH' % endian
-#     version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
-#     fd = open(FileName, 'rb')
-
-#     ALL = list(id_to_ts(version).keys())
-#     if records_of_interest==None:
-#         roi = ALL
-#     elif isinstance(records_of_interest, list):
-#         roi = []
-#         for item in records_of_interest:
-#             if isinstance(item, str):
-#                 if (item in ALL) and (item not in roi):
-#                     roi.append(item)
-#     else:
-#         raise STDFError("objects_from_indexed_file(%s, index, records_of_interest) : Unsupported records_of_interest" % (FileName, records_of_interest))
-#     for REC_ID in roi:
-#         if REC_ID in index:
-#             for fp in index[REC_ID]:
-#                 OBJ = create_record_object(version, endian, REC_ID, get_record_from_file_at_position(fd, fp, RLF))
-#                 yield OBJ
-
-# # class xrecords_from_file(object):
-# #     '''
-# #     This is a *FAST* iterator class that returns the next record from an STDF file each time it is called.
-# #     It is fast because it doesn't check versions, extensions and it doesn't unpack the record and skips unknown records.
-# #     '''
-# #
-# #     def __init__(self, FileName, of_interest=None):
-# #         #TODO: add a record_list of records to return
-# #         if isinstance(FileName, str):
-# #             try:
-# #                 stdf_file = File(FileName)
-# #             except:
-# #                 raise StopIteration
-# #             self.fd = stdf_file.open()
-# #         elif isinstance(FileName, File):
-# #             stdf_file = FileName
-# #             self.fd = FileName.open()
-# #         else:
-# #             raise STDFError("records_from_file(%s) : Unsupported 'FileName'" % FileName)
-# #         self.endian = stdf_file.endian
-# #         self.version = stdf_file.version
-# #         TS2ID = ts_to_id(self.version)
-# #         if of_interest==None:
-# #             self.of_interest = list(TS2ID.keys())
-# #         elif isinstance(of_interest, list):
-# #             ID2TS = id_to_ts(self.version)
-# #             tmp_list = []
-# #             for item in of_interest:
-# #                 if isinstance(item, str):
-# #                     if item in ID2TS:
-# #                         if ID2TS[item] not in tmp_list:
-# #                             tmp_list.append(ID2TS[item])
-# #                 elif isinstance(item, tuple) and len(item)==2:
-# #                     if item in TS2ID:
-# #                         if item not in tmp_list:
-# #                             tmp_list.append(item)
-# #             self.of_interest = tmp_list
-# #         else:
-# #             raise STDFError("records_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-# #
-# #     def __del__(self):
-# #         self.fd.close()
-# #
-# #     def __iter__(self):
-# #         return self
-# #
-# #     def __next__(self):
-# #         while self.fd!=None:
-# #             while True:
-# #                 header = self.fd.read(4)
-# #                 if len(header)!=4:
-# #                     raise StopIteration
-# #                 REC_LEN, REC_TYP, REC_SUB = struct.unpack('HBB', header)
-# #                 footer = self.fd.read(REC_LEN)
-# #                 if len(footer)!=REC_LEN:
-# #                     raise StopIteration
-# #                 if (REC_TYP, REC_SUB) in self.of_interest:
-# #                     return REC_LEN, REC_TYP, REC_SUB, header+footer
-# #
-# # class xobjects_from_file(object):
-# #     '''
-# #     This is an iterator class that returns the next object (unpacked) from an STDF file.
-# #     It will take care of versions and extensions, and unrecognized records will simply be skipped.
-# #     '''
-# #     def __init__(self, FileName, of_interest=None):
-# #         if isinstance(FileName, str):
-# #             try:
-# #                 stdf_file = File(FileName)
-# #             except:
-# #                 raise STDFError("objects_from_file(%s, %s) : File doesn't exist" % (FileName, of_interest))
-# #             self.fd = stdf_file.open()
-# #         elif isinstance(FileName, File):
-# #             self.fd = FileName.open()
-# #         else:
-# #             raise STDFError("objects_from_file(%s) : Unsupported 'FileName'" % FileName)
-# #         self.endian = stdf_file.endian
-# #         self.version = stdf_file.version
-# #         TS2ID = ts_to_id(self.version)
-# #         if of_interest==None:
-# #             of_interest = TS2ID
-# #         elif isinstance(of_interest, list):
-# #             ID2TS = id_to_ts(self.version)
-# #             tmp_list = []
-# #             for item in of_interest:
-# #                 if isinstance(item, str):
-# #                     if item in ID2TS:
-# #                         if ID2TS[item] not in tmp_list:
-# #                             tmp_list.append(ID2TS[item])
-# #                 elif isinstance(item, tuple) and len(item)==2:
-# #                     if item in TS2ID:
-# #                         if item not in tmp_list:
-# #                             tmp_list.append(item)
-# #             of_interest = tmp_list
-# #         else:
-# #             raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
-# #         self.of_interest = of_interest
-# #         self.fmt = '%sHBB' % self.endian
-# #
-# #     def __del__(self):
-# #         self.fd.close()
-# #
-# #     def __iter__(self):
-# #         return self
-# #
-# #     def __next__(self):
-# #         while True:
-# #             header = self.fd.read(4)
-# #             if len(header)!=4:
-# #                 raise StopIteration
-# #             else:
-# #                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
-# #                 footer = self.fd.read(REC_LEN)
-# #                 if len(footer)!=REC_LEN:
-# #                     raise StopIteration
-# #                 else:
-# #                     record = header + footer
-# #                     if (REC_TYP, REC_SUB) in self.of_interest:
-# #                         recobj = create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), record)
-# #                         return (recobj)
+#     def __init__(self, fname):
+#         f = open(fname)
+#         # Read magic number (the first 2 bytes) and rewind.
+#         magic_number = f.read(2)
+#         f.seek(0)
+#         # Encapsulated 'self.f' is a file or a GzipFile.
+#         if magic_number == '\x1f\x8b':
+#             self.f = gzip.GzipFile(fileobj=f)
+#         else:
+#             self.f = f
+#
+#         # Define '__enter__' and '__exit__' to use in 'with' blocks.
+#         def __enter__(self):
+#             return self
+#         def __exit__(self, type, value, traceback):
+#             try:
+#                 self.f.fileobj.close()
+#             except AttributeError:
+#                 pass
+#             finally:
+#                 self.f.close()
+#
+#         # Reproduce the interface of an open file by encapsulation.
+#         def __getattr__(self, name):
+#             return getattr(self.f, name)
+#         def __iter__(self):
+#             return iter(self.f)
+#         def next(self):
+#             return next(self.f)
 
 
-# # class open(object):
-# #     '''
-# #     file opener that opens an STDF file transparently (gzipped or not)
-# #     '''
-# #     def __init__(self, fname):
-# #         f = open(fname)
-# #         # Read magic number (the first 2 bytes) and rewind.
-# #         magic_number = f.read(2)
-# #         f.seek(0)
-# #         # Encapsulated 'self.f' is a file or a GzipFile.
-# #         if magic_number == '\x1f\x8b':
-# #             self.f = gzip.GzipFile(fileobj=f)
-# #         else:
-# #             self.f = f
-# #
-# #         # Define '__enter__' and '__exit__' to use in 'with' blocks.
-# #         def __enter__(self):
-# #             return self
-# #         def __exit__(self, type, value, traceback):
-# #             try:
-# #                 self.f.fileobj.close()
-# #             except AttributeError:
-# #                 pass
-# #             finally:
-# #                 self.f.close()
-# #
-# #         # Reproduce the interface of an open file by encapsulation.
-# #         def __getattr__(self, name):
-# #             return getattr(self.f, name)
-# #         def __iter__(self):
-# #             return iter(self.f)
-# #         def next(self):
-# #             return next(self.f)
-
-
-
-# def create_record_object(Version, Endian, REC_ID, REC=None):
-#     '''
-#     This function will create and return the appropriate Object for REC
-#     based on REC_ID. REC_ID can be a 2-element tuple or a string.
-#     If REC is not None, then the record will also be unpacked.
-#     '''
-#     retval = None
-#     REC_TYP=-1
-#     REC_SUB=-1
-#     if Version not in supported().versions():
-#         raise STDFError("Unsupported STDF Version : %s" % Version)
-#     if Endian not in ['<', '>']:
-#         raise STDFError("Unsupported Endian : '%s'" % Endian)
-#     if isinstance(REC_ID, tuple) and len(REC_ID)==2:
-#         TS2ID = ts_to_id(Version)
-#         if (REC_ID[0], REC_ID[1]) in TS2ID:
-#             REC_TYP = REC_ID[0]
-#             REC_SUB = REC_ID[1]
-#             REC_ID = TS2ID[(REC_TYP, REC_SUB)]
-#     elif isinstance(REC_ID, str):
-#         ID2TS = id_to_ts(Version)
-#         if REC_ID in ID2TS:
-#             (REC_TYP, REC_SUB) = ID2TS[REC_ID]
-#     else:
-#         raise STDFError("Unsupported REC_ID : %s" % REC_ID)
-
-#     if REC_TYP!=-1 and REC_SUB!=-1:
-#         if REC_ID == 'PTR': retval = PTR(Version, Endian, REC)
-#         elif REC_ID == 'FTR': retval = FTR(Version, Endian, REC)
-#         elif REC_ID == 'MPR': retval = MPR(Version, Endian, REC)
-#         elif REC_ID == 'STR': retval = STR(Version, Endian, REC)
-#         elif REC_ID == 'MTR': retval = MTR(Version, Endian, REC)
-#         elif REC_ID == 'PIR': retval = PIR(Version, Endian, REC)
-#         elif REC_ID == 'PRR': retval = PRR(Version, Endian, REC)
-#         elif REC_ID == 'FAR': retval = FAR(Version, Endian, REC)
-#         elif REC_ID == 'ATR': retval = ATR(Version, Endian, REC)
-#         elif REC_ID == 'VUR': retval = VUR(Version, Endian, REC)
-#         elif REC_ID == 'MIR': retval = MIR(Version, Endian, REC)
-#         elif REC_ID == 'MRR': retval = MRR(Version, Endian, REC)
-#         elif REC_ID == 'WCR': retval = WCR(Version, Endian, REC)
-#         elif REC_ID == 'WIR': retval = WIR(Version, Endian, REC)
-#         elif REC_ID == 'WRR': retval = WRR(Version, Endian, REC)
-#         elif REC_ID == 'ADR': retval = ADR(Version, Endian, REC)
-#         elif REC_ID == 'ASR': retval = ASR(Version, Endian, REC)
-#         elif REC_ID == 'BPS': retval = BPS(Version, Endian, REC)
-#         elif REC_ID == 'BRR': retval = BRR(Version, Endian, REC)
-#         elif REC_ID == 'BSR': retval = BSR(Version, Endian, REC)
-#         elif REC_ID == 'CNR': retval = CNR(Version, Endian, REC)
-#         elif REC_ID == 'DTR': retval = DTR(Version, Endian, REC)
-#         elif REC_ID == 'EPDR': retval = EPDR(Version, Endian, REC)
-#         elif REC_ID == 'EPS': retval = EPS(Version, Endian, REC)
-#         elif REC_ID == 'ETSR': retval = ETSR(Version, Endian, REC)
-#         elif REC_ID == 'FDR': retval = FDR(Version, Endian, REC)
-#         elif REC_ID == 'FSR': retval = FSR(Version, Endian, REC)
-#         elif REC_ID == 'GDR': retval = GDR(Version, Endian, REC)
-#         elif REC_ID == 'GTR': retval = GTR(Version, Endian, REC)
-#         elif REC_ID == 'HBR': retval = HBR(Version, Endian, REC)
-#         elif REC_ID == 'IDR': retval = IDR(Version, Endian, REC)
-#         elif REC_ID == 'MCR': retval = MCR(Version, Endian, REC)
-#         elif REC_ID == 'MMR': retval = MMR(Version, Endian, REC)
-#         elif REC_ID == 'MSR': retval = MSR(Version, Endian, REC)
-#         elif REC_ID == 'NMR': retval = NMR(Version, Endian, REC)
-#         elif REC_ID == 'PCR': retval = PCR(Version, Endian, REC)
-#         elif REC_ID == 'PDR': retval = PDR(Version, Endian, REC)
-#         elif REC_ID == 'PGR': retval = PGR(Version, Endian, REC)
-#         elif REC_ID == 'PLR': retval = PLR(Version, Endian, REC)
-#         elif REC_ID == 'PMR': retval = PMR(Version, Endian, REC)
-#         elif REC_ID == 'PSR': retval = PSR(Version, Endian, REC)
-#         elif REC_ID == 'RDR': retval = RDR(Version, Endian, REC)
-#         elif REC_ID == 'SBR': retval = SBR(Version, Endian, REC)
-#         elif REC_ID == 'SCR': retval = SCR(Version, Endian, REC)
-#         elif REC_ID == 'SDR': retval = SDR(Version, Endian, REC)
-#         elif REC_ID == 'SHB': retval = SHB(Version, Endian, REC)
-#         elif REC_ID == 'SSB': retval = SSB(Version, Endian, REC)
-#         elif REC_ID == 'SSR': retval = SSR(Version, Endian, REC)
-#         elif REC_ID == 'STS': retval = STS(Version, Endian, REC)
-#         elif REC_ID == 'TSR': retval = TSR(Version, Endian, REC)
-#         elif REC_ID == 'WTR': retval = WTR(Version, Endian, REC)
-#         elif REC_ID == 'RR1': retval = RR1(Version, Endian, REC) # can not be reached because of -1
-#         elif REC_ID == 'RR2': retval = RR2(Version, Endian, REC) # can not be reached because of -1
-#     return retval
 
 # def wafer_map(data, parameter=None):
 #     '''
@@ -3194,21 +3035,21 @@ class STDR(ABC):
 #     footer = fd.read(REC_LEN)
 #     return header+footer
 
-# def get_STDF_setup_from_file(FileName):
-#     '''
-#     This function will determine the endian and the version of a given STDF file
-#     it must *NOT* be guaranteed that FileName exists or is an STDF File.
-#     '''
-#     endian = None
-#     version = None
-#     if os.path.exists(FileName) and os.path.isfile(FileName):
-#         if is_file_with_stdf_magicnumber(FileName):
-#             CPU_TYP, STDF_VER = struct.unpack('BB', get_bytes_from_file(FileName, 4, 2))
-#             if CPU_TYP == 1: endian = '>'
-#             elif CPU_TYP == 2: endian = '<'
-#             else: endian = '?'
-#             version = "V%s" % STDF_VER
-#     return endian, version
+def get_STDF_setup_from_file(FileName):
+    '''
+    This function will determine the endian and the version of a given STDF file
+    it must *NOT* be guaranteed that FileName exists or is an STDF File.
+    '''
+    endian = None
+    version = None
+    if os.path.exists(FileName) and os.path.isfile(FileName):
+        if is_file_with_stdf_magicnumber(FileName):
+            CPU_TYP, STDF_VER = struct.unpack('BB', get_bytes_from_file(FileName, 4, 2))
+            if CPU_TYP == 1: endian = '>'
+            elif CPU_TYP == 2: endian = '<'
+            else: endian = '?'
+            version = "V%s" % STDF_VER
+    return endian, version
 
 # def get_MIR_from_file(FileName):
 #     '''
