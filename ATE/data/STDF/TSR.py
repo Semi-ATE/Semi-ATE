@@ -87,21 +87,95 @@ Location:
 #         17 TST_SUMS    = 17 TST_SUMS      
 #         18 TST_SQRS    = 18 TST_SQRS                          
 
-        body += "%s|" % self.get_fields(3)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(6)[3]
-        body += "%s|" % self.get_fields(10)[3]
-        body += "%s|" % self.get_fields(5)[3]
-        body += "%s|" % self.get_fields(7)[3]
-        body += "%s|" % self.get_fields(8)[3]
-        body += "%s|" % self.get_fields(9)[3]
-        body += "%s|" % self.get_fields(11)[3]
-        body += "%s|" % self.get_fields(12)[3]
-        body += "%s|" % self.get_fields(14)[3]
-        body += "%s|" % self.get_fields(15)[3]
-        body += "%s|" % self.get_fields(16)[3]
-        body += "%s|" % self.get_fields(17)[3]
-        body += "%s" % self.get_fields(18)[3]
+        f = self.get_fields(3)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(4)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(6)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(10)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(5)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(7)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(8)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(9)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(11)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(12)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(14)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(15)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(16)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(17)[3]
+        if f == None:
+            body += "|"
+        else:
+            body += "%s|" % f
+
+        f = self.get_fields(18)[3]
+        if f == None:
+            body += ""
+        else:
+            body += "%s" % f
 
         # assemble the record
         retval = header + body
