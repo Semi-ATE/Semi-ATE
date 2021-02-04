@@ -1024,7 +1024,6 @@ class STDR(ABC):
             sequence.clear()
             sequence = sequence_wo_opt_data
         
-#        for field in self.fields:
         for field in sequence:
             if field == 'REC_LEN' : continue
             if field == 'REC_TYP' : continue
