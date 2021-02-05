@@ -59,6 +59,8 @@ class test_program_generator(BaseGenerator):
             test_class = self.resolve_class_for_test(program_entry.test, test_targets)
             test_module = self.resolve_module_for_test(program_entry.test, test_targets)
             params = program_entry.definition
+            if not params['is_selected']:
+                continue
 
             for op in params['output_parameters']:
                 params['output_parameters'][op]['id'] = self.current_param_id

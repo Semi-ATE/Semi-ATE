@@ -1,0 +1,71 @@
+[
+  {
+    "owner_name": "HW0_FT_device_P",
+    "prog_name": "project_version_none_HW0_FT_device_P_1",
+    "test": "iddq",
+    "test_order": 0,
+    "definition": {
+      "input_parameters": {
+        "Temperature": {
+          "value": "25",
+          "type": "static",
+          "Min": -40.0,
+          "Max": 170.0,
+          "fmt": ".0f",
+          "Unit": "\u00b0C",
+          "10\u1d61": 0,
+          "Default": "25",
+          "content": "25"
+        },
+        "new_parameter1": {
+          "value": "0.000",
+          "type": "static",
+          "Min": -Infinity,
+          "Max": Infinity,
+          "fmt": ".3f",
+          "Unit": "\u02fd",
+          "10\u1d61": 0,
+          "Default": "0.000",
+          "content": "0.000"
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "UTL": NaN,
+          "LTL": NaN,
+          "LSL": -Infinity,
+          "USL": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "Unit": "\u02fd",
+          "10\u1d61": 0
+        },
+        "new_parameter2": {
+          "UTL": NaN,
+          "LTL": NaN,
+          "LSL": -Infinity,
+          "USL": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "Unit": "\u02fd",
+          "10\u1d61": 0
+        }
+      },
+      "description": "iddq_1",
+      "name": "iddq",
+      "sbin": "60000"
+    }
+  }
+]

@@ -1,4 +1,3 @@
-from ATE.spyder.widgets.actions_on.program.Binning.BinningHandler import BinningHandler
 import os
 import re
 
@@ -6,12 +5,13 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidgetItemIterator
-from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import OutputParameter
 
+from ATE.spyder.widgets.actions_on.program.Binning.BinningHandler import BinningHandler
+from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import OutputParameter
 from ATE.spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.actions_on.program.Utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
-                                                         BinningColumns, ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
+                                                         ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
 from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
@@ -23,6 +23,9 @@ ORANGE = (255, 127, 39)
 RED = (237, 28, 36)
 GREEN = (34, 117, 76)
 ORANGE_LABEL = 'color: orange'
+CLASS_NAME_COL = 0
+TEST_INSTANCE_COL = 1
+CHECK_TEST_COL = 2
 
 
 class TestProgramWizard(BaseDialog):
@@ -52,8 +55,8 @@ class TestProgramWizard(BaseDialog):
         self._view()
         self._connect_event_handler()
 
-        # TODO: hack to simplify the devloper's life
-        # so that each output can be automaticaly asigned to a soft-bin
+        # TODO: hack to simplify the developer's life
+        # so that each output can be automatically be assigned to a soft-bin
         if self.binning_table.rowCount() == 0:
             self._add_new_bin()
 
@@ -63,8 +66,8 @@ class TestProgramWizard(BaseDialog):
         self._set_icon(self.moveTestDown, 'arrow-down')
         self._set_icon(self.moveTestUp, 'arrow-up')
 
-        self._resize_table(self.parametersInput, 50)
-        self._resize_table(self.parametersOutput, 50)
+        self._resize_table(self.parametersInput, 50, InputFieldsPosition.Name())
+        self._resize_table(self.parametersOutput, 50, OutputFieldsPosition.Name())
 
         from ATE.spyder.widgets.validation import valid_float_regex
         regx = QtCore.QRegExp(valid_float_regex)
@@ -79,7 +82,7 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
         self.selectedTests.horizontalHeader().setStretchLastSection(True)
         self.selectedTests.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
-        self.selectedTests.itemDoubleClicked.connect(self._double_click_handler)
+        self.selectedTests.itemDoubleClicked.connect(self._selected_list_double_click_handler)
         self.selectedTests.itemClicked.connect(self._test_selected)
         self.selectedTests.itemSelectionChanged.connect(self._table_clicked)
         self.selectedTests.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
@@ -255,8 +258,8 @@ class TestProgramWizard(BaseDialog):
         if len(self.selectedTests.selectedItems()):
             return
 
-    def _double_click_handler(self, item):
-        if item.column() == 0:
+    def _selected_list_double_click_handler(self, item):
+        if item.column() in (CLASS_NAME_COL, CHECK_TEST_COL):
             return
 
         from ATE.spyder.widgets.validation import valid_test_name_description_regex
@@ -289,12 +292,11 @@ class TestProgramWizard(BaseDialog):
         button.setText("")
 
     @staticmethod
-    def _resize_table(table, col_size):
+    def _resize_table(table, col_size, name_col):
         for c in range(table.columnCount()):
             table.setColumnWidth(c, col_size)
 
-        table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        table.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Type(), QtWidgets.QHeaderView.Stretch)
+        table.horizontalHeader().setSectionResizeMode(name_col, QtWidgets.QHeaderView.Stretch)
         table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
     def _update_target(self):
@@ -368,7 +370,7 @@ class TestProgramWizard(BaseDialog):
         self.parametersOutput.setRowCount(0)
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
-    def _test_selected(self, item):
+    def _test_selected(self, item: QTableWidgetItem):
         self.selectedTests.blockSignals(True)
         if not self.read_only:
             self.parametersInput.setEnabled(True)
@@ -379,12 +381,24 @@ class TestProgramWizard(BaseDialog):
         self.availableTests.blockSignals(False)
 
         row = item.row()
-        self.selectedTests.item(row, 0).setSelected(True)
-        self.selectedTests.item(row, 1).setSelected(True)
+        column = item.column()
+        test_name = self.selectedTests.item(row, TEST_INSTANCE_COL).text()
 
-        test_name = self.selectedTests.item(row, 1).text()
+        if column == CHECK_TEST_COL:
+            new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
+            item.setCheckState(new_check_state)
+            is_selected = True if new_check_state == QtCore.Qt.Checked else False
+            self._custom_parameter_handler.update_test_selectability(test_name, is_selected)
+
+        self._select_test_table_row(row, True)
+
         self._custom_parameter_handler.display_test(test_name, self.parametersInput, self.parametersOutput)
         self.selectedTests.blockSignals(False)
+
+    def _select_test_table_row(self, row, is_selected):
+        self.selectedTests.item(row, CLASS_NAME_COL).setSelected(is_selected)
+        self.selectedTests.item(row, TEST_INSTANCE_COL).setSelected(is_selected)
+        self.selectedTests.item(row, CHECK_TEST_COL).setSelected(is_selected)
 
     def _validate_test_parameters(self, test_name):
         self._custom_parameter_handler.validate_test_parameters(test_name, self._standard_parameter_handler)
@@ -398,7 +412,8 @@ class TestProgramWizard(BaseDialog):
         self.current_selected_test = name
         parameters = self._get_test_parameters(name)
 
-        return parameters['input_parameters'], parameters['output_parameters']
+        import copy
+        return copy.deepcopy(parameters['input_parameters']), copy.deepcopy(parameters['output_parameters'])
 
     # ToDo: Improve Exception handling, as all exceptions
     #       thrown in handlers will be discarded and replaced
@@ -540,7 +555,7 @@ class TestProgramWizard(BaseDialog):
 
     def _fill_standard_parameter_handler(self, test_name, test_instance_name):
         self.input_parameters, self.output_parameters = self._get_in_output_paramters(test_name)
-        self._standard_parameter_handler.add_test(test_instance_name, test_name, self.input_parameters, self.output_parameters)
+        self._standard_parameter_handler.add_test(test_instance_name, test_name, self.input_parameters, self.output_parameters, is_custom=False)
 
     def _validate_temperature_input(self, text, pattern):
         index = text.rfind(pattern)
@@ -644,6 +659,11 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.BinTableNotfilled())
             success = False
 
+        validator_message = self._custom_parameter_handler.output_validator.get_message()
+        if len(validator_message):
+            self._update_feedback(validator_message)
+            success = False
+
         if success:
             self.usertext_feedback.setText('')
             self.target_feedback.setText('')
@@ -720,13 +740,13 @@ class TestProgramWizard(BaseDialog):
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_input_param(self, item):
         test_instance = self.selectedTests.item(self.selectedTests.currentRow(), 1).text()
-        param_name = self.parametersInput.item(item.row(), 0).text()
+        param_name = self.parametersInput.item(item.row(), InputFieldsPosition.name()).text()
         param = self._custom_parameter_handler.edit_input_parameter(test_instance, param_name, item.column(), lambda: self.edit_param_complete(param))
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_output_param(self, item):
         test_instance = self.selectedTests.item(self.selectedTests.currentRow(), 1).text()
-        param_name = self.parametersOutput.item(item.row(), 0).text()
+        param_name = self.parametersOutput.item(item.row(), OutputFieldsPosition.Name()).text()
         param = self._custom_parameter_handler.edit_output_parameter(test_instance, param_name, item.column(), lambda: self.edit_param_complete(param))
 
     def edit_param_complete(self, param):
@@ -782,15 +802,8 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.blockSignals(True)
         self.selectedTests.removeRow(row)
         self.selectedTests.insertRow(row)
-        self._insert_test_tuple_without_validation(row, test_name, test_description)
+        self._insert_test_tuple_items(row, test_name, test_description)
         self.selectedTests.blockSignals(False)
-
-    def _insert_test_tuple_without_validation(self, row, test_name, test_description):
-        test_base_item = self._generate_test_name_item(test_name)
-        test_name_item = self._generate_test_description_item(test_description)
-
-        self.selectedTests.setItem(row, 0, test_base_item)
-        self.selectedTests.setItem(row, 1, test_name_item)
 
     def _update_selected_test_list(self):
         self._validate_tests_parameters()
@@ -801,7 +814,7 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.setRowCount(len(self._custom_parameter_handler.get_test_names()))
         for index, test in enumerate(self._custom_parameter_handler.get_tests()):
             self._validate_test_parameters(test.get_test_name())
-            self._insert_test_tuple_items(index, test.get_test_base(), test.get_test_name(), test.get_valid_flag())
+            self._insert_test_tuple_items(index, test.get_test_base(), test.get_test_name(), test.get_valid_flag(), test.get_selectability())
 
         self.selectedTests.blockSignals(False)
 
@@ -816,9 +829,10 @@ class TestProgramWizard(BaseDialog):
         test_names = set([test.test for test in test_targets])
         self._custom_parameter_handler.validate_tests(test_names)
 
-    def _insert_test_tuple_items(self, row, test_name, test_description, valid):
+    def _insert_test_tuple_items(self, row: int, test_name: str, test_description: str, valid: ParameterState = ParameterState.Valid(), is_selected: bool = True):
         test_base_item = self._generate_test_name_item(test_name)
         test_name_item = self._generate_test_description_item(test_description)
+        check_item = self._generate_checkable_item(is_selected=is_selected)
 
         if valid in (ParameterState.Invalid(), ParameterState.Changed()):
             self._set_widget_color(test_base_item, RED)
@@ -830,6 +844,7 @@ class TestProgramWizard(BaseDialog):
 
         self.selectedTests.setItem(row, 0, test_base_item)
         self.selectedTests.setItem(row, 1, test_name_item)
+        self.selectedTests.setItem(row, 2, check_item)
 
     def _validate_parameter(self, parameter):
         if not parameter.is_valid_value():
@@ -848,11 +863,8 @@ class TestProgramWizard(BaseDialog):
         test_names = self._custom_parameter_handler.get_test_names()
 
         self.selectedTests.setRowCount(len(test_names))
-        item_name = self._generate_test_name_item(test_name)
-        item_description = self._generate_test_description_item(indexed_test)
         pos = len(test_names) - 1
-        self.selectedTests.setItem(pos, 0, item_name)
-        self.selectedTests.setItem(pos, 1, item_description)
+        self._insert_test_tuple_items(pos, test_name, indexed_test)
         bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
         self._add_tests_to_bin_table(bin_info)
 
@@ -885,6 +897,13 @@ class TestProgramWizard(BaseDialog):
         name_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return name_item
 
+    @staticmethod
+    def _generate_checkable_item(is_selected: bool = True):
+        checkable_item = QtWidgets.QTableWidgetItem()
+        checkable_item.setCheckState(QtCore.Qt.Checked if is_selected else QtCore.Qt.Unchecked)
+        checkable_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        return checkable_item
+
     def _populate_binning_tree(self):
         self.binning_tree.clear()
         self._bin_table.clear_alarm_table()
@@ -909,13 +928,11 @@ class TestProgramWizard(BaseDialog):
             item = QTreeWidgetItem()
             item.setText(0, description + '_' + key)
             self._set_bin_flag(item, value.get_field_state())
-            # TODO: uncomment this if there is not need to assign output to soft-bins automatically
             value: OutputParameter = value
             bin_info = value.get_bin_infos()
             if bin_info.bin_name:
                 item.setText(1, bin_info.bin_name)
             else:
-                # TODO: remove this afterwards
                 item.setText(1, self.binning_table.item(0, 0).text())
 
             parent.addChild(item)
@@ -1067,6 +1084,7 @@ class TestProgramWizard(BaseDialog):
         self._update_output_parameter_bin_information()
         self._update_test_bin()
         definition = self._custom_parameter_handler.build_defintion()
+        test_ranges = self._custom_parameter_handler.get_ranges()
         if not self.read_only and self.enable_edit:
             owner, count = self._get_test_program_infos()
             self.prog_name = self._generate_test_program_name(owner, count)
@@ -1076,13 +1094,13 @@ class TestProgramWizard(BaseDialog):
             self.project_info.insert_program(self.prog_name, self.hardware.currentText(), self.base.currentText(), self.target.currentText(),
                                              self.usertext.text(), self.sequencer_type, self._get_temperature_value(),
                                              definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix,
-                                             self.cacheType.currentText(), self._get_caching_policy_value())
+                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges)
         else:
             self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
             self.project_info.update_program(self.prog_name, self.hardware.currentText(), self.base.currentText(),
                                              self.target.currentText(), self.usertext.text(), self.sequencer_type,
                                              self._get_temperature_value(), definition, self.owner, self._get_target_name(),
-                                             self.cacheType.currentText(), self._get_caching_policy_value())
+                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges)
 
         self._bin_table.create_binning_file(os.path.join(self.project_info.project_directory,
                                                          'src',

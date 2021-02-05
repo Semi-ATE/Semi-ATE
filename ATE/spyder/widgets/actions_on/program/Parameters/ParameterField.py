@@ -13,6 +13,7 @@ class ParameterField:
     def set_validity(self, validity: ParameterState):
         if validity == ParameterState.Removed():
             self.set_editable(ParameterEditability.NotEditable())
+
         self._state = validity
 
     def set_editable(self, editable: ParameterEditability):

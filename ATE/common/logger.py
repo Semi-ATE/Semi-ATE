@@ -12,12 +12,30 @@ LOG_FILE_LIFETIME_DAYS = 14
 
 class LogLevel(IntEnum):
     Info = logging.INFO
-    Warning = logging.WARNING
+    Measure = 15
     Debug = logging.DEBUG
+    Warning = logging.WARNING
     Error = logging.ERROR
 
     def __call__(self):
         return self.value
+
+
+def add_log_level(level_num, level_name):
+    def logForLevel(self, message, *args, **kwargs):
+        if self.isEnabledFor(level_num):
+            self._log(level_num, message, args, **kwargs)
+
+    def logToRoot(message, *args, **kwargs):
+        logging.log(level_num, message, *args, **kwargs)
+
+    logging.addLevelName(level_num, level_name)
+    setattr(logging, level_name, level_num)
+    setattr(logging.getLoggerClass(), 'measure', logForLevel)
+    setattr(logging, 'measure', logToRoot)
+
+
+add_log_level(LogLevel.Measure(), 'MEASURE')
 
 
 # this class could be used to wrap log information into for example a file format other
@@ -103,7 +121,8 @@ class Logger:
                 LogLevel.Info(): lambda: self.logger.info(message),
                 LogLevel.Debug(): lambda: self.logger.debug(message),
                 LogLevel.Warning(): lambda: self.logger.warning(message),
-                LogLevel.Error(): lambda: self.logger.error(message)
+                LogLevel.Error(): lambda: self.logger.error(message),
+                LogLevel.Measure(): lambda: self.logger.measure(message),
             }[type]()
         except Exception as e:
             raise Exception(f"message type could not be handled: {e}")
@@ -130,6 +149,8 @@ class Logger:
             component_logger.debug(line[3])
         if "ERROR" in loglevel:
             component_logger.error(line[3])
+        if "MEASURE" in loglevel:
+            component_logger.measure(line[3])
 
     def get_current_logs(self):
         logs = self.stream_handler.get_log_data()

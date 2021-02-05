@@ -31,8 +31,9 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.binning_tree.setEnabled(False)
 
     @staticmethod
-    def setup_view(dialog, name):
+    def setup_view(dialog: TestProgramWizard, name):
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
+        dialog._custom_parameter_handler.set_test_num_ranges(configuration['test_ranges'])
         # TODO: can we edit any of the following property
         dialog.hardware.clear()
         dialog.base.clear()

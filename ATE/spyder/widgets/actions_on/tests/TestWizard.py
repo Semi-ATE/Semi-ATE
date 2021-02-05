@@ -31,6 +31,7 @@ from ATE.spyder.widgets.actions_on.tests.Utils import POWER
 
 minimal_docstring_length = 80
 
+MAX_OUTPUT_NUMBER = 100
 INPUTSHMOO_COLUMN_INDEX = 0
 INPUT_NAME_COLUMN_INDEX = 1
 INPUT_MIN_COLUMN_INDEX = 2
@@ -1481,6 +1482,10 @@ class TestWizard(BaseDialog):
 
     def addOutputParameter(self):
         new_row = self.outputParameterModel.rowCount()
+        if new_row == MAX_OUTPUT_NUMBER:
+            self.Feedback.setText("max number of output parameters is reached")
+            return
+
         existing_parameters = []
         for item_row in range(new_row):
             item = self.outputParameterModel.item(item_row, 0)

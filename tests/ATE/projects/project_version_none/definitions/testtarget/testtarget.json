@@ -1,0 +1,42 @@
+[
+  {
+    "name": "die_P_1",
+    "prog_name": "project_version_none_HW0_PR_die_P_1",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "device_P_1",
+    "prog_name": "project_version_none_HW0_FT_device_P_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "device_ZHM_1",
+    "prog_name": "project_version_none_HW0_FT_device_ZHM_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "device_HTOL_htol_1",
+    "prog_name": "project_version_none_HW0_FT_device_HTOL_htol_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

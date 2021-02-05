@@ -144,6 +144,21 @@ class ProjectNavigation(QObject):
         project_directory = os.path.join(self.workspace_path, project_name)
         self.__call__(project_directory, project_quality)
 
+    def run_build_tool(self, verb, noun, params):
+        from subprocess import Popen, PIPE
+        from pathlib import Path
+        import sys
+        from os.path import join, dirname
+
+        sammy_path = join(dirname(dirname(dirname(__file__))), 'sammy', 'sammy.py')
+        process = Popen([str(sys.executable), os.fspath(Path(sammy_path)), verb, noun, params], stdout=PIPE, stderr=PIPE, cwd=self.project_directory)
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            print(stderr.decode('UTF-8'))
+        else:
+            print(stdout.decode('UTF-8'))
+        return process.returncode
+
     def add_hardware(self, definition, is_enabled=True):
         '''This method adds a hardware setup to the project.
 
@@ -158,20 +173,11 @@ class ProjectNavigation(QObject):
         This method returns the name of the Hardware on success and raises an
         exception on fail (no sense of continuing, this should work!)
         '''
-        try:  # make the directory structure
-            definition = self._prepare_hardware_definiton(definition)
-            from ATE.spyder.widgets.coding.generators import hardware_generator
-            hardware_generator(self.project_directory, definition)
-
-        except Exception as e:  # explode on fail
-            print(f"failed to create hardware structure for {definition['hardware']}")
-            raise e
-
-        # blob do not have to contain hardware name it's already our primary key
-        # TODO: cleaner impl.
+        definition = self._prepare_hardware_definiton(definition)
         new_hardware = definition['hardware']
         definition.pop('hardware')
         Hardware.add(self.get_file_operator(), new_hardware, definition, is_enabled)
+        _ = self.run_build_tool("generate", "hardware", new_hardware)
 
         self.parent.hardware_added.emit(new_hardware)
         self.parent.database_changed.emit(TableId.Hardware())
@@ -199,13 +205,10 @@ class ProjectNavigation(QObject):
         this method will update hardware 'name' with 'definition'
         if name doesn't exist, a KeyError will be thrown
         '''
-        from ATE.spyder.widgets.coding.generators import hardware_generator
         definition = self._prepare_hardware_definiton(definition)
-        hardware_generator(self.project_directory, definition)
-
-        # blob do not have to contain hardware name it's already our primary key
         definition.pop('hardware')
         Hardware.update(self.get_file_operator(), hardware, definition)
+        _ = self.run_build_tool("generate", "hardware", hardware)
 
     def get_file_operator(self):
         return self.file_operator
@@ -721,12 +724,12 @@ class ProjectNavigation(QObject):
         QualificationFlowDatum.remove(self.get_file_operator(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
-    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy):
+    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy, test_ranges):
         for _, test in enumerate(definition):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
 
-        Program.add(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, order, cache_type, caching_policy)
+        Program.add(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, order, cache_type, caching_policy, test_ranges)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
@@ -741,10 +744,10 @@ class ProjectNavigation(QObject):
         for index, test in enumerate(definition):
             Sequence.add_sequence_information(self.get_file_operator(), owner_name, prog_name, test['name'], index, test)
 
-    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy):
+    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy, test_ranges):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
 
-        Program.update(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, cache_type, caching_policy)
+        Program.update(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, cache_type, caching_policy, test_ranges)
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
@@ -882,6 +885,7 @@ class ProjectNavigation(QObject):
         retval.update({"sequencer_type": prog.sequencer_type})
         retval.update({"caching_policy": prog.caching_policy})
         retval.update({"cache_type": prog.cache_type})
+        retval.update({"test_ranges": prog.test_ranges})
         if prog.sequencer_type == 'Fixed Temperature':
             retval.update({"temperature": prog.temperature})
         # ToDo: Fix Me!

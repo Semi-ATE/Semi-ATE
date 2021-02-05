@@ -101,11 +101,16 @@ class OutputParameter:
 
     def generate_ptr_record(self, is_pass: bool, site_num: int):
         l_limit, u_limit = self._get_limits()
+        l_limit = l_limit * (10**self._exponent)
+        u_limit = u_limit * (10**self._exponent)
+        lsl = self._lsl * (10**self._exponent)
+        usl = self._lsl * (10**self._exponent)
+        measurement = self._measurement * (10**self._exponent)
         return generate_PTR_dict(test_num=self._id, head_num=0, site_num=int(site_num),
-                                 is_pass=is_pass == Result.Pass(), param_flag=0, measurement=self._measurement,
+                                 is_pass=is_pass == Result.Pass(), param_flag=0, measurement=measurement,
                                  test_txt=self._get_PTR_test_name(), alarm_id='', l_limit=l_limit, u_limit=u_limit,
-                                 unit=self._unit, fmt=self._fmt, exponent=self._exponent, ls_limit=self._lsl,
-                                 us_limit=self._usl)
+                                 unit=self._unit, fmt=self._fmt, exponent=int(self._exponent) * -1, ls_limit=lsl,
+                                 us_limit=usl)
 
     def get_testresult(self):
         self._test_executions += 1

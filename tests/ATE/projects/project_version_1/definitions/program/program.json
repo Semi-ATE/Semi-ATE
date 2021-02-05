@@ -1,0 +1,41 @@
+[
+  {
+    "id": "cd74660a-656f-11eb-bab5-4cedfb445f8f",
+    "prog_name": "project_version_1_HW0_PR_qw_P_1",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "qw",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_qw_P",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100,
+      200
+    ]
+  },
+  {
+    "id": "dc3b819e-656f-11eb-9b81-4cedfb445f8f",
+    "prog_name": "project_version_1_HW0_FT_dev_P_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "dev",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_dev_P",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100,
+      200,
+      300
+    ]
+  }
+]

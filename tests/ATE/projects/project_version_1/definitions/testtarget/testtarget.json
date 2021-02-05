@@ -1,0 +1,22 @@
+[
+  {
+    "name": "qw_P_1",
+    "prog_name": "project_version_1_HW0_PR_qw_P_1",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "contact",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "dev_P_1",
+    "prog_name": "project_version_1_HW0_FT_dev_P_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]
