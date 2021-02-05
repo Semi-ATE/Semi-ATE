@@ -13,6 +13,10 @@ from ATE.data.STDF import FTR
 #   head number and site number.
     
 def test_FTR():
+    ftr('<')
+    ftr('>')
+
+def ftr(end):
     
 #   ATDF page 51
     expected_atdf = "FTR:"
@@ -20,7 +24,7 @@ def test_FTR():
     rec_len = 0;
 
 #   STDF v4 page 57
-    record = FTR()
+    record = FTR(endian = end)
 
 
     test_num = 1
@@ -234,7 +238,7 @@ def test_FTR():
     
     f = open(tf.name, "rb")
 
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 20)
 #   Test TEST_NUM, expected value test_num
@@ -308,10 +312,8 @@ def test_FTR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = FTR('V4', '<', w_data)
+    inst = FTR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 20)
 #   Test TEST_NUM, position 3, value of test_num variable

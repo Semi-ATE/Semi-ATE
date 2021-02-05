@@ -10,6 +10,10 @@ from ATE.data.STDF import PRR
 #   stored informationpertaining to one tested part.
 
 def test_PRR():
+    prr('<')
+    prr('>')
+
+def prr(end):
     
 #   ATDF page 39
     expected_atdf = "PRR:"
@@ -17,7 +21,7 @@ def test_PRR():
     rec_len = 0;
 
 #   STDF v4 page 43
-    record = PRR()
+    record = PRR(endian = end)
 
     head_num = 1 
     record.set_value('HEAD_NUM', head_num)
@@ -136,7 +140,7 @@ def test_PRR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 5, 20)
 #   Test HEAD_NUM, expected value head_num
@@ -175,10 +179,8 @@ def test_PRR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PRR('V4', '<', w_data)
+    inst = PRR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 5, 20)
 #   Test HEAD_NUM, position 3, value of head_num variable

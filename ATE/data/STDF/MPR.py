@@ -120,29 +120,28 @@ Location:
         #                = 17 HLM_SCAL
 
 #       3 TEST_NUM 
-        body += "%s|" % self.get_fields(3)[3]
+        body += self.gen_atdf(3)
 #       4 HEAD_NUM 
-        body += "%s|" % self.get_fields(4)[3]
+        body += self.gen_atdf(4)
 #       5 SITE_NUM  
-        body += "%s|" % self.get_fields(5)[3]
+        body += self.gen_atdf(5)
 #       10 RTN_STAT 
-        value = self.get_fields(10)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(10)
 #       11 RTN_RSLT   MUST be float!!!
         value = self.get_fields(11)[3]
-        for elem in value:
-            leading = round(elem,0)
-            len_lead = len(str(leading))
-            result = round(elem, 9 - len_lead)
-            body += "%s," % result
-        body = body[:-1] 
+        if value != None:
+            for elem in value:
+                leading = round(elem,0)
+                len_lead = len(str(leading))
+                result = round(elem, 9 - len_lead)
+                body += "%s," % result
+            body = body[:-1] 
         body += "|"        
 #       6 TEST_FLG bits 6 & 7
 #           bit 6: Pass/fail flag (bit 7) is valid
-        if self.get_fields(6)[3][6] == '0':
+        v = self.get_fields(6)[3]
+        
+        if v != None and v[6] == '0':
 #           bit 7:
 #           0 = Part passed
             if self.get_fields(6)[3][7] == '0':
@@ -151,138 +150,139 @@ Location:
             elif self.get_fields(6)[3][7] == '1':
                 body += 'F'
 #       7 PARM_FLG bit 5
-        if self.get_fields(7)[3][5] == '0':
+        v = self.get_fields(7)[3] 
+        if v != None and v[5] == '0':
             body += '|'
-        elif self.get_fields(7)[3][5] == '1':
+        elif v != None and self.get_fields(7)[3][5] == '1':
             body += 'A|'            
 #       6 TEST_FLG bits 0, 2, 3, 4 & 5
 #       bit 0:
 #       0 = No alarm
-        if self.get_fields(6)[3][0] == '0':
+        v = self.get_fields(6)[3] 
+        if v != None and v[0] == '0':
             body += ''
 #       1 = Alarm detected during testing
-        elif self.get_fields(6)[3][0] == '1':
+        elif v != None and v[0] == '1':
             body += 'A'
 #       bit 2:
 #       0= Test result is reliable
-        if self.get_fields(6)[3][2] == '0':
+        if v != None and v[2] == '0':
             body += ''
 #       1 = Test result is unreliable
-        elif self.get_fields(6)[3][2] == '1':
+        elif v != None and v[2] == '1':
             body += 'U'
 #       bit 3:
 #       0 = No timeout
-        if self.get_fields(6)[3][3] == '0':
+        if v != None and v[3] == '0':
             body += ''
 #       1 = Timeout occurred
-        elif self.get_fields(6)[3][3] == '1':
+        elif v != None and v[3] == '1':
             body += 'T'
 #       bit 4:
 #       0 = Test was executed
-        if self.get_fields(6)[3][4] == '0':
+        if v != None and v[4] == '0':
             body += ''
 #       1 = Test not executed
-        elif self.get_fields(6)[3][4] == '1':
+        elif v != None and v[4] == '1':
             body += 'N'
 #       bit 5:
 #       0 = No abort
-        if self.get_fields(6)[3][5] == '0':
+        if v != None and v[5] == '0':
             body += ''
 #       1= Test aborted
-        elif self.get_fields(6)[3][5] == '1':
+        elif v != None and v[5] == '1':
             body += 'X'
 #       7 PARM_FLG bits 0, 1, 2, 3 & 4
 #       bit 0:
 #       0 = No scale error
-        if self.get_fields(7)[3][0] == '0':
+        v = self.get_fields(7)[3] 
+        if v != None and v[0] == '0':
             body += ''
 #       1 = Scale error
-        elif self.get_fields(7)[3][0] == '1':
+        elif v != None and v[0] == '1':
             body += 'S'
 #       bit 1:
 #       0 = No drift error
-        if self.get_fields(7)[3][1] == '0':
+        if v != None and v[1] == '0':
             body += ''
 #       1 = Drift error (unstable measurement)
-        elif self.get_fields(7)[3][1] == '1':
+        elif v != None and v[1] == '1':
             body += 'D'
 #       bit 2:
 #       0 = No oscillation
-        if self.get_fields(7)[3][2] == '0':
+        if v != None and v[2] == '0':
             body += ''
 #       1 = Oscillation detected
-        elif self.get_fields(7)[3][2] == '1':
+        elif v != None and v[2] == '1':
             body += 'O'
 #       bit 3:
 #       0 = Measured value not high
-        if self.get_fields(7)[3][3] == '0':
+        if v != None and v[3] == '0':
             body += ''
 #       1 = Measured value higher than high test limit
-        elif self.get_fields(7)[3][3] == '1':
+        elif v != None and v[3] == '1':
             body += 'H'
 #       bit 4:
 #       0 = Measured value not low
-        if self.get_fields(7)[3][4] == '0':
+        if v != None and v[4] == '0':
             body += '|'
 #       1 = Measured value lower than low test limit
-        elif self.get_fields(7)[3][4] == '1':
+        elif v != None and v[4] == '1':
             body += 'L|'
             
 #       12 TEST_TXT
-        body += "%s|" % self.get_fields(12)[3]
+        body += self.gen_atdf(12)
 #       13 ALARM_ID
-        body += "%s|" % self.get_fields(13)[3]
+        body += self.gen_atdf(13)
 
 #       7 PARM_FLG bits 6 & 7
 #       bit 6:
 #       0 = If result = low limit, then result is “fail.”
-        if self.get_fields(7)[3][6] == '0':
+        v = self.get_fields(7)[3] 
+        if v != None and v[6] == '0':
             body += ''
 #       1 = If result = low limit, then result is “pass.”
-        elif self.get_fields(7)[3][6] == '1':
+        elif v != None and v[6] == '1':
             body += 'L'
 #       bit 7:
 #       0 = If result = high limit, then result is “fail.”
-        if self.get_fields(7)[3][7] == '0':
+        if v != None and v[7] == '0':
             body += '|'
 #       1 = If result = high limit, then result is “pass.”
-        elif self.get_fields(7)[3][7] == '1':
+        elif v != None and v[7] == '1':
             body += 'H|'
 
 #       23 UNITS         
-        body += "%s|" % self.get_fields(23)[3]
+        body += self.gen_atdf(23)
 #       18 LO_LIMIT
-        body += "%s|" % self.get_fields(18)[3]
+        body += self.gen_atdf(18)
 #       19 HI_LIMIT
-        body += "%s|" % self.get_fields(19)[3]
+        body += self.gen_atdf(19)
 #       20 START_IN
-        body += "%s|" % self.get_fields(20)[3]
+        body += self.gen_atdf(20)
 #       21 INCR_IN
-        body += "%s|" % self.get_fields(21)[3]
+        body += self.gen_atdf(21)
 #       24 UNITS_IN
-        body += "%s|" % self.get_fields(24)[3]
+        body += self.gen_atdf(24)
 #       22 RTN_INDX
-        value = self.get_fields(22)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(22)
 #       25 C_RESFMT
-        body += "%s|" % self.get_fields(25)[3]
+        body += self.gen_atdf(25)
 #       26 C_LLMFMT
-        body += "%s|" % self.get_fields(26)[3]
+        body += self.gen_atdf(26)
 #       27 C_HLMFMT
-        body += "%s|" % self.get_fields(27)[3]
+        body += self.gen_atdf(27)
 #       28 LO_SPEC
-        body += "%s|" % self.get_fields(28)[3]
+        body += self.gen_atdf(28)
 #       29 HI_SPEC
-        body += "%s|" % self.get_fields(29)[3]
+        body += self.gen_atdf(29)
 #       15 RES_SCAL
-        body += "%s|" % self.get_fields(15)[3]
+        body += self.gen_atdf(15)
 #       16 LLM_SCAL
-        body += "%s|" % self.get_fields(16)[3]
+        body += self.gen_atdf(16)
 #       17 HLM_SCAL
-        body += "%s|" % self.get_fields(17)[3]
+        body += self.gen_atdf(17)
+        body = body[:-1] 
 
         # assemble the record
         retval = header + body

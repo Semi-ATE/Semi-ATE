@@ -12,6 +12,10 @@ from ATE.data.STDF import TSR
 #   (MPR) by test number, head number, and sitenumber.
     
 def test_TSR():
+    tsr('<')
+    tsr('>')
+
+def tsr(end):
     
 #   ATDF page 41
     expected_atdf = "TSR:"
@@ -19,7 +23,7 @@ def test_TSR():
     rec_len = 0;
 
 #   STDF v4 page 45
-    record = TSR()
+    record = TSR(endian = end)
 
     head_num = 1 
     record.set_value('HEAD_NUM', head_num)
@@ -135,14 +139,13 @@ def test_TSR():
     tf = tempfile.NamedTemporaryFile(delete=False)  
     
     f = open(tf.name, "wb")
-#  ERROR  : ATE.data.STDF.records.STDFError: EPS._pack_item(REC_LEN) : Unsupported Reference '' vs 'U*2'
     w_data = record.__repr__()
     f.write(w_data)
     f.close
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 10, 30)
 #   Test HEAD_NUM, expected value head_num
@@ -186,10 +189,8 @@ def test_TSR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = TSR('V4', '<', w_data)
+    inst = TSR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 10, 30)
 #   Test HEAD_NUM, position 3, value of head_num variable
@@ -227,6 +228,105 @@ def test_TSR():
     
 #   Test ATDF output
     assert inst.to_atdf() == expected_atdf
+
+    os.remove(tf.name)
+
+#   Test reset method and compressed data when OPT_FLAG is used and
+#   fields after OPT_FLAG are not set
+
+    record.reset()
+
+    head_num = 10
+    record.set_value('HEAD_NUM', head_num)
+    rec_len = 1;
+
+    site_num = 11
+    record.set_value('SITE_NUM', site_num)
+    rec_len += 1;
+
+    test_typ = 'P' 
+    record.set_value('TEST_TYP', test_typ)
+    rec_len += 1;
+    
+    test_num = 12
+    record.set_value('TEST_NUM', test_num)
+    rec_len += 4;
+
+    exec_cnt = 123
+    record.set_value('EXEC_CNT', exec_cnt)
+    rec_len += 4;
+
+    fail_cnt = 2
+    record.set_value('FAIL_CNT', fail_cnt)
+    rec_len += 4;
+
+    alrm_cnt = 0
+    record.set_value('ALRM_CNT', alrm_cnt)
+    rec_len += 4;
+
+    test_nam = 'IDDQ' 
+    record.set_value('TEST_NAM', test_nam)
+    rec_len += len(test_nam) + 1;
+
+    seq_name = 'STD FLOW' 
+    record.set_value('SEQ_NAME', seq_name)
+    rec_len += len(seq_name) + 1;
+
+    test_lbl = 'label' 
+    record.set_value('TEST_LBL', test_lbl)
+    rec_len += len(test_lbl) + 1;
+
+    expected_atdf = "TSR:"
+    expected_atdf += str(head_num) +"|"
+    expected_atdf += str(site_num) + "|"
+    expected_atdf += str(test_num) + "|"
+    expected_atdf += test_nam + "|"
+    expected_atdf += test_typ + "|"
+    expected_atdf += str(exec_cnt) + "|"
+    expected_atdf += str(fail_cnt) + "|"
+    expected_atdf += str(alrm_cnt) + "|"
+    expected_atdf += seq_name + "|"
+    expected_atdf += test_lbl + "|"
+    expected_atdf += "||||"
+    
+    assert record.to_atdf() == expected_atdf
+
+    tf = tempfile.NamedTemporaryFile(delete=False)  
+    
+    f = open(tf.name, "wb")
+    w_data = record.__repr__()
+    f.write(w_data)
+    f.close
+    
+    f = open(tf.name, "rb")
+    
+    stdfRecTest = STDFRecordTest(f, end)
+#   rec_len, rec_type, rec_sub
+    stdfRecTest.assert_file_record_header(rec_len, 10, 30)
+#   Test HEAD_NUM, expected value head_num
+    stdfRecTest.assert_int(1, head_num)
+#   Test SITE_NUM, expected value site_num
+    stdfRecTest.assert_int(1, site_num)
+#   Test TEST_TYP, expected value test_type
+    stdfRecTest.assert_char(test_typ)
+#   Test TEST_NUM, expected value test_num
+    stdfRecTest.assert_int(4, test_num)
+#   Test EXEC_CNT, expected value exec_cnt
+    stdfRecTest.assert_int(4, exec_cnt)
+#   Test FAIL_CNT, expected value fail_cnt
+    stdfRecTest.assert_int(4, fail_cnt)
+#   Test ALRM_CNT, expected value alrm_cnt
+    stdfRecTest.assert_int(4, alrm_cnt)
+#   Test TEST_NAM, expected value test_nam
+    stdfRecTest.assert_ubyte(len(test_nam))
+    stdfRecTest.assert_char_array(len(test_nam), test_nam)
+#   Test SEQ_NAME, expected value seq_name
+    stdfRecTest.assert_ubyte(len(seq_name))
+    stdfRecTest.assert_char_array(len(seq_name), seq_name)
+#   Test TEST_LBL, expected value test_lbl
+    stdfRecTest.assert_ubyte(len(test_lbl))
+    stdfRecTest.assert_char_array(len(test_lbl), test_lbl)
+
 
 #   ToDo: Test JSON output
     

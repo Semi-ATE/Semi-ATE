@@ -9,6 +9,10 @@ from ATE.data.STDF import SDR
 #   connected to one testhead, that compose a site group.
 
 def test_SDR():
+    sdr('<')
+    sdr('>')
+
+def sdr(end):
     
 #   ATDF page 31
     expected_atdf = "SDR:"
@@ -16,7 +20,7 @@ def test_SDR():
     rec_len = 0;
 
 #   STDF page 35
-    record = SDR()
+    record = SDR(endian = end)
     
     head_num = 1
     record.set_value('HEAD_NUM', head_num)
@@ -134,7 +138,7 @@ def test_SDR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 80)
 #   Test HEAD_NUM, expected value num_bins
@@ -199,10 +203,8 @@ def test_SDR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = SDR('V4', '<', w_data)
+    inst = SDR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 80)
 #   Test HEAD_NUM, position 3, value of head_num variable

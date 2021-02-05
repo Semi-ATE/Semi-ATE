@@ -11,6 +11,10 @@ from ATE.data.STDF import GDR
 #   purpose that the userdesires.
     
 def test_GDR():
+    gdr('<')
+    gdr('>')
+
+def gdr(end):
     
 #   ATDF page 59
     expected_atdf = "GDR:"
@@ -18,7 +22,7 @@ def test_GDR():
     rec_len = 0;
 
 #   STDF v4 page 64
-    record = GDR()
+    record = GDR(endian = end)
 
     fld_cnt = 12
     record.set_value('FLD_CNT', fld_cnt)
@@ -109,7 +113,7 @@ def test_GDR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 50, 10)
 #   Test FLD_CNT, expected value fld_cnt
@@ -204,10 +208,8 @@ def test_GDR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = GDR('V4', '<', w_data)
+    inst = GDR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 50, 10)
 #   Test FLD_CNT, position 3, value of fld_cnt variable

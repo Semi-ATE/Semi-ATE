@@ -7,7 +7,11 @@ from ATE.data.STDF import BPS
 #   Function:
 #   Marks the beginning of a new program section (or sequencer) in the job plan.
 
-def test_BPS():
+def test_ATR():
+    bps('<')
+    bps('>')
+
+def bps(end):
     
 #   ATDF page 57
     expected_atdf = "BPS:"
@@ -15,7 +19,7 @@ def test_BPS():
     rec_len = 0;
 
 #   STDF v4 page 62
-    record = BPS()
+    record = BPS(endian = end)
 
     seq_name = 'DC_TESTS'
     record.set_value('SEQ_NAME', seq_name)
@@ -36,7 +40,7 @@ def test_BPS():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, endian = end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 20, 10)
 #   Test SEQ_NAME, expected value seq_name
@@ -48,10 +52,8 @@ def test_BPS():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = BPS('V4', '<', w_data)
+    inst = BPS('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 20, 10)
 #   Test SEQ_NAME, position 3, value of grp_nam variable

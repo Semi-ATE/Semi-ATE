@@ -126,15 +126,16 @@ Location:
         #                   = 30 SPIN_MAP
 
 #       3 TEST_NUM 
-        body += "%s|" % self.get_fields(3)[3]
+        body += self.gen_atdf(3)
 #       4 HEAD_NUM 
-        body += "%s|" % self.get_fields(4)[3]
+        body += self.gen_atdf(4)
 #       5 SITE_NUM  
-        body += "%s|" % self.get_fields(5)[3]
+        body += self.gen_atdf(5)
         
 #       6 TEST_FLG bits 6 & 7
 #           bit 6: Pass/fail flag (bit 7) is valid
-        if self.get_fields(6)[3][6] == '0':
+        v = self.get_fields(6)[3]
+        if v != None and v[6] == '0':
 #           bit 7:
 #           0 = Part passed
             if self.get_fields(6)[3][7] == '0':
@@ -178,70 +179,51 @@ Location:
 #           1= Testaborted
             elif self.get_fields(6)[3][5] == '1':
                 body += 'X|'
+        else:
+            body += '|'
+            
 #       22 VECT_NAM        
-        body += "%s|" % self.get_fields(22)[3]
+        body += self.gen_atdf(22)
 #       23 TIME_SET
-        body += "%s|" % self.get_fields(23)[3]
+        body += self.gen_atdf(23)
 #        8 CYCL_CNT
-        body += "%s|" % self.get_fields(8)[3]
+        body += self.gen_atdf(8)
 #        9 REL_VADR
-        body += "%s|" % self.get_fields(9)[3]
+        body += self.gen_atdf(9)
 #       10 REPT_CNT
-        body += "%s|" % self.get_fields(10)[3]
+        body += self.gen_atdf(10)
 #       11 NUM_FAIL
-        body += "%s|" % self.get_fields(11)[3]
+        body += self.gen_atdf(11)
 #       12 XFAIL_AD
-        body += "%s|" % self.get_fields(12)[3]
+        body += self.gen_atdf(12)
 #       13 YFAIL_AD
-        body += "%s|" % self.get_fields(13)[3]
+        body += self.gen_atdf(13)
 #       14 VECT_OFF
-        body += "%s|" % self.get_fields(14)[3]
+        body += self.gen_atdf(14)
 #       17 RTN_INDX
-        value = self.get_fields(17)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(17)
 #       18 RTN_STAT
-        value = self.get_fields(18)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(18)
 #       19 PGM_INDX
-        value = self.get_fields(19)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(19)
 #       20 PGM_STAT
-        value = self.get_fields(20)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(20)
 #       22 FAIL_PIN
-        value = self.get_fields(21)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+        body += self.gen_atdf(21)
 #       24 OP_CODE
-        body += "%s|" % self.get_fields(24)[3]
+        body += self.gen_atdf(24)
 #       25 TEST_TXT
-        body += "%s|" % self.get_fields(25)[3]
+        body += self.gen_atdf(25)
 #       26 ALARM_ID
-        body += "%s|" % self.get_fields(26)[3]
+        body += self.gen_atdf(26)
 #       27 PROG_TXT
-        body += "%s|" % self.get_fields(27)[3]
+        body += self.gen_atdf(27)
 #       28 RSLT_TXT
-        body += "%s|" % self.get_fields(28)[3]
+        body += self.gen_atdf(28)
 #       29 PATG_NUM
-        body += "%s|" % self.get_fields(29)[3]
+        body += self.gen_atdf(29)
 #       30 SPIN_MAP
-        value = self.get_fields(30)[3]
-        for elem in value:
-            body += "%s," % elem
+        body += self.gen_atdf(30)
         body = body[:-1] 
 
         # assemble the record

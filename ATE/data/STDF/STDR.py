@@ -208,7 +208,7 @@ class STDR(ABC):
     def __init__(self, endian=None, record=None):
         self.id = 'STDR'
         self.missing_fields = 0
-        self.local_debug = True
+        self.local_debug = False
         self.buffer = ''
         self.fields = {
             'REC_LEN'  : {'#' :  0, 'Type' :  'U*2', 'Ref' : None, 'Value' :      0, 'Text' : 'Bytes of data following header        ', 'Missing' : None},
@@ -347,10 +347,6 @@ class STDR(ABC):
         Type, Ref = self.get_fields(FieldKey)[1:3]
         K = None
         # TODO: the following condition should most likely be "Ref is not None", since this one is always true but initialized K to the field with '#' == 3 in case of Ref == None
-#	Changed by semit
-#	Old code:
-#        if Ref != '':
-#	New code:
         if Ref != None:
             K = self.get_fields(Ref)[3]
         Type, Bytes = Type.split("*")
@@ -809,7 +805,7 @@ class STDR(ABC):
                     return retval
                 elif Bytes == 'n':
                     retval = 0
-                    list_values = self.fields[FieldID]['Value'] 
+                    list_values = self.fields[FieldKey]['Value'] 
                     for i in range(len(list_values)):
                         retval += len(list_values[i]) + 1
                     return retval
@@ -997,25 +993,41 @@ class STDR(ABC):
         Private method that updates the "bytes following the header" in the 'REC_LEN' field
         '''
         reclen = 0
-        is_optional_flag = False
-        
+
+        sequence = {}
+        sequence_wo_opt_data = {}
+        use_data_after_opt_flag = False
+        is_opt_flag = False
+
+        # Optional Fields and Missing/Invalid Data at page 13 is not fully
+        # implemented as it is stated : 
+        #    Optional fields at the end of a record may be omitted 
+        #    when optional data is not set 
+        # When a record (TSR, PTR, MPR) contains the OPT_FLAG, fields after 
+        # OPT_FLAG are always optional. They have to be set in the first instance of 
+        # the record as "default values" and after that if there are no changes
+        # they can be skipped (including the OPT_FLAG field)
         for field in self.fields:
             if field == 'REC_LEN' : continue
             if field == 'REC_TYP' : continue
             if field == 'REC_SUB' : continue
-#            When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
-#            not mandatory always. They have to be set in the first instance of 
-#            the record as "default values" and after that if there are no changes
-#            they can be skipped (including the OPT_FLAG field)
-#            if field == 'OPT_FLAG':
-#                is_optional_flag = True
-#                if self.fields[field]['Value'] != None:
-#                    reclen += self._type_size(field)
-#                continue
-#            if is_optional_flag:
-#                if self.fields[field]['Value'] != None:
-#                    reclen += self._type_size(field)
-#            else:
+            sequence[self.fields[field]['#']] = field
+            if field == 'OPT_FLAG':
+                is_opt_flag = True
+                continue
+            if is_opt_flag and self.fields[field]['Value'] != None:
+                use_data_after_opt_flag = True
+            if is_opt_flag == False and use_data_after_opt_flag == False:
+                sequence_wo_opt_data[self.fields[field]['#']] = field                
+        
+        if is_opt_flag and use_data_after_opt_flag == False:
+            sequence.clear()
+            sequence = sequence_wo_opt_data
+        
+        for field in sequence:
+            if field == 'REC_LEN' : continue
+            if field == 'REC_TYP' : continue
+            if field == 'REC_SUB' : continue
             reclen += self._type_size(field)
 
         if self.local_debug: print("%s._update_rec_len() = %s" % (self.id, reclen))
@@ -1895,30 +1907,32 @@ class STDR(ABC):
         '''
         sequence = {}
         sequence_wo_opt_data = {}
-        use_optional_data = True
-        is_optional_flag = False
+        use_data_after_opt_flag = False
+        is_opt_flag = False
         header = b''
         body = b''
 
-        # When a record contains the OPT_FLAG, some fields after OPT_FLAG are 
-        # not mandatory always. They have to be set in the first instance of 
+        # Optional Fields and Missing/Invalid Data at page 13 is not fully
+        # implemented as it is stated : 
+        #    Optional fields at the end of a record may be omitted 
+        #    when optional data is not set 
+        # When a record (TSR, PTR, MPR) contains the OPT_FLAG, fields after 
+        # OPT_FLAG are optional. They have to be set in the first instance of 
         # the record as "default values" and after that if there are no changes
         # they can be skipped (including the OPT_FLAG field)
         for field in self.fields:
             sequence[self.fields[field]['#']] = field
-            # to be done
-#            if field == 'OPT_FLAG':
-#                is_optional_flag = True
-#                if self.fields[field]['Value'] != None:
-#                    sequence_wo_opt_data[self.fields[field]['#']] = field                
-#                continue
-#            if is_optional_flag and self.fields[field]['Value'] != None:
-#                use_optional_data = False
-#            if is_optional_flag == False and use_optional_data == False:
-#                sequence_wo_opt_data[self.fields[field]['#']] = field                
-#        
-#        if is_optional_flag and use_optional_data == False:
-#            sequence = sequence_wo_opt_data
+            if field == 'OPT_FLAG':
+                is_opt_flag = True
+                continue
+            if is_opt_flag and self.fields[field]['Value'] != None:
+                use_data_after_opt_flag = True
+            if is_opt_flag == False and use_data_after_opt_flag == False:
+                sequence_wo_opt_data[self.fields[field]['#']] = field                
+        
+        if is_opt_flag and use_data_after_opt_flag == False:
+            sequence.clear()
+            sequence = sequence_wo_opt_data
             
         # pack the body
         for item in range(3, len(sequence)):
@@ -1971,6 +1985,22 @@ class STDR(ABC):
         return {sequence[field]: self.fields[sequence[field]]['Value']
                 for field in sequence}
 
+    def gen_atdf(self, fieldID):
+        
+        field = ''
+        
+        value = self.get_fields(fieldID)[3]
+        if value != None:
+            if type(value) is list:
+                for elem in value:
+                    field += "%s," % elem
+                field = field[:-1] 
+            else:
+                field += "%s" % value
+        field += '|'
+            
+        return field
+
     def to_atdf(self):
 
         sequence = {}
@@ -1998,47 +2028,55 @@ class STDR(ABC):
                 if sequence[field] in time_fields:
                     
                     timestamp = self.fields[sequence[field]]['Value']
-#                    ATDF spec page 9:
-#                    Insignificant leading zeroes in all numbers are optional.
-                    t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
-                    body += "%s|" % (t.upper())
+                    if timestamp == None:
+                        body += '|'
+                    else:
+    #                    ATDF spec page 9:
+    #                    Insignificant leading zeroes in all numbers are optional.
+                        t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
+                        body += '%s|' % (t.upper())
                         
                 elif sequence[field] in skip_fields:
 #                    Some fields must be skipped like number of elements in array:
 #                    like INDX_CNT in PGR reconrd
                     pass
                 else:
+                    
                     value = self.fields[sequence[field]]['Value']
-                    if type(value) == list:
-                        
-                        Type = self.fields[sequence[field]]['Type']
-                        Type, Bytes = Type.split("*")
-                        if Type == 'B':
-                            # converting bits into HEX values
-                            vals = []
-                            val = 0
-                            x = 0
-                            bit = 7
-                            for i in range(len(value)):
-                                el = value[i]
-                                val = val | ( int(el)<<bit)
-                                bit -= 1
-                                if i != 0 and i % 7 == 0:
-                                    vals.append(val)
-                                    bit = 7
-                            for elem in vals:
-                                body += hex(elem)
-                            body += "|"
-                        else:
-                            # For the following fields which in some recoreds are
-                            # single value and for some are lists :
-                            # PMR_INDX from PMR as value, but list in PGR
-                            for elem in value:
-                                body += "%s," % elem
-                            body = body[:-1] 
-                            body += "|"
+                    
+                    if value == None:
+                        body += '|'
                     else:
-                        body += "%s|" % (value)
+                        if type(value) == list:
+                            
+                            Type = self.fields[sequence[field]]['Type']
+                            Type, Bytes = Type.split("*")
+                            if Type == 'B':
+                                # converting bits into HEX values
+                                vals = []
+                                val = 0
+                                x = 0
+                                bit = 7
+                                for i in range(len(value)):
+                                    el = value[i]
+                                    val = val | ( int(el)<<bit)
+                                    bit -= 1
+                                    if i != 0 and i % 7 == 0:
+                                        vals.append(val)
+                                        bit = 7
+                                for elem in vals:
+                                    body += hex(elem)
+                                body += '|'
+                            else:
+                                # For the following fields which in some recoreds are
+                                # single value and for some are lists :
+                                # PMR_INDX from PMR as value, but list in PGR
+                                for elem in value:
+                                    body += "%s," % elem
+                                body = body[:-1] 
+                                body += "|"
+                        else:
+                            body += '%s|' % (value)
             body = body[:-1] 
 
         # assemble the record

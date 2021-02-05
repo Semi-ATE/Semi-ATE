@@ -12,6 +12,10 @@ from ATE.data.STDF import SBR
 #   is “physically” placed in a hardware bin after testing. A part can be
 #   “logically” associated with a software bin during or after testing.
 def test_SBR():
+    sbr('<')
+    sbr('>')
+
+def sbr(end):
     
 #   ATDF page 23
     expected_atdf = "SBR:"
@@ -19,7 +23,7 @@ def test_SBR():
     rec_len = 0;
 
 #   STDF v4 page 27
-    record = SBR()
+    record = SBR(endian = end)
     head_num = 255
     record.set_value('HEAD_NUM', head_num)
     rec_len = 1;
@@ -64,7 +68,7 @@ def test_SBR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 50)
 #   Test HEAD_NUM, expected value head_num
@@ -86,10 +90,8 @@ def test_SBR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = SBR('V4', '<', w_data)
+    inst = SBR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 50)
 #   Test HEAD_NUM, position 3, value of head_num variable

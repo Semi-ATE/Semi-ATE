@@ -70,15 +70,27 @@ Location:
 #                          8 CENTER_X
 #                          9 CENTER_Y
                       
-        body += "%s|" % self.get_fields(7)[3]
-        body += "%s|" % self.get_fields(10)[3]
-        body += "%s|" % self.get_fields(11)[3]
-        body += "%s|" % self.get_fields(3)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(5)[3]
-        body += "%s|" % self.get_fields(6)[3]
-        body += "%s|" % self.get_fields(8)[3]
-        body += "%s"  % self.get_fields(9)[3]
+#       7 WF_FLAT
+        body += self.gen_atdf(7)
+#       10 POS_X
+        body += self.gen_atdf(10)
+#       11 POS_Y
+        body += self.gen_atdf(11)
+#       3 WAFR_SIZ
+        body += self.gen_atdf(3)
+#       4 DIE_HT
+        body += self.gen_atdf(4)
+#       5 DIE_WID
+        body += self.gen_atdf(5)
+#       6 WF_UNITS
+        body += self.gen_atdf(6)
+#       8 CENTER_X
+        body += self.gen_atdf(8)
+#       9 CENTER_Y
+        body += self.gen_atdf(9)
+        
+        body = body[:-1] 
+
         # assemble the record
         retval = header + body
 

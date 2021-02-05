@@ -81,22 +81,52 @@ Location:
 #        15 USR_DESC    = 15  USR_DESC
 #        16 EXC_DESC    = 16  EXC_DESC
     
-        body += "%s|" % self.get_fields(3)[3]
-        timestamp = self.get_fields(5)[3]
-        t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
-        body += "%s|" % (t.upper())
-        body += "%s|" % self.get_fields(6)[3]
-        body += "%s|" % self.get_fields(11)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(7)[3]
-        body += "%s|" % self.get_fields(8)[3]
-        body += "%s|" % self.get_fields(9)[3]
-        body += "%s|" % self.get_fields(10)[3]
-        body += "%s|" % self.get_fields(12)[3]
-        body += "%s|" % self.get_fields(13)[3]
-        body += "%s|" % self.get_fields(14)[3]
-        body += "%s|" % self.get_fields(15)[3]
-        body += "%s" % self.get_fields(16)[3]
+#       3 HEAD_NUM
+        body += self.gen_atdf(3)
+
+#       5 FINISH_T
+        v = self.get_fields(5)[3]
+        if v != None:
+            t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(v))
+            body += "%s|" % (t.upper())
+
+#       6 PART_CNT
+        body += self.gen_atdf(6)
+        
+#       11 PART_CNT
+        body += self.gen_atdf(11)
+
+#       4 SITE_GRP
+        body += self.gen_atdf(4)
+
+#       7 RTST_CNT
+        body += self.gen_atdf(7)
+
+#       8 ABRT_CNT
+        body += self.gen_atdf(8)
+
+#       9 ABRT_CNT
+        body += self.gen_atdf(9)
+
+#       10 FUNC_CNT
+        body += self.gen_atdf(10)
+
+#       12 FABWF_ID
+        body += self.gen_atdf(12)
+
+#       13 FRAME_ID
+        body += self.gen_atdf(13)
+
+#       14 MASK_ID
+        body += self.gen_atdf(14)
+
+#       15 USR_DESC
+        body += self.gen_atdf(15)
+
+#       16 EXC_DESC
+        body += self.gen_atdf(16)
+
+        body = body[:-1]
 
         # assemble the record
         retval = header + body

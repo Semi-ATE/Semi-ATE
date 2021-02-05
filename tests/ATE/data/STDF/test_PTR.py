@@ -12,6 +12,10 @@ from ATE.data.STDF import PTR
 #   (TSR) by test number, head number, and site number
     
 def test_PTR():
+    ptr('<')
+    ptr('>')
+
+def ptr(end):
     
 #   ATDF page 43
     expected_atdf = "PTR:"
@@ -19,7 +23,7 @@ def test_PTR():
     rec_len = 0;
 
 #   STDF v4 page 47
-    record = PTR()
+    record = PTR(endian = end)
 
     test_num = 123
     record.set_value('TEST_NUM', test_num)
@@ -177,14 +181,13 @@ def test_PTR():
     tf = tempfile.NamedTemporaryFile(delete=False)  
     
     f = open(tf.name, "wb")
-#  ERROR  : ATE.data.STDF.records.STDFError: EPS._pack_item(REC_LEN) : Unsupported Reference '' vs 'U*2'
     w_data = record.__repr__()
     f.write(w_data)
     f.close
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 10)
 #   Test TEST_NUM, expected value test_num
@@ -233,18 +236,14 @@ def test_PTR():
     stdfRecTest.assert_float(lo_spec)
 #   Test HI_SPEC, expected value hi_spec
     stdfRecTest.assert_float(hi_spec)
-
-
     
     f.close()    
 
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PTR('V4', '<', w_data)
+    inst = PTR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 10)
 #   Test TEST_NUM, position 3, value of test_num variable
@@ -287,11 +286,81 @@ def test_PTR():
     stdfRecTest.assert_instance_field(inst, 21, lo_spec);
 #   Test HI_SPEC, position 22, value of hi_spec variable
     stdfRecTest.assert_instance_field(inst, 22, hi_spec);
+
+    os.remove(tf.name)
     
 #   Test ATDF output
     assert inst.to_atdf() == expected_atdf
     
-#   ToDo: Test reset method and OPT_FLAG
+#   Test reset method and compressed data when OPT_FLAG is used and
+#   fields after OPT_FLAG are not set
+
+    rec = PTR('V4', endian = end)
+
+    record.reset()
+
+    test_num = 123
+    record.set_value('TEST_NUM', test_num)
+    rec_len = 4;
+    
+    head_num = 1
+    record.set_value('HEAD_NUM', head_num)
+    rec_len += 1;
+    
+    site_num = 1
+    record.set_value('SITE_NUM', site_num)
+    rec_len += 1;
+
+    test_flg = ['0', '1', '0', '0', '0', '0', '0', '0']
+    record.set_value('TEST_FLG', test_flg)  # bit 1 === 'RESULT' is valid
+    rec_len += 1;
+    
+    parm_flg = ['0', '1', '0', '0', '0', '0', '0', '0']
+    record.set_value('PARM_FLG', parm_flg)
+    rec_len += 1;
+    
+    result = 1.5
+    record.set_value('RESULT', result)
+    rec_len += 4;
+    
+    test_txt = ''
+    record.set_value('TEST_TXT', test_txt)
+    rec_len += 1;
+    
+    alarm_id = ''
+    record.set_value('ALARM_ID', alarm_id)
+    rec_len += 1;
+
+    tf = tempfile.NamedTemporaryFile(delete=False)  
+    
+    f = open(tf.name, "wb")
+    w_data = record.__repr__()
+    f.write(w_data)
+    f.close
+
+    f = open(tf.name, "rb")
+    
+    stdfRecTest = STDFRecordTest(f, end)
+#   rec_len, rec_type, rec_sub
+    stdfRecTest.assert_file_record_header(rec_len, 15, 10)
+#   Test TEST_NUM, expected value test_num
+    stdfRecTest.assert_int(4, test_num)
+#   Test HEAD_NUM, expected value head_num
+    stdfRecTest.assert_int(1, head_num)
+#   Test SITE_NUM, expected value site_num
+    stdfRecTest.assert_int(1, site_num)
+#   Test TEST_FLAG, expected value test_flg
+    stdfRecTest.assert_bits(test_flg)
+#   Test PARM_FLAG, expected value parm_flg
+    stdfRecTest.assert_bits(parm_flg)
+#   Test RESULT, expected value result
+    stdfRecTest.assert_float(result)
+#   Test TEST_TXT, expected value test_txt
+    stdfRecTest.assert_ubyte(len(test_txt))
+    stdfRecTest.assert_char_array(len(test_txt), test_txt)
+#   Test ALARM_ID, expected value alarm_id
+    stdfRecTest.assert_ubyte(len(alarm_id))
+    stdfRecTest.assert_char_array(len(alarm_id), alarm_id)
 
 #   ToDo: Test JSON output
     

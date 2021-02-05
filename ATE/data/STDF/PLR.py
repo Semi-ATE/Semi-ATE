@@ -64,50 +64,43 @@ Location:
 #                       = 9 PGM_CHAL , 7 PGM_CHAR
 #                       = 10 RTN_CHAL, 8 RTN_CHAR
 
-        value = self.get_fields(4)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
-
-        value = self.get_fields(5)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
-
-        value = self.get_fields(6)[3]
-        for elem in value:
-            body += "%s," % elem
-        body = body[:-1] 
-        body += "|"
+#       4 GRP_INDX
+        body += self.gen_atdf(4)
+#       5 GRP_MODE
+        body += self.gen_atdf(5)
+#       6 GRP_RADX
+        body += self.gen_atdf(6)
 
         pgm_right = self.get_fields(7)[3]
         pgm_left = self.get_fields(9)[3]
         
-        if len(pgm_left) == 0:
-            for elem in pgm_right:
-                body += "%s," % elem
-            body = body[:-1] 
-            body += "|"
-        else:
-            for right, left in zip(pgm_right, pgm_left):
-                body += right + "," + left +'/'
-            body = body[:-1]
+        if pgm_right == None and pgm_left == None:
             body += '|'
+            pass
+        else:
+            if len(pgm_left) == 0:
+#               7 PGM_CHAR
+                body += self.gen_atdf(7)
+            else:
+                for right, left in zip(pgm_right, pgm_left):
+                    body += right + "," + left +'/'
+                body = body[:-1]
+                body += '|'
 
         rtn_right = self.get_fields(8)[3]
         rtn_left = self.get_fields(10)[3]
         
-        if len(rtn_left) == 0:
-            for elem in rtn_right:
-                body += "%s," % elem
-            body = body[:-1] 
-            body += "|"
+        if rtn_right == None and rtn_left == None:
+            body += '|'
+            pass
         else:
-            for right, left in zip(rtn_right, rtn_left):
-                body += right + "," + left +'/'
-            body = body[:-1]
+            if len(rtn_left) == 0:
+    #           8 RTN_CHAR
+                body += self.gen_atdf(8)
+            else:
+                for right, left in zip(rtn_right, rtn_left):
+                    body += right + "," + left +'/'
+        body = body[:-1]
 
         # assemble the record
         retval = header + body

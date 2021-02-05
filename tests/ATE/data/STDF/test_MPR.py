@@ -15,6 +15,10 @@ from ATE.data.STDF import MPR
 #   site number.
     
 def test_MPR():
+    mpr('<')
+    mpr('>')
+
+def mpr(end):
     
 #   ATDF page 47
     expected_atdf = "MPR:"
@@ -22,7 +26,7 @@ def test_MPR():
     rec_len = 0;
 
 #   STDF v4 page 53
-    record = MPR()
+    record = MPR(endian = end)
     
     test_num = 1
     record.set_value('TEST_NUM', test_num)
@@ -225,7 +229,7 @@ def test_MPR():
 #   LLM_SCAL
     expected_atdf += str(llm_scal) + "|"
 #   HLM_SCAL
-    expected_atdf += str(hlm_scal) + "|"
+    expected_atdf += str(hlm_scal)
     
 
 #    Test serialization
@@ -242,7 +246,7 @@ def test_MPR():
     
     f = open(tf.name, "rb")
 
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 15)
 #   Test TEST_NUM, expected value test_num
@@ -313,10 +317,8 @@ def test_MPR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = MPR('V4', '<', w_data)
+    inst = MPR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 15)
 #   Test TEST_NUM, position 3, value of test_num variable
@@ -379,6 +381,92 @@ def test_MPR():
  
     os.remove(tf.name)
 
-#   ToDo: Test reset method and OPT_FLAG
+#   Test reset method and compressed data when OPT_FLAG is used and
+#   fields after OPT_FLAG are not set
+
+    record.reset()
+    
+    test_num = 11
+    record.set_value('TEST_NUM', test_num)
+    rec_len = 4;
+
+    head_num = 21
+    record.set_value('HEAD_NUM', head_num)
+    rec_len += 1;
+
+    site_num = 31
+    record.set_value('SITE_NUM', site_num)
+    rec_len += 1;
+
+    test_flg = ['1', '0', '1', '1', '1', '1', '0', '1']
+    record.set_value('TEST_FLG', test_flg)
+    rec_len += 1;
+
+    parm_flg = ['1', '1', '1', '1', '1', '1', '1', '1']
+    record.set_value('PARM_FLG', parm_flg)
+    rec_len += 1;
+    
+    rtn_icnt = 11
+    record.set_value('RTN_ICNT', rtn_icnt)
+    rec_len += 2;
+
+    rslt_cnt = 12
+    record.set_value('RSLT_CNT', rslt_cnt)
+    rec_len += 2;
+
+    rtn_stat = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    record.set_value('RTN_STAT', rtn_stat)
+    rec_len += math.ceil(len(rtn_stat)/2)
+
+    rtn_rslt = [ 0.123, 1.321, 0.4567, 1.22453, 2.32115, 3.87643, 2.214253, 3.24212, 4.13411, 5.1, 6.1, 7.1]
+    record.set_value('RTN_RSLT', rtn_rslt)
+    rec_len += len(rtn_rslt)*4
+
+    test_txt = 'SCAN'
+    record.set_value('TEST_TXT', test_txt)
+    rec_len += len(test_txt) + 1;
+
+    alarm_id = 'OVP'
+    record.set_value('ALARM_ID', alarm_id)
+    rec_len += len(alarm_id) + 1;
+
+    tf = tempfile.NamedTemporaryFile(delete=False)  
+    
+    f = open(tf.name, "wb")
+    w_data = record.__repr__()
+    f.write(w_data)
+    f.close
+
+    f = open(tf.name, "rb")
+    
+    stdfRecTest = STDFRecordTest(f, end)
+#   rec_len, rec_type, rec_sub
+    stdfRecTest.assert_file_record_header(rec_len, 15, 15)
+#   Test TEST_NUM, expected value test_num
+    stdfRecTest.assert_int(4, test_num)
+#   Test HEAD_NUM, expected value head_num
+    stdfRecTest.assert_int(1, head_num)
+#   Test SITE_NUM, expected value site_num
+    stdfRecTest.assert_int(1, site_num)
+#   Test TEST_FLG, expected value test_flg
+    stdfRecTest.assert_bits(test_flg)
+#   Test PARM_FLG, expected value parm_flg
+    stdfRecTest.assert_bits(parm_flg)
+#   Test RTN_ICNT, expected value rtn_icnt
+    stdfRecTest.assert_int(2, rtn_icnt)
+#   Test RSLT_CNT, expected value rslt_cnt
+    stdfRecTest.assert_int(2, rslt_cnt)
+#   Test RTN_STAT, expected value rtn_stat
+    stdfRecTest.assert_nibble_array(rtn_icnt, rtn_stat)
+#   Test RTN_RSLT, expected value rtn_rslt
+    stdfRecTest.assert_float_array(rtn_rslt)
+#   Test TEST_TXT, expected length of the string and value of the test_txt
+    stdfRecTest.assert_ubyte(len(test_txt))
+    stdfRecTest.assert_char_array(len(test_txt), test_txt);
+#   Test ALARM_ID, expected length of the string and value of the alarm_id
+    stdfRecTest.assert_ubyte(len(alarm_id))
+    stdfRecTest.assert_char_array(len(alarm_id), alarm_id);
+
+    os.remove(tf.name)
 
 #   ToDo: Test JSON output

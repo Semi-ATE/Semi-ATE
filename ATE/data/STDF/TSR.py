@@ -87,21 +87,22 @@ Location:
 #         17 TST_SUMS    = 17 TST_SUMS      
 #         18 TST_SQRS    = 18 TST_SQRS                          
 
-        body += "%s|" % self.get_fields(3)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(6)[3]
-        body += "%s|" % self.get_fields(10)[3]
-        body += "%s|" % self.get_fields(5)[3]
-        body += "%s|" % self.get_fields(7)[3]
-        body += "%s|" % self.get_fields(8)[3]
-        body += "%s|" % self.get_fields(9)[3]
-        body += "%s|" % self.get_fields(11)[3]
-        body += "%s|" % self.get_fields(12)[3]
-        body += "%s|" % self.get_fields(14)[3]
-        body += "%s|" % self.get_fields(15)[3]
-        body += "%s|" % self.get_fields(16)[3]
-        body += "%s|" % self.get_fields(17)[3]
-        body += "%s" % self.get_fields(18)[3]
+        body += self.gen_atdf(3)
+        body += self.gen_atdf(4)
+        body += self.gen_atdf(6)
+        body += self.gen_atdf(10)
+        body += self.gen_atdf(5)
+        body += self.gen_atdf(7)
+        body += self.gen_atdf(8)
+        body += self.gen_atdf(9)
+        body += self.gen_atdf(11)
+        body += self.gen_atdf(12)
+        body += self.gen_atdf(14)
+        body += self.gen_atdf(15)
+        body += self.gen_atdf(16)
+        body += self.gen_atdf(17)
+        body += self.gen_atdf(18)
+        body = body[:-1] 
 
         # assemble the record
         retval = header + body

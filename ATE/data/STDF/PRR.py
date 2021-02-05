@@ -83,14 +83,19 @@ Location:
 #        13 PART_TXT    = 13 PART_TXT
 #        14 PART_FIX    = 14 PART_FIX
     
-        body += "%s|" % self.get_fields(3)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(12)[3]
-        body += "%s|" % self.get_fields(6)[3]
+#       3 HEAD_NUM 
+        body += self.gen_atdf(3)
+#       4 SITE_NUM 
+        body += self.gen_atdf(4)
+#       12 PART_ID 
+        body += self.gen_atdf(12)
+#       6 NUM_TEST 
+        body += self.gen_atdf(6)
         
 #                             5 PART_FLG bits 3 & 4
 #           bit 4: 0 = Pass/fail flag (bit 3) is valid
-        if self.get_fields(5)[3][4] == '0':
+        v = self.get_fields(5)[3] 
+        if v != None and v[4] == '0':
             # 0 = Part passed
             if self.get_fields(5)[3][3] == '0':
                 body += 'P|'
@@ -98,53 +103,56 @@ Location:
             elif self.get_fields(5)[3][3] == '1':
                 body += 'F|'
 #           bit 4: 1 = Device completed testing with no pass/fail indication (i.e., bit 3 is invalid)
-        elif self.get_fields(5)[3][4] == '1':
+        elif v != None and v[4] == '1':
             buff += ' |'
 #                              7 HARD_BIN
-        body += "%s|" % self.get_fields(7)[3]
+        body += self.gen_atdf(7)
 #                              8 SOFT_BIN
-        body += "%s|" % self.get_fields(8)[3]
+        body += self.gen_atdf(8)
 #                              9 X_COORD
-        body += "%s|" % self.get_fields(9)[3]
+        body += self.gen_atdf(9)
 #                             10 Y_COORD
-        body += "%s|" % self.get_fields(10)[3]
+        body += self.gen_atdf(10)
 #                              5 PART_FLG bit 0 or 1
 #           Note: Either Bit 0 or Bit 1 can be set, but not both. 
-        if self.get_fields(5)[3][0] == '1' and self.get_fields(5)[3][1] == '1':
+        v = self.get_fields(5)[3] 
+
+        if v != None and v[0] == '1' and v[1] == '1':
             raise STDFError("export to atdf error: PRR PART_FLG bits 0 and 1 are both set, which is not allowed" )
-        elif self.get_fields(5)[3][0] == '1':
+        elif v != None and v[0] == '1':
             body += "I|"
-        elif self.get_fields(5)[3][1] == '1':
+        elif v != None and v[1] == '1':
             body += "C|"
 #                              5 PART_FLG bit 2
-        if self.get_fields(5)[3][2] == '0':
+        if v != None and v[2] == '0':
             body += "|"
-        elif self.get_fields(5)[3][2] == '1':
+        elif v != None and v[2] == '1':
             body += "Y|"
 #                             11 TEST_T
-        body += "%s|" % self.get_fields(11)[3]
+        body += self.gen_atdf(11)
 #                             13 PART_TXT
-        body += "%s|" % self.get_fields(13)[3]
+        body += self.gen_atdf(13)
 #                             14 PART_FIX
         value = self.get_fields(14)[3]
-        # converting bits into HEX values
-        byte_list = []
-        byte_value = 0
-        bit = 0
-        for i in range(len(value)):
-            el = value[i]
-            byte_value |= int(el) << bit
-            bit += 1
-            if bit == 8:
-                byte_list.append(byte_value)
-                byte_value = 0
-                bit = 0
-        # ToDo : to make real n*bits
-#            if bit != 0:
-        final_value = ''
-        for elem in byte_list:
-            final_value += hex(elem)[2:]
-        body += final_value.upper()
+        if value != None:
+            # converting bits into HEX values
+            byte_list = []
+            byte_value = 0
+            bit = 0
+            for i in range(len(value)):
+                el = value[i]
+                byte_value |= int(el) << bit
+                bit += 1
+                if bit == 8:
+                    byte_list.append(byte_value)
+                    byte_value = 0
+                    bit = 0
+            # ToDo : to make real n*bits
+    #            if bit != 0:
+            final_value = ''
+            for elem in byte_list:
+                final_value += hex(elem)[2:]
+            body += final_value.upper()
 
         # assemble the record
         retval = header + body
