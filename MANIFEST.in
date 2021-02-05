@@ -17,6 +17,8 @@ recursive-include docs *.jpg
 recursive-include docs *.xml
 recursive-include docs *.txt
 recursive-include docs *.docx
+recursive-include tests *.pdf
+recursive-include tests *.gitignore
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.pdf
