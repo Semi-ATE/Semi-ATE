@@ -15,6 +15,10 @@ from ATE.data.STDF import MPR
 #   site number.
     
 def test_MPR():
+    mpr('<')
+    mpr('>')
+
+def mpr(end):
     
 #   ATDF page 47
     expected_atdf = "MPR:"
@@ -22,7 +26,7 @@ def test_MPR():
     rec_len = 0;
 
 #   STDF v4 page 53
-    record = MPR()
+    record = MPR(endian = end)
     
     test_num = 1
     record.set_value('TEST_NUM', test_num)
@@ -225,7 +229,7 @@ def test_MPR():
 #   LLM_SCAL
     expected_atdf += str(llm_scal) + "|"
 #   HLM_SCAL
-    expected_atdf += str(hlm_scal) + "|"
+    expected_atdf += str(hlm_scal)
     
 
 #    Test serialization
@@ -242,7 +246,7 @@ def test_MPR():
     
     f = open(tf.name, "rb")
 
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 15)
 #   Test TEST_NUM, expected value test_num
@@ -313,10 +317,8 @@ def test_MPR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = MPR('V4', '<', w_data)
+    inst = MPR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 15)
 #   Test TEST_NUM, position 3, value of test_num variable
@@ -437,7 +439,7 @@ def test_MPR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 15)
 #   Test TEST_NUM, expected value test_num

@@ -7,6 +7,10 @@ from ATE.data.STDF import PLR
 #   Function:
 #   Defines the current display radix and operating mode for a pin or pin group. 
 def test_PLR():
+    plr('<')
+    plr('>')
+
+def plr(end):
     
 #   ATDF page 27
     expected_atdf = "PLR:"
@@ -14,7 +18,7 @@ def test_PLR():
     rec_len = 0;
 
 #   STDF v4 page 32
-    record = PLR()
+    record = PLR(endian = end)
     grp_cnt = 3
     record.set_value('GRP_CNT', grp_cnt)
     rec_len = 2;
@@ -98,7 +102,7 @@ def test_PLR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 63)
 #   Test GRP_CNT, expected value grp_cnt
@@ -123,10 +127,8 @@ def test_PLR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PLR('V4', '<', w_data)
+    inst = PLR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 63)
 #   Test GRP_CNT, position 3, value of grp_cnt variable

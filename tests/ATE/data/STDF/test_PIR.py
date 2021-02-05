@@ -9,6 +9,10 @@ from ATE.data.STDF import PIR
 #   for each parttested by the test program. The PIR and the Part Results Record 
 #   (PRR) bracket all thestored information pertaining to one tested part.
 def test_PIR():
+    pir('<')
+    pir('>')
+
+def pir(end):
 
 #   ATDF page 38
     expected_atdf = "PIR:"
@@ -16,7 +20,7 @@ def test_PIR():
     rec_len = 0;
 
 #   STDF v4 page 42
-    record = PIR()
+    record = PIR(endian = end)
     head_num = 1
     record.set_value("HEAD_NUM", head_num)
     rec_len = 1;
@@ -41,7 +45,7 @@ def test_PIR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(2, 5, 10)
 #   Test HEAD_NUM
@@ -54,10 +58,8 @@ def test_PIR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PIR('V4', '<', w_data)
+    inst = PIR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , 2, 5, 10)
 #   Test HEAD_NUM

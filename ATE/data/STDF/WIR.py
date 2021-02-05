@@ -53,12 +53,21 @@ Location:
 #        STDF page 37, the order is HEAD_NUM, SITE_GRP, START_T,  WAFER_ID
 #        ATDF page 33, the order is HEAD_NUM, START_T,  SITE_GRP, WAFER_ID
 
-        body += "%s|" % self.get_fields(3)[3]
-        timestamp = self.get_fields(5)[3]
-        t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
-        body += "%s|" % (t.upper())
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s" % self.get_fields(6)[3]
+#       3 HEAD_NUM
+        body += self.gen_atdf(3)
+
+#       5 START_T
+        v = self.get_fields(5)[3]
+        if v != None:
+            t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(v))
+            body += "%s|" % (t.upper())
+
+#       4 SITE_GRP
+        body += self.gen_atdf(4)
+#       6 WAFER_ID
+        body += self.gen_atdf(6)
+
+        body = body[:-1]
 
         # assemble the record
         retval = header + body

@@ -208,7 +208,7 @@ class STDR(ABC):
     def __init__(self, endian=None, record=None):
         self.id = 'STDR'
         self.missing_fields = 0
-        self.local_debug = True
+        self.local_debug = False
         self.buffer = ''
         self.fields = {
             'REC_LEN'  : {'#' :  0, 'Type' :  'U*2', 'Ref' : None, 'Value' :      0, 'Text' : 'Bytes of data following header        ', 'Missing' : None},
@@ -1986,6 +1986,22 @@ class STDR(ABC):
         return {sequence[field]: self.fields[sequence[field]]['Value']
                 for field in sequence}
 
+    def gen_atdf(self, fieldID):
+        
+        field = ''
+        
+        value = self.get_fields(fieldID)[3]
+        if value != None:
+            if type(value) is list:
+                for elem in value:
+                    field += "%s," % elem
+                field = field[:-1] 
+            else:
+                field += "%s" % value
+        field += '|'
+            
+        return field
+
     def to_atdf(self):
 
         sequence = {}
@@ -2013,47 +2029,55 @@ class STDR(ABC):
                 if sequence[field] in time_fields:
                     
                     timestamp = self.fields[sequence[field]]['Value']
-#                    ATDF spec page 9:
-#                    Insignificant leading zeroes in all numbers are optional.
-                    t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
-                    body += "%s|" % (t.upper())
+                    if timestamp == None:
+                        body += '|'
+                    else:
+    #                    ATDF spec page 9:
+    #                    Insignificant leading zeroes in all numbers are optional.
+                        t = time.strftime("%-H:%-M:%-S %-d-%b-%Y", time.gmtime(timestamp))
+                        body += '%s|' % (t.upper())
                         
                 elif sequence[field] in skip_fields:
 #                    Some fields must be skipped like number of elements in array:
 #                    like INDX_CNT in PGR reconrd
                     pass
                 else:
+                    
                     value = self.fields[sequence[field]]['Value']
-                    if type(value) == list:
-                        
-                        Type = self.fields[sequence[field]]['Type']
-                        Type, Bytes = Type.split("*")
-                        if Type == 'B':
-                            # converting bits into HEX values
-                            vals = []
-                            val = 0
-                            x = 0
-                            bit = 7
-                            for i in range(len(value)):
-                                el = value[i]
-                                val = val | ( int(el)<<bit)
-                                bit -= 1
-                                if i != 0 and i % 7 == 0:
-                                    vals.append(val)
-                                    bit = 7
-                            for elem in vals:
-                                body += hex(elem)
-                            body += "|"
-                        else:
-                            # For the following fields which in some recoreds are
-                            # single value and for some are lists :
-                            # PMR_INDX from PMR as value, but list in PGR
-                            for elem in value:
-                                body += "%s," % elem
-                            body = body[:-1] 
-                            body += "|"
+                    
+                    if value == None:
+                        body += '|'
                     else:
-                        body += "%s|" % (value)
+                        if type(value) == list:
+                            
+                            Type = self.fields[sequence[field]]['Type']
+                            Type, Bytes = Type.split("*")
+                            if Type == 'B':
+                                # converting bits into HEX values
+                                vals = []
+                                val = 0
+                                x = 0
+                                bit = 7
+                                for i in range(len(value)):
+                                    el = value[i]
+                                    val = val | ( int(el)<<bit)
+                                    bit -= 1
+                                    if i != 0 and i % 7 == 0:
+                                        vals.append(val)
+                                        bit = 7
+                                for elem in vals:
+                                    body += hex(elem)
+                                body += '|'
+                            else:
+                                # For the following fields which in some recoreds are
+                                # single value and for some are lists :
+                                # PMR_INDX from PMR as value, but list in PGR
+                                for elem in value:
+                                    body += "%s," % elem
+                                body = body[:-1] 
+                                body += "|"
+                        else:
+                            body += '%s|' % (value)
             body = body[:-1] 
 
         # assemble the record

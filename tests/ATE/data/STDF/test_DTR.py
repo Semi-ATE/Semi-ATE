@@ -12,6 +12,10 @@ from ATE.data.STDF import DTR
 #   has changed.DTRs are placed as comments inthe datalog listing.
 
 def test_DTR():
+    dtr('<')
+    dtr('>')
+
+def dtr(end):
     
 #   ATDF page 61
     expected_atdf = "DTR:"
@@ -19,7 +23,7 @@ def test_DTR():
     rec_len = 0;
 
 #   STDF v4 page 66
-    record = DTR()
+    record = DTR(endian = end)
     
     text_dat = 'Datalog sampling rate is now 1 in 10'
     record.set_value('TEXT_DAT', text_dat)
@@ -40,7 +44,7 @@ def test_DTR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 50, 30)
 #   Test TEXT_DAT, expected value text_dat
@@ -52,10 +56,8 @@ def test_DTR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = DTR('V4', '<', w_data)
+    inst = DTR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 50, 30)
 #   Test TEXT_DAT, position 3, value of text_dat variable

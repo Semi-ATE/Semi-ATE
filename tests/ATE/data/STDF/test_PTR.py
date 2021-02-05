@@ -12,6 +12,10 @@ from ATE.data.STDF import PTR
 #   (TSR) by test number, head number, and site number
     
 def test_PTR():
+    ptr('<')
+    ptr('>')
+
+def ptr(end):
     
 #   ATDF page 43
     expected_atdf = "PTR:"
@@ -19,7 +23,7 @@ def test_PTR():
     rec_len = 0;
 
 #   STDF v4 page 47
-    record = PTR()
+    record = PTR(endian = end)
 
     test_num = 123
     record.set_value('TEST_NUM', test_num)
@@ -177,14 +181,13 @@ def test_PTR():
     tf = tempfile.NamedTemporaryFile(delete=False)  
     
     f = open(tf.name, "wb")
-#  ERROR  : ATE.data.STDF.records.STDFError: EPS._pack_item(REC_LEN) : Unsupported Reference '' vs 'U*2'
     w_data = record.__repr__()
     f.write(w_data)
     f.close
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 10)
 #   Test TEST_NUM, expected value test_num
@@ -239,10 +242,8 @@ def test_PTR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PTR('V4', '<', w_data)
+    inst = PTR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 15, 10)
 #   Test TEST_NUM, position 3, value of test_num variable
@@ -294,7 +295,7 @@ def test_PTR():
 #   Test reset method and compressed data when OPT_FLAG is used and
 #   fields after OPT_FLAG are not set
 
-    rec = PTR('V4', '<')
+    rec = PTR('V4', endian = end)
 
     record.reset()
 
@@ -339,7 +340,7 @@ def test_PTR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 10)
 #   Test TEST_NUM, expected value test_num

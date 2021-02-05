@@ -9,6 +9,10 @@ from ATE.data.STDF import PMR
 #   logical pinnames. EachPMRdefines the information for a single channel/pin 
 #   combination.
 def test_PMR():
+    pmr('<')
+    pmr('>')
+
+def pmr(end):
     
 #   ATDF page 24
     expected_atdf = "PMR:"
@@ -16,7 +20,7 @@ def test_PMR():
     rec_len = 0;
 
 #   STDF v4 page 29
-    record = PMR()
+    record = PMR(endian = end)
     pmr_indx = 32767
     record.set_value('PMR_INDX', pmr_indx)
     rec_len = 2;
@@ -67,7 +71,7 @@ def test_PMR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 60)
 #   Test PMR_INDX, expected value pmr_indx
@@ -93,10 +97,8 @@ def test_PMR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PMR('V4', '<', w_data)
+    inst = PMR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 60)
 #   Test PMR_INDX, position 3, value of pmr_indx variable

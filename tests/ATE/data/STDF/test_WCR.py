@@ -14,6 +14,10 @@ from ATE.data.STDF import WCR
 #   HEAD_NUM and SITE_GRP values.
 
 def test_WCR():
+    wcr('<')
+    wcr('>')
+
+def wcr(end):
     
 #   ATDF page 36
     expected_atdf = "WCR:"
@@ -21,7 +25,7 @@ def test_WCR():
     rec_len = 0;
 
 #   STDF page 40
-    record = WCR()
+    record = WCR(endian = end)
     
     wafr_siz = 300.00
     record.set_value('WAFR_SIZ', wafr_siz)
@@ -106,7 +110,7 @@ def test_WCR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 2, 30)
 #   Test WAFR_SIZ, expected value wafr_siz
@@ -131,10 +135,8 @@ def test_WCR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = WCR('V4', '<', w_data)
+    inst = WCR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 2, 30)
 #   Test WAFR_SIZ, position 3, value of wafr_siz variable

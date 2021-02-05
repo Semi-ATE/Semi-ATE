@@ -15,6 +15,10 @@ from ATE.data.STDF import HBR
 #   be “logically”associated with a software bin during or after testing.
 
 def test_HBR():
+    hbr('<')
+    hbr('>')
+
+def hbr(end):
     
 #   ATDF page 21
     expected_atdf = "HBR:"
@@ -22,7 +26,7 @@ def test_HBR():
     rec_len = 0;
 
 #   STDF v4 page 25
-    record = HBR()
+    record = HBR(endian = end)
     
     head_num = 255
     record.set_value('HEAD_NUM', head_num)
@@ -68,7 +72,7 @@ def test_HBR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 40)
 #   Test HEAD_NUM, expected value head_num
@@ -90,10 +94,8 @@ def test_HBR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = HBR('V4', '<', w_data)
+    inst = HBR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 40)
 #   Test HEAD_NUM, position 3, value of head_num variable

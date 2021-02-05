@@ -10,6 +10,10 @@ from ATE.data.STDF import RDR
 #   programs what data toreplace when processing retest data.
 
 def test_RDR():
+    rdr('<')
+    rdr('>')
+
+def rdr(end):
     
 #   ATDF page 30
     expected_atdf = "RDR:"
@@ -17,7 +21,7 @@ def test_RDR():
     rec_len = 0;
 
 #   STDF v4 page 34
-    record = RDR()
+    record = RDR(endian = end)
     num_bins = 4
     record.set_value('NUM_BINS', num_bins)
     rec_len = 2;
@@ -44,7 +48,7 @@ def test_RDR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 70)
 #   Test NUM_BINS, expected value num_bins
@@ -57,10 +61,8 @@ def test_RDR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = RDR('V4', '<', w_data)
+    inst = RDR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 70)
 #   Test NUM_BINS, position 3, value of num_bins variable
@@ -69,8 +71,6 @@ def test_RDR():
     stdfRecTest.assert_instance_field(inst, 4, rtst_bin);
     
 #   Test ATDF output
-#   BUG, the atdf record is not according specification in page 30.
-#   num_bins must be omitted in the ATDF output
     assert inst.to_atdf() == expected_atdf
 
 #   ToDo: Test JSON output

@@ -11,6 +11,10 @@ from ATE.data.STDF import MRR
 #   Each data stream must haveexactly oneMRRas the last record in the data 
 #   stream.    
 def test_MRR():
+    mrr('<')
+    mrr('>')
+
+def mrr(end):
     
 #   ATDF page 19
     expected_atdf = "MRR:"
@@ -18,7 +22,7 @@ def test_MRR():
     rec_len = 0;
 
 #   STDF v4 page 23
-    record = MRR()
+    record = MRR(endian = end)
     
     finish_t = 1609462861 
     record.set_value('FINISH_T', finish_t)
@@ -54,7 +58,7 @@ def test_MRR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 20)
 #   Test FINISH_T, expected value finish_t
@@ -73,10 +77,8 @@ def test_MRR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = MRR('V4', '<', w_data)
+    inst = MRR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 20)
 #   Test FINISH_T, position 3, value of setup_t variable

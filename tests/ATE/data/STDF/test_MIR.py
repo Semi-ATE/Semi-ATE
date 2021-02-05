@@ -11,6 +11,10 @@ from ATE.data.STDF import MIR
 #   if they are used). This will allow any datareporting or analysis programs 
 #   access to this information in the shortest possibleamount of time.
 def test_MIR():
+    mir('<')
+    mir('>')
+
+def mir(end):
     
 #   ATDF page 15
     expected_atdf = "MIR:"
@@ -18,7 +22,7 @@ def test_MIR():
     rec_len = 0;
 
 #   STDF v4 page 20
-    record = MIR()
+    record = MIR(endian = end)
 
     setup_t = 1609462861 
     record.set_value('SETUP_T', setup_t)
@@ -225,7 +229,7 @@ def test_MIR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 10)
 #   Test SETUP_T, expected value setup_t
@@ -340,10 +344,8 @@ def test_MIR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = MIR('V4', '<', w_data)
+    inst = MIR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 10)
 #   Test SETUP_T, position 3, value of setup_t variable

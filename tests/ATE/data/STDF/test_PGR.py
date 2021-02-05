@@ -7,6 +7,10 @@ from ATE.data.STDF import PGR
 #   Function:
 #   Associates a name with a group of pins 
 def test_PGR():
+    pgr('<')
+    pgr('>')
+
+def pgr(end):
     
 #   ATDF page 26
     expected_atdf = "PGR:"
@@ -14,7 +18,7 @@ def test_PGR():
     rec_len = 0;
 
 #   STDF v4 page 31
-    record = PGR()
+    record = PGR(endian = end)
 
     grp_indx = 32768
     record.set_value('GRP_INDX', grp_indx)
@@ -52,7 +56,7 @@ def test_PGR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 62)
 #   Test GRP_INDX, expected value grp_indx
@@ -71,10 +75,8 @@ def test_PGR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = PGR('V4', '<', w_data)
+    inst = PGR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 62)
 #   Test GRP_INDX, position 3, value of grp_indx variable

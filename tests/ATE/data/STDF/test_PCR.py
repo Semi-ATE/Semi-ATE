@@ -9,6 +9,10 @@ from ATE.data.STDF.PCR import PCR
 #   stream must have atleast onePCRto show the part count
 
 def test_PCR():
+    pcr('<')
+    pcr('>')
+
+def pcr(end):
     
 #   ATDF page 20
     expected_atdf = "PCR:"
@@ -16,7 +20,7 @@ def test_PCR():
     rec_len = 0;
 
 #   STDF v4 page 24
-    record = PCR()
+    record = PCR(endian = end)
 
     head_num = 1 
     record.set_value('HEAD_NUM', head_num)
@@ -67,7 +71,7 @@ def test_PCR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 30)
 #   Test HEAD_NUM, expected value head_num
@@ -93,7 +97,7 @@ def test_PCR():
 #    
 #    ToDo : make test with both endianness
 
-    inst = PCR('V4', '<', w_data)
+    inst = PCR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 1, 30)
 #   Test HEAD_NUM, position 3, value of head_num variable

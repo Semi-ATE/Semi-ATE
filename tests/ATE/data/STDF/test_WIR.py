@@ -12,6 +12,10 @@ from ATE.data.STDF import WIR
 #   will have the sameHEAD_NUMandSITE_GRPvalues.
 
 def test_WIR():
+    wir('<')
+    wir('>')
+
+def wir(end):
     
 #   ATDF page 33
     expected_atdf = "WIR:"
@@ -19,7 +23,7 @@ def test_WIR():
     rec_len = 0;
 
 #   STDF v4 page 37
-    record = WIR()
+    record = WIR(endian = end)
     
     head_num = 1
     record.set_value('HEAD_NUM', head_num)
@@ -62,7 +66,7 @@ def test_WIR():
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 2, 10)
 #   Test HEAD_NUM, expected value num_bins
@@ -80,10 +84,8 @@ def test_WIR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = WIR('V4', '<', w_data)
+    inst = WIR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 2, 10)
 #   Test HEAD_NUM, position 3, value of head_num variable

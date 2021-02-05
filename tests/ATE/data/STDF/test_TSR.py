@@ -12,6 +12,10 @@ from ATE.data.STDF import TSR
 #   (MPR) by test number, head number, and sitenumber.
     
 def test_TSR():
+    tsr('<')
+    tsr('>')
+
+def tsr(end):
     
 #   ATDF page 41
     expected_atdf = "TSR:"
@@ -19,7 +23,7 @@ def test_TSR():
     rec_len = 0;
 
 #   STDF v4 page 45
-    record = TSR()
+    record = TSR(endian = end)
 
     head_num = 1 
     record.set_value('HEAD_NUM', head_num)
@@ -135,14 +139,13 @@ def test_TSR():
     tf = tempfile.NamedTemporaryFile(delete=False)  
     
     f = open(tf.name, "wb")
-#  ERROR  : ATE.data.STDF.records.STDFError: EPS._pack_item(REC_LEN) : Unsupported Reference '' vs 'U*2'
     w_data = record.__repr__()
     f.write(w_data)
     f.close
 
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 10, 30)
 #   Test HEAD_NUM, expected value head_num
@@ -186,10 +189,8 @@ def test_TSR():
 #    Test de-serialization
 #    1. Open STDF record from a file
 #    2. Read record fields and compare with the expected value
-#    
-#    ToDo : make test with both endianness
 
-    inst = TSR('V4', '<', w_data)
+    inst = TSR('V4', end, w_data)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst , rec_len, 10, 30)
 #   Test HEAD_NUM, position 3, value of head_num variable
@@ -297,11 +298,9 @@ def test_TSR():
     f.write(w_data)
     f.close
     
-    print(record.to_atdf())
-
     f = open(tf.name, "rb")
     
-    stdfRecTest = STDFRecordTest(f, "<")
+    stdfRecTest = STDFRecordTest(f, end)
 #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 10, 30)
 #   Test HEAD_NUM, expected value head_num

@@ -102,10 +102,14 @@ Location:
 #                          13 LLM_SCAL
 #                          14 HLM_SCAL
 
-        body += "%s|" % self.get_fields(3)[3]
-        body += "%s|" % self.get_fields(4)[3]
-        body += "%s|" % self.get_fields(5)[3]
-        body += "%s|" % self.get_fields(8)[3]
+#       3 TEST_NUM 
+        body += self.gen_atdf(3)
+#       4 HEAD_NUM 
+        body += self.gen_atdf(4)
+#       4 SITE_NUM 
+        body += self.gen_atdf(5)
+#       8 RESULT 
+        body += self.gen_atdf(8)
 
 #        Pass/Fail Flag:
 #        TEST_FLG bits 6 & 7
@@ -125,29 +129,31 @@ Location:
 #            0 = Pass/fail flag (bit 7) is valid
 #            1 = Test completed with no pass/fail indication
 
-        if self.get_fields(6)[3][6] == '1':
+        v = self.get_fields(6)[3] 
+        if v != None and v[6] == '1':
             buff += ' '
-        elif self.get_fields(6)[3][6] == '0':
+        elif v != None and v[6] == '0':
             test_status = 'Unknown'
 #            TEST_FLG
 #            bit 7:
 #                0 = Test passed
 #                1 = Test failed
 
-            if self.get_fields(6)[3][7] == '0':
+            if sv[7] == '0':
                 buff += 'P'
                 test_status = 'P'
-            elif self.get_fields(6)[3][7] == '1':
+            elif v[7] == '1':
                 buff += 'F'
                 test_status = 'F'
 
-#            PARM_FLG
+#       7    PARM_FLG
 #            bit 5:
 #                0 = Test failed or test passed standard limits
 #                1 = Test passed alternate limits
-            if self.get_fields(7)[3][5] == '0':
+            v = self.get_fields(7)[3] 
+            if v != None and v[5] == '0':
                 buff += test_status
-            elif self.get_fields(7)[3][5] == '1':
+            elif v != None and [5] == '1':
                 buff += 'A'
         body += "%s|" % buff
 #        Alarm Flags:
@@ -170,46 +176,47 @@ Location:
 
         buff = ''
 
-#        TEST_FLG
+#        6 TEST_FLG
 #        bit 0:
 #            0 = No alarm
 #            1 = Alarm detected during testing
 
-        if self.get_fields(6)[3][0] == '0':
+        v = self.get_fields(6)[3] 
+        if v != None and v[0] == '0':
             buff += ' '
-        elif self.get_fields(6)[3][0] == '1':
+        elif v != None and v[0] == '1':
             buff += 'A'
 #            TEST_FLG
 #            bit 2:
 #                0 = Test result is reliable
 #                1 = Test result is unreliable                
-            if self.get_fields(6)[3][2] == '0':
+            if v[2] == '0':
                 buff += ' '
-            elif self.get_fields(6)[3][2] == '1':
+            elif v[2] == '1':
                 buff += 'U'
 #            TEST_FLG
 #            bit 3:
 #                0 = No timeout
 #                1 = Timeout occurred
-            if self.get_fields(6)[3][3] == '0':
+            if v[3] == '0':
                 buff += ' '
-            elif self.get_fields(6)[3][3] == '1':
+            elif v[3] == '1':
                 buff += 'T'
 #            TEST_FLG
 #            bit 4:
 #                0 = Test was executed
 #                1 = Test was not executed
-            if self.get_fields(6)[3][4] == '0':
+            if v[4] == '0':
                 buff += ' '
-            elif self.get_fields(6)[3][4] == '1':
+            elif v[4] == '1':
                 buff += 'N'
 #            TEST_FLG
 #            bit 5:
 #                0 = No abort
 #                1 = Test aborted
-            if self.get_fields(6)[3][5] == '0':
+            if v[5] == '0':
                 buff += ' '
-            elif self.get_fields(6)[3][5] == '1':
+            elif v[5] == '1':
                 buff += 'X'
 #            PARM_FLG
 #            bit 0:
@@ -219,43 +226,46 @@ Location:
                 buff += ' '
             elif self.get_fields(7)[3][0] == '1':
                 buff += 'S'
-#            PARM_FLG
+#            7 PARM_FLG
 #            bit 1:
 #                0 = No drift error
 #                1 = Drift error (unstable measurement)
-            if self.get_fields(7)[3][1] == '0':
+            v = self.get_fields(7)[3] 
+            if v != None and v[1] == '0':
                 buff += ' '
-            elif self.get_fields(7)[3][1] == '1':
+            elif v != None and v[1] == '1':
                 buff += 'D'
 #            PARM_FLG
 #            bit 2:
 #                0 = No oscillation
 #                1 = Oscillation detected
-            if self.get_fields(7)[3][2] == '0':
+            if v != None and v[2] == '0':
                 buff += ' '
-            elif self.get_fields(7)[3][2] == '1':
+            elif v != None and v[2] == '1':
                 buff += 'O'
 #            PARM_FLG
 #            bit 3:
 #                0 = Measured value not high
 #                1 = Measured value higher than high test limit
-            if self.get_fields(7)[3][3] == '0':
+            if v != None and v[3] == '0':
                 buff += ' '
-            elif self.get_fields(7)[3][3] == '1':
+            elif v != None and v[3] == '1':
                 buff += 'H'
 #            PARM_FLG
 #            bit 4:
 #                0 = Measured value not low
 #                1 = Measured value higher than low test limit
-            if self.get_fields(7)[3][4] == '0':
+            if v != None and v[4] == '0':
                 buff += ' '
-            elif self.get_fields(7)[3][4] == '1':
+            elif v != None and v[4] == '1':
                 buff += 'L'
 
         body += "%s|" % buff
                 
-        body += "%s|" % self.get_fields(9)[3]
-        body += "%s|" % self.get_fields(10)[3]
+#       9 TEST_TXT 
+        body += self.gen_atdf(9)
+#       10 ALARM_ID
+        body += self.gen_atdf(10)
 
 #        Limit Compare:
 #            PARM_FLG bits 6 & 7
@@ -271,36 +281,50 @@ Location:
 #            
         buff = ''
 
-#        PARM_FLG
+#        7 PARM_FLG
 #        bit 6:
 #            0 = If result = low limit, then result is “fail.”
 #            1 = If result = low limit, then result is “pass.”
-        if self.get_fields(7)[3][6] == '0':
+        v = self.get_fields(7)[3] 
+        if v != None and v[6] == '0':
             buff += ' '
-        elif self.get_fields(7)[3][6] == '1':
+        elif v != None and v[6] == '1':
             buff += 'L'
-#        PARM_FLG
+#        7 PARM_FLG
 #        bit 7:
 #            0 = If result = high limit, then result is “fail.”
 #            1 = If result = high limit, then result is “pass.”
-        if self.get_fields(7)[3][7] == '0':
+        if v != None and v[7] == '0':
             buff += ' '
-        elif self.get_fields(7)[3][7] == '1':
+        elif v != None and v[7] == '1':
             buff += 'H'
 
         body += "%s|" % buff
 
-        body += "%s|" % self.get_fields(17)[3]
-        body += "%s|" % self.get_fields(15)[3]
-        body += "%s|" % self.get_fields(16)[3]
-        body += "%s|" % self.get_fields(18)[3]
-        body += "%s|" % self.get_fields(19)[3]
-        body += "%s|" % self.get_fields(20)[3]
-        body += "%s|" % self.get_fields(21)[3]
-        body += "%s|" % self.get_fields(22)[3]
-        body += "%s|" % self.get_fields(12)[3]
-        body += "%s|" % self.get_fields(13)[3]
-        body += "%s" % self.get_fields(14)[3]
+#       17 UNITS  
+        body += self.gen_atdf(17)
+#       15 LO_LIMIT  
+        body += self.gen_atdf(15)
+#       16 HI_LIMIT  
+        body += self.gen_atdf(16)
+#       18 C_RESFMT  
+        body += self.gen_atdf(18)
+#       19 C_LLMFMT  
+        body += self.gen_atdf(19)
+#       20 C_HLMFMT  
+        body += self.gen_atdf(20)
+#       21 C_HLMFMT  
+        body += self.gen_atdf(21)
+#       22 HI_SPEC  
+        body += self.gen_atdf(22)
+#       12 RES_SCAL 
+        body += self.gen_atdf(12)
+#       13 LLM_SCAL 
+        body += self.gen_atdf(13)
+#       14 HLM_SCAL
+        body += self.gen_atdf(14)
+
+        body = body[:-1] 
 
         # assemble the record
         retval = header + body
