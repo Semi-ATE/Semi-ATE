@@ -17,10 +17,10 @@ recursive-include docs *.jpg
 recursive-include docs *.xml
 recursive-include docs *.txt
 recursive-include docs *.docx
-recursive-include tests/projects *.pdf
-recursive-include tests/projects *.gitignore
-recursive-include tests/projects *.md
-recursive-include tests/projects *.lastsettings
+recursive-include tests/ATE/projects *.pdf
+recursive-include tests/ATE/projects *.gitignore
+recursive-include tests/ATE/projects *.md
+recursive-include tests/ATE/projects *.lastsettings
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.bat
