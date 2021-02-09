@@ -1,5 +1,6 @@
 import sys
 from ATE.data.STDF import STDR
+from ATE.data.STDF import STDFError
 
 
 class FTR(STDR):
