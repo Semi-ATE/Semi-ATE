@@ -1,0 +1,68 @@
+[
+  {
+    "name": "mask",
+    "customer": "",
+    "definition": {
+      "WaferDiameter": 200,
+      "Bondpads": 2,
+      "DieSize": [
+        1232,
+        2323
+      ],
+      "DieRef": [
+        616.0,
+        1161.5
+      ],
+      "Offset": [
+        0,
+        0
+      ],
+      "Scribe": [
+        100.0,
+        100.0
+      ],
+      "Flat": 95.0,
+      "BondpadTable": [
+        [
+          "a",
+          32,
+          2,
+          100,
+          100,
+          "A",
+          "I"
+        ],
+        [
+          "d",
+          323,
+          323,
+          100,
+          100,
+          "A",
+          "I"
+        ]
+      ],
+      "Wafermap": {
+        "rim": [
+          [
+            100,
+            80
+          ],
+          [
+            -80,
+            -100
+          ]
+        ],
+        "blank": [
+          [
+            80,
+            80
+          ]
+        ],
+        "test_insert": [],
+        "unused": []
+      }
+    },
+    "is_enabled": true
+  }
+]

@@ -59,16 +59,14 @@ class test_program_generator(BaseGenerator):
             test_class = self.resolve_class_for_test(program_entry.test, test_targets)
             test_module = self.resolve_module_for_test(program_entry.test, test_targets)
             params = program_entry.definition
-
-            for op in params['output_parameters']:
-                params['output_parameters'][op]['id'] = self.current_param_id
-                self.current_param_id += 1
+            if not params['is_selected']:
+                continue
 
             test_imports.update({test_module: test_class})
             test_list.append({"test_name": program_entry.test,
                               "test_class": test_class,
                               "test_module": test_module,
-                              "test_number": self.current_param_id,
+                              "test_number": params['test_num'],
                               "sbin": params['sbin'],
                               "instance_name": params['description'],
                               "output_parameters": params['output_parameters'],

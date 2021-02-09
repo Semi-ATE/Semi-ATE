@@ -1,0 +1,12 @@
+[
+  {
+    "product": "device",
+    "name": "htol",
+    "type": "qualification_HTOL_flow",
+    "Reference Measurement": "ZHM",
+    "Temperature (\u00b0C)": "0",
+    "Length (hours)": "0",
+    "Testwindow (hours)": "0",
+    "Vdd (V)": "12"
+  }
+]

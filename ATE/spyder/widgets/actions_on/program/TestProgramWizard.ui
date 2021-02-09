@@ -1146,7 +1146,7 @@
                 </attribute>
                 <column>
                  <property name="text">
-                  <string>Name</string>
+                  <string>No</string>
                  </property>
                  <property name="font">
                   <font>
@@ -1156,6 +1156,17 @@
                  </property>
                  <property name="textAlignment">
                   <set>AlignLeading|AlignVCenter</set>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Name</string>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
                  </property>
                 </column>
                 <column>
@@ -1280,7 +1291,7 @@
             </size>
            </property>
            <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>117</number>
+            <number>87</number>
            </attribute>
            <attribute name="verticalHeaderStretchLastSection">
             <bool>false</bool>
@@ -1292,7 +1303,12 @@
            </column>
            <column>
             <property name="text">
-             <string>Instance Name</string>
+             <string>Test Instance</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Test Selection</string>
             </property>
            </column>
           </widget>

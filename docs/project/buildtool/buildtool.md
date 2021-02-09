@@ -10,9 +10,9 @@ The "generate" verb triggers sammy to regenerate an aspect of the project. Gener
 * all: This parameter will perform a complete build of the project an regenerate all previsously generated code.
 * hardware: This parameter will regenerate all the hardwaredefinitions
 * sequence \<sequencename>: This parameter will regenerate a given sequence, i.e. the testprogram for this sequence is regenerated
-* sequence all: Regenerates all sequences
+* sequence: Regenerates all sequences
 * test \<testname>: Regenerates a given test
-* test all: Regenerates all tests
+* test: Regenerates all tests
 
 ### new
 The "new" verb triggers sammy to create a new entity depending on the noun. Supported nouns:

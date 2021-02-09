@@ -1,0 +1,7 @@
+{
+    "settings": {
+        "hardware": "HW0",
+        "base": "FT",
+        "target": "device"
+    }
+}

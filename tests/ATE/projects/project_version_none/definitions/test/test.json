@@ -1,0 +1,120 @@
+[
+  {
+    "name": "iddq",
+    "hardware": "HW0",
+    "base": "PR",
+    "type": "custom",
+    "definition": {
+      "name": "iddq",
+      "type": "custom",
+      "hardware": "HW0",
+      "base": "PR",
+      "docstring": [
+        ""
+      ],
+      "input_parameters": {
+        "Temperature": {
+          "Shmoo": true,
+          "Min": -40.0,
+          "Default": 25.0,
+          "Max": 170.0,
+          "10\u1d61": 0,
+          "Unit": "\u00b0C",
+          "fmt": ".0f"
+        },
+        "new_parameter1": {
+          "Shmoo": false,
+          "Min": -Infinity,
+          "Default": 0.0,
+          "Max": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        },
+        "new_parameter2": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        }
+      },
+      "dependencies": {}
+    },
+    "is_enabled": true
+  },
+  {
+    "name": "iddq",
+    "hardware": "HW0",
+    "base": "FT",
+    "type": "custom",
+    "definition": {
+      "name": "iddq",
+      "type": "custom",
+      "hardware": "HW0",
+      "base": "FT",
+      "docstring": [
+        ""
+      ],
+      "input_parameters": {
+        "Temperature": {
+          "Shmoo": true,
+          "Min": -40.0,
+          "Default": 25.0,
+          "Max": 170.0,
+          "10\u1d61": 0,
+          "Unit": "\u00b0C",
+          "fmt": ".0f"
+        },
+        "new_parameter1": {
+          "Shmoo": false,
+          "Min": -Infinity,
+          "Default": 0.0,
+          "Max": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        },
+        "new_parameter2": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        }
+      },
+      "dependencies": {}
+    },
+    "is_enabled": true
+  }
+]

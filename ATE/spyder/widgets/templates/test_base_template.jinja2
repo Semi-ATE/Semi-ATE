@@ -118,5 +118,8 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     def log_error(self, message: str):
         self.logger.log_message(LogLevel.Error(), message)
 
+    def log_measure(self, message: str):
+        self.logger.log_message(LogLevel.Measure(), message)
+
     def get_test_nums(self) -> int:
         return self.op.get_output_nums()

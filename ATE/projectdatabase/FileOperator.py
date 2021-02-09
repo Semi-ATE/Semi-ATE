@@ -86,8 +86,8 @@ class FileOperator:
     def store_configuration(self):
         # DBObjects are not easily serializable, we serialize
         # them each on their own...
-        data_to_write = []
         for name, itemlist in self.data_cache.items():
+            data_to_write = []
             for item in itemlist:
                 data_to_write.append(item.__dict__)
 

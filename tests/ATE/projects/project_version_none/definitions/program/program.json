@@ -1,0 +1,62 @@
+[
+  {
+    "id": "3e875336-5fc3-11eb-858a-4cedfb445f8f",
+    "prog_name": "project_version_none_HW0_PR_die_P_1",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "die",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_die_P",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "TDKMicronas.Metis",
+    "caching_policy": "disable"
+  },
+  {
+    "id": "690e1e78-5fc4-11eb-bbb5-4cedfb445f8f",
+    "prog_name": "project_version_none_HW0_FT_device_P_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "device",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_device_P",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "TDKMicronas.Metis",
+    "caching_policy": "disable"
+  },
+  {
+    "id": "6c525bd0-5fc4-11eb-9cd2-4cedfb445f8f",
+    "prog_name": "project_version_none_HW0_FT_device_ZHM_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "device",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_device_ZHM",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "TDKMicronas.Metis",
+    "caching_policy": "disable"
+  },
+  {
+    "id": "76732f5e-5fc4-11eb-9705-4cedfb445f8f",
+    "prog_name": "project_version_none_HW0_FT_device_HTOL_htol_1",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "device",
+    "usertext": "",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_device_HTOL_htol",
+    "prog_order": 0,
+    "is_valid": true,
+    "cache_type": "TDKMicronas.Metis",
+    "caching_policy": "disable"
+  }
+]
