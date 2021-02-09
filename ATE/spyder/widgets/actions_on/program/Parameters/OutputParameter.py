@@ -1,8 +1,9 @@
 import numpy as np
 from dataclasses import dataclass
-from ATE.spyder.widgets.actions_on.program.Utils import BinningColumns, ParameterEditability, ParameterState, OutputFieldsPosition
+from ATE.spyder.widgets.actions_on.program.Utils import (ParameterEditability, ParameterState, OutputFieldsPosition, ValidatorTypes)
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterBase import ParameterBase
+from ATE.spyder.widgets.actions_on.program.Parameters.OutputValidator import OutputValidator
 
 MAX_SBIN_NUM = 65535
 
@@ -17,7 +18,7 @@ class Bininfo:
 
 
 class OutputParameter(ParameterBase):
-    def __init__(self, name, parameter):
+    def __init__(self, name: str, parameter: dict, output_validator: OutputValidator):
         self.name = ParameterField(name)
         self.lsl = ParameterField(parameter['LSL'])
         self.ltl = ParameterField(parameter['LTL'], editable=ParameterEditability.Editable())
@@ -27,8 +28,10 @@ class OutputParameter(ParameterBase):
         self.unit = ParameterField(parameter['Unit'])
         self.format = ParameterField(parameter['fmt'])
         self.bin_parameter = None
+        self.test_number = ParameterField(parameter['test_num'], editable=ParameterEditability.Editable()) if parameter.get('test_num') else ParameterField('', editable=ParameterEditability.Editable())
         self._update_binning_parameters(parameter)
         self.valid = True
+        self.output_validator = output_validator
 
     def _update_binning_parameters(self, parameter: dict):
         if parameter.get('Binning') is None:
@@ -40,11 +43,11 @@ class OutputParameter(ParameterBase):
                                          parameter['Binning']['description'])
 
     def update_parameters(self, param):
-        self.lsl = param.lsl
-        self.usl = param.usl
-        self.exponent = param.exponent
-        self.unit = param.unit
-        self.format = param.format
+        self.lsl.set_value(param.lsl.get_value())
+        self.usl.set_value(param.usl.get_value())
+        self.exponent.set_value(param.exponent.get_value())
+        self.unit.set_value(param.unit.get_value())
+        self.format.set_value(param.format.get_value())
 
     def set_bin_infos(self, bin_name: str, bin_num: str, bin_group: str, bin_description: str):
         self.bin_parameter.bin_number = bin_num
@@ -91,6 +94,8 @@ class OutputParameter(ParameterBase):
             self._set_ltl(value)
         elif col == OutputFieldsPosition.Utl():
             self._set_utl(value)
+        elif col == OutputFieldsPosition.No():
+            self.set_test_number_if_possible(int(value))
         else:
             return
 
@@ -123,7 +128,8 @@ class OutputParameter(ParameterBase):
                             OutputFieldsPosition.Utl(): self.utl,
                             OutputFieldsPosition.Usl(): self.usl,
                             OutputFieldsPosition.Unit(): self.unit,
-                            OutputFieldsPosition.Format(): self.format}[filed_col]
+                            OutputFieldsPosition.Format(): self.format,
+                            OutputFieldsPosition.No(): self.test_number}[filed_col]
 
             return output_filed
         except KeyError:
@@ -133,7 +139,7 @@ class OutputParameter(ParameterBase):
         return self.lsl < float(value) < self.usl
 
     def is_valid_value(self):
-        return self.ltl.is_valid() and self.utl.is_valid()
+        return self.ltl.is_valid() and self.utl.is_valid() and self.test_number.is_valid()
 
     def is_valid(self):
         return self.valid
@@ -142,13 +148,13 @@ class OutputParameter(ParameterBase):
         return ('%' + self.format.get_value()) % float(value)
 
     def get_parameters(self):
-        return [self.name, self.lsl, self.ltl, self.utl, self.usl, self.unit, self.format]
+        return [self.name, self.lsl, self.ltl, self.utl, self.usl, self.unit, self.format, self.test_number]
 
     def get_parameters_content(self):
         return {'name': self.name.get_value(), 'lsl': self.lsl.get_value(), 'ltl': self.ltl.get_value(),
                 'usl': self.usl.get_value(), 'utl': self.utl.get_value(), 'unit': self.unit.get_value(),
                 'format': self.format.get_value(), 'binning': self.bin_parameter,
-                'exponent': self.exponent.get_value()}
+                'exponent': self.exponent.get_value(), 'test_num': self.test_number.get_value()}
 
     def get_field_state(self):
         return self.name.get_state()
@@ -176,6 +182,28 @@ class OutputParameter(ParameterBase):
         self._set_input_fields(self.usl, self.table_row, OutputFieldsPosition.Usl())
         self._set_input_fields(self.unit, self.table_row, OutputFieldsPosition.Unit())
         self._set_input_fields(self.format, self.table_row, OutputFieldsPosition.Format())
+        self._set_input_fields(self.test_number, self.table_row, OutputFieldsPosition.No())
 
     def on_edit_done_impl(self, new_text, value_index):
         self.set_limit(float(new_text), value_index)
+
+    def _get_validator_type(self, value_index: int) -> ValidatorTypes:
+        if value_index == OutputFieldsPosition.No():
+            return ValidatorTypes.IntValidation
+
+        return ValidatorTypes.FloatValidation
+
+    def get_test_number(self):
+        return int(self.test_number.get_value())
+
+    def set_test_number_if_possible(self, test_num: int):
+        self.output_validator.set_invalid_test_number_message()
+        success, message = self.output_validator.is_valid_test_number(test_num)
+        if not success:
+            self.output_validator.set_invalid_test_number_message(test_num, message)
+            return
+
+        self.set_test_number(test_num)
+
+    def set_test_number(self, test_num: int):
+        self.test_number.set_value(str(test_num))

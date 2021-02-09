@@ -29,7 +29,6 @@ def generate_PTR(test_num, head_num, site_num,
     rec = PTR('V4', ENDIAN)
 
     format = f'%7{fmt}' if '%7' not in fmt else fmt
-    prefix = int(exponent) * -1
 
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
@@ -51,9 +50,9 @@ def generate_PTR(test_num, head_num, site_num,
     rec.set_value('LO_SPEC', ls_limit)
     rec.set_value('HI_SPEC', us_limit)
 
-    rec.set_value('RES_SCAL', prefix)
-    rec.set_value('LLM_SCAL', prefix)
-    rec.set_value('HLM_SCAL', prefix)
+    rec.set_value('RES_SCAL', exponent)
+    rec.set_value('LLM_SCAL', exponent)
+    rec.set_value('HLM_SCAL', exponent)
 
     rec.set_value('UNITS', ' ' if '˽' == unit else unit)
 

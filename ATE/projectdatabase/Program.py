@@ -7,16 +7,16 @@ class Program:
 
     @staticmethod
     def add(session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
-            sequencer_typ: str, temperature: str, owner_name: str, order: int, cache_type: str, caching_policy: str):
+            sequencer_typ: str, temperature: str, owner_name: str, order: int, cache_type: str, caching_policy: str, test_ranges: list):
         prog = {"id": str(uuid1()), "prog_name": name, "hardware": hardware, "base": base, "target": target, "usertext": usertext,
                 "sequencer_type": sequencer_typ, "temperature": temperature, "owner_name": owner_name, "prog_order": order,
-                "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy}
+                "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy, "test_ranges": test_ranges}
         session.query(Types.Program()).add(prog)
         session.commit()
 
     @staticmethod
     def update(session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
-               sequencer_type: str, temperature: str, owner_name: str, cache_type: str, caching_policy: str):
+               sequencer_type: str, temperature: str, owner_name: str, cache_type: str, caching_policy: str, test_ranges: list):
         prog = Program.get_by_name_and_owner(session, name, owner_name)
         prog.hardware = hardware
         prog.base = base
@@ -26,6 +26,7 @@ class Program:
         prog.temperature = temperature
         prog.cache_type = cache_type
         prog.caching_policy = caching_policy
+        prog.test_ranges = test_ranges
         session.commit()
 
     @staticmethod

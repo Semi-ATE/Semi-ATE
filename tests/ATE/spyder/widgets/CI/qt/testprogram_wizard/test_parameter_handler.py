@@ -1,5 +1,6 @@
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import OutputParameter
 from pytest import fixture
-from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import TestProgram
+from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import TestParameters, TestProgram
 from ATE.spyder.widgets.actions_on.program.Utils import Action, ParameterState
 from numpy import inf, nan
 
@@ -23,6 +24,16 @@ OUTPUT_PARAMETER = {'new_parameter1':
                     {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
                     'new_parameter2':
                     {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+
+CHANGED_OUTPUT_PARAMETER = {'new_parameter3':
+                            {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
+                            'new_parameter2':
+                            {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+
+OUTPUT_PARAMETER1 = {'new_parameter1':
+                     {'LSL': -inf, 'LTL': 1, 'Nom': 0.0, 'UTL': 2, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
+                     'new_parameter2':
+                     {'LSL': -inf, 'LTL': 1, 'Nom': 0.0, 'UTL': 2, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
 
 
 @fixture(scope='module')
@@ -61,12 +72,28 @@ def test_parameter_handler_set_invalid_temperature(parameter_handler):
     assert not parameter_handler.are_all_tests_valid()
 
 
-def test_parameter_handler_test_changed(parameter_handler):
-    parameter = TestProgram()
-    parameter.add_test(NEW_TEST_NAME, TEST_BASE_NAME, CHANGED_INPUT_PARAMETER, OUTPUT_PARAMETER)
-    parameter_handler.validate_test_parameters(TEST_NAME, parameter_handler)
+def test_parameter_handler_test_changed(parameter_handler: TestProgram):
+    parameter_handler.add_test(NEW_TEST_NAME, TEST_BASE_NAME, CHANGED_INPUT_PARAMETER, OUTPUT_PARAMETER)
+
+    standard_parameter = TestProgram()
+    standard_parameter.add_test(TEST_BASE_NAME, TEST_BASE_NAME, CHANGED_INPUT_PARAMETER, CHANGED_OUTPUT_PARAMETER)
+    parameter_handler.validate_test_parameters(NEW_TEST_NAME, standard_parameter)
     test, _ = parameter_handler.get_test(NEW_TEST_NAME)
-    assert test.get_valid_flag() == ParameterState.Invalid()
+
+    new_parameter_name = "new_parameter3"
+    out_params: OutputParameter = test.get_output_parameter(new_parameter_name)
+
+    assert out_params.get_test_number() == 101
+
+
+def test_parameter_test_enumeration(parameter_handler: TestProgram):
+    parameter_handler._tests.clear()
+    parameter_handler.add_test(NEW_TEST_NAME, TEST_BASE_NAME, CHANGED_INPUT_PARAMETER, OUTPUT_PARAMETER)
+    parameter_handler.add_test(SECOND_TEST_NAME, TEST_BASE_NAME, CHANGED_INPUT_PARAMETER, OUTPUT_PARAMETER1)
+    test, _ = parameter_handler.get_test(NEW_TEST_NAME)
+    assert set(test.get_tests_range()) == set([100])
+    test, _ = parameter_handler.get_test(SECOND_TEST_NAME)
+    assert set(test.get_tests_range()) == set([200])
 
 
 def test_parameter_handler_validate_changed_tests(parameter_handler):

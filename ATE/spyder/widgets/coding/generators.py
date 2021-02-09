@@ -30,6 +30,7 @@ from jinja2 import FileSystemLoader
 from ATE.spyder.widgets.coding.BaseGenerator import BaseGenerator
 from ATE.spyder.widgets.coding.ProperGenerator import test_proper_generator
 from ATE.spyder.widgets.coding.BaseTestGenerator import test_base_generator, BaseTestGenerator
+from ATE.projectdatabase import __version__
 
 
 def project_generator(project_path):
@@ -45,19 +46,6 @@ def project_generator(project_path):
     src__init__generator(project_path)
     src_common_generator(project_path)
     project_doc_generator(project_path)
-
-
-def hardware_generator(project_path, hardware):
-    """Generator for a new hardware structure."""
-
-    HW__init__generator(project_path, hardware)
-    HW_common_generator(project_path, hardware)
-
-    PR__init__generator(project_path, hardware)
-    PR_common_generator(project_path, hardware)
-
-    FT__init__generator(project_path, hardware)
-    FT_common_generator(project_path, hardware)
 
 
 def test_generator(project_path, definition):
@@ -178,6 +166,17 @@ def project_defintinion_generator(project_path):
     _make_definition_dir(definition_path, "test")
     _make_definition_dir(definition_path, "testtarget")
     _make_definition_dir(definition_path, "qualification")
+    _generate_version_file(definition_path)
+
+
+def _generate_version_file(definition_path):
+    _make_definition_dir(definition_path, "version")
+    import os
+    import json
+    from pathlib import Path
+    path = os.path.join(definition_path, "version", "version.json")
+    with open(os.fspath(Path(path)), 'w') as f:
+        json.dump({"version": __version__}, f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):

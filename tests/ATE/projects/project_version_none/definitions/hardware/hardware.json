@@ -1,0 +1,51 @@
+[
+  {
+    "name": "HW0",
+    "definition": {
+      "PCB": {
+        "SingleSiteLoadboard": "",
+        "SingleSiteDIB": "",
+        "SingleSiteDIBisCable": false,
+        "SingleSiteProbeCard": "",
+        "MultiSiteLoadboard": "",
+        "MultiSiteDIB": "",
+        "MultiSiteDIBisCable": false,
+        "MultiSiteProbeCard": "",
+        "MaxParallelism": 1
+      },
+      "Parallelism": {},
+      "tester": "TDKMicronas.MiniSCT",
+      "Actuator": {
+        "PR": [
+          "Temperature",
+          "Magnetic_Field",
+          "Light",
+          "Acceleration",
+          "Position",
+          "Pressure"
+        ],
+        "FT": [
+          "Temperature",
+          "Magnetic_Field",
+          "Light",
+          "Acceleration",
+          "Position",
+          "Pressure"
+        ]
+      },
+      "Instruments": [
+        "TDKMicronas.DummyInstrument"
+      ],
+      "GPFunctions": [
+        "TDKMicronas.Metis"
+      ],
+      "InstrumentNames": {
+        "TDKMicronas.DummyInstrument": "TDKMicronas_DummyInstrument"
+      },
+      "GPFunctionNames": {
+        "TDKMicronas.Metis": "TDKMicronas_Metis"
+      }
+    },
+    "is_enabled": true
+  }
+]
