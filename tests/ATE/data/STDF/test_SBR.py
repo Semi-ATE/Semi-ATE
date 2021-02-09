@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import SBR
 
@@ -18,7 +18,7 @@ def test_SBR():
     sbr(">")
 
 
-def sbr(end):
+def sbr(endian):
 
     #   ATDF page 23
     expected_atdf = "SBR:"
@@ -26,7 +26,7 @@ def sbr(end):
     rec_len = 0
 
     #   STDF v4 page 27
-    record = SBR(endian=end)
+    record = SBR(endian=endian)
     head_num = 255
     record.set_value("HEAD_NUM", head_num)
     rec_len = 1
@@ -60,18 +60,10 @@ def sbr(end):
     #    Test serialization
     #    1. Save SBR STDF record into a file
     #    2. Read byte by byte and compare with expected value
-
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 50)
     #   Test HEAD_NUM, expected value head_num
@@ -88,13 +80,11 @@ def sbr(end):
     stdfRecTest.assert_ubyte(len(sbin_nam))
     stdfRecTest.assert_char_array(len(sbin_nam), sbin_nam)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = SBR("V4", end, w_data)
+    inst = SBR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 50)
     #   Test HEAD_NUM, position 3, value of head_num variable
@@ -114,5 +104,3 @@ def sbr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

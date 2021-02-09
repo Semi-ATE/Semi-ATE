@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import SDR
 
@@ -14,7 +14,7 @@ def test_SDR():
     sdr(">")
 
 
-def sdr(end):
+def sdr(endian):
 
     #   ATDF page 31
     expected_atdf = "SDR:"
@@ -22,7 +22,7 @@ def sdr(end):
     rec_len = 0
 
     #   STDF page 35
-    record = SDR(endian=end)
+    record = SDR(endian=endian)
 
     head_num = 1
     record.set_value("HEAD_NUM", head_num)
@@ -130,17 +130,10 @@ def sdr(end):
     #    1. Save SDR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 80)
     #   Test HEAD_NUM, expected value num_bins
@@ -200,13 +193,11 @@ def sdr(end):
     stdfRecTest.assert_ubyte(len(extr_id))
     stdfRecTest.assert_char_array(len(extr_id), extr_id)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = SDR("V4", end, w_data)
+    inst = SDR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 80)
     #   Test HEAD_NUM, position 3, value of head_num variable
@@ -250,5 +241,3 @@ def sdr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import PMR
 
@@ -15,7 +15,7 @@ def test_PMR():
     pmr(">")
 
 
-def pmr(end):
+def pmr(endian):
 
     #   ATDF page 24
     expected_atdf = "PMR:"
@@ -23,7 +23,7 @@ def pmr(end):
     rec_len = 0
 
     #   STDF v4 page 29
-    record = PMR(endian=end)
+    record = PMR(endian=endian)
     pmr_indx = 32767
     record.set_value("PMR_INDX", pmr_indx)
     rec_len = 2
@@ -63,17 +63,10 @@ def pmr(end):
     #    1. Save PMR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 60)
     #   Test PMR_INDX, expected value pmr_indx
@@ -94,13 +87,11 @@ def pmr(end):
     #   Test SITE_NUM, expected value site_num
     stdfRecTest.assert_int(1, site_num)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = PMR("V4", end, w_data)
+    inst = PMR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 60)
     #   Test PMR_INDX, position 3, value of pmr_indx variable
@@ -122,5 +113,3 @@ def pmr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

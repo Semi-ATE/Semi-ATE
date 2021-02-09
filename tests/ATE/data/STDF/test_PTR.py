@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import PTR
 
@@ -17,7 +17,7 @@ def test_PTR():
     ptr(">")
 
 
-def ptr(end):
+def ptr(endian):
 
     #   ATDF page 43
     expected_atdf = "PTR:"
@@ -25,7 +25,7 @@ def ptr(end):
     rec_len = 0
 
     #   STDF v4 page 47
-    record = PTR(endian=end)
+    record = PTR(endian=endian)
 
     test_num = 123
     record.set_value("TEST_NUM", test_num)
@@ -178,16 +178,10 @@ def ptr(end):
     #    1. Save PTR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 10)
     #   Test TEST_NUM, expected value test_num
@@ -237,13 +231,11 @@ def ptr(end):
     #   Test HI_SPEC, expected value hi_spec
     stdfRecTest.assert_float(hi_spec)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = PTR("V4", end, w_data)
+    inst = PTR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 15, 10)
     #   Test TEST_NUM, position 3, value of test_num variable
@@ -287,15 +279,13 @@ def ptr(end):
     #   Test HI_SPEC, position 22, value of hi_spec variable
     stdfRecTest.assert_instance_field(inst, 22, hi_spec)
 
-    os.remove(tf.name)
-
     #   Test ATDF output
     assert inst.to_atdf() == expected_atdf
 
     #   Test reset method and compressed data when OPT_FLAG is used and
     #   fields after OPT_FLAG are not set
 
-    rec = PTR("V4", endian=end)
+    rec = PTR("V4", endian=endian)
 
     record.reset()
 
@@ -331,16 +321,10 @@ def ptr(end):
     record.set_value("ALARM_ID", alarm_id)
     rec_len += 1
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 15, 10)
     #   Test TEST_NUM, expected value test_num
@@ -363,5 +347,3 @@ def ptr(end):
     stdfRecTest.assert_char_array(len(alarm_id), alarm_id)
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

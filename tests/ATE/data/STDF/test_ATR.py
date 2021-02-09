@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import ATR
 
@@ -16,7 +16,7 @@ def test_ATR():
     atr(">")
 
 
-def atr(end):
+def atr(endian):
 
     #   ATDF page 14
     expected_atdf = "ATR:"
@@ -24,7 +24,7 @@ def atr(end):
     rec_len = 0
 
     #   STDF v4 page 19
-    record = ATR(endian=end)
+    record = ATR(endian=endian)
 
     mod_time = 1609462861
     record.set_value("MOD_TIM", mod_time)
@@ -40,17 +40,10 @@ def atr(end):
     #    1. Save ATR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, endian=end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     #   rec_len = len(MOD_TIM) + 1 byte for length of cmd_line + len(cmd_line)
     rec_len = 4 + 1 + len(cmd_line)
@@ -63,13 +56,11 @@ def atr(end):
     #   "modification_script.sh -src /data/stdf/2020-01-01"
     stdfRecTest.assert_char_array(len(cmd_line), cmd_line)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = ATR("V4", end, w_data)
+    inst = ATR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 0, 20)
     #   Test MOD_TIM field, position 3, value of mod_time variable
@@ -81,5 +72,3 @@ def atr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

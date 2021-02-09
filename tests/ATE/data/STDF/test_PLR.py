@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import PLR
 
@@ -13,7 +13,7 @@ def test_PLR():
     plr(">")
 
 
-def plr(end):
+def plr(endian):
 
     #   ATDF page 27
     expected_atdf = "PLR:"
@@ -21,7 +21,7 @@ def plr(end):
     rec_len = 0
 
     #   STDF v4 page 32
-    record = PLR(endian=end)
+    record = PLR(endian=endian)
     grp_cnt = 3
     record.set_value("GRP_CNT", grp_cnt)
     rec_len = 2
@@ -95,17 +95,10 @@ def plr(end):
     #    1. Save PLR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 63)
     #   Test GRP_CNT, expected value grp_cnt
@@ -125,13 +118,11 @@ def plr(end):
     #   Test RTN_CHAL, expected value rtn_chal
     stdfRecTest.assert_string_array(rtn_chal)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = PLR("V4", end, w_data)
+    inst = PLR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 63)
     #   Test GRP_CNT, position 3, value of grp_cnt variable
@@ -155,5 +146,3 @@ def plr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import MIR
 
@@ -17,7 +17,7 @@ def test_MIR():
     mir(">")
 
 
-def mir(end):
+def mir(endian):
 
     #   ATDF page 15
     expected_atdf = "MIR:"
@@ -25,7 +25,7 @@ def mir(end):
     rec_len = 0
 
     #   STDF v4 page 20
-    record = MIR(endian=end)
+    record = MIR(endian=endian)
 
     setup_t = 1609462861
     record.set_value("SETUP_T", setup_t)
@@ -221,17 +221,10 @@ def mir(end):
     #    1. Save MIR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 1, 10)
     #   Test SETUP_T, expected value setup_t
@@ -341,13 +334,11 @@ def mir(end):
     stdfRecTest.assert_ubyte(len(supr_name))
     stdfRecTest.assert_char_array(len(supr_name), supr_name)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = MIR("V4", end, w_data)
+    inst = MIR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 1, 10)
     #   Test SETUP_T, position 3, value of setup_t variable
@@ -431,5 +422,3 @@ def mir(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

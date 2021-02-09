@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import GDR
 
@@ -16,7 +16,7 @@ def test_GDR():
     gdr(">")
 
 
-def gdr(end):
+def gdr(endian):
 
     #   ATDF page 59
     expected_atdf = "GDR:"
@@ -24,7 +24,7 @@ def gdr(end):
     rec_len = 0
 
     #   STDF v4 page 64
-    record = GDR(endian=end)
+    record = GDR(endian=endian)
 
     fld_cnt = 12
     record.set_value("FLD_CNT", fld_cnt)
@@ -106,16 +106,10 @@ def gdr(end):
     #    1. Save GDR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(rec_len, 50, 10)
     #   Test FLD_CNT, expected value fld_cnt
@@ -205,13 +199,11 @@ def gdr(end):
     #   value 15 8 => 8F (First item in low 4 bits, second item in high 4 bits.)
     stdfRecTest.assert_int(1, 0x8F)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = GDR("V4", end, w_data)
+    inst = GDR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, rec_len, 50, 10)
     #   Test FLD_CNT, position 3, value of fld_cnt variable
@@ -222,5 +214,3 @@ def gdr(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-
-    os.remove(tf.name)

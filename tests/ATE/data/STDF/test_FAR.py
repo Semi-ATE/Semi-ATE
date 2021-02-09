@@ -1,5 +1,5 @@
 import os
-import tempfile
+import io
 from tests.ATE.data.STDF.STDFRecordTest import STDFRecordTest
 from ATE.data.STDF import FAR
 
@@ -14,26 +14,19 @@ def test_FAR():
     far(">")
 
 
-def far(end):
+def far(endian):
 
     #   STDF v4 page 57
-    record = FAR(endian=end)
+    record = FAR(endian=endian)
 
     #    Test serialization
     #    1. Save FAR STDF record into a file
     #    2. Read byte by byte and compare with expected value
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-
-    f = open(tf.name, "wb")
-
     w_data = record.__repr__()
-    f.write(w_data)
-    f.close
+    io_data = io.BytesIO(w_data)
 
-    f = open(tf.name, "rb")
-
-    stdfRecTest = STDFRecordTest(f, end)
+    stdfRecTest = STDFRecordTest(io_data, endian)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_file_record_header(2, 0, 10)
     #   Test REC_CPU, expected value 2
@@ -41,13 +34,11 @@ def far(end):
     #   Test STDF_VER, expected value 4
     stdfRecTest.assert_ubyte(4)
 
-    f.close()
-
     #    Test de-serialization
     #    1. Open STDF record from a file
     #    2. Read record fields and compare with the expected value
 
-    inst = FAR("V4", end, w_data)
+    inst = FAR("V4", endian, w_data)
     #   rec_len, rec_type, rec_sub
     stdfRecTest.assert_instance_record_header(inst, 2, 0, 10)
     #   Test REC_CPU field, position 3, value 2
@@ -60,4 +51,3 @@ def far(end):
     assert inst.to_atdf() == expected_atdf
 
     #   ToDo: Test JSON output
-    os.remove(tf.name)
