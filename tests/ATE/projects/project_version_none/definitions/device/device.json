@@ -1,0 +1,34 @@
+[
+  {
+    "name": "device",
+    "hardware": "HW0",
+    "package": "package",
+    "definition": {
+      "dies_in_package": [
+        "die_1"
+      ],
+      "is_dual_die": 0,
+      "pin_names": [
+        {
+          "vdd": [
+            [
+              "die_1_vdd",
+              "A",
+              "I"
+            ]
+          ]
+        },
+        {
+          "gnd": [
+            [
+              "die_1_gnd",
+              "A",
+              "I"
+            ]
+          ]
+        }
+      ]
+    },
+    "is_enabled": true
+  }
+]

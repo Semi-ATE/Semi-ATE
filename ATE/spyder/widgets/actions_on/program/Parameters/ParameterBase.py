@@ -33,7 +33,7 @@ class ParameterBase():
     def _set_value_impl(self):
         pass
 
-    def _get_validator_type(self) -> ValidatorTypes:
+    def _get_validator_type(self, value_index: int) -> ValidatorTypes:
         return ValidatorTypes.FloatValidation
 
     def display(self, target_table: QTableWidget):
@@ -52,9 +52,12 @@ class ParameterBase():
             return
 
         validator = None
-        if self._get_validator_type() != ValidatorTypes.NoValidation:
+        if self._get_validator_type(value_index) == ValidatorTypes.FloatValidation:
             from ATE.spyder.widgets.validation import valid_float_regex
             validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_float_regex), None)
+        elif self._get_validator_type(value_index) == ValidatorTypes.IntValidation:
+            from ATE.spyder.widgets.validation import valid_integer_regex
+            validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_integer_regex), None)
 
         item = self.table.item(self.table_row, value_index)
         self.create_checkable_cell(item, validator, lambda txt, value: self.on_edit_done(txt, value, complete_cb))

@@ -33,9 +33,9 @@ class InputParameter(ParameterBase):
         self._select_editability_for_resolvertype(editable)
 
     def update_parameters(self, param):
-        self.exponent = param.exponent
-        self.unit = param.unit
-        self.format = param.format
+        self.exponent.set_value(param.exponent.get_value())
+        self.unit.set_value(param.unit.get_value())
+        self.format.set_value(param.format.get_value())
 
     def _select_editability_for_resolvertype(self, editable):
         if editable is not ParameterEditability.NotEditable():
@@ -114,7 +114,7 @@ class InputParameter(ParameterBase):
         except KeyError:
             return None
 
-    def _get_validator_type(self) -> str:
+    def _get_validator_type(self, value_index: int) -> ValidatorTypes:
         if ResolverTypes.Remote() in self.type.get_value():
             return ValidatorTypes.NoValidation
         else:

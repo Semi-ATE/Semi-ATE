@@ -114,6 +114,7 @@ class ResolverTypes(Enum):
 class ValidatorTypes(Enum):
     NoValidation = 'novalidation'
     FloatValidation = 'float'
+    IntValidation = 'int'
 
     def __call__(self):
         return self.value
@@ -133,13 +134,14 @@ class InputFieldsPosition(IntEnum):
 
 
 class OutputFieldsPosition(IntEnum):
-    Name = 0
-    Lsl = 1
-    Ltl = 2
-    Utl = 3
-    Usl = 4
-    Unit = 5
-    Format = 6
+    No = 0
+    Name = 1
+    Lsl = 2
+    Ltl = 3
+    Utl = 4
+    Usl = 5
+    Unit = 6
+    Format = 7
 
     def __call__(self):
         return self.value
