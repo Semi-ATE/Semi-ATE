@@ -1,4 +1,4 @@
-name: Linux tests
+name: Windows tests
 
 on:
   push:
@@ -12,10 +12,10 @@ on:
 jobs:
   build:
     name: Py${{ matrix.PYTHON_VERSION }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       CI: 'true'
-      OS: 'linux'
+      OS: 'windows'
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
     strategy:
       fail-fast: false 
@@ -24,11 +24,6 @@ jobs:
     steps:
       - name: Checkout Pull Requests
         uses: actions/checkout@v2
-      - name: Install dependencies
-        shell: bash
-        run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -63,7 +58,8 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          xvfb-run --auto-servernum pytest tests/ATE/data --cov=ATE
-          xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
-          xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
-          xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
+          pytest tests\ATE\TES\apps --cov=ATE 
+          pytest tests\ATE\data --cov=ATE 
+          pytest tests\ATE\projectdatabase --cov=ATE 
+          pytest tests\ATE\TCC --cov=ATE 
+          pytest tests\ATE\spyder --cov=ATE 
