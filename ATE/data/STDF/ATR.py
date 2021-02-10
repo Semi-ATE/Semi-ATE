@@ -30,8 +30,9 @@ Location:
     multiple ATRs will be in reverse chronological order.
 """
             self.fields = {
-                "REC_LEN": {
-                    "#": 0,
+                #fmt:off
+                #
+                "REC_LEN": {"#": 0,
                     "Type": "U*2",
                     "Ref": None,
                     "Value": None,
