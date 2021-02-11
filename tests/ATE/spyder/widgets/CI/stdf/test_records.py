@@ -1,8 +1,9 @@
 from ATE.data.STDF import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR,
                                    MIR, MPR, MRR, PCR, PGR, PIR, PLR, PMR,
                                    PRR, PTR, RDR, SBR, SDR, TSR, WCR, WIR,
-                                   WRR, records_from_file)
+                                   WRR)
 
+from ATE.data.STDF import records_from_file
 
 import struct
 import pytest
