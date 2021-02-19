@@ -27,7 +27,7 @@ class ATE(SpyderDockablePlugin):
     Breakpoint list Plugin.
     """
     NAME = 'ate'
-    REQUIRES = []   # TODO: fix crash  (Plugins.Editor)
+    REQUIRES = [Plugins.Toolbar]   # TODO: fix crash  (Plugins.Editor)
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
@@ -49,6 +49,7 @@ class ATE(SpyderDockablePlugin):
         return QIcon()
 
     def register(self):
+        toolbar = self.get_plugin(Plugins.Toolbar)
         widget = self.get_widget()
 
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
@@ -56,7 +57,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
 
         # Add toolbar
-        self.add_application_toolbar('ate_toolbar', widget.toolbar)
+        toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.hide()
 
         # Register a new project type
