@@ -8,3 +8,5 @@ coverage
 check-manifest
 pre-commit
 tqdm
+twine
+tree
