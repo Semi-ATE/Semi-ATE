@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=master)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
-[![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg?branch=master)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
+[![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
 [![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
