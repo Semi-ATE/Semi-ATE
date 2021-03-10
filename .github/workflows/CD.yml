@@ -70,6 +70,11 @@ jobs:
         path: dist/*
         name: pypi
         
+    - name: List open pull requests
+      run: hub release show
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 #     - name: Upload to PyPi
 #       uses: pypa/gh-action-pypi-publish@v1.4.2
 #       with:
