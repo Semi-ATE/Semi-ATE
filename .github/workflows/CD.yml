@@ -65,6 +65,7 @@ jobs:
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      shell: bash -l {0}
       run: python -m twine upload dist/*
 
     - name: Upload coverage to Codecov  
