@@ -12,3 +12,4 @@ aiomqtt
 pyqt
 pyserial
 tqdm
+qtawesome
