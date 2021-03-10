@@ -48,6 +48,9 @@ jobs:
           conda install --file requirements/test.txt -c conda-forge -y -q
           python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
           python -m pip install Semi-ATE-STDF
+          cd Plugins/TDKMicronas
+          python setup.py develop
+          cd ../..
 
       - name: Install package
         shell: bash -l {0}
