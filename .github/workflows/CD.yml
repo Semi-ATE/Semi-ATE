@@ -71,7 +71,7 @@ jobs:
         name: pypi
         
     - name: List open pull requests
-      run: hub release show
+      run: hub release show ${GITHUB_REF}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
