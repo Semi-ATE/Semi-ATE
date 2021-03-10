@@ -42,12 +42,6 @@ jobs:
       run: pip install -e .
       # shouldn't this be someting like `python setup.py install` ?
 
-    - name: Show test environment
-      shell: bash -l {0}
-      run: |
-        conda info
-        conda list
-
     - name: Run manifest checks
       shell: bash -l {0}
       run: check-manifest
@@ -62,6 +56,12 @@ jobs:
 
     - name: Create package
       run: python setup.py sdist
+
+    - name: Show test environment
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
 
     - name: Check package
       run:  twine check dist/*
