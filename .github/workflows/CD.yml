@@ -68,6 +68,7 @@ jobs:
       run:  twine check dist/*
 
     - name: Check manifest
+      shell: bash -l {0}
       run: check-manifest
 
     - name: Upload to PyPI
