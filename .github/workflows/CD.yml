@@ -11,7 +11,7 @@ jobs:
     - name: Checkout 
       uses: actions/checkout@v2
 
-    - name: Install dependencies
+    - name: Install test dependencies
       shell: bash
       run: |
         sudo apt-get update --fix-missing
@@ -41,7 +41,7 @@ jobs:
     - name: tag to version
       run: echo "__version__='${GITHUB_REF#refs/*/}'" >> ATE/__init__.py
 
-    - name: Install package
+    - name: Install project
       shell: bash -l {0}
       run: pip install -e .
       # shouldn't this be someting like `python setup.py install` ?
@@ -57,23 +57,25 @@ jobs:
         xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
 
-    - name: Create package
+    - name: Create project package
       run: python setup.py sdist
 
     - name: Check package
       shell: bash -l {0}
       run:  twine check dist/*
       
+#     - name: Upload release assets
+#       uses: alexellis/upload-assets@0.2.3
+#       env:
+#         GITHUB_TOKEN: ${{ github.token }}
+#       with:
+#         asset_paths: '["build/maxiconda*"]'      
+      
     - name: Upload maxiconda to Github artifact
       uses: actions/upload-artifact@v2
       with:
         path: dist/*
         name: pypi
-        
-    - name: List open pull requests
-      run: hub release show ${GITHUB_REF}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #     - name: Upload to PyPi
 #       uses: pypa/gh-action-pypi-publish@v1.4.2
