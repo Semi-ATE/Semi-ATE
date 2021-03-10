@@ -64,29 +64,29 @@ jobs:
       shell: bash -l {0}
       run:  twine check dist/*
       
-#     - name: Upload release assets
-#       uses: alexellis/upload-assets@0.2.3
-#       env:
-#         GITHUB_TOKEN: ${{ github.token }}
-#       with:
-#         asset_paths: '["build/maxiconda*"]'      
-      
-    - name: Upload maxiconda to Github artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload release assets
+      uses: alexellis/upload-assets@0.2.3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-        path: dist/*
-        name: pypi
-
-#     - name: Upload to PyPi
-#       uses: pypa/gh-action-pypi-publish@v1.4.2
+        asset_paths: '["dist/Semi-ATE-*.tar.gz"]'      
+      
+#     - name: Upload maxiconda to Github artifact
+#       uses: actions/upload-artifact@v2
 #       with:
-#         password: ${{ secrets.PYPI_TOKEN }}
-#         verbose: 1
+#         path: dist/*
+#         name: pypi
 
-#     - name: Upload coverage to Codecov  
-#       uses: codecov/codecov-action@v1
-#       with:
-#         token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Upload to PyPi
+      uses: pypa/gh-action-pypi-publish@v1.4.2
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
+        verbose: 1
+
+    - name: Upload coverage to Codecov  
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
 
 
