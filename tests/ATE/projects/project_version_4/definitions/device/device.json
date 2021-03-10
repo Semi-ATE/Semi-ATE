@@ -1,0 +1,22 @@
+[
+  {
+    "name": "aaa",
+    "hardware": "HW0",
+    "package": "aa",
+    "definition": {
+      "dies_in_package": [
+        "c_1"
+      ],
+      "is_dual_die": 0,
+      "pin_names": [
+        {
+          "1": []
+        },
+        {
+          "2": []
+        }
+      ]
+    },
+    "is_enabled": true
+  }
+]

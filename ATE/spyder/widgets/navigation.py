@@ -3,15 +3,14 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
-from ATE.projectdatabase.Types import Types
 import json
 import os
-import pickle
 import platform
 
 from PyQt5.QtCore import QObject
 
 from ATE.spyder.widgets.constants import TableIds as TableId
+from ATE.spyder.widgets.constants import UpdateOptions
 
 from ATE.projectdatabase.Device import Device
 from ATE.projectdatabase.Die import Die
@@ -25,6 +24,9 @@ from ATE.projectdatabase.Sequence import Sequence
 from ATE.projectdatabase.Test import Test
 from ATE.projectdatabase.TestTarget import TestTarget
 from ATE.projectdatabase.FileOperator import FileOperator
+from ATE.projectdatabase.Group import Group
+from ATE.projectdatabase.Types import Types
+from ATE.projectdatabase.Settings import Settings
 
 
 definitions = {Types.Maskset(): Maskset}
@@ -37,6 +39,8 @@ tables = {'hardwares': Hardware,
           'tests': Test,
           'testtargets': TestTarget}
 
+default_groups = ['checker', 'maintenance', 'production', 'engineering', 'validation', 'quality', 'qualification']
+
 
 class ProjectNavigation(QObject):
     '''
@@ -45,13 +49,13 @@ class ProjectNavigation(QObject):
     # The parameter contains the type of the dbchange (i.e. which table was altered)
     verbose = True
 
-    def __init__(self, project_directory, workspace_path, parent, project_quality=''):
+    def __init__(self, project_directory, workspace_path, parent):
         super().__init__(parent)
         self.parent = parent
         self.workspace_path = workspace_path
-        self.__call__(project_directory, project_quality)
+        self.__call__(project_directory)
 
-    def __call__(self, project_directory, project_quality=''):
+    def __call__(self, project_directory):
         # determine OS, determine user & desktop
         self.os = platform.system()
         if self.os == 'Windows':
@@ -73,7 +77,6 @@ class ProjectNavigation(QObject):
             self.active_hardware = ''
             self.active_base = ''
             self.project_name = ''
-            self.project_quality = ''
         else:
             self.project_directory = project_directory
             self.active_target = ''
@@ -81,28 +84,17 @@ class ProjectNavigation(QObject):
             self.active_base = ''
             self.project_name = os.path.basename(self.project_directory)
 
-            settings_file = os.path.join(project_directory, f".lastsettings")
-            project_quality_file = os.path.join(self.project_directory, 'project_quality.pickle')
+            settings_file = os.path.join(project_directory, ".lastsettings")
 
             # the .lastsettings file is used as a canary to detect if
             # this folder already contains a project or if we have to generate
             # a new project
             if not os.path.exists(settings_file):  # brand new project, initialize it.
                 self.create_project_structure()
-                self.project_quality = project_quality
-                if project_quality != '':
-                    with open(project_quality_file, 'wb') as writer:
-                        pickle.dump(project_quality, writer, 4)
-            else:
-                if os.path.exists(project_quality_file):
-                    with open(project_quality_file, 'rb') as reader:
-                        self.project_quality = pickle.load(reader)
-                else:
-                    self.project_quality = ''
 
-                self._set_folder_structure()
-
+            self._set_folder_structure()
             self.file_operator = FileOperator(self.project_directory)
+            self._store_default_groups()
 
         if self.verbose:
             print("Navigator:")
@@ -115,7 +107,6 @@ class ProjectNavigation(QObject):
             print(f"  - active hardware = '{self.active_hardware}'")
             print(f"  - active base = '{self.active_base}'")
             print(f"  - project name = '{self.project_name}'")
-            print(f"  - project grade = '{self.project_quality}'")
 
     def update_toolbar_elements(self, active_hardware, active_base, active_target):
         self.active_hardware = active_hardware
@@ -133,25 +124,52 @@ class ProjectNavigation(QObject):
         os.makedirs(os.path.join(doc_path, "audits"), exist_ok=True)
         os.makedirs(os.path.join(doc_path, "exports"), exist_ok=True)
 
+    def _store_default_groups(self):
+        groups = [group.name for group in self.get_groups()]
+        for default in default_groups:
+            if default in groups:
+                continue
+
+            Group.add(self.get_file_operator(), default, is_standard=True)
+
+    def get_groups(self):
+        return Group.get_all(self.get_file_operator())
+
+    def update_group_state(self, name: str, is_checked: bool):
+        Group.update_state(self.get_file_operator(), name, is_checked)
+        self.parent.group_state_changed.emit()
+
+    def add_test_group(self, name: str):
+        Group.add(self.get_file_operator(), name, is_standard=False)
+        self.parent.group_added.emit(name)
+
+    def is_standard_group(self, name: str):
+        return Group.is_standard(self.get_file_operator(), name)
+
+    def remove_group(self, name: str):
+        Group.remove(self.get_file_operator(), name)
+        self.parent.group_removed.emit(name)
+
+    def get_tests_for_group(self, group: str):
+        return Group.get_tests_for_group(self.get_file_operator(), group)
+
+    def get_groups_for_test(self, test):
+        return Group.get_all_groups_for_test(self.get_file_operator(), test)
+
     def create_project_structure(self):
         '''
         this method creates a new project `self.project_directroy` *MUST* exist
         '''
-        from ATE.spyder.widgets.coding.generators import project_generator
-        project_generator(self.project_directory)
+        _ = self.run_build_tool('generate', 'new', os.path.dirname(self.project_directory), self.project_directory)
 
-    def add_project(self, project_name, project_quality=''):
-        project_directory = os.path.join(self.workspace_path, project_name)
-        self.__call__(project_directory, project_quality)
-
-    def run_build_tool(self, verb, noun, params):
+    def run_build_tool(self, verb, noun, cwd, *params):
         from subprocess import Popen, PIPE
         from pathlib import Path
         import sys
         from os.path import join, dirname
 
         sammy_path = join(dirname(dirname(dirname(__file__))), 'sammy', 'sammy.py')
-        process = Popen([str(sys.executable), os.fspath(Path(sammy_path)), verb, noun, params], stdout=PIPE, stderr=PIPE, cwd=self.project_directory)
+        process = Popen([str(sys.executable), os.fspath(Path(sammy_path)), verb, noun, *params], stdout=PIPE, stderr=PIPE, cwd=cwd)
         stdout, stderr = process.communicate()
         if process.returncode != 0:
             print(stderr.decode('UTF-8'))
@@ -177,7 +195,7 @@ class ProjectNavigation(QObject):
         new_hardware = definition['hardware']
         definition.pop('hardware')
         Hardware.add(self.get_file_operator(), new_hardware, definition, is_enabled)
-        _ = self.run_build_tool("generate", "hardware", new_hardware)
+        _ = self.run_build_tool("generate", "hardware", self.project_directory, new_hardware)
 
         self.parent.hardware_added.emit(new_hardware)
         self.parent.database_changed.emit(TableId.Hardware())
@@ -208,7 +226,7 @@ class ProjectNavigation(QObject):
         definition = self._prepare_hardware_definiton(definition)
         definition.pop('hardware')
         Hardware.update(self.get_file_operator(), hardware, definition)
-        _ = self.run_build_tool("generate", "hardware", hardware)
+        _ = self.run_build_tool("generate", "hardware", self.project_directory, hardware)
 
     def get_file_operator(self):
         return self.file_operator
@@ -323,6 +341,12 @@ class ProjectNavigation(QObject):
     def remove_maskset(self, name):
         Maskset.remove(self.get_file_operator(), name)
         self.parent.database_changed.emit(TableId.Maskset())
+
+    def add_settings(self, quality_grade: str):
+        Settings.set_quality_grade(self.get_file_operator(), quality_grade=quality_grade)
+
+    def get_default_quality_grade(self):
+        return Settings.get_quality_grade(self.get_file_operator())
 
     def add_die(self, name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled=True):
         '''
@@ -539,10 +563,11 @@ class ProjectNavigation(QObject):
         given 'hardware' and 'base', this method will return a LIST
         of all existing STANDARD TESTS.
         '''
-        return Test.get_all(self.get_file_operator(), hardware, base, 'standard')
+        return Test.get_for_hw_base_test_typ(self.get_file_operator(), hardware, base, 'standard')
 
     def add_standard_test(self, name, hardware, base):
         import runpy
+        raise Exception('impl me')
         from ATE.spyder.widgets.coding.standard_tests import names as standard_test_names
 
         if name in standard_test_names:
@@ -580,28 +605,37 @@ class ProjectNavigation(QObject):
         if definition['type'] != 'custom':
             raise Exception("not a 'custom' test!!!")
 
-        self._generate_test_code(definition)
+        groups = definition.pop('groups')
         Test.add(self.get_file_operator(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
-        self.parent.database_changed.emit(TableId.NewTest())
+        self._update_test_groups(definition['name'], groups)
+        _ = self.run_build_tool("generate", "test", self.project_directory, definition['name'], definition['hardware'], definition['base'])
+        self.parent.groups_update.emit(definition['name'], groups)
 
-    def update_custom_test(self, definition, is_enabled=True):
-        self._update_test_code(definition)
-        Test.update(self.get_file_operator(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, is_enabled)
+    def update_custom_test(self, definition: dict, update_option: UpdateOptions):
+        groups = definition['groups']
+        if update_option >= UpdateOptions.DB_Update():
+            self.update_custom_test_db(definition)
+        if update_option == UpdateOptions.Group_Update:
+            self._update_test_groups(definition['name'], groups)
+            self.parent.groups_update.emit(definition['name'], groups)
+        if update_option == UpdateOptions.Code_Update:
+            self._update_test_code(definition)
+            self._update_test_target_code(definition)
+            self._update_programs_state_for_test(definition['name'])
 
-        self._update_test_target_code(definition)
-        self._update_programs_state_for_test(definition['name'])
+    def _update_test_groups(self, test_name: str, groups: list):
+        Group.update_groups_for_test(self.get_file_operator(), test_name, groups)
 
-    def _update_programs_state_for_test(self, test_name):
+    def update_custom_test_db(self, definition):
+        Test.update(self.get_file_operator(), definition['name'], definition['hardware'], definition['base'], definition['type'], definition, True)
+
+    def _update_programs_state_for_test(self, test_name, do_validate=False):
         programs = Sequence.get_programs_for_test(self.get_file_operator(), test_name)
-        programs = set([program.prog_name for program in programs])
+        programs = set([program.prog_name for program in programs if self.active_hardware in program.owner_name and self.active_base in program.owner_name])
 
-        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
         for program in programs:
-            if not Program.get(self.get_file_operator(), program).is_valid:
-                continue
-
-            Program.set_program_validity(self.get_file_operator(), program, False)
-            test_program_generator.append_exception_code(self._generate_program_path(program))
+            Program.set_program_validity(self.get_file_operator(), program, do_validate)
+            _ = self.run_build_tool('generate', 'sequence', self.project_directory, program)
 
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
@@ -613,15 +647,10 @@ class ProjectNavigation(QObject):
     def _update_test_target_code(self, definition):
         targets = [target for target in self.get_test_targets_for_test(definition['name'])]
         for target in targets:
-            self._generate_test_target_file(target.name, definition['name'], definition['hardware'], definition['base'], do_update=True)
+            self._update_test_changed_flag(target.name, definition['name'], definition['hardware'], definition['base'], test_changed=True)
 
     def _update_test_code(self, definition):
-        from ATE.spyder.widgets.coding.generators import test_update
-        test_update(self.project_directory, definition)
-
-    def _generate_test_code(self, definition):
-        from ATE.spyder.widgets.coding.generators import test_generator
-        test_generator(self.project_directory, definition)
+        _ = self.run_build_tool("generate", "test", self.project_directory, definition['name'], definition['hardware'], definition['base'])
 
     def get_tests_from_files(self, hardware, base, test_type='all'):
         '''
@@ -680,18 +709,11 @@ class ProjectNavigation(QObject):
         if test_type not in ('standard', 'custom', 'all'):
             raise Exception('unknown test type !!!')
 
-        return Test.get_all(self.get_file_operator(), hardware, base, test_type)
+        return Test.get_for_hw_base_test_typ(self.get_file_operator(), hardware, base, test_type)
 
-    def remove_test(self, name):
-        Test.remove(self.get_file_operator(), name)
-
+    def remove_test(self, name: str, hardware: str, base: str):
+        Test.remove(self.get_file_operator(), name, hardware, base)
         Sequence.remove_test_from_sequence(self.get_file_operator(), name)
-        self.parent.database_changed.emit(TableId.Test())
-
-    # ToDo Seems to be unused!
-    # def delete_test_from_program(self, test_name):
-    #     Sequence.remove_test_from_sequence(self.get_file_operator(), test_name)
-    #     self.parent.database_changed.emit(TableId.Test())
 
     def get_data_for_qualification_flow(self, quali_flow_type, product):
         return QualificationFlowDatum.get_data_for_flow(self.get_file_operator(), quali_flow_type, product)
@@ -724,7 +746,7 @@ class ProjectNavigation(QObject):
         QualificationFlowDatum.remove(self.get_file_operator(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
-    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy, test_ranges):
+    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy, test_ranges, group):
         for _, test in enumerate(definition):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
@@ -733,12 +755,13 @@ class ProjectNavigation(QObject):
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
+        Group.add_testprogram_to_group(self.get_file_operator(), group, name)
+
         self.parent.database_changed.emit(TableId.Flow())
         self.parent.database_changed.emit(TableId.Test())
 
     def _generate_program_code(self, name, owner):
-        from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
-        test_program_generator(name, owner, self)
+        self.run_build_tool('generate', 'sequence', self.project_directory, name)
 
     def _insert_sequence_informations(self, owner_name, prog_name, definition):
         for index, test in enumerate(definition):
@@ -746,17 +769,18 @@ class ProjectNavigation(QObject):
 
     def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy, test_ranges):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
-
+        Program.set_program_validity(self.get_file_operator(), name, True)
         Program.update(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, cache_type, caching_policy, test_ranges)
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
-        Program.set_program_validity(self.get_file_operator(), name, True)
-
         self.parent.database_changed.emit(TableId.Flow())
         self.parent.database_changed.emit(TableId.Test())
+
+    def get_program_names_for_group(self, group):
+        return Group.get_programs_for_group(self.get_file_operator(), group)
 
     def _get_tests_for_target(self, hardware, base, test_target):
         return [test.test for test in TestTarget.get_tests(self.get_file_operator(), hardware, base, test_target)]
@@ -794,6 +818,8 @@ class ProjectNavigation(QObject):
         Sequence.remove_for_program(self.get_file_operator(), program_name)
 
         self._remove_file(self._generate_program_path(program_name))
+        self._remove_file(self._generate_bin_table_path(program_name))
+        self._remove_file(self._generate_auto_script_path(program_name))
         if emit_event:
             self._update_test_program_sequence(program_name, program_order, owner_name)
             self.parent.database_changed.emit(TableId.Flow())
@@ -807,9 +833,18 @@ class ProjectNavigation(QObject):
     def _generate_program_path(self, program_name):
         return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '.py')
 
+    def _generate_bin_table_path(self, program_name):
+        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '_binning.json')
+
+    def _generate_auto_script_path(self, program_name):
+        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '_auto_script.py')
+
     def _update_test_program_sequence(self, program_name, program_order, owner_name):
         for index in range(program_order + 1, self.get_program_owner_element_count(owner_name) + 1):
+            # TODO: we do not have update the name of test program but only the order
             new_name = self._generate_program_name(program_name, index)
+            program = Program.get_by_order_and_owner(index, owner_name)
+
             Program.update_program_order_and_name(self.get_file_operator(), new_name, index - 1, owner_name, index)
 
             name = self._generate_program_name(program_name, index + 1)
@@ -817,9 +852,15 @@ class ProjectNavigation(QObject):
 
             TestTarget.update_program_name(self.get_file_operator(), name, new_name)
 
-            self._remove_file(self._generate_program_path(name))
-            from ATE.spyder.widgets.coding.ProgramGenerator import test_program_generator
-            test_program_generator(new_name, owner_name, self)
+            self._rename_file(self._generate_program_path(name), self._generate_program_path(program_name))
+            self._rename_file(self._generate_bin_table_path(name), self._generate_bin_table_path(program_name))
+            self._rename_file(self._generate_auto_script_path(name), self._generate_auto_script_path(program_name))
+
+            _ = self.run_build_tool('generate', 'sequence', self.project_directory, new_name)
+
+    @staticmethod
+    def _rename_file(file_name: str, new_name: str):
+        os.rename(file_name, new_name)
 
     def _remove_test_targets_for_test_program(self, prog_name):
         tests = set([seq.test for seq in Sequence.get_for_program(self.get_file_operator(), prog_name)])
@@ -829,7 +870,7 @@ class ProjectNavigation(QObject):
         for target, test in zip(targets, tests):
             self.parent.test_target_deleted.emit(target, test)
 
-    def move_program(self, program_name, owner_name, program_order, is_up):
+    def move_program(self, program_name, owner_name, _program_order, is_up):
         session = self.get_file_operator()
         prog = Program.get_by_name_and_owner(session, program_name, owner_name)
         order = prog.prog_order
@@ -851,7 +892,6 @@ class ProjectNavigation(QObject):
 
     def _update_sequence(self, prog_name, new_prog_name, owner_name):
         Sequence.switch_sequences(self.get_file_operator(), prog_name, new_prog_name)
-        self.parent.database_changed.emit(TableId.Flow())
 
     def _get_test_program_name(self, prog_order, owner_name):
         return Program.get_by_order_and_owner(self.get_file_operator(), prog_order, owner_name).prog_name
@@ -952,10 +992,14 @@ class ProjectNavigation(QObject):
     def set_test_target_default_state(self, name, hardware, base, test, is_default):
         TestTarget.set_default_state(self.get_file_operator(), name, hardware, base, test, is_default)
 
-        if not is_default:
-            self._generate_test_target_file(name, test, hardware, base)
+        self._update_test_changed_flag(name, test, hardware, base)
+        self.update_test_target(name, hardware, base, test)
 
         self.parent.database_changed.emit(TableId.TestItem())
+
+    def update_test_target(self, name, hardware, base, test):
+        self.run_build_tool('generate', 'test_target', self.project_directory, name, hardware, base, test)
+        self._update_programs_state_for_test(test, do_validate=True)
 
     def set_test_target_state(self, name, hardware, base, test, is_enabled):
         TestTarget.toggle(self.get_file_operator(), name, hardware, base, test, is_enabled)
@@ -970,7 +1014,7 @@ class ProjectNavigation(QObject):
         return TestTarget.get_for_program(self.get_file_operator(), prog_name)
 
     def get_test_targets_for_test(self, test_name):
-        return TestTarget.get_for_test(self.get_file_operator(), test_name)
+        return TestTarget.get_for_test(self.get_file_operator(), test_name, self.active_hardware, self.active_base)
 
     def get_depandant_test_target_for_program(self, prog_name):
         dependants = {}
@@ -986,19 +1030,9 @@ class ProjectNavigation(QObject):
     def get_tests_for_test_target(self, hardware, base, test):
         return self.get_available_test_targets(hardware, base, test)
 
-    def _generate_test_target_file(self, target_name, test, hardware, base, do_update=False):
-        test_target = TestTarget.get(self.get_file_operator(), target_name, hardware, base, test)
-        TestTarget.update_test_changed_flag(self.get_file_operator(), target_name, hardware, base, test, is_changed=True)
-        testdefinition = Test.get(self.get_file_operator(), test, hardware, base).definition
-        testdefinition['base'] = base
-        testdefinition['base_class'] = test
-        testdefinition['name'] = target_name
-        testdefinition['hardware'] = hardware
-
-        if not test_target.is_default:
-            from ATE.spyder.widgets.coding.TargetGenerator import test_target_generator
-            test_target_generator(self.project_directory, testdefinition, do_update)
-        self._update_programs_state_for_test(test)
+    def _update_test_changed_flag(self, target_name, test, hardware, base, test_changed=False):
+        if test_changed:
+            TestTarget.update_test_changed_flag(self.get_file_operator(), target_name, hardware, base, test, is_changed=True)
 
     def get_changed_test_targets(self, hardware, base, prog_name):
         return TestTarget.get_changed_test_targets(self.get_file_operator(), hardware, base, prog_name)
@@ -1013,7 +1047,6 @@ class ProjectNavigation(QObject):
     def _get_dependant_objects_for_node(self, node, dependant_objects, node_type):
         tree = {}
         for definition in dependant_objects:
-            # name = tables[definition].name
             query = f"SELECT * FROM {definition} WHERE {node_type} = ?"
             self.cur.execute(query, (node,))
             for row in self.cur.fetchall():
@@ -1174,12 +1207,7 @@ class ProjectNavigation(QObject):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.clean_up()
-
-    def clean_up(self):
-        self.active_hardware = ''
-        self.active_base = ''
-        self.active_target = ''
+        pass
 
     def delete_item(self, type, name):
         tables[type].remove(self.get_file_operator(), name)

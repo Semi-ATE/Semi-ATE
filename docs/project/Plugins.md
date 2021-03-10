@@ -26,7 +26,7 @@ This hook shall return a dictionary with the following layout:
 ```
 
 ### Plugin Functionality
-A given plugin publishes its functionality by means of Importers/Exporters/Actuators/Instruments/Equipments. Each of these can be queried by means of a "get_x_names" function where x is the name of the respective functionality. The returnvalue of the get_x_names functions is always a list of dictionaries, where each dictionary has the following layout:
+A given plugin publishes its functionality by means of Importers/Exporters/Actuators/Instruments/Equipments/Testers. Each of these can be queried by means of a "get_x_names" function where x is the name of the respective functionality. The returnvalue of the get_x_names functions is always a list of dictionaries, where each dictionary has the following layout:
 ```
     display_name: "Display Name"
     version: "Object Version"
@@ -90,6 +90,11 @@ The complete layout of the results of this function is:
     version: "Object Version"
     name: "Object Name"
 }
+```
+
+### Tester
+```
+get_tester_names() -> []
 ```
 
 ## Instances
@@ -170,17 +175,28 @@ get_general_purpose_function(func_name) -> FunctionInstance
 
 Note that a "Function" in this context denotes an object that can have an arbitrary interface. The runtime environment will make an instance of the object available for each test program and test
 
+### Tester
+```
+get_tester(tester_name) -> TesterInstance
+```
+This hook shall return an instance of a tester with the given name.
+
+A tester is expected to have the following interface:
+```
+get_sites_count() -> int
+```
+
 ## Configuration
 Pluginobjects may provide configuration data in the form of key-value pairs. Each plugin shall provide a list of configuration options for a given object when the function:
 
 ```
-get_configuration_options(object_name) -> List[String]]
+get_configuration_options(object_name) -> List[String]
 ```
 
 is called. It is up to the runtime to use the data (e.g. for creating a configuartion dialog). All objects shall support the
 function:
 ```
-set_configuration_values(Dict[String, String]])
+set_configuration_values(Dict[String, String])
 ```
 to apply a given set of configuration options. Each object shall be implemented such, that it is able to use the provided values on the fly.
 
@@ -197,6 +213,7 @@ get_equipment_names() -> []
 get_devicepin_importer_names() -> []
 get_instrument_names() -> []
 get_general_purpose_function_names() -> []
+get_tester_names() -> []
 
 get_importer(importer_name) -> Importer
 get_exporter(exporter_name) -> Exporter
@@ -205,6 +222,8 @@ get_devicepin_importer(importer_name) -> Importer
 
 get_instrument(instrument_name) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
+
+get_tester(tester_name) -> TesterInstance
 
 get_general_purpose_function(func_name) -> FunctionInstance
 
@@ -249,6 +268,10 @@ class ThePlugin(object):
         return []
 
     @hookimpl
+    def get_tester_names() -> []:
+        return []
+
+    @hookimpl
     def get_importer(importer_name) -> Importer:
         raise NotImplementedError
 
@@ -270,6 +293,10 @@ class ThePlugin(object):
 
     @hookimpl
     def get_instrument_proxy(instrument_name) -> InstrumentInstance:
+        raise NotImplementedError
+
+    @hookimpl
+    def get_tester(tester_name) -> TesterInstance:
         raise NotImplementedError
 
     @hookimpl

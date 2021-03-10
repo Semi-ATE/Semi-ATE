@@ -3,4 +3,5 @@ export interface ConsoleEntry {
   type: string;
   source: string;
   description: string;
+  orderMessageId: number;
 }

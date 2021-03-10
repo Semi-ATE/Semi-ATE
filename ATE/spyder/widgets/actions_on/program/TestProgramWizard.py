@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidgetItemIterator
 
 from ATE.spyder.widgets.actions_on.program.Binning.BinningHandler import BinningHandler
-from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import OutputParameter
 from ATE.spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.actions_on.program.Utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
@@ -15,6 +14,7 @@ from ATE.spyder.widgets.actions_on.program.Utils import (BINGROUPS, ParameterEdi
 from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
+from ATE.spyder.widgets.constants import SUBFLOWS_QUALIFICATION
 
 
 DEFAULT_TEMPERATURE = '25'
@@ -29,12 +29,12 @@ CHECK_TEST_COL = 2
 
 
 class TestProgramWizard(BaseDialog):
-    def __init__(self, project_info: ProjectNavigation, owner: str, parent=None, read_only: bool = False, enable_edit: bool = True, prog_name: str = ''):
+    def __init__(self, project_info: ProjectNavigation, owner: str, parent, read_only: bool = False, enable_edit: bool = True, prog_name: str = ''):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self.owner = owner
+        self.owner_section_name = self._get_section_owner_name(parent)
 
-        self.available_tests = []
         self.read_only = read_only
         self.enable_edit = enable_edit
         self.prog_name = prog_name
@@ -59,6 +59,20 @@ class TestProgramWizard(BaseDialog):
         # so that each output can be automatically be assigned to a soft-bin
         if self.binning_table.rowCount() == 0:
             self._add_new_bin()
+
+    # hack: since we cannot determine the flow for some of the qualification items
+    #       we assume that every parent_section that didn't match any of the predefined sections
+    #       will be mapped to qualification flow
+    def _get_section_owner_name(self, parent: QtGui.QStandardItem):
+        parent_text = parent.text()
+        groups = [group.name for group in self.project_info.get_groups()]
+        if parent_text in groups:
+            return parent_text
+
+        if parent_text in SUBFLOWS_QUALIFICATION:
+            return f'qualification_{parent_text}'
+
+        return f'qualification_{parent.parent.text()}_{parent.text()}'
 
     def _setup(self):
         self._set_icon(self.testAdd, 'arrow-right')
@@ -118,15 +132,10 @@ class TestProgramWizard(BaseDialog):
 
         self.hardware.currentIndexChanged.connect(self._hardware_changed)
         self.base.currentIndexChanged.connect(self._base_changed)
-        self.usertext.textChanged.connect(self._usertext_changed)
         self.target.currentIndexChanged.connect(self._target_changed)
 
         self.sequencerType.currentIndexChanged.connect(self._sequencer_type_changed)
         self.temperature.textChanged.connect(self._verify_temperature)
-        from ATE.spyder.widgets.validation import valid_user_text_name_regex
-        user_text_reg_ex = QtCore.QRegExp(valid_user_text_name_regex)
-        user_text_name_validator = QtGui.QRegExpValidator(user_text_reg_ex, self)
-        self.usertext.setValidator(user_text_name_validator)
 
         self.OKButton.clicked.connect(self._save_configuration)
         self.CancelButton.clicked.connect(self._cancel)
@@ -134,6 +143,11 @@ class TestProgramWizard(BaseDialog):
         self.remove_bin.clicked.connect(self._remove_selected_bin)
         self.add_bin.clicked.connect(self._add_new_bin)
         self.import_bin_table.clicked.connect(self._import_bin_table)
+
+        from ATE.spyder.widgets.validation import valid_testprogram_name_regex
+        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_testprogram_name_regex), self)
+        self.user_name.setValidator(name_validator)
+        self.user_name.textChanged.connect(self._user_name_changed)
 
     def _view(self):
         self.existing_hardwares = self.project_info.get_active_hardware_names()
@@ -165,14 +179,12 @@ class TestProgramWizard(BaseDialog):
         self._update_test_list()
         self.Feedback.setText('')
         self.Feedback.setStyleSheet(ORANGE_LABEL)
-        self.usertext_feedback.setStyleSheet(ORANGE_LABEL)
         self.temperature_feedback.setStyleSheet(ORANGE_LABEL)
         self.target_feedback.setStyleSheet(ORANGE_LABEL)
-        self.usertext_feedback.setStyleSheet(ORANGE_LABEL)
 
         if not self.prog_name:
-            owner, count = self._get_test_program_infos()
-            self.prog_name = self._generate_test_program_name(owner, count)
+            owner, _count = self._get_test_program_infos()
+            self.prog_name = self._generate_test_program_name(owner)
 
         base_name = ' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', '')))
         self.setWindowTitle(f"{base_name} :{self.prog_name}")
@@ -233,6 +245,9 @@ class TestProgramWizard(BaseDialog):
 
     @QtCore.pyqtSlot(QtCore.QPoint)
     def _context_menu_binning_table(self, point):
+        if not self.binning_table.itemAt(point):
+            return
+
         self._binning_handler.context_menu_handler(point)
 
     def _generate_menu(self, elements: list):
@@ -317,7 +332,7 @@ class TestProgramWizard(BaseDialog):
         self.target.blockSignals(False)
 
     @QtCore.pyqtSlot(str)
-    def _usertext_changed(self, text):
+    def _user_name_changed(self, text):
         self._verify()
 
     @QtCore.pyqtSlot()
@@ -356,10 +371,6 @@ class TestProgramWizard(BaseDialog):
         self.parametersInput.setEnabled(False)
         self.parametersOutput.setEnabled(False)
 
-        self.selectedTests.blockSignals(True)
-        self.selectedTests.clearSelection()
-        self.selectedTests.blockSignals(False)
-
         self._display_active_test()
 
     @QtCore.pyqtSlot()
@@ -375,10 +386,6 @@ class TestProgramWizard(BaseDialog):
         if not self.read_only:
             self.parametersInput.setEnabled(True)
             self.parametersOutput.setEnabled(True)
-
-        self.availableTests.blockSignals(True)
-        self.availableTests.clearSelection()
-        self.availableTests.blockSignals(False)
 
         row = item.row()
         column = item.column()
@@ -514,7 +521,14 @@ class TestProgramWizard(BaseDialog):
             return
 
         for item in self.availableTests.selectedItems():
-            self._add_test_tuple_items(item.text())
+            selected_items = self.selectedTests.selectedItems()
+            pos = self.selectedTests.rowCount()
+
+            if selected_items:
+                pos = selected_items[0].row()
+                self.selectedTests.insertRow(pos)
+
+            self._add_test_tuple_items(item.text(), pos)
         self.availableTests.blockSignals(False)
 
     @QtCore.pyqtSlot(str)
@@ -606,6 +620,10 @@ class TestProgramWizard(BaseDialog):
             return tests
 
         for test in tests:
+            groups = [group.name for group in self.project_info.get_groups_for_test(test.name)]
+            if self.owner_section_name.split('_')[0] not in groups:
+                continue
+
             min, max = self.project_info.get_test_temp_limits(test.name, self.project_info.active_hardware, self.project_info.active_base)
             for temp in temps:
                 if temp > (min - 1) and temp < max + 1 and \
@@ -621,7 +639,6 @@ class TestProgramWizard(BaseDialog):
 
     def _verify(self):
         success = True
-        self.usertext_feedback.setText('')
         self.target_feedback.setText('')
         self.temperature_feedback.setText('')
         self._update_feedback('')
@@ -659,13 +676,22 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.BinTableNotfilled())
             success = False
 
+        if self.enable_edit:
+            if self.owner_section_name in self.project_info.get_groups():
+                if self._generate_test_program_name(self._get_test_program_infos()[0]) in self.project_info.get_program_names_for_group(self.owner_section_name):
+                    self._update_feedback(ErrorMessage.UserNameUsed())
+                    success = False
+
+        if not self.user_name.text():
+            self._update_feedback(ErrorMessage.UserNameMissing())
+            success = False
+
         validator_message = self._custom_parameter_handler.output_validator.get_message()
         if len(validator_message):
             self._update_feedback(validator_message)
             success = False
 
         if success:
-            self.usertext_feedback.setText('')
             self.target_feedback.setText('')
             self.temperature_feedback.setText('')
             self._update_feedback('')
@@ -690,7 +716,7 @@ class TestProgramWizard(BaseDialog):
 
     @property
     def program_name(self):
-        return f'Prog_{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.usertext.text()}'
+        return f'Prog_{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}'
 
     @property
     def sequencer_type(self):
@@ -854,7 +880,7 @@ class TestProgramWizard(BaseDialog):
 
         self._display_active_test()
 
-    def _add_test_tuple_items(self, test_name):
+    def _add_test_tuple_items(self, test_name: str, pos: int):
         indexed_test = self._generate_test_name(test_name)
         test_name = indexed_test.split('_')[0]
 
@@ -863,7 +889,6 @@ class TestProgramWizard(BaseDialog):
         test_names = self._custom_parameter_handler.get_test_names()
 
         self.selectedTests.setRowCount(len(test_names))
-        pos = len(test_names) - 1
         self._insert_test_tuple_items(pos, test_name, indexed_test)
         bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
         self._add_tests_to_bin_table(bin_info)
@@ -1084,21 +1109,21 @@ class TestProgramWizard(BaseDialog):
         self._update_test_bin()
         definition = self._custom_parameter_handler.build_defintion()
         test_ranges = self._custom_parameter_handler.get_ranges()
+        target_prefix = f"{self.target.currentText()}_{self.owner_section_name}_{self.user_name.text()}"
         if not self.read_only and self.enable_edit:
             owner, count = self._get_test_program_infos()
-            self.prog_name = self._generate_test_program_name(owner, count)
-
-            self.target_prefix = f"{self.target.currentText()}_{self.owner}_{count}"
+            self.prog_name = self._generate_test_program_name(owner)
+            group = self.owner_section_name.split('_')[0]
 
             self.project_info.insert_program(self.prog_name, self.hardware.currentText(), self.base.currentText(), self.target.currentText(),
-                                             self.usertext.text(), self.sequencer_type, self._get_temperature_value(),
-                                             definition, owner, self.project_info.get_program_owner_element_count(owner), self.target_prefix,
-                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges)
+                                             self.user_name.text(), self.sequencer_type, self._get_temperature_value(),
+                                             definition, owner, count, target_prefix,
+                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges, group)
         else:
             self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
             self.project_info.update_program(self.prog_name, self.hardware.currentText(), self.base.currentText(),
-                                             self.target.currentText(), self.usertext.text(), self.sequencer_type,
-                                             self._get_temperature_value(), definition, self.owner, self._get_target_name(),
+                                             self.target.currentText(), self.user_name.text(), self.sequencer_type,
+                                             self._get_temperature_value(), definition, self.owner, target_prefix,
                                              self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges)
 
         self._bin_table.create_binning_file(os.path.join(self.project_info.project_directory,
@@ -1110,30 +1135,12 @@ class TestProgramWizard(BaseDialog):
         self.accept()
 
     def _get_test_program_infos(self):
-        owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner}"
+        owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner_section_name}"
         count = self.project_info.get_program_owner_element_count(owner) + 1
         return owner, count
 
-    def _generate_test_program_name(self, owner, count):
-        return f'{os.path.basename(self.project_info.project_directory)}_{owner}_{count}'
-
-    def _get_target_name(self):
-        owner_split = self.owner.split('_')
-        index = -1
-        for i, text in enumerate(owner_split):
-            if not text == self.target.currentText():
-                continue
-
-            index = i
-            break
-
-        target_name = self.target.currentText()
-        for i in range(index + 1, len(owner_split)):
-            target_name += '_' + owner_split[i]
-
-        target_name += '_' + self.prog_name[-1]
-
-        return target_name
+    def _generate_test_program_name(self, owner):
+        return f'{os.path.basename(self.project_info.project_directory)}_{owner}_{self.user_name.text()}'
 
     def _cancel(self):
         self.reject()

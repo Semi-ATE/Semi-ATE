@@ -1,5 +1,4 @@
 # # -*- coding: utf-8 -*-
-import numpy as np
 
 from ATE.Tester.TES.apps.testApp.sequencers.Utils import (generate_PTR_dict, generate_TSR_dict)
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
@@ -64,25 +63,26 @@ class OutputParameter:
         self._measurement = measurement
         self._measurements.append(measurement)
 
-    def randn(self):
-        if np.isnan(self._ltl):
+    def default(self):
+        import math
+        if math.isnan(self._ltl):
             LTL = self._lsl
         else:
             LTL = self._ltl
 
-        if np.isnan(self._utl):
+        if math.isnan(self._utl):
             UTL = self._usl
         else:
             UTL = self._utl
 
-        μ = self._nom
+        if math.isinf(LTL):
+            value = -math.inf
+        elif math.isinf(UTL):
+            value = math.inf
+        else:
+            value = (UTL - LTL) / 2 + LTL
 
-        σ = abs(μ - LTL)
-        if σ < abs(UTL - μ):
-            σ = abs(UTL - μ)
-        σ = σ / 3
-
-        self.write(np.random.normal(μ, σ))
+        self.write(value)
 
     def set_limits(self, id: int, ltl: float, utl: float):
         self._id = id
@@ -105,7 +105,7 @@ class OutputParameter:
         u_limit = u_limit * (10**self._exponent)
         lsl = self._lsl * (10**self._exponent)
         usl = self._lsl * (10**self._exponent)
-        measurement = self._measurement * (10**self._exponent)
+        measurement = lsl if self._measurement is None else self._measurement * (10**self._exponent)
         return generate_PTR_dict(test_num=self._id, head_num=0, site_num=int(site_num),
                                  is_pass=is_pass == Result.Pass(), param_flag=0, measurement=measurement,
                                  test_txt=self._get_PTR_test_name(), alarm_id='', l_limit=l_limit, u_limit=u_limit,
@@ -117,9 +117,10 @@ class OutputParameter:
 
         ll, ul = self._get_limits()
         if self._measurement is None:
-            raise Exception(f'no measured value is availabe for test parameter "{self._get_PTR_test_name()}"')
+            raise Exception(f'no measured value is available for test parameter "{self._get_PTR_test_name()}"')
 
-        if np.isnan(ll) and np.isnan(ul):
+        import math
+        if math.isnan(ll) and math.isnan(ul):
             return (Result.Pass(), 1)
 
         fail_result = -1
@@ -136,16 +137,17 @@ class OutputParameter:
             return (Result.Fail(), fail_result)
 
     def _get_limits(self):
-        ll, ul = -np.Inf, np.Inf
+        import math
+        ll, ul = -math.inf, math.inf
         lls = [self._ltl, self._lsl]
         uls = [self._utl, self._usl]
         try:
-            ll = [limit for limit in lls if not np.isnan(limit) and not np.isneginf(limit)][0]
+            ll = [limit for limit in lls if not math.isnan(limit) and math.isfinite(limit)][0]
         except IndexError:
             pass
 
         try:
-            ul = [limit for limit in uls if not np.isnan(limit) and not np.isposinf(limit)][0]
+            ul = [limit for limit in uls if not math.isnan(limit) and math.isfinite(limit)][0]
         except IndexError:
             pass
 

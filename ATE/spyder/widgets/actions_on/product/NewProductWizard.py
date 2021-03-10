@@ -32,6 +32,9 @@ class NewProductWizard(BaseDialog):
 
         self._update_device_list()
 
+        quality_grade = self.project_info.get_default_quality_grade()
+        self.qualityGrade.setCurrentText(quality_grade)
+
         rxProductName = QtCore.QRegExp(valid_product_name_regex)
         ProductName_validator = QtGui.QRegExpValidator(rxProductName, self)
         self.ProductName.setText("")
@@ -158,7 +161,7 @@ class NewProductWizard(BaseDialog):
         at the parent level is also changed and that the new device list
         (for the new hardware) is loaded.
         '''
-        self.project_info_parent.hardware_activated.emit(hardware)
+        self.project_info.parent.hardware_activated.emit(hardware)
         self._update_device_list()
 
     def _verify(self):
@@ -212,7 +215,7 @@ class NewProductWizard(BaseDialog):
         return {'name': self.ProductName.text(),
                 'device': self.FromDevice.currentText(),
                 'hardware': self.WithHardware.currentText(),
-                'quality': self.productQuality.currentText(),
+                'quality': self.qualityGrade.currentText(),
                 'grade': grade,
                 'grade_reference': grade_reference,
                 'type': self.Type.currentText(),

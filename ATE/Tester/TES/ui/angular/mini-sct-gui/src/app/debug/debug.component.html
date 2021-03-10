@@ -1,14 +1,8 @@
-<hr class="rounded" id="debugArea">
-<div class="row">
-  <div class="side">
-    <h2>Debug Area</h2>
-  </div>
-  <div class="main">
-    <label for="systemState"><h3>Change Webview:</h3></label>
-
-    <select #messageType name="systemState" id="systemState" size="10" (change)="sendMockMessage(messageType.value)">
-      <option id="op1">Select Webview:</option>
-      <option *ngFor="let state of STATES" [value]="state.value">{{state.description}}</option>
-    </select>
-  </div>
-</div>
+<app-card [cardConfiguration]="captionCardConfiguration">
+  <app-card class="mockdataCard" [cardConfiguration]="mockdataCardConfiguration">
+    <app-dropdown
+      [dropdownConfig]="mockdataDropdownConfig"
+      (dropdownChangeEvent)="sendMockMessage($event)">
+  </app-dropdown>
+  </app-card>
+</app-card>

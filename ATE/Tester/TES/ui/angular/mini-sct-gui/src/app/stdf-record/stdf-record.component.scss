@@ -2,6 +2,8 @@
 .stdfRecord {
   padding-right: 10px;
   width: 360px;
+  max-height: 440px;
+  overflow: auto;
 }
 
 .stdfRecordType {
@@ -24,7 +26,6 @@
   margin-top: 10px;
   padding-right: 15px;
   overflow-y: auto;
-  max-height: 380px;
   padding-top: 0;
   padding-left: 10px;
   padding-right: 15px;

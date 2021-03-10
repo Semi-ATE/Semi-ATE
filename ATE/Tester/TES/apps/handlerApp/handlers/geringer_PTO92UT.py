@@ -23,12 +23,12 @@ class TesterStateTypes(Enum):
         return self.value
 
 
-AVAILABE_STATUS = {'-99': 'command not implemented',
-                   '-64': 'unrecoverable error',
-                   '-10': 'checksum error',
-                   '-1': 'error',
-                   '1': 'busy',
-                   '0': 'ok'}
+AVAILABLE_STATUS = {'-99': 'command not implemented',
+                    '-64': 'unrecoverable error',
+                    '-10': 'checksum error',
+                    '-1': 'error',
+                    '1': 'busy',
+                    '0': 'ok'}
 
 RESPONSE_MESSAGE = {'notlot': (TesterStateTypes.NoLot(), 'No Lot was Started'),
                     'havelot': (TesterStateTypes.Lot(), 'Lot is Already Active'),
@@ -201,7 +201,7 @@ class Geringer(HandlerBase):
     @staticmethod
     def _handle_state(data):
         try:
-            status_info = AVAILABE_STATUS[data[1]]
+            status_info = AVAILABLE_STATUS[data[1]]
         except KeyError:
             status_info = 'no status available'
 

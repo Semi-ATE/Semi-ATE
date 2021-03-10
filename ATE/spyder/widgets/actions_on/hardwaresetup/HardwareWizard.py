@@ -52,6 +52,14 @@ class HardwareWizard(BaseDialog):
         self.hardware.setEnabled(False)
 
         self.probecardLink.setDisabled(True)
+
+    # Testers
+        for tester_list in self._plugin_manager.hook.get_tester_names():
+            for tester_type in tester_list:
+                self._availableTesters[tester_type["display_name"]] = tester_type["name"]
+                self.tester.addItem(tester_type["display_name"])
+        self.tester.setCurrentIndex(0)
+
     # PCBs
         rxPCBName = QtCore.QRegExp(valid_pcb_name_regex)
         PCBName_validator = QtGui.QRegExpValidator(rxPCBName, self)
@@ -75,7 +83,7 @@ class HardwareWizard(BaseDialog):
         self.multisiteDIB.setValidator(PCBName_validator)
         self.multisiteDIB.setDisabled(True)
 
-        self.maxParallelism.setCurrentText('1')
+        self._set_parallelism_sites_count()
 
     # Instruments
         # At this point instruments will be displayed as a plain list
@@ -93,15 +101,6 @@ class HardwareWizard(BaseDialog):
         for gpfunction_list in gpfunction_lists:
             for gpfunction in gpfunction_list:
                 self._append_gpfunction_to_manufacturer(gpfunction)
-
-    # Testers
-        self.tester.clear()
-        for tester_list in self._plugin_manager.hook.get_tester_names():
-            for tester_type in tester_list:
-                self.tester.addItem(tester_type["display_name"])
-                self._availableTesters[self.tester.count() - 1] = tester_type["name"]
-
-        self.tester.setCurrentText('')
 
     # Parallelism
         self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
@@ -443,7 +442,10 @@ class HardwareWizard(BaseDialog):
         self.feedback.setText('')
         self.OKButton.setEnabled(False)
 
-        if self._max_parallelism_value == 1:
+        if self.tester.currentIndex() < 0:
+            self.feedback.setTest("no tester selected")
+
+        elif self._max_parallelism_value == 1:
             if not self._single_site_loadboard_value:
                 self.feedback.setText("no singlesite_loadboard is specified")
 
@@ -461,16 +463,13 @@ class HardwareWizard(BaseDialog):
                 self.feedback.setText("no singlesite_Probecard is specified ")
 
             if self._single_site_loadboard_value == self._multi_site_loadboard_value:
-                self.feedback.setText("single- and multisiteloadboad could not habe same name")
+                self.feedback.setText("single- and multisiteloadboad could not have the same name")
 
             if not self._multi_site_loadboard_value:
                 self.feedback.setText("no multisite_loadboard is specified")
 
             if not self._single_site_loadboard_value:
                 self.feedback.setText("no singlesite_loadboard is specified")
-
-            if self.tester.currentIndex() < 0:
-                self.feedback.setTest("no tester selected")
 
             # TODO: do we need to check this case
             # if self._single_site_dib_value == self._single_site_dib_value:
@@ -608,7 +607,7 @@ class HardwareWizard(BaseDialog):
     def _get_current_configuration(self):
         testername = ""
         if self.tester.currentIndex() >= 0:
-            testername = self._availableTesters[self.tester.currentIndex()]
+            testername = self._availableTesters[self.tester.currentText()]
 
         return {'hardware': self.hardware.text(),
                 'PCB':
@@ -629,7 +628,21 @@ class HardwareWizard(BaseDialog):
 
 # instruments
     def testerChanged(self, new_tester):
-        print(f"testerChanged to '{new_tester}'")
+        self._set_parallelism_sites_count()
+
+    def _set_parallelism_sites_count(self):
+        if not self._availableTesters:
+            return
+        selected_name = self._availableTesters[self.tester.currentText()]
+        selected_tester = self._plugin_manager.hook.get_tester(tester_name=selected_name)[0]
+        tester_sites_count = selected_tester.get_sites_count()
+
+        sites = [str(site + 1) for site in range(tester_sites_count)]
+        self.maxParallelism.blockSignals(True)
+        self.maxParallelism.clear()
+        self.maxParallelism.addItems(sites)
+        self.maxParallelism.setCurrentIndex(0)
+        self.maxParallelism.blockSignals(False)
 
     def availableInstrumentsSelectionChanged(self):
         print("available Instruments selection changed")
@@ -731,9 +744,9 @@ class HardwareWizard(BaseDialog):
         print("check Actuator Usage")
 
     def select_tester(self, tester_name):
-        for (index, available_tester_name) in self._availableTesters.items():
+        for (display_name, available_tester_name) in self._availableTesters.items():
             if available_tester_name == tester_name:
-                self.tester.setCurrentIndex(index)
+                self.tester.setCurrentText(display_name)
                 return
 
     def _store_plugin_configuration(self):

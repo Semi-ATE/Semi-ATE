@@ -1,10 +1,11 @@
-from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 import os
+from ATE.spyder.widgets.navigation import ProjectNavigation
+from ATE.spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 
 
 class ViewTestProgramWizard(TestProgramWizard):
-    def __init__(self, name, project_info, owner):
-        super().__init__(project_info, owner, read_only=True, enable_edit=False)
+    def __init__(self, name: str, project_info: ProjectNavigation, owner: str, parent: str):
+        super().__init__(project_info, owner, parent=parent, read_only=True, enable_edit=False)
         self._setup_view()
         ViewTestProgramWizard.setup_view(self, name)
 
@@ -16,7 +17,6 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.hardware.setEnabled(False)
         self.base.setEnabled(False)
         self.target.setEnabled(False)
-        self.usertext.setEnabled(False)
         self.sequencerType.setEnabled(False)
         self.temperature.setEnabled(False)
         self.sample.setEnabled(False)
@@ -29,9 +29,10 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.testAdd.setEnabled(False)
         self.testRemove.setEnabled(False)
         self.binning_tree.setEnabled(False)
+        self.user_name.setEnabled(False)
 
     @staticmethod
-    def setup_view(dialog: TestProgramWizard, name):
+    def setup_view(dialog: TestProgramWizard, name: str):
         configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
         dialog._custom_parameter_handler.set_test_num_ranges(configuration['test_ranges'])
         # TODO: can we edit any of the following property
@@ -41,13 +42,14 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog.hardware.setEnabled(False)
         dialog.base.setEnabled(False)
         dialog.target.setEnabled(False)
+        dialog.user_name.setEnabled(False)
         dialog.sequencerType.setEnabled(False)
 
         dialog.hardware.addItem(configuration['hardware'])
         dialog.base.addItem(configuration['base'])
         dialog.target.addItem(configuration['target'])
-        dialog.usertext.setText(configuration['usertext'])
         dialog.cacheType.setCurrentText(configuration['cache_type'])
+        dialog.user_name.setText(configuration['usertext'])
 
         dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
         dialog._update_selected_test_list()
@@ -78,7 +80,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.accept()
 
 
-def view_program_dialog(name, project_info, owner):
-    testProgramWizard = ViewTestProgramWizard(name, project_info, owner)
+def view_program_dialog(name, project_info, owner, parent):
+    testProgramWizard = ViewTestProgramWizard(name, project_info, owner, parent)
     testProgramWizard.exec_()
     del(testProgramWizard)

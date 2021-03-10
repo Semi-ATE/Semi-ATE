@@ -23,7 +23,7 @@ class MigratorBase(ABC):
     @staticmethod
     def write_configuration(file_name: str, configuration: dict):
         with open(file_name, 'w') as f:
-            json.dump(configuration, f, indent=4)
+            json.dump(configuration, f, indent=2)
 
     @staticmethod
     def read_configuration(file_name: str) -> dict:

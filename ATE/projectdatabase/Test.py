@@ -11,7 +11,7 @@ class Test:
                       .one()
 
     @staticmethod
-    def get_all(session: FileOperator, hardware: str, base: str, test_type: str) -> list:
+    def get_for_hw_base_test_typ(session: FileOperator, hardware: str, base: str, test_type: str) -> list:
         if test_type != 'all':
             return session.query(Types.Test())\
                           .filter(lambda Test: (Test.base == base and Test.hardware == hardware and Test.type == test_type))\
@@ -22,9 +22,14 @@ class Test:
                           .all()
 
     @staticmethod
-    def remove(session: FileOperator, name: str):
+    def get_all(session: FileOperator) -> list:
+        return session.query(Types.Test())\
+                      .all()
+
+    @staticmethod
+    def remove(session: FileOperator, name: str, hardware: str, base: str):
         session.query(Types.Test())\
-               .filter(lambda Test: Test.name == name)\
+               .filter(lambda Test: Test.name == name and Test.hardware == hardware and Test.base == base)\
                .delete()
         session.commit()
 

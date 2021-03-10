@@ -1,4 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { StoreModule } from '@ngrx/store';
+import { statusReducer } from 'src/app/reducers/status.reducer';
+import { SiteBinInformationComponent } from 'src/app/site-bin-information/site-bin-information.component';
 
 import { FooterComponent } from './footer.component';
 
@@ -8,7 +11,12 @@ describe('FooterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FooterComponent ]
+      declarations: [ FooterComponent, SiteBinInformationComponent ],
+      imports: [
+        StoreModule.forRoot({
+          systemStatus: statusReducer
+        })
+      ]
     })
     .compileComponents();
   }));

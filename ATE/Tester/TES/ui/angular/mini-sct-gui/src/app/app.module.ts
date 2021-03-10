@@ -48,7 +48,9 @@ import { MultichoiceComponent } from './basic-ui-elements/multichoice/multichoic
 import { SystemHandlingComponent } from './system-control/system-handling/system-handling/system-handling.component';
 import { LotDataComponent } from './lot-data/lot-data.component';
 import { lotdataReducer } from './reducers/lotdata.reducer';
-
+import { ModalDialogComponent } from './modal-dialog/modal-dialog.component';
+import { BinTableComponent } from './bin-table/bin-table.component';
+import { binReducer } from './reducers/bintable.reducer';
 @NgModule({
   declarations: [
     AppComponent,
@@ -84,7 +86,9 @@ import { lotdataReducer } from './reducers/lotdata.reducer';
     YieldComponent,
     MultichoiceComponent,
     SystemHandlingComponent,
-    LotDataComponent
+    LotDataComponent,
+    ModalDialogComponent,
+    BinTableComponent
   ],
   imports: [
     BrowserModule,
@@ -96,7 +100,8 @@ import { lotdataReducer } from './reducers/lotdata.reducer';
       userSettings: userSettingsReducer, // key must be equal to the key defined in interface AppState, i.e. userSettings
       connectionId: connectionIdReducer, // key must be equal to the key defined in interface AppState, i.e. connectionId
       yield: yieldReducer,
-      lotData: lotdataReducer
+      lotData: lotdataReducer,
+      binTable: binReducer
     }),
     RouterModule.forRoot(MINISCT_ROUTES)
   ],

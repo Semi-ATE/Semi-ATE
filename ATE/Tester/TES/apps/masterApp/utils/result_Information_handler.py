@@ -2,13 +2,17 @@ from ATE.Tester.TES.apps.masterApp.utils.bin_information import BinInformationHa
 from ATE.spyder.widgets.actions_on.program.Binning.Utils import BinTableFieldName
 from ATE.Tester.TES.apps.masterApp.utils.part_information import PartInformationHandler
 from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
+from ATE.Tester.TES.apps.masterApp.utils.table_information import BinTableInformationHandler
+
+REQUIRED_FIELDS = ['HEAD_NUM', 'SITE_NUM', 'HARD_BIN', 'SOFT_BIN', 'PART_ID', 'PART_RETEST', 'PART_FLG']
 
 
 class ResultInformationHandler:
-    def __init__(self, sites_id):
+    def __init__(self, sites_id: list):
         self._yield_info_handler = YieldInformationHandler()
         self._part_info_handler = PartInformationHandler()
         self._site_info_handler = BinInformationHandler(sites_id)
+        self._bin_table_info_handler = BinTableInformationHandler(sites_id)
         self.prr_rec_information = {}
 
     def handle_result(self, prr_record: dict):
@@ -20,16 +24,22 @@ class ResultInformationHandler:
         # add 'PART_RETEST' field to count part retest commands
         if not self.prr_rec_information.get(part_id):
             prr_record['PART_RETEST'] = 0
-            self.prr_rec_information[part_id] = prr_record
+            self.prr_rec_information[part_id] = self._extract_needed_fields(prr_record)
             message_handle_result = self._yield_info_handler._accumulate_site_bin_info(site_num, soft_bin)
+            self._bin_table_info_handler.accumulate_bin_table_info(site_num, soft_bin)
         else:
             old_prr_rec = self.prr_rec_information[part_id]
             part_count = old_prr_rec['PART_RETEST']
             prr_record['PART_RETEST'] = part_count + 1
             self.prr_rec_information.update({part_id: prr_record})
             message_handle_result = self._yield_info_handler._reaccumulate_bin_info(self.prr_rec_information)
+            self._bin_table_info_handler.reaccumulate_bin_table_info(self.prr_rec_information)
 
         return message_handle_result
+
+    @staticmethod
+    def _extract_needed_fields(prr: dict):
+        return {field_name: prr[field_name] for field_name in REQUIRED_FIELDS}
 
     @staticmethod
     def _get_part_id(prr_record: dict):
@@ -51,6 +61,7 @@ class ResultInformationHandler:
         self._site_info_handler.set_sites_information(bin_table)
         self._yield_info_handler.set_bin_settings(bin_settings)
         self._part_info_handler.set_bin_settings(bin_settings)
+        self._bin_table_info_handler.set_bin_table(bin_table)
 
     @staticmethod
     def get_bin_settings(bin_table: list) -> dict:
@@ -66,6 +77,7 @@ class ResultInformationHandler:
         self._yield_info_handler.clear_yield_information()
         self._part_info_handler.clear_part_information()
         self._site_info_handler.clear_site_information()
+        self._bin_table_info_handler.clear_bin_table()
         self.prr_rec_information.clear()
 
     def get_site_result_response(self, prr_record: dict) -> dict:
@@ -82,3 +94,6 @@ class ResultInformationHandler:
 
     def get_part_count_infos(self) -> dict:
         return self._part_info_handler.get_part_count_infos(self.prr_rec_information)
+
+    def get_bin_table(self) -> list:
+        return self._bin_table_info_handler.get_bin_table_infos()

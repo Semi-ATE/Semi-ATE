@@ -3,63 +3,57 @@ Created on Nov 18, 2019
 
 @author: hoeren
 '''
-import os
-
 import qtawesome as qta
 from PyQt5 import QtCore
-from PyQt5 import QtWidgets
-from PyQt5 import uic
+
+from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.navigation import ProjectNavigation
 
 
-class ProjectWizard(QtWidgets.QDialog):
+class ProjectWizard(BaseDialog):
 
-    def __init__(self, parent, project_name, title):
-        super().__init__(parent)
+    def __init__(self, project_info: ProjectNavigation):
+        super().__init__(__file__, project_info.parent)
+        self.project_info = project_info
+        self._setup_ui()
 
-        my_ui = __file__.replace('.py', '.ui')
-        if not os.path.exists(my_ui):
-            raise Exception("can not find %s" % my_ui)
-        uic.loadUi(my_ui, self)
+    def _setup_ui(self):
+        self.ProjectName.setText(self.project_info.project_name)
+        self.ProjectName.setDisabled(True)
 
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-        self.setWindowTitle(title)
+        self.qualityGrade.setCurrentText("")
 
+        # Revisioning QGroupBox
         self.browseRepository.setIcon(qta.icon('mdi.search-web', color='orange'))
         self.browseRepository.setEnabled(True)
 
         self.userName.setPlaceholderText("")
-
-        self.ProjectName.setText(project_name)
-        self.ProjectName.setDisabled(True)
+        # end Revisioning
 
         self.Feedback.setStyleSheet('color: orange')
 
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
 
-        self.show()
+    def _get_current_configuration(self):
+        return {
+            'quality_grade': self.qualityGrade.currentText()
+        }
 
+    @QtCore.pyqtSlot()
     def OKButtonPressed(self):
+        configuration = self._get_current_configuration()
+        self.project_info.add_settings(
+            quality_grade=configuration['quality_grade']
+        )
         self.accept()
 
+    @QtCore.pyqtSlot()
     def CancelButtonPressed(self):
         self.reject()
 
 
-def NewProjectDialog(parent, project_name):
-    """This dialog is called when we want to create a new project"""
-    retval = {}
-    newProjectWizard = ProjectWizard(parent, project_name, 'New ATE Project Wizard')
-    if newProjectWizard.exec_():  # OK button pressed
-        status = True
-        retval['quality'] = ''
-    else:  # Cancel button pressed
-        status = False
-        retval['quality'] = ''
+def new_project_dialog(project_info):
+    newProjectWizard = ProjectWizard(project_info)
+    newProjectWizard.exec_()
     del(newProjectWizard)
-    return status, retval
-
-
-def EditProjectDialog(parent, navigator):
-    """This dialog is called when we want to edit the project "quality" (name can not be edited)"""
-    pass

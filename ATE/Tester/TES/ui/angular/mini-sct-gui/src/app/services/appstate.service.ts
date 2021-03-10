@@ -10,6 +10,7 @@ import * as UserSettingsActions from './../actions/usersettings.actions';
 import * as ConnectionIdActions from './../actions/connectionid.actions';
 import * as YieldActions from './../actions/yield.actions';
 import * as LotDataActions from './../actions/lotdata.actions';
+import * as BinTableActions from '../actions/bintable.actions';
 import { ConsoleEntry } from '../models/console.model';
 import { StdfRecord, StdfRecordType, StdfRecordPropertyValue, PrrRecord, STDF_MIR_ATTRIBUTES, MirRecord } from 'src/app/stdf/stdf-stuff';
 import { Subject, Subscription } from 'rxjs';
@@ -27,7 +28,8 @@ export enum MessageTypes {
   Logfile = 'logfile',
   ConnectionId = 'connectionid',
   Yield = 'yield',
-  Lotdata = 'lotdata'
+  Lotdata = 'lotdata',
+  BinTable = 'bintable'
 }
 
 @Injectable({
@@ -39,6 +41,10 @@ export class AppstateService implements OnDestroy {
   newRecordReceived$: Subject<StdfRecord[]>;
   stdfRecords: Array<StdfRecord[]>;
   systemTime: string;
+  showModalDialog$: Subject<number>;
+  private readonly messageTypesUsedByModalDialogs = ['error', 'warning'];
+  private numberOfReceivedLogdataServerMessages: number;
+  private serverMessageOrderIdCounter: number;
   private readonly subscriptionCommunication: Subscription;
 
   constructor(private readonly _communicationService: CommunicationService, private readonly store: Store<AppState>) {
@@ -46,15 +52,25 @@ export class AppstateService implements OnDestroy {
     this.newRecordReceived$ = new Subject<StdfRecord[]>();
     this.rebuildRecords$ = new Subject<boolean>();
     this.subscriptionCommunication = this._communicationService.message.subscribe(msg => this.handleServerMessage(msg));
+    this.numberOfReceivedLogdataServerMessages = 0;
+    this.serverMessageOrderIdCounter = 1;
+    this.showModalDialog$ = new Subject<number>();
   }
 
   ngOnDestroy(): void {
     this.subscriptionCommunication.unsubscribe();
+    this.newRecordReceived$.complete();
+    this.rebuildRecords$.complete();
+    this.showModalDialog$.complete();
   }
 
   clearStdfRecords(): void {
     this.stdfRecords = [];
     this.rebuildRecords$.next(true);
+  }
+
+  resetDialogMechanism(): void {
+    this.numberOfReceivedLogdataServerMessages = 0;
   }
 
   private handleServerMessage(serverMessage: any) {
@@ -67,6 +83,7 @@ export class AppstateService implements OnDestroy {
     this.updateConnectionId(serverMessage);
     this.updateYield(serverMessage);
     this.updateLotData(serverMessage);
+    this.updateBinTable(serverMessage);
   }
 
   private updateSystemStatus(serverMessage: any) {
@@ -152,12 +169,26 @@ export class AppstateService implements OnDestroy {
             description: e.description,
             date: e.date,
             type: e.type,
-            source: e.source
+            source: e.source,
+            orderMessageId: this.serverMessageOrderIdCounter
           });
+          this.serverMessageOrderIdCounter++;
         }
       );
       this.store.dispatch(ConsoleActions.addConsoleEntry({entries: entriesToAdd}));
+      this.updateModalDialog(entriesToAdd);
     }
+  }
+
+  private updateModalDialog(newEntries: ConsoleEntry[]): void {
+    if (this.numberOfReceivedLogdataServerMessages > 0) {
+      const errorAndWarnings = newEntries.filter(
+        e => this.messageTypesUsedByModalDialogs.includes(e.type.trim().toLowerCase()));
+      if (errorAndWarnings.length > 0) {
+        this.showModalDialog$.next(errorAndWarnings[errorAndWarnings.length - 1].orderMessageId);
+      }
+    }
+    this.numberOfReceivedLogdataServerMessages++;
   }
 
   private updateUserSettings(serverMessage: any) {
@@ -217,6 +248,12 @@ export class AppstateService implements OnDestroy {
         }
       });
       this.store.dispatch(LotDataActions.updateLotData({lotData: mir}));
+    }
+  }
+
+  private updateBinTable(serverMessage: any): void {
+    if (serverMessage.type === MessageTypes.BinTable && serverMessage.payload) {
+      this.store.dispatch(BinTableActions.updateTable({binData: serverMessage.payload}));
     }
   }
 }

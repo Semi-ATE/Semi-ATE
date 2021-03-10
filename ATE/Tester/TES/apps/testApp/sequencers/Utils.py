@@ -1,4 +1,4 @@
-from ATE.data.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR)
+from Semi_ATE.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR)
 
 ENDIAN = '<'
 

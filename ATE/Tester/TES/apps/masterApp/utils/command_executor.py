@@ -74,3 +74,11 @@ class GetLotData(NonBlockingCommand):
 
     def acquire_data_impl(self, get_lotdata_call_back: callable):
         self._reply = get_lotdata_call_back()
+
+
+class GetBinTable(NonBlockingCommand):
+    async def execute(self, ws_comm_handler: WebsocketCommunicationHandler):
+        await ws_comm_handler.send_bin_table(self._reply)
+
+    def acquire_data_impl(self, get_lotdata_call_back: callable):
+        self._reply = get_lotdata_call_back()

@@ -36,6 +36,7 @@ import { YieldComponent } from './yield/yield.component';
 import { yieldReducer } from './reducers/yield.reducer';
 import { LotDataComponent } from './lot-data/lot-data.component';
 import { lotdataReducer } from './reducers/lotdata.reducer';
+import { ModalDialogComponent } from './modal-dialog/modal-dialog.component';
 
 describe('AppComponent', () => {
   let mockServer: Server;
@@ -66,7 +67,8 @@ describe('AppComponent', () => {
         SystemBinStatusComponent,
         SiteBinInformationComponent,
         YieldComponent,
-        LotDataComponent
+        LotDataComponent,
+        ModalDialogComponent
       ],
       providers: [
         WebsocketService,

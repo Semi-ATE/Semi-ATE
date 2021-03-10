@@ -18,6 +18,7 @@ import { YieldComponent } from './yield.component';
 import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
 import { YieldSetting } from '../models/storage.model';
 import { StorageMap } from '@ngx-pwa/local-storage';
+import { getSiteName } from '../stdf/stdf-stuff';
 
 describe('YieldComponent', () => {
   let component: YieldComponent;
@@ -207,28 +208,28 @@ describe('YieldComponent', () => {
 
   describe('getSiteName', () => {
     it('should map numbers between 0 and 15 to letter, i.e. 0 maps to letter "A"', () => {
-      expect((component as any).getSiteName(0)).toBe('A');
-      expect((component as any).getSiteName(1)).toBe('B');
-      expect((component as any).getSiteName(2)).toBe('C');
-      expect((component as any).getSiteName(3)).toBe('D');
-      expect((component as any).getSiteName(4)).toBe('E');
-      expect((component as any).getSiteName(5)).toBe('F');
-      expect((component as any).getSiteName(6)).toBe('G');
-      expect((component as any).getSiteName(7)).toBe('H');
-      expect((component as any).getSiteName(8)).toBe('I');
-      expect((component as any).getSiteName(9)).toBe('J');
-      expect((component as any).getSiteName(10)).toBe('K');
-      expect((component as any).getSiteName(11)).toBe('L');
-      expect((component as any).getSiteName(12)).toBe('M');
-      expect((component as any).getSiteName(13)).toBe('N');
-      expect((component as any).getSiteName(14)).toBe('O');
-      expect((component as any).getSiteName(15)).toBe('P');
+      expect(getSiteName(0)).toBe('A');
+      expect(getSiteName(1)).toBe('B');
+      expect(getSiteName(2)).toBe('C');
+      expect(getSiteName(3)).toBe('D');
+      expect(getSiteName(4)).toBe('E');
+      expect(getSiteName(5)).toBe('F');
+      expect(getSiteName(6)).toBe('G');
+      expect(getSiteName(7)).toBe('H');
+      expect(getSiteName(8)).toBe('I');
+      expect(getSiteName(9)).toBe('J');
+      expect(getSiteName(10)).toBe('K');
+      expect(getSiteName(11)).toBe('L');
+      expect(getSiteName(12)).toBe('M');
+      expect(getSiteName(13)).toBe('N');
+      expect(getSiteName(14)).toBe('O');
+      expect(getSiteName(15)).toBe('P');
     });
 
     it('should map numbers greater than 15 to "unknown"', () => {
-      expect((component as any).getSiteName(16)).toBe('unknown');
-      expect((component as any).getSiteName(100)).toBe('unknown');
-      expect((component as any).getSiteName(1234)).toBe('unknown');
+      expect(getSiteName(16)).toBe('unknown');
+      expect(getSiteName(100)).toBe('unknown');
+      expect(getSiteName(1234)).toBe('unknown');
     });
   });
 });

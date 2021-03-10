@@ -1,6 +1,8 @@
 <div id="fixedFooter">
   <hr class="blueDivider">
   <div class="footer">
-    <h2>Footer</h2>
+    <div *ngFor="let site of (status$ | async).sites; let idx = index">
+      <app-site-bin-information [siteNumber]=idx [siteName]=site [styleForFooter]=true></app-site-bin-information>
+    </div>
   </div>
 </div>

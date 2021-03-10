@@ -18,6 +18,11 @@ class TestTarget:
                       .one()
 
     @staticmethod
+    def get_all(session: FileOperator):
+        return session.query(Types.Testtarget())\
+                      .all()
+
+    @staticmethod
     def get_tests(session: FileOperator, hardware: str, base: str, test_target: str) -> list:
         return session.query(Types.Testtarget())\
                       .filter(lambda TestTarget: (TestTarget.name == test_target and TestTarget.hardware == hardware and TestTarget.base == base))\
@@ -36,9 +41,9 @@ class TestTarget:
                       .all()
 
     @staticmethod
-    def get_for_test(session: FileOperator, test_name: str) -> list:
+    def get_for_test(session: FileOperator, test_name: str, hardware: str, base: str) -> list:
         return session.query(Types.Testtarget())\
-                      .filter(lambda TestTarget: TestTarget.test == test_name)\
+                      .filter(lambda TestTarget: TestTarget.test == test_name and TestTarget.hardware == hardware and TestTarget.base == base)\
                       .all()
 
     @staticmethod

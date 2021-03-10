@@ -1,5 +1,3 @@
-qdarkstyle
-watchdog
 numpy
 Jinja2
 paho-mqtt
@@ -12,6 +10,6 @@ hypothesis
 aiohttp
 aiomqtt
 pyqt
-qtawesome
 pyserial
 tqdm
+qtawesome=0.7.2

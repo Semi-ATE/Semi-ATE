@@ -277,7 +277,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Quality :</string>
+          <string>Quality grade:</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -285,7 +285,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="productQuality">
+        <widget class="QComboBox" name="qualityGrade">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>

@@ -56,6 +56,7 @@ export function spyOnStoreArguments(object: any, method: string, args: Array<any
   // tslint:disable:only-arrow-functions
   return spyOn<any>(object, method).and.callFake(function() {
     let idx = 0;
+    args.splice(0, args.length);
     while(arguments[idx]) {
       args.push(arguments[idx]);
       idx++;

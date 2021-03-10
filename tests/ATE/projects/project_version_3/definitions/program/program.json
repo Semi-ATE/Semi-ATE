@@ -1,0 +1,76 @@
+[
+  {
+    "id": "17ac447e-7392-11eb-a74f-4cedfb445f8f",
+    "prog_name": "project_version_3_HW0_PR_adf_checker_check1",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "adf",
+    "usertext": "check1",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_adf_checker",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100,
+      200
+    ]
+  },
+  {
+    "id": "182ae58c-7397-11eb-b0e1-4cedfb445f8f",
+    "prog_name": "project_version_3_HW0_FT_a_qualification_LU_lazy",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "a",
+    "usertext": "lazy",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_a_qualification_LU",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100,
+      200
+    ]
+  },
+  {
+    "id": "3fe0ff92-7397-11eb-86b2-4cedfb445f8f",
+    "prog_name": "project_version_3_HW0_FT_a_maintenance_lazyme",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "a",
+    "usertext": "lazyme",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_a_maintenance",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100
+    ]
+  },
+  {
+    "id": "133c4276-7399-11eb-985f-4cedfb445f8f",
+    "prog_name": "project_version_3_HW0_PR_adf_checker_asd",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "adf",
+    "usertext": "asd",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_adf_checker",
+    "prog_order": 2,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100
+    ]
+  }
+]

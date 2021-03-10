@@ -78,10 +78,22 @@ class Program:
         prog.prog_order = order
         session.commit()
 
+    def update_program_order(session: FileOperator, program_name: str, owner_name: str, order: int):
+        program = session.query(Types.Program())\
+                         .filter(lambda Program: Program.prog_name == program_name and Program.owner_name == owner_name)\
+                         .one()
+        program.prog_order = order
+        session.commit()
+
     @staticmethod
     def get_programs_for_owner(session: FileOperator, owner_name: str) -> list:
         return session.query(Types.Program())\
                       .filter(lambda Program: Program.owner_name == owner_name).sort(lambda Program: Program.prog_order)\
+                      .all()
+
+    @staticmethod
+    def get_all(session: FileOperator) -> list:
+        return session.query(Types.Program())\
                       .all()
 
     @staticmethod

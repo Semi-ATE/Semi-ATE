@@ -11,11 +11,12 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.validation import valid_die_name_regex
 
 
 class DieWizard(BaseDialog):
-    def __init__(self, project_info, read_only=False):
+    def __init__(self, project_info: ProjectNavigation, read_only: bool = False):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
         self.read_only = read_only
@@ -43,6 +44,9 @@ class DieWizard(BaseDialog):
         self.fromMaskset.addItems(self.existing_masksets)
         current_maskset = '' if len(self.existing_masksets) == 0 else self.existing_masksets[0]
         self.fromMaskset.setCurrentText(current_maskset)
+
+        quality_grade = self.project_info.get_default_quality_grade()
+        self.qualityGrade.setCurrentText(quality_grade)
 
         self.Type.setCurrentText('ASSP')
         self.isAGrade.setChecked(True)
@@ -237,7 +241,7 @@ class DieWizard(BaseDialog):
         return {'name': self.dieName.text(),
                 'hardware': self.withHardware.currentText(),
                 'maskset': self.fromMaskset.currentText(),
-                'quality': self.quality.currentText(),
+                'quality': self.qualityGrade.currentText(),
                 'grade': grade,
                 'grade_reference': grade_reference,
                 'type': self.Type.currentText(),

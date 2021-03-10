@@ -8,7 +8,7 @@
   padding: 3px;
   height: auto;
   min-width: 85px;
-  margin: 0px 1px 1px 0px;
+  margin: 0px 5px 5px 0px;
   z-index: -5;
 }
 
@@ -29,4 +29,12 @@ p span{
   & > .defaultStyle {
     background-color: #aaa;
   }
+}
+
+.styleForFooter {
+  .partIdLabel, .testHeadLabel, .siteLabel, .passFailText {
+    display: none;
+  }
+  font-size: $text;
+  margin: 5px;
 }

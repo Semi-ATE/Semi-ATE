@@ -7,13 +7,13 @@ import os
 
 from tqdm import tqdm
 
-from ATE.data import STDF
-from ATE.data.STDF.utils import endian_and_version_from_file
-from ATE.data.STDF.utils import is_STDF
-from ATE.data.STDF.utils import records_from_file
-from ATE.data.STDF.utils import STDFError
-from ATE.data.STDF.utils import TS_from_record
-from ATE.data.STDF.utils import ts_to_id
+import STDF
+from Semi_ATE.STDF.utils import endian_and_version_from_file
+from Semi_ATE.STDF.utils import is_STDF
+from Semi_ATE.STDF.utils import records_from_file
+from Semi_ATE.STDF.utils import STDFError
+from Semi_ATE.STDF.utils import TS_from_record
+from Semi_ATE.STDF.utils import ts_to_id
 from ATE.utils.compression import get_deflated_file_size
 
 

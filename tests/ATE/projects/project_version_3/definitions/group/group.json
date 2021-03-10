@@ -1,0 +1,74 @@
+[
+  {
+    "name": "tests",
+    "is_active": false,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "checker",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_3_HW0_PR_adf_checker_check1",
+      "project_version_3_HW0_PR_adf_checker_asd"
+    ],
+    "tests": [
+      "asdf",
+      "ad"
+    ]
+  },
+  {
+    "name": "maintenance",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_3_HW0_FT_a_maintenance_main",
+      "project_version_3_HW0_FT_a_maintenance_lazyme"
+    ],
+    "tests": [
+      "abc",
+      "iddq"
+    ]
+  },
+  {
+    "name": "production",
+    "is_active": false,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "engineering",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "validation",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": [
+      "df"
+    ]
+  },
+  {
+    "name": "quality",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "qualification",
+    "is_active": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_3_HW0_FT_a_qualification_LU_lazy"
+    ],
+    "tests": []
+  }
+]

@@ -1,7 +1,6 @@
 """ master App """
 
 # External imports
-from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import ResultInformationHandler
 from aiohttp import web
 from transitions.core import MachineError
 from transitions.extensions import HierarchicalMachine as Machine
@@ -19,10 +18,11 @@ from ATE.Tester.TES.apps.masterApp.master_connection_handler import MasterConnec
 from ATE.Tester.TES.apps.masterApp.master_webservice import webservice_setup_app
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
-from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings, GetYields)
+from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings, GetYields, GetBinTable)
 
 from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
 from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler import ResultsCollector
+from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import ResultInformationHandler
 
 from ATE.Tester.TES.apps.masterApp.peripheral_controller import PeripheralController
 
@@ -160,6 +160,7 @@ class MasterApplication(MultiSiteTestingModel):
 
         self.prev_state = ''
         self.summary_counter = 0
+        self.tsr_messages = []
         self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
@@ -367,6 +368,8 @@ class MasterApplication(MultiSiteTestingModel):
         self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(self._test_program_data))
         self._store_user_settings(UserSettings.get_defaults())
 
+        self.command_queue.put_nowait(GetBinTable(lambda: self._generate_bin_table_message()))
+
     @staticmethod
     def get_test_parameters(data):
         # TODO: workaround until we specify the connection to the server or even mount the project locally
@@ -545,19 +548,21 @@ class MasterApplication(MultiSiteTestingModel):
         else:
             self.on_error(f"Received unexpected testresult from site {siteid}")
 
-    def on_testapp_testsummary_changed(self, status_msg: dict):
+    def on_testapp_testsummary_changed(self, message: dict):
         self.summary_counter += 1
+        self.tsr_messages.extend(message['payload'])
 
         if self.summary_counter == len(self.configuredSites):
             self._stdf_aggregator.finalize()
 
             self._stdf_aggregator.append_soft_and_hard_bin_record(self._result_info_handler.get_hbin_soft_bin_report())
-            self._stdf_aggregator.append_test_summary(status_msg['payload'])
+            self._stdf_aggregator.append_test_summary(self.tsr_messages)
             self._stdf_aggregator.append_part_count_infos(self._result_info_handler.get_part_count_infos())
 
             self._stdf_aggregator.write_footer_records()
             self._stdf_aggregator = None
             self.summary_counter = 0
+            self.tsr_messages.clear()
 
     def on_testapp_resource_changed(self, siteid: str, resource_request_msg: dict):
         self.handle_resource_request(siteid, resource_request_msg)
@@ -695,6 +700,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
         self.command_queue.put_nowait(GetTestResultsCommand(self.received_sites_test_results, connection_id))
         self.command_queue.put_nowait(GetYields(lambda: self._generate_yield_message(), connection_id))
+        self.command_queue.put_nowait(GetBinTable(lambda: self._generate_bin_table_message(), connection_id))
 
         if self._stdf_aggregator:
             self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message(), connection_id))
@@ -739,6 +745,7 @@ class MasterApplication(MultiSiteTestingModel):
         for test_result in self.received_site_test_results:
             await ws_comm_handler.send_testresults_to_all(test_result)
             await ws_comm_handler.send_yields(self._generate_yield_message())
+            await ws_comm_handler.send_bin_table(self._generate_bin_table_message())
 
         self.received_site_test_results = []
 
@@ -750,6 +757,9 @@ class MasterApplication(MultiSiteTestingModel):
 
     def _generate_yield_message(self):
         return self._result_info_handler.get_yield_messages()
+
+    def _generate_bin_table_message(self):
+        return self._result_info_handler.get_bin_table()
 
     def _generate_usersettings_message(self, usersettings):
         settings = []

@@ -43,6 +43,8 @@ export class MenuComponent implements OnInit, OnDestroy {
         return this.resultsDisabled();
       case MenuItem.Control:
         return this.controlDisabled();
+      case MenuItem.Bin:
+        return this.binDisabled();
     }
   }
 
@@ -53,6 +55,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   private updateStatus(status: Status) {
     this.status = status;
     this.navigateToInformationIfNeeded();
+  }
+
+  private binDisabled(): boolean {
+    switch (this.status.state) {
+      case SystemState.connecting:
+        return true;
+    }
+    return false;
   }
 
   private resultsDisabled(): boolean {
@@ -73,7 +83,9 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   private navigateToInformationIfNeeded() {
     let currentUrl = this.router.url;
-    if (currentUrl.includes(MenuItem.Control) && this.controlDisabled()) {
+    if (currentUrl.includes(MenuItem.Bin) && this.binDisabled()) {
+      this.router.navigateByUrl('/' + MenuItem.Info, {skipLocationChange: false});
+    } if (currentUrl.includes(MenuItem.Control) && this.controlDisabled()) {
       this.router.navigateByUrl('/' + MenuItem.Info, {skipLocationChange: false});
     } else if (currentUrl.includes(MenuItem.Records) && this.resultsDisabled()) {
       this.router.navigateByUrl('/' + MenuItem.Info, {skipLocationChange: false});

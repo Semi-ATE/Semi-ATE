@@ -25,7 +25,7 @@ class ViewDieWizard(DieWizard):
         self.withHardware.setEnabled(False)
         self.dieName.setEnabled(False)
         self.fromMaskset.setEnabled(False)
-        self.quality.setEnabled(False)
+        self.qualityGrade.setEnabled(False)
         self.isAGrade.setChecked(True)
         self.isAGrade.setEnabled(False)
         self.referenceGrade.setEnabled(False)
@@ -55,7 +55,7 @@ class ViewDieWizard(DieWizard):
 
         dialog.grade.setCurrentText(configuration.grade)
         dialog.referenceGrade.setCurrentText(configuration.grade_reference)
-        dialog.quality.setCurrentText(configuration.quality)
+        dialog.qualityGrade.setCurrentText(configuration.quality)
 
         if configuration.type == 'ASSP':
             dialog.Type.setCurrentText('ASSP')

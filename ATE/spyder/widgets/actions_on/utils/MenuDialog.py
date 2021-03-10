@@ -7,6 +7,7 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.spyder.widgets.navigation import ProjectNavigation
 
 
 DELETE_DIALOG = 'Delete.ui'
@@ -92,6 +93,45 @@ class RenameDialog(MenuDialog):
     def _accept(self):
         shutil.move(self.path, os.path.join(os.path.dirname(self.path), self.fileName.text()))
         self.accept()
+
+
+class NewGroupDialog(MenuDialog):
+    def __init__(self, path: str, action: str, parent, project_info: ProjectNavigation, group_parent: str):
+        super().__init__(RENAME_DIALOG, action, parent)
+        self.path = path
+        from ATE.spyder.widgets.validation import valid_test_name_regex
+        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_test_name_regex), self)
+        self.fileName.setValidator(name_validator)
+        self.fileName.setText(os.path.basename(self.path))
+        self.fileName.textChanged.connect(self.validate)
+        self.fileName.setFocus(QtCore.Qt.MouseFocusReason)
+        self.project_info = project_info
+        self.groups = project_info.get_groups()
+        self.group_parent = group_parent
+        self.group_name = None
+
+    def validate(self, text):
+        if not text or text in [group.name for group in self.groups]:
+            self.feedback.setText("name is not valid or already used")
+            self.feedback.setStyleSheet("color: orange")
+            self.ok_button.setDisabled(True)
+            return
+
+        self.feedback.setText("")
+        self.ok_button.setDisabled(False)
+
+    def _accept(self):
+        self.group_name = self.fileName.text()
+        self.accept()
+
+
+def new_group(project_info: ProjectNavigation, group_parent: str):
+    new_dialog = NewGroupDialog('', 'New Group', project_info.parent, project_info, group_parent)
+    if not new_dialog.exec_():
+        return None
+    name = new_dialog.group_name
+    del(new_dialog)
+    return name
 
 
 class AddDirectoryDialog(RenameDialog):

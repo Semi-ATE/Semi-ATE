@@ -34,10 +34,11 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.unloadLotButtonConfig.labelText = 'Unload Lot';
     this.lotNumberInputConfig.placeholder = 'Enter Lot Number';
-    this.lotCardConfiguration.initCard(true,  CardStyle.COLUMN_STYLE, 'Lot Handling');
+    this.lotNumberInputConfig.autocompleteId = 'HistoryOfTypedInLotNumbers';
+    this.lotCardConfiguration.initCard(true, CardStyle.COLUMN_STYLE, 'Lot Handling');
     this.store.select('systemStatus')
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe( s => this.updateStatus(s));
+      .subscribe(s => this.updateStatus(s));
 
     this.updateButtonConfigs();
     this.updateInputConfigs();
@@ -50,15 +51,16 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   }
 
   loadLot() {
-    let errorMsg = {errorText: ''};
+    let errorMsg = { errorText: '' };
     if (this.validateLotNumber(errorMsg)) {
       this.communicationService.send(
         {
           type: 'cmd',
           command: 'load',
           lot_number: this.lotNumberInputConfig.value
-      });
+        });
       this.lotNumberInputConfig.errorMsg = '';
+      this.store.dispatch(ResultActions.clearResult());
       this.clearStoredStdfRecords();
     } else {
       this.lotNumberInputConfig.errorMsg = errorMsg.errorText;
@@ -66,7 +68,7 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
   }
 
   unloadLot() {
-    this.communicationService.send({type: 'cmd', command: 'unload'});
+    this.communicationService.send({ type: 'cmd', command: 'unload' });
   }
 
   private clearStoredStdfRecords(): void {
@@ -85,6 +87,7 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
     if (this.status.state === SystemState.ready || this.status.state === SystemState.loading || this.status.state === SystemState.paused || this.status.state === SystemState.testing) {
       this.lotNumberInputConfig.value = this.status.lotNumber;
     }
+    this.lotNumberInputConfig.validCharacterRegexp = /([0-9]|\.)/;
     this.lotNumberInputConfig = Object.assign({}, this.lotNumberInputConfig);
   }
 
@@ -93,8 +96,8 @@ export class LotHandlingComponent implements OnInit, OnDestroy {
     this.unloadLotButtonConfig = Object.assign({}, this.unloadLotButtonConfig);
   }
 
-  private validateLotNumber(errorMsg: {errorText: string}): boolean {
-    let pattern = /^[1-9][0-9]{5}[.][0-9]{3}$/ ;
+  private validateLotNumber(errorMsg: { errorText: string }): boolean {
+    let pattern = /^[1-9][0-9]{5}[.][0-9]{3}$/;
 
     if (pattern.test(this.lotNumberInputConfig.value as string)) {
       errorMsg.errorText = '';

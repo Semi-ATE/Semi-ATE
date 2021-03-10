@@ -6,6 +6,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.Harness import Harness
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseABC, DutTestCaseBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategy import BinStrategy
+from tests.ATE.TES.apps.sequencers.Loggerstub import LoggerStub
 
 
 import os
@@ -35,6 +36,7 @@ class dummy_test_case(DutTestCaseBase):
     def __init__(self, result=Result.Pass()):
         self.result = result
         self.has_run = False
+        self.instance_name = ""
 
     def run(self, site_num):
         self.has_run = True
@@ -75,7 +77,10 @@ class dummy_cache():
 @pytest.fixture
 def sequencer():
     bin_strategy = BinStrategy(CONFIG_FILE)
-    return SequencerBase("Testprog", bin_strategy)
+    ret_val = SequencerBase("Testprog", bin_strategy)
+    ret_val.set_logger(LoggerStub())
+    ret_val.set_auto_script(AutoScript())
+    return ret_val
 
 
 def test_can_create_sequener(sequencer):
@@ -111,6 +116,11 @@ class Logger:
 class Context:
     def __init__(self):
         self.logger: Logger = Logger()
+
+
+class AutoScript:
+    def after_cycle_teardown(self):
+        pass
 
 
 class testTypeA(DutTestCaseABC):

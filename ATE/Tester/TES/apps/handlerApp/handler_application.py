@@ -138,7 +138,7 @@ class HandlerApplication(MultiSitesMasterHandler):
         if self.state == MasterStates.testing() and message_type in ('load', 'next', 'unload'):
             return self._generate_response(message_type, 'busy')
         if self.state in (MasterStates.connecting()) and message_type in ('next', 'load', 'unload'):
-            return self._generate_response(message_type, 'error', 'No Tester is availabe')
+            return self._generate_response(message_type, 'error', 'No Tester is available')
 
         return self._generate_response(message_type, 'error')
 
