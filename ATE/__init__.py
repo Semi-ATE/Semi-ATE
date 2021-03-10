@@ -281,10 +281,5 @@ POSSIBILITY OF SUCH DAMAGES.
 
                      END OF TERMS AND CONDITIONS
 """
-
-
-version_info = (0, 1, 0, "dev0")
-
-__version__ = '.'.join(map(str, version_info))
 __license__ = __doc__
-
+__version__ = "0.0.0"

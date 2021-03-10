@@ -1,18 +1,34 @@
 # Semi-ATE
-<ins>**Semi**</ins>conductor <ins>**A**</ins>utomated <ins>**T**</ins>est <ins>**E**</ins>quipment
 
-`Semi-ATE` is a tester- and instruments **AGNOSTIC** framework for **<ins>Semi</ins>conductor <ins>ATE</ins> ASIC testing** projects.
+**Semi**conductor **A**utomated **T**est **E**quipment
+
+[![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/main/LICENSE)
+[![Conda](https://img.shields.io/conda/pn/conda-forge/Semi-ATE?color=black)](https://anaconda.org/conda-forge/Semi-ATE)
+![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)
+
+[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=main)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
+[![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
+
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
+[![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
+![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)
+
+[![GitHub issues](https://img.shields.io/github/issues/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/pulls)
+
+`Semi-ATE` is a tester- and instruments **AGNOSTIC** framework for **Semi**conductor **ATE** ASIC testing projects.
 
 This means that the system is **not** build around a specific instrument (let's consider an ATE tester for a moment as a super instrument😋), it rather focuses on
 organizing semiconductor testing in such a way that **all** use- (and special) corner cases have their well known place. This enables the users (read: DE's, TCE's, TE's & PE's) to focus on the **REAL** work, being the writing of good, fast and stable tests. Organizing tests into test-programs and test-programs in to flows is handled by wizards, so the only code that needs writing is the actual test! (motto: [Code is our enemy](http://www.skrenta.com/2007/05/code_is_our_enemy.html))
 
 The `Semi-ATE` package is writen purely in Python (noarch) and provides besides libraries also a plugin to the [Spyder](https://www.spyder-ide.org/) IDE.
 
-Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki). 
+Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
-Yours,
+## Installation
 
-Tom
+
 
 ## Setup Semi-ATE
 

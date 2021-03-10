@@ -8,10 +8,12 @@ Created on Tue Apr  7 18:18:33 2020
 import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from spyder.api.widgets.toolbars import ApplicationToolBar
+from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
-class ToolBar(ApplicationToolBar):
+class ToolBar(ApplicationToolbar):
+    ID = 'ate_toolbar'
+
     def __init__(self, project_info, parent, identifier):
         super().__init__(parent, identifier)
         self.parent = parent

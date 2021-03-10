@@ -1,8 +1,8 @@
-'''
+"""
 Created on 11 Aug 2019
 
 @author: tho
-'''
+"""
 import os
 import re
 import struct
@@ -11,11 +11,37 @@ import io
 
 from ATE.data.STDF import ts_to_id
 from ATE.data.STDF import supported
-from ATE.data.STDF import (ATR, BPS, DTR, EPS, FAR, FTR, GDR, HBR, MIR, MPR, MRR, PCR, PGR, PIR, PLR, PMR, PRR, PTR, RDR, SBR, SDR, TSR, WIR, WCR, WRR)
+from ATE.data.STDF import (
+    ATR,
+    BPS,
+    DTR,
+    EPS,
+    FAR,
+    FTR,
+    GDR,
+    HBR,
+    MIR,
+    MPR,
+    MRR,
+    PCR,
+    PGR,
+    PIR,
+    PLR,
+    PMR,
+    PRR,
+    PTR,
+    RDR,
+    SBR,
+    SDR,
+    TSR,
+    WIR,
+    WCR,
+    WRR,
+)
 
-#from ATE.utils.compression import default_compression
-#from ATE.utils.compression import get_deflated_file_size
-#from ATE.utils.compression import supported_compressions
+# from ATE.utils.compression import default_compression
+# from ATE.utils.compression import get_deflated_file_size
+# from ATE.utils.compression import supported_compressions
 from ATE.utils.compression import supported_compressions_extensions
 from ATE.utils.magicnumber import extension_from_magic_number_in_file
 from ATE.utils.magicnumber import is_compressed_file
@@ -32,7 +58,6 @@ from ATE.utils.varia import path_is_writeable_by_me
 #     '''
 #     if mode!='rb' and mode!='rb': raise ValueError("Only 'rb' and 'wb' are supported.")
 #     if not is_STDF(FileName): return None
-
 
 
 # def to_df(FileName, progress=True):
@@ -172,8 +197,6 @@ from ATE.utils.varia import path_is_writeable_by_me
 #                 raise STDFError("Test Type '%s' is unknown" % TEST_TYP)
 
 
-
-
 #         print("\n\n\n")
 
 
@@ -190,9 +213,6 @@ from ATE.utils.varia import path_is_writeable_by_me
 #             if ID == 'PRR':
 #                 prr = PRR(index['version'], index['endian'], record)
 #                 print(prr)
-
-
-
 
 
 # #         if progress:
@@ -216,11 +236,6 @@ from ATE.utils.varia import path_is_writeable_by_me
 # #
 # #
 # #             constructing_progress.update()
-
-
-
-
-
 
 
 #         if progress:
@@ -1655,100 +1670,111 @@ from ATE.utils.varia import path_is_writeable_by_me
 #         pass
 
 
-
 def has_valid_STDF_extension(FileName):
-    '''
+    """
     returns True if according to the standard, this is a valid STDF extension
-    '''
+    """
     if os_is_case_sensitive():
-        regex = r'std'
+        regex = r"std"
     else:
-        regex = r'STD'
+        regex = r"STD"
     elements = re.split(regex, FileName)
-    if len(elements)==1:
+    if len(elements) == 1:
         return False
     return True
 
+
 def has_pretty_STDF_extension(FileName):
-    '''
+    """
     looks if the uncompressed file name ends with '.std' or '.stdf'
     looks if the (supported) compressed file name ends with '.std.xx' or '.stdf.xx'
     here xx are the supported compression extensions
-    '''
-    if not has_valid_STDF_extension(FileName): return False # based on filename
-    if not is_STDF(FileName): return False # based on contents
+    """
+    if not has_valid_STDF_extension(FileName):
+        return False  # based on filename
+    if not is_STDF(FileName):
+        return False  # based on contents
     if is_compressed_file(FileName, list(supported_compressions_extensions)):
         ext = extension_from_magic_number_in_file(FileName)
-        if len(ext)==1 and (FileName.upper().endswith(".STD%s" % ext[0].upper()) or FileName.upper().endswith('.STDF%s' % ext[0].upper())): return True
+        if len(ext) == 1 and (
+            FileName.upper().endswith(".STD%s" % ext[0].upper())
+            or FileName.upper().endswith(".STDF%s" % ext[0].upper())
+        ):
+            return True
     else:
-        if FileName.upper().endswith(".STD") or FileName.upper().endswith('.STDF'): return True
+        if FileName.upper().endswith(".STD") or FileName.upper().endswith(".STDF"):
+            return True
     return False
 
+
 def set_pretty_STDF_extension(FileName, use_hash=False):
-    '''
+    """
 
     TODO: implement hashing
-    '''
+    """
 
 
 def is_WS(FileName, progress=False):
-    '''
+    """
     This function returns True if the given (compressed) FileName is made during Wafer Sort, False otherwise.
     The only reliable way to determine if the data is generated during Wafer Sort is to look for the presense of 'WIR'.
     This function might take a while on big files, so if progress=True, a progress bar is displayed.
-    '''
+    """
     raise NotImplemented("Woops, maybe now is a good moment to implement")
     return True
 
+
 def is_FT(FileName, progress=False):
-    '''
+    """
     This function returns True if the given (compressed) FileName is made during Final Test, False otherwhise.
     The only reliable way to determine if the date is generated dureing Final Test is to look for the absense of 'WIR'.
     This function might take a while on big files, so if progress=True, a progress bar is displayed.
-    '''
+    """
     return not is_WS(FileName, progress)
 
 
-
 def is_STDF(FileName):
-    '''
+    """
     This function will read the first 4 bytes of a file, and see if byte 3 == 0 and byte 4 ==10
     (that is the magic number of an STDF file) if so return True, False otherwise.
 
     Note, it is checked if the file is compressed (only supports gzip, bz2 and lzma), if so,
     the uncompressed file is examined.
-    '''
+    """
     if not os.path.exists(FileName):
         return False
 
     if not os.path.isfile(FileName):
         return False
 
-    if is_compressed_file(FileName, ['.gz', '.xz', '.bz2']):
+    if is_compressed_file(FileName, [".gz", ".xz", ".bz2"]):
         extension = extension_from_magic_number_in_file(FileName)[0]
-        if extension == '.gz':
+        if extension == ".gz":
             import gzip
-            with gzip.open(FileName, 'rb') as fd:
+
+            with gzip.open(FileName, "rb") as fd:
                 FAR = fd.read(4)
-                REC_TYP, REC_SUB = struct.unpack('BB', FAR[2:4])
+                REC_TYP, REC_SUB = struct.unpack("BB", FAR[2:4])
                 if REC_TYP == 0 and REC_SUB == 10:
                     return True
                 else:
                     return False
-        elif extension == '.bz2':
+        elif extension == ".bz2":
             import bz2
-            with bz2.open(FileName, 'rb') as fd:
+
+            with bz2.open(FileName, "rb") as fd:
                 FAR = fd.read(4)
-                REC_TYP, REC_SUB = struct.unpack('BB', FAR[2:4])
+                REC_TYP, REC_SUB = struct.unpack("BB", FAR[2:4])
                 if REC_TYP == 0 and REC_SUB == 10:
                     return True
                 else:
                     return False
-        elif extension == '.xz':
+        elif extension == ".xz":
             import lzma
-            with lzma.open(FileName, 'rb') as fd:
+
+            with lzma.open(FileName, "rb") as fd:
                 FAR = fd.read(4)
-                REC_TYP, REC_SUB = struct.unpack('BB', FAR[2:4])
+                REC_TYP, REC_SUB = struct.unpack("BB", FAR[2:4])
                 if REC_TYP == 0 and REC_SUB == 10:
                     return True
                 else:
@@ -1756,69 +1782,83 @@ def is_STDF(FileName):
         else:
             raise Exception("Shouldn't reach this point (%s)" % extension)
     else:
-        with open(FileName, 'rb') as fd:
+        with open(FileName, "rb") as fd:
             FAR = fd.read(4)
-            REC_TYP, REC_SUB = struct.unpack('BB', FAR[2:4])
+            REC_TYP, REC_SUB = struct.unpack("BB", FAR[2:4])
             if REC_TYP == 0 and REC_SUB == 10:
                 return True
             else:
                 return False
 
+
 def is_supported_compressed_STDF_file(FileName):
-    '''
+    """
     Returns True if FileName is a supported compressed file, False otherwise
-    '''
-    if not is_STDF(FileName): return False
-    ext = extension_from_magic_number_in_file(FileName, supported_compressions_extensions)
-    if len(ext)!=1: return False
+    """
+    if not is_STDF(FileName):
+        return False
+    ext = extension_from_magic_number_in_file(
+        FileName, supported_compressions_extensions
+    )
+    if len(ext) != 1:
+        return False
     return True
 
+
 def endian_and_version_from_file(FileName):
-    '''
+    """
     Returns the endian and version from FileName.
     if something went wrong, both are empty strings.
-    '''
+    """
     tmp = records_from_file(FileName)
-    endian = ''
-    version = ''
-    if tmp!=None: # success
+    endian = ""
+    version = ""
+    if tmp != None:  # success
         endian = tmp.endian
         version = tmp.version
     return endian, version
 
+
 def MIR_from_file(FileName):
-    '''
+    """
     return *THE* MIR object from FileName.
-    '''
+    """
     endian, version = endian_and_version_from_file(FileName)
-    if endian=='' or version=='': return MIR()
+    if endian == "" or version == "":
+        return MIR()
     for _, REC_TYP, REC_SUB, REC in records_from_file(FileName):
-        if REC_TYP==1 and REC_SUB==10: break
+        if REC_TYP == 1 and REC_SUB == 10:
+            break
     return MIR(version, endian, REC)
 
+
 def SDRs_from_file(FileName):
-    '''
+    """
     return the SDR(s) objects from FileName.
-    '''
+    """
     retval = []
     endian, version = endian_and_version_from_file(FileName)
     print(endian, version)
-    if endian=='' or version=='': return retval
+    if endian == "" or version == "":
+        return retval
     for _, REC_TYP, REC_SUB, REC in records_from_file(FileName):
-        if (REC_TYP, REC_SUB) not in [(0, 10), (0, 20),(1, 10),(1, 70), (1, 80)]: break
+        if (REC_TYP, REC_SUB) not in [(0, 10), (0, 20), (1, 10), (1, 70), (1, 80)]:
+            break
         if (REC_TYP, REC_SUB) == (1, 80):
             retval.append(REC)
     return retval
 
+
 def TS_from_record(record):
-    '''
+    """
     given an STDF record (bytearray), extract the REC_TYP and REC_SUB
     Note: This will work on *ALL* records.
-    '''
+    """
     return struct.unpack("BB", record[2:4])
 
+
 def HEAD_NUM_and_SITE_NUM_from_record(record):
-    '''
+    """
     given and STDF record (bytearray), extract the HEAD_NUM and SITE_NUM
     Note : HEAD_NUM and SITE_NUM are not always located at the same (byte) offset.
 
@@ -1836,23 +1876,24 @@ def HEAD_NUM_and_SITE_NUM_from_record(record):
            PTR      15       10        9          10    < most likely
            MPR      15       15        9          10    < most likely
            FTR      15       20        9          10    < most likely
-    '''
+    """
     REC_TYP, REC_SUB = TS_from_record(record)
     HEAD_NUM = 0
     SITE_NUM = 0
-    if REC_TYP == 15: # PTR, MTR & FTR
+    if REC_TYP == 15:  # PTR, MTR & FTR
         if REC_SUB in [10, 15, 20]:
             HEAD_NUM, SITE_NUM = struct.unpack("BB", record[8:10])
-    elif REC_TYP == 5: # PIR, PRR
+    elif REC_TYP == 5:  # PIR, PRR
         if REC_SUB in [10, 20, 30]:
             HEAD_NUM, SITE_NUM = struct.unpack("BB", record[4:6])
-    elif REC_TYP == 1: # PCR, HBR, SBR
+    elif REC_TYP == 1:  # PCR, HBR, SBR
         if REC_SUB in [30, 40, 50]:
             HEAD_NUM, SITE_NUM = struct.unpack("BB", record[4:6])
     return HEAD_NUM, SITE_NUM
 
+
 def TEST_NUM_from_record(record, endian):
-    '''
+    """
     given a PTR, MPR or FTR record, extract the test Number.
     Note: TEST_NUM is for these records always located on offset 4..7
 
@@ -1862,50 +1903,66 @@ def TEST_NUM_from_record(record, endian):
            FTR      15       20       4:7
 
           Also note that endian is important here!
-    '''
+    """
     REC_TYP, REC_SUB = TS_from_record(record)
     TEST_NUM = -1
     if REC_TYP == 15 and REC_SUB in [10, 15, 20]:
         TEST_NUM = struct.unpack("%sI" % endian, record[4:7])
     return TEST_NUM
 
+
 class records_from_file(object):
-    '''
+    """
     This is a *QUICK* iterator class that returns the next record from an STDF file each time it is called.
     It is fast because it doesn't check versions, extensions and it doesn't unpack the record and skips unknown records.
     It does support gzip, bz2 and lzma compression.
-    '''
+    """
+
     def __init__(self, FileName):
         self.fd = None
-        if not isinstance(FileName, str): return
-        if not os.path.exists(FileName): return
-        if not os.path.isfile(FileName): return
-        if not is_STDF(FileName): return
+        if not isinstance(FileName, str):
+            return
+        if not os.path.exists(FileName):
+            return
+        if not os.path.isfile(FileName):
+            return
+        if not is_STDF(FileName):
+            return
         if is_supported_compressed_STDF_file(FileName):
             ext = extension_from_magic_number_in_file(FileName)
-            if len(ext)!=1: return
+            if len(ext) != 1:
+                return
             compression = supported_compressions_extensions[ext[0]]
-            if compression=='lzma':
+            if compression == "lzma":
                 import lzma
-                self.fd = lzma.open(FileName, 'rb')
-            elif compression=='bz2':
+
+                self.fd = lzma.open(FileName, "rb")
+            elif compression == "bz2":
                 import bz2
-                self.fd = bz2.open(FileName, 'rb')
-            elif compression=='gzip':
+
+                self.fd = bz2.open(FileName, "rb")
+            elif compression == "gzip":
                 import gzip
-                self.fd = gzip.open(FileName, 'rb')
+
+                self.fd = gzip.open(FileName, "rb")
             else:
-                raise Exception("the %s compression is supported but not fully implemented." % compression)
+                raise Exception(
+                    "the %s compression is supported but not fully implemented."
+                    % compression
+                )
         else:
-            self.fd = open(FileName, 'rb')
+            self.fd = open(FileName, "rb")
         buff = self.fd.read(6)
-        CPU_TYPE, STDF_VER = struct.unpack('BB', buff[4:])
-        if CPU_TYPE == 1: self.endian = '>'
-        elif CPU_TYPE == 2: self.endian = '<'
-        else: self.endian = '?'
-        self.version = 'V%s' % STDF_VER
+        CPU_TYPE, STDF_VER = struct.unpack("BB", buff[4:])
+        if CPU_TYPE == 1:
+            self.endian = ">"
+        elif CPU_TYPE == 2:
+            self.endian = "<"
+        else:
+            self.endian = "?"
+        self.version = "V%s" % STDF_VER
         self.fd.seek(0)
-        self.unpack_fmt = '%sHBB' % self.endian
+        self.unpack_fmt = "%sHBB" % self.endian
 
     def __del__(self):
         if self.fd != None:
@@ -1915,55 +1972,63 @@ class records_from_file(object):
         return self
 
     def __next__(self):
-        while self.fd!=None:
+        while self.fd != None:
             while True:
                 header = self.fd.read(4)
-                if len(header)!=4:
+                if len(header) != 4:
                     raise StopIteration
                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.unpack_fmt, header)
                 footer = self.fd.read(REC_LEN)
-                if len(footer)!=REC_LEN:
+                if len(footer) != REC_LEN:
                     raise StopIteration
-                return REC_LEN, REC_TYP, REC_SUB, header+footer
+                return REC_LEN, REC_TYP, REC_SUB, header + footer
+
 
 class records_from_file(object):
-    '''
+    """
     Generator class to run over the records in FileName.
     The return values are 4-fold : REC_LEN, REC_TYP, REC_SUB and REC
     REC is the complete record (including REC_LEN, REC_TYP & REC_SUB)
     if unpack indicates if REC is to be the raw record or the unpacked object.
     of_interest can be a list of records to return. By default of_interest is void
     meaning all records (of FileName's STDF Version) are used.
-    '''
+    """
+
     debug = False
 
     def __init__(self, FileName, unpack=False, of_interest=None):
-        if self.debug: print("initializing 'records_from_file")
+        if self.debug:
+            print("initializing 'records_from_file")
         if isinstance(FileName, str):
             self.keep_open = False
             if not os.path.exists(FileName):
                 raise STDFError("'%s' does not exist")
             self.endian = get_STDF_setup_from_file(FileName)[0]
-            self.version = 'V%s' % struct.unpack('B', get_bytes_from_file(FileName, 5, 1))
-            self.fd = open(FileName, 'rb')
+            self.version = "V%s" % struct.unpack(
+                "B", get_bytes_from_file(FileName, 5, 1)
+            )
+            self.fd = open(FileName, "rb")
         elif isinstance(FileName, io.IOBase):
             self.keep_open = True
             self.fd = FileName
             ptr = self.fd.tell()
             self.fd.seek(4)
             buff = self.fd.read(2)
-            CPU_TYPE, STDF_VER = struct.unpack('BB', buff)
-            if CPU_TYPE == 1: self.endian = '>'
-            elif CPU_TYPE == 2: self.endian = '<'
-            else: self.endian = '?'
-            self.version = 'V%s' % STDF_VER
+            CPU_TYPE, STDF_VER = struct.unpack("BB", buff)
+            if CPU_TYPE == 1:
+                self.endian = ">"
+            elif CPU_TYPE == 2:
+                self.endian = "<"
+            else:
+                self.endian = "?"
+            self.version = "V%s" % STDF_VER
             self.fd.seek(ptr)
         else:
             raise STDFError("'%s' is not a string or an open file descriptor")
         self.unpack = unpack
-        self.fmt = '%sHBB' % self.endian
+        self.fmt = "%sHBB" % self.endian
         TS2ID = ts_to_id(self.version)
-        if of_interest==None:
+        if of_interest == None:
             self.records_of_interest = TS2ID
         elif isinstance(of_interest, list):
             ID2TS = id_to_ts(self.version)
@@ -1973,13 +2038,16 @@ class records_from_file(object):
                     if item in ID2TS:
                         if ID2TS[item] not in tmp_list:
                             tmp_list.append(ID2TS[item])
-                elif isinstance(item, tuple) and len(item)==2:
+                elif isinstance(item, tuple) and len(item) == 2:
                     if item in TS2ID:
                         if item not in tmp_list:
                             tmp_list.append(item)
             self.records_of_interest = tmp_list
         else:
-            raise STDFError("objects_from_file(%s, %s) : Unsupported of_interest" % (FileName, of_interest))
+            raise STDFError(
+                "objects_from_file(%s, %s) : Unsupported of_interest"
+                % (FileName, of_interest)
+            )
 
     def __del__(self):
         if not self.keep_open:
@@ -1989,37 +2057,47 @@ class records_from_file(object):
         return self
 
     def __next__(self):
-        while self.fd!=None:
+        while self.fd != None:
             header = self.fd.read(4)
-            if len(header)!=4:
+            if len(header) != 4:
                 raise StopIteration
             else:
                 REC_LEN, REC_TYP, REC_SUB = struct.unpack(self.fmt, header)
                 footer = self.fd.read(REC_LEN)
                 if (REC_TYP, REC_SUB) in self.records_of_interest:
-                    if len(footer)!=REC_LEN:
+                    if len(footer) != REC_LEN:
                         raise StopIteration()
                     else:
                         if self.unpack:
-                            return REC_LEN, REC_TYP, REC_SUB, create_record_object(self.version, self.endian, (REC_TYP, REC_SUB), header+footer)
+                            return (
+                                REC_LEN,
+                                REC_TYP,
+                                REC_SUB,
+                                create_record_object(
+                                    self.version,
+                                    self.endian,
+                                    (REC_TYP, REC_SUB),
+                                    header + footer,
+                                ),
+                            )
                         else:
-                            return REC_LEN, REC_TYP, REC_SUB, header+footer
+                            return REC_LEN, REC_TYP, REC_SUB, header + footer
 
 
 def create_record_object(Version, Endian, REC_ID, REC=None):
-    '''
+    """
     This function will create and return the appropriate Object for REC
     based on REC_ID. REC_ID can be a 2-element tuple or a string.
     If REC is not None, then the record will also be unpacked.
-    '''
+    """
     retval = None
-    REC_TYP=-1
-    REC_SUB=-1
+    REC_TYP = -1
+    REC_SUB = -1
     if Version not in supported().versions():
         raise STDFError("Unsupported STDF Version : %s" % Version)
-    if Endian not in ['<', '>']:
+    if Endian not in ["<", ">"]:
         raise STDFError("Unsupported Endian : '%s'" % Endian)
-    if isinstance(REC_ID, tuple) and len(REC_ID)==2:
+    if isinstance(REC_ID, tuple) and len(REC_ID) == 2:
         TS2ID = ts_to_id(Version)
         if (REC_ID[0], REC_ID[1]) in TS2ID:
             REC_TYP = REC_ID[0]
@@ -2032,65 +2110,117 @@ def create_record_object(Version, Endian, REC_ID, REC=None):
     else:
         raise STDFError("Unsupported REC_ID : %s" % REC_ID)
 
-    if REC_TYP!=-1 and REC_SUB!=-1:
-        if REC_ID == 'PTR': retval = PTR(Version, Endian, REC)
-        elif REC_ID == 'FTR': retval = FTR(Version, Endian, REC)
-        elif REC_ID == 'MPR': retval = MPR(Version, Endian, REC)
-        elif REC_ID == 'STR': retval = STR(Version, Endian, REC)
-        elif REC_ID == 'MTR': retval = MTR(Version, Endian, REC)
-        elif REC_ID == 'PIR': retval = PIR(Version, Endian, REC)
-        elif REC_ID == 'PRR': retval = PRR(Version, Endian, REC)
-        elif REC_ID == 'FAR': retval = FAR(Version, Endian, REC)
-        elif REC_ID == 'ATR': retval = ATR(Version, Endian, REC)
-        elif REC_ID == 'VUR': retval = VUR(Version, Endian, REC)
-        elif REC_ID == 'MIR': retval = MIR(Version, Endian, REC)
-        elif REC_ID == 'MRR': retval = MRR(Version, Endian, REC)
-        elif REC_ID == 'WCR': retval = WCR(Version, Endian, REC)
-        elif REC_ID == 'WIR': retval = WIR(Version, Endian, REC)
-        elif REC_ID == 'WRR': retval = WRR(Version, Endian, REC)
-        elif REC_ID == 'ADR': retval = ADR(Version, Endian, REC)
-        elif REC_ID == 'ASR': retval = ASR(Version, Endian, REC)
-        elif REC_ID == 'BPS': retval = BPS(Version, Endian, REC)
-        elif REC_ID == 'BRR': retval = BRR(Version, Endian, REC)
-        elif REC_ID == 'BSR': retval = BSR(Version, Endian, REC)
-        elif REC_ID == 'CNR': retval = CNR(Version, Endian, REC)
-        elif REC_ID == 'DTR': retval = DTR(Version, Endian, REC)
-        elif REC_ID == 'EPDR': retval = EPDR(Version, Endian, REC)
-        elif REC_ID == 'EPS': retval = EPS(Version, Endian, REC)
-        elif REC_ID == 'ETSR': retval = ETSR(Version, Endian, REC)
-        elif REC_ID == 'FDR': retval = FDR(Version, Endian, REC)
-        elif REC_ID == 'FSR': retval = FSR(Version, Endian, REC)
-        elif REC_ID == 'GDR': retval = GDR(Version, Endian, REC)
-        elif REC_ID == 'GTR': retval = GTR(Version, Endian, REC)
-        elif REC_ID == 'HBR': retval = HBR(Version, Endian, REC)
-        elif REC_ID == 'IDR': retval = IDR(Version, Endian, REC)
-        elif REC_ID == 'MCR': retval = MCR(Version, Endian, REC)
-        elif REC_ID == 'MMR': retval = MMR(Version, Endian, REC)
-        elif REC_ID == 'MSR': retval = MSR(Version, Endian, REC)
-        elif REC_ID == 'NMR': retval = NMR(Version, Endian, REC)
-        elif REC_ID == 'PCR': retval = PCR(Version, Endian, REC)
-        elif REC_ID == 'PDR': retval = PDR(Version, Endian, REC)
-        elif REC_ID == 'PGR': retval = PGR(Version, Endian, REC)
-        elif REC_ID == 'PLR': retval = PLR(Version, Endian, REC)
-        elif REC_ID == 'PMR': retval = PMR(Version, Endian, REC)
-        elif REC_ID == 'PSR': retval = PSR(Version, Endian, REC)
-        elif REC_ID == 'RDR': retval = RDR(Version, Endian, REC)
-        elif REC_ID == 'SBR': retval = SBR(Version, Endian, REC)
-        elif REC_ID == 'SCR': retval = SCR(Version, Endian, REC)
-        elif REC_ID == 'SDR': retval = SDR(Version, Endian, REC)
-        elif REC_ID == 'SHB': retval = SHB(Version, Endian, REC)
-        elif REC_ID == 'SSB': retval = SSB(Version, Endian, REC)
-        elif REC_ID == 'SSR': retval = SSR(Version, Endian, REC)
-        elif REC_ID == 'STS': retval = STS(Version, Endian, REC)
-        elif REC_ID == 'TSR': retval = TSR(Version, Endian, REC)
-        elif REC_ID == 'WTR': retval = WTR(Version, Endian, REC)
-        elif REC_ID == 'RR1': retval = RR1(Version, Endian, REC) # can not be reached because of -1
-        elif REC_ID == 'RR2': retval = RR2(Version, Endian, REC) # can not be reached because of -1
+    if REC_TYP != -1 and REC_SUB != -1:
+        if REC_ID == "PTR":
+            retval = PTR(Version, Endian, REC)
+        elif REC_ID == "FTR":
+            retval = FTR(Version, Endian, REC)
+        elif REC_ID == "MPR":
+            retval = MPR(Version, Endian, REC)
+        elif REC_ID == "STR":
+            retval = STR(Version, Endian, REC)
+        elif REC_ID == "MTR":
+            retval = MTR(Version, Endian, REC)
+        elif REC_ID == "PIR":
+            retval = PIR(Version, Endian, REC)
+        elif REC_ID == "PRR":
+            retval = PRR(Version, Endian, REC)
+        elif REC_ID == "FAR":
+            retval = FAR(Version, Endian, REC)
+        elif REC_ID == "ATR":
+            retval = ATR(Version, Endian, REC)
+        elif REC_ID == "VUR":
+            retval = VUR(Version, Endian, REC)
+        elif REC_ID == "MIR":
+            retval = MIR(Version, Endian, REC)
+        elif REC_ID == "MRR":
+            retval = MRR(Version, Endian, REC)
+        elif REC_ID == "WCR":
+            retval = WCR(Version, Endian, REC)
+        elif REC_ID == "WIR":
+            retval = WIR(Version, Endian, REC)
+        elif REC_ID == "WRR":
+            retval = WRR(Version, Endian, REC)
+        elif REC_ID == "ADR":
+            retval = ADR(Version, Endian, REC)
+        elif REC_ID == "ASR":
+            retval = ASR(Version, Endian, REC)
+        elif REC_ID == "BPS":
+            retval = BPS(Version, Endian, REC)
+        elif REC_ID == "BRR":
+            retval = BRR(Version, Endian, REC)
+        elif REC_ID == "BSR":
+            retval = BSR(Version, Endian, REC)
+        elif REC_ID == "CNR":
+            retval = CNR(Version, Endian, REC)
+        elif REC_ID == "DTR":
+            retval = DTR(Version, Endian, REC)
+        elif REC_ID == "EPDR":
+            retval = EPDR(Version, Endian, REC)
+        elif REC_ID == "EPS":
+            retval = EPS(Version, Endian, REC)
+        elif REC_ID == "ETSR":
+            retval = ETSR(Version, Endian, REC)
+        elif REC_ID == "FDR":
+            retval = FDR(Version, Endian, REC)
+        elif REC_ID == "FSR":
+            retval = FSR(Version, Endian, REC)
+        elif REC_ID == "GDR":
+            retval = GDR(Version, Endian, REC)
+        elif REC_ID == "GTR":
+            retval = GTR(Version, Endian, REC)
+        elif REC_ID == "HBR":
+            retval = HBR(Version, Endian, REC)
+        elif REC_ID == "IDR":
+            retval = IDR(Version, Endian, REC)
+        elif REC_ID == "MCR":
+            retval = MCR(Version, Endian, REC)
+        elif REC_ID == "MMR":
+            retval = MMR(Version, Endian, REC)
+        elif REC_ID == "MSR":
+            retval = MSR(Version, Endian, REC)
+        elif REC_ID == "NMR":
+            retval = NMR(Version, Endian, REC)
+        elif REC_ID == "PCR":
+            retval = PCR(Version, Endian, REC)
+        elif REC_ID == "PDR":
+            retval = PDR(Version, Endian, REC)
+        elif REC_ID == "PGR":
+            retval = PGR(Version, Endian, REC)
+        elif REC_ID == "PLR":
+            retval = PLR(Version, Endian, REC)
+        elif REC_ID == "PMR":
+            retval = PMR(Version, Endian, REC)
+        elif REC_ID == "PSR":
+            retval = PSR(Version, Endian, REC)
+        elif REC_ID == "RDR":
+            retval = RDR(Version, Endian, REC)
+        elif REC_ID == "SBR":
+            retval = SBR(Version, Endian, REC)
+        elif REC_ID == "SCR":
+            retval = SCR(Version, Endian, REC)
+        elif REC_ID == "SDR":
+            retval = SDR(Version, Endian, REC)
+        elif REC_ID == "SHB":
+            retval = SHB(Version, Endian, REC)
+        elif REC_ID == "SSB":
+            retval = SSB(Version, Endian, REC)
+        elif REC_ID == "SSR":
+            retval = SSR(Version, Endian, REC)
+        elif REC_ID == "STS":
+            retval = STS(Version, Endian, REC)
+        elif REC_ID == "TSR":
+            retval = TSR(Version, Endian, REC)
+        elif REC_ID == "WTR":
+            retval = WTR(Version, Endian, REC)
+        elif REC_ID == "RR1":
+            retval = RR1(Version, Endian, REC)  # can not be reached because of -1
+        elif REC_ID == "RR2":
+            retval = RR2(Version, Endian, REC)  # can not be reached because of -1
     return retval
 
 
-
-if __name__ == '__main__':
-    FileName = r'C:/Users/hoeren/Desktop/TDK/resources/stdf/Advantest93K.std'
+if __name__ == "__main__":
+    FileName = r"C:/Users/hoeren/Desktop/TDK/resources/stdf/Advantest93K.std"
     for REC in records_from_file(FileName):
         print(REC)
