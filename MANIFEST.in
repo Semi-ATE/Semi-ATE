@@ -60,5 +60,4 @@ recursive-include requirements *.txt
 recursive-include Plugins *.*
 include .flake8
 include .gitlab-ci.yml
-include .gitmodules
 include pax_global_header

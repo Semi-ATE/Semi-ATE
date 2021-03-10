@@ -41,15 +41,6 @@ function Install-Dependencies {
     Invoke-Expression "python setup.py develop"
     Rename-Item -Path ".\MANIFEST.in.abc" -NewName ".\MANIFEST.in"
 
-    Write-Host "get stdf package"
-    Invoke-Expression "git submodule init"
-    Invoke-Expression "git submodule update --remote"
-
-    Set-Location -Path $root_location
-    Write-Host "install stdf package"
-    Invoke-Expression "cd $stdf_location"
-    Invoke-Expression "python setup.py develop"
-
     Set-Location -Path $root_location
     Write-Host "install TDKMicronas plugin package"
     Invoke-Expression "cd $plugin_location"
