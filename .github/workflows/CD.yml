@@ -57,19 +57,9 @@ jobs:
     - name: Create package
       run: python setup.py sdist
 
-    - name: Show test environment
-      shell: bash -l {0}
-      run: |
-        conda info
-        conda list
-
     - name: Check package
       shell: bash -l {0}
       run:  twine check dist/*
-
-    - name: Check manifest
-      shell: bash -l {0}
-      run: check-manifest
 
     - name: Upload to PyPI
       env:
