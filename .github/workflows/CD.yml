@@ -61,17 +61,23 @@ jobs:
     - name: Check package
       shell: bash -l {0}
       run:  twine check dist/*
-
-    - name: Upload to PyPi
-      uses: pypa/gh-action-pypi-publish@v1.4.2
+      
+    - name: Upload maxiconda to Github artifact
+      uses: actions/upload-artifact@v2
       with:
-        password: ${{ secrets.PYPI_TOKEN }}
-        verbose: 1
+        path: dist/*
+        name: pypi
+        
+#     - name: Upload to PyPi
+#       uses: pypa/gh-action-pypi-publish@v1.4.2
+#       with:
+#         password: ${{ secrets.PYPI_TOKEN }}
+#         verbose: 1
 
-    - name: Upload coverage to Codecov  
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+#     - name: Upload coverage to Codecov  
+#       uses: codecov/codecov-action@v1
+#       with:
+#         token: ${{ secrets.CODECOV_TOKEN }}
 
 
 
