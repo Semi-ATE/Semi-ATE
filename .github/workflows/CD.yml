@@ -50,7 +50,6 @@ jobs:
     - name: Run tests
       shell: bash -l {0}
       run: |
-        xvfb-run --auto-servernum pytest tests/ATE/data --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
