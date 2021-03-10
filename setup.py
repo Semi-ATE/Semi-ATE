@@ -15,6 +15,7 @@ setup(
     version=__version__,
     description="Framework for Semiconductor ATE testing projects",
     long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     author="The Semi-ATE Project Contributors",
     author_email="ate.organization@gmail.com",
     license="GPL2",
