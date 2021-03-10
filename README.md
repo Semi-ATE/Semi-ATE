@@ -29,6 +29,16 @@ Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
 ## Installation
 
+### maxiconda
+
+Semi-ATE, [Semi-ATE-STDF](https://github.com/Semi-ATE/STDF), [Semi-ATE-STIL](https://github.com/Semi-ATE/STIL), [Semi-ATE-DT](https://github.com/Semi-ATE/STDF) and [QScreenCast](https://github.com/Semi-ATE/QScreenCast) are all bundeled with [spyder >= 5](https://github.com/spyder-ide/spyder) in the `_spyder_` environment when one installs conda using the [maxiconda](https://github.com/Semi-ATE/maxiconda) installers. 
+
+### miniconda / miniforge
+
+### anaconda
+
+
+
 
 
 ## Setup Semi-ATE
