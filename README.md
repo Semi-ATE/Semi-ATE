@@ -4,7 +4,7 @@
 
 [![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/main/LICENSE)
 [![Conda](https://img.shields.io/conda/pn/conda-forge/Semi-ATE?color=black)](https://anaconda.org/conda-forge/Semi-ATE)
-![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)
+![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.8-black)
 
 [![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=main)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
