@@ -50,7 +50,7 @@ Once, each step of the setup.ps1 is succeeded the following steps must be checke
 1) testprogram name must be adapted in ATE/Tester/TES/apps/le123456000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
 
     ```Console
-    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py
+    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py 
     ```
 
     you will find the smoketest directory in the root level of Semi-ATE directory
