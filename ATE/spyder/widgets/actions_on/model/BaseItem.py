@@ -149,6 +149,7 @@ class BaseItem(QtGui.QStandardItem):
         child_item = self.get_child(name)
         if child_item is None:
             return
+
         self.removeRow(child_item.row())
 
     def _set_node_state(self, dependency_list, enabled):

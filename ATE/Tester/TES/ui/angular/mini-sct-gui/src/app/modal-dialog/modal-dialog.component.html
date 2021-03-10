@@ -1,0 +1,14 @@
+<div class="modal" [ngClass]="{'hidden': !dialogVisible, 'error': error}">
+    <div class="message">
+        <div class="header">
+            <span>{{dialogHeaderText}}</span>
+        </div>
+        <div class="body">
+            <p>{{dialogBodyText}}</p>
+            <div class="buttonarea">
+                <app-button [buttonConfig]="navigateButton" (buttonClickEvent)="navigateToLogdata()"></app-button>
+                <app-button [buttonConfig]="closeButton" (buttonClickEvent)="closeDialog()"></app-button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -925,7 +925,7 @@ export const LOG_ENTRIES = {
     {
       date: '07/09/2020 03:30:50 PM',
       type: 'ERROR',
-      description: 'Control 0 state is busy',
+      description: 'Control 0 state is busy. In order to see how long texts are supported by the modal dialog element here is some long text. Bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla',
       source: 'control 0'
     }
   ]
@@ -1167,3 +1167,154 @@ export const LOT_DATA = {
   }
 };
 
+const BIN_DATA_ALARM = {
+    name: 'Alarm',
+    type: 'Alarm',
+    sBin: 9999,
+    hBin: 9999,
+    siteCounts: [
+      {
+        siteId: '0',
+        count: 0
+      },
+      {
+        siteId: '1',
+        count: 0
+      },
+      {
+        siteId: '2',
+        count: 0
+      },
+      {
+        siteId: '3',
+        count: 0
+      },
+    ]
+};
+
+const BIN_DATA_GOOD_1 = {
+    name: 'Good1',
+    type: 'Type 1',
+    sBin: 1,
+    hBin: 1,
+    siteCounts: [
+      {
+        siteId: '0',
+        count: 0
+      },
+      {
+        siteId: '1',
+        count: 2
+      },
+      {
+        siteId: '2',
+        count: 4
+      },
+      {
+        siteId: '3',
+        count: 1
+      },
+    ]
+};
+
+const BIN_DATA_F_DAW = {
+    name: 'F_DAW',
+    type: 'Fail Electric',
+    sBin: 3,
+    hBin: 10,
+    siteCounts: [
+      {
+        siteId: '0',
+        count: 1
+      },
+      {
+        siteId: '1',
+        count: 5
+      },
+      {
+        siteId: '2',
+        count: 6
+      },
+      {
+        siteId: '3',
+        count: 4
+      },
+    ]
+};
+
+const BIN_DATA_F_SHORT = {
+    name: 'F_Short',
+    type: 'Fail Contact',
+    sBin: 10,
+    hBin: 3,
+    siteCounts: [
+      {
+        siteId: '0',
+        count: 16
+      },
+      {
+        siteId: '1',
+        count: 16
+      },
+      {
+        siteId: '2',
+        count: 15
+      },
+      {
+        siteId: '3',
+        count: 1
+      },
+    ]
+};
+
+const BIN_DATA_F_PROGRAM = {
+    name: 'F_Program',
+    type: 'Fail Electric',
+    sBin: 15,
+    hBin: 15,
+    siteCounts: [
+      {
+        siteId: '0',
+        count: 3
+      },
+      {
+        siteId: '1',
+        count: 4
+      },
+      {
+        siteId: '2',
+        count: 4
+      },
+      {
+        siteId: '3',
+        count: 4
+      },
+    ]
+};
+
+export const BIN_ENTRIES = {
+  type: MessageTypes.BinTable,
+  payload: [
+    BIN_DATA_ALARM,
+    BIN_DATA_GOOD_1,
+    BIN_DATA_F_DAW,
+    BIN_DATA_F_SHORT,
+    BIN_DATA_F_PROGRAM
+  ]
+};
+
+export const BIN_TABLE_MAX_SITES = {
+  type: MessageTypes.BinTable,
+  payload: [
+    {
+      name: 'F_ProgramVeryLong',
+      type: 'Fail Electric Long',
+      sBin: 9999,
+      hBin: 9999,
+      siteCounts: [...(Array(16).keys())].map((_,i) => { return {
+        siteId: `${i}`,
+        count: 999999
+      };})
+    }
+  ]
+};

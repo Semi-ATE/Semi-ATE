@@ -11,10 +11,10 @@ from qtpy.QtWidgets import QVBoxLayout
 from spyder.api.translations import get_translation
 from spyder.api.widgets import PluginMainWidget
 
-from ATE.spyder.widgets.actions_on.project.ProjectWizard import NewProjectDialog
+from ATE.spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.toolbar import ToolBar
-from ATE.spyder.widgets.actions_on.tests.TestItem import (TestItemChild, TestItemChildTarget)
+from ATE.spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
 # Third party imports
 # Local imports
 
@@ -48,6 +48,10 @@ class ATEWidget(PluginMainWidget):
     select_hardware = Signal(str)
     update_settings = Signal(str, str, str)
     test_target_deleted = Signal(str, str)
+    group_state_changed = Signal()
+    group_added = Signal(str)
+    group_removed = Signal(str)
+    groups_update = Signal(str, list)
 
     def __init__(self, name=None, plugin=None, parent=None,
                  options=DEFAULT_OPTIONS):
@@ -151,12 +155,9 @@ class ATEWidget(PluginMainWidget):
 
     def create_project(self, project_path):
         print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
-        status, data = NewProjectDialog(self, os.path.basename(project_path))
-        if status:  # OK button pressed
-            self.project_info(project_path, data['quality'])
-            self.set_tree()
-        else:
-            pass
+        self.project_info(project_path)
+        new_project_dialog(self.project_info)
+        self.set_tree()
 
     def open_project(self, project_path):
         print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")

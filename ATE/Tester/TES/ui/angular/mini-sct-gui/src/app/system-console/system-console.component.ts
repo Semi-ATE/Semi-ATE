@@ -11,6 +11,7 @@ import { CardConfiguration, CardStyle } from '../basic-ui-elements/card/card-con
 import { initMultichoiceEntry, MultichoiceConfiguration } from '../basic-ui-elements/multichoice/multichoice-config';
 import { StorageMap } from '@ngx-pwa/local-storage';
 import { LogLevelFilterSetting, SettingType } from '../models/storage.model';
+import { AppstateService } from '../services/appstate.service';
 
 export enum LogLevelString {
   Debug = 'DEBUG',
@@ -35,7 +36,12 @@ export class SystemConsoleComponent implements OnInit, OnDestroy {
   ngUnsubscribe: Subject<void>;
   private deviceId: string;
 
-  constructor(private readonly store: Store<AppState>, private readonly communicationService: CommunicationService, private readonly storage: StorageMap) {
+  constructor(
+    private readonly store: Store<AppState>,
+    private readonly communicationService: CommunicationService,
+    private readonly storage: StorageMap,
+    private readonly appStateService: AppstateService
+  ) {
     this.systemConsoleCardConfiguration = new CardConfiguration();
     this.clearConsoleButtonConfig = new ButtonConfiguration();
     this.reloadLogsButtonConfig = new ButtonConfiguration();
@@ -83,6 +89,7 @@ export class SystemConsoleComponent implements OnInit, OnDestroy {
   }
 
   reloadLogs(): void {
+    this.appStateService.resetDialogMechanism();
     this.store.dispatch(ConsoleActions.clearConsoleEntries());
     this.communicationService.send({type: 'cmd', command: 'getlogs'});
   }

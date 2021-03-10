@@ -42,7 +42,6 @@ class ViewMasksetSettings(NewMasksetWizard):
         self.Type.setEnabled(False)
         self.editWaferMapButton.setEnabled(False)
         self.importFor.setEnabled(False)
-        self.XYFlipButton.setEnabled(False)
         self.viewDieButton.setEnabled(False)
         self.customer.setEnabled(False)
 

@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { SystemState } from 'src/app/models/status.model';
 import { MockServerService } from 'src/app/services/mockserver.service';
 import * as constants from 'src/app/services/mockserver-constants';
+import { DropdownConfiguration } from '../basic-ui-elements/dropdown/dropdown-config';
+import { CardConfiguration, CardStyle } from '../basic-ui-elements/card/card-config';
+import { MessageTypes } from '../services/appstate.service';
 
 @Component({
   selector: 'app-debug',
@@ -10,7 +13,7 @@ import * as constants from 'src/app/services/mockserver-constants';
 })
 export class DebugComponent implements OnInit {
 
-  readonly STATES: any = [
+  readonly STATES = [
     {
       description: 'Connecting',
       value: SystemState.connecting
@@ -74,17 +77,35 @@ export class DebugComponent implements OnInit {
     {
       description: 'Generate lot data',
       value: 'Lotdata'
+    },
+    {
+      description: 'Generate bin entries',
+      value: 'BinTable'
+    },
+    {
+      description: 'Max bin table',
+      value: 'MaxBinTable'
     }
   ];
 
+  mockdataDropdownConfig: DropdownConfiguration;
+  captionCardConfiguration: CardConfiguration;
+  mockdataCardConfiguration: CardConfiguration;
+
   constructor(private readonly mss: MockServerService) {
+    this.mockdataDropdownConfig = new DropdownConfiguration();
+    this.captionCardConfiguration = new CardConfiguration();
+    this.mockdataCardConfiguration = new CardConfiguration();
   }
 
   ngOnInit() {
+    this.initMockdataDropdown();
+    this.initCardElements();
     this.sendMockMessage('Result');
   }
 
   sendMockMessage(messageType: string) {
+    this.mss.setRepeatMessages(false);
     switch (messageType) {
       case SystemState.connecting:
         this.mss.setMessages([constants.MESSAGE_WHEN_SYSTEM_STATUS_CONNECTING]);
@@ -128,29 +149,61 @@ export class DebugComponent implements OnInit {
         ]);
         break;
       case 'TestOptions':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.USER_SETTINGS_FROM_SERVER]);
         break;
       case 'ReloadResults':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.TEST_RESULTS_SITE_1_AND_2]);
         break;
       case 'Logfile':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.LOG_FILE]);
         break;
       case 'Logentries':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.LOG_ENTRIES]);
         break;
       case 'Yield':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.YIELD_ENTRIES]);
         break;
       case 'Lotdata':
-        this.mss.setRepeatMessages(false);
         this.mss.setMessages([constants.LOT_DATA]);
         break;
+      case 'BinTable':
+        this.mss.setMessages([constants.BIN_ENTRIES]);
+        break;
+      case 'MaxBinTable':
+        this.mss.setMessages([
+          {
+            type: MessageTypes.Status,
+            payload: {
+              device_id: 'MiniSCT',
+              systemTime: 'Jul 6, 2020, 12:29:21 PM',
+              sites: [
+                'A', 'B', 'C', 'D',
+                'E', 'F', 'G', 'H',
+                'I', 'J', 'K', 'L',
+                'M', 'N', 'O', 'P',
+              ],
+              state: 'testing',
+              error_message: '',
+              env: 'F1',
+              handler: 'invalid',
+              lot_number: '123456.123'
+            }
+          },
+          constants.BIN_TABLE_MAX_SITES
+        ]);
+        break;
     }
+  }
+
+  private initMockdataDropdown(): void {
+    let items = this.STATES.map(e => e);
+    this.mockdataDropdownConfig.initDropdown('Select Mockdata', false, items, 0);
+  }
+
+  private initCardElements(): void {
+    this.captionCardConfiguration.cardStyle = CardStyle.COLUMN_STYLE_FOR_COMPONENT;
+    this.captionCardConfiguration.labelText = 'Debug Area';
+    this.mockdataCardConfiguration.cardStyle = CardStyle.COLUMN_STYLE;
+    this.mockdataCardConfiguration.shadow = true;
   }
 }

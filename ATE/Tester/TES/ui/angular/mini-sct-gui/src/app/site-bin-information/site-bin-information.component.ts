@@ -27,6 +27,7 @@ export class SiteBinInformationComponent implements OnInit, OnDestroy {
   @Input() readonly siteNumber: number;
   @Input() readonly headNumber: number;
   @Input() readonly siteName: string;
+  @Input() readonly styleForFooter: boolean;
 
   ngUnSubscribe: Subject<void>;
 
@@ -38,6 +39,7 @@ export class SiteBinInformationComponent implements OnInit, OnDestroy {
     this.siteNumber = -1;
     this.headNumber = 0;
     this.siteName = '';
+    this.styleForFooter = false;
   }
 
   ngOnInit() {
@@ -62,6 +64,11 @@ export class SiteBinInformationComponent implements OnInit, OnDestroy {
       this.softBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.SOFT_BIN) as number;
       this.hardBin = stdfGetValue(record, STDF_RECORD_ATTRIBUTES.HARD_BIN) as number;
       this.passStatus = computePassedInformationForPartFlag(stdfGetValue(record, STDF_RECORD_ATTRIBUTES.PART_FLG) as number);
+    } else {
+      this.partId = 'Unknown';
+      this.softBin = -1;
+      this.hardBin = -1;
+      this.passStatus = undefined;
     }
   }
 

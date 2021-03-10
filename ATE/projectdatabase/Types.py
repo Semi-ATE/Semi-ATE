@@ -13,6 +13,8 @@ class Types(Enum):
     Sequence = 'sequence'
     Test = 'test'
     Testtarget = 'testtarget'
+    Group = 'group'
+    Settings = 'settings'
 
     def __call__(self):
         return self.value

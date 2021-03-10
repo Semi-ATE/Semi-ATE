@@ -1,12 +1,12 @@
-<div class="displayStyle">
-  <p><span>Part ID: </span>{{partId}}</p>
-  <p><span>Test Head: </span>{{headNumber}}</p>
-  <p><span>Site: </span>{{siteName}}/{{siteNumber}}</p>
+<div class="displayStyle" [class.styleForFooter]="styleForFooter">
+  <p><span class="partIdLabel">Part ID: </span>{{partId}}</p>
+  <p><span class="testHeadLabel">Test Head: </span>{{headNumber}}</p>
+  <p><span class="siteLabel">Site: </span>{{siteName}}/{{siteNumber}}</p>
   <div class="passStatus">
     <div [ngClass]="getClass()">
-      <p><span>SBIN: </span>{{softBin}}</p>
-      <p><span>HBIN: </span>{{hardBin}}</p>
-      <p><strong>{{getPassFailText()}}</strong></p>
+      <p><span class="binLabel">SBIN: </span>{{softBin}}</p>
+      <p><span class="binLabel">HBIN: </span>{{hardBin}}</p>
+      <p class="passFailText"><span><strong>{{getPassFailText()}}</strong></span></p>
     </div>
   </div>
 </div>

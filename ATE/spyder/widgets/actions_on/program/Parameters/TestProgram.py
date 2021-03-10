@@ -1,12 +1,11 @@
 from ATE.spyder.widgets.actions_on.program.Parameters.OutputValidator import OutputValidator
-import numpy as np
-import copy
-from typing import Callable, List, Optional, Tuple
-from PyQt5.QtWidgets import QTableWidget
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 from ATE.spyder.widgets.actions_on.program.Utils import Action, ParameterState, ResolverTypes
 from ATE.spyder.widgets.actions_on.program.Parameters.InputParameter import InputParameter
 from ATE.spyder.widgets.actions_on.program.Parameters.OutputParameter import Bininfo, OutputParameter
+from PyQt5.QtWidgets import QTableWidget
+from typing import Callable, List, Optional, Tuple
+import copy
 
 
 PARAM_PREFIX = '_ate_var_'
@@ -89,6 +88,9 @@ class TestParameters:
     def _get_test_num_for_output(self):
         test_nums = []
         for index, (_, output) in enumerate(self._output_parameters.items()):
+            if output.get_test_number() in test_nums:
+                continue
+
             test_nums.append(output.get_test_number())
 
         multiplier = int(test_nums[0] / MAX_TEST_RANGE)
@@ -97,7 +99,11 @@ class TestParameters:
             if index == 0:
                 continue
             if (test_num % MAX_TEST_RANGE) != index:
-                return (MAX_TEST_RANGE * multiplier) + index
+                value = (MAX_TEST_RANGE * multiplier) + index
+                if value in test_nums:
+                    continue
+
+                return value
 
         return max(test_nums) + 1
 
@@ -115,7 +121,9 @@ class TestParameters:
         out_l_limit, out_u_limit, out_exponent = output_parameter.get_range_infos()
 
         in_l_limit, in_u_limit, in_exponent = input_parameter.get_range_infos()
-        if (in_l_limit, in_u_limit) == (-np.infty, np.infty):
+
+        import math
+        if (in_l_limit, in_u_limit) == (-math.inf, math.inf):
             return True
 
         power = self._get_power(in_exponent, out_exponent)
@@ -177,7 +185,7 @@ class TestParameters:
 
         return ranges
 
-    def get_availabe_test_nums(self):
+    def get_available_test_nums(self):
         ranges = []
         for _, output in self._output_parameters.items():
             ranges.append(output.get_test_number())
@@ -381,7 +389,7 @@ class TestProgram:
 
     def import_tests_parameters(self, sequence_information):
         for test_info in sequence_information:
-            test_parameter = TestParameters(test_info['description'], test_info['name'], test_info['input_parameters'], test_info['output_parameters'], self.output_validator, test_info['test_num'])
+            test_parameter = TestParameters(test_info['description'], test_info['name'], test_info['input_parameters'], test_info['output_parameters'], self.output_validator, test_info['test_num'], is_selected=test_info['is_selected'])
             self._tests.append(test_parameter)
 
     def validate_test_parameters(self, test_name, available_tests_handler):
@@ -476,7 +484,7 @@ class TestProgram:
     def is_valid_test_number(self, test_number: int):
         available_test_nums = []
         for test in self._tests:
-            available_test_nums += test.get_availabe_test_nums()
+            available_test_nums += test.get_available_test_nums()
 
         if test_number in available_test_nums:
             return False, f'test_num {test_number} is already occupied by one of the tests'

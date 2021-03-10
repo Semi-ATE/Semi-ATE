@@ -83,7 +83,7 @@ def test_parameter_handler_test_changed(parameter_handler: TestProgram):
     new_parameter_name = "new_parameter3"
     out_params: OutputParameter = test.get_output_parameter(new_parameter_name)
 
-    assert out_params.get_test_number() == 101
+    assert out_params.get_test_number() == 103
 
 
 def test_parameter_test_enumeration(parameter_handler: TestProgram):

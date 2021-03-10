@@ -1,4 +1,3 @@
-import numpy as np
 from dataclasses import dataclass
 from ATE.spyder.widgets.actions_on.program.Utils import (ParameterEditability, ParameterState, OutputFieldsPosition, ValidatorTypes)
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
@@ -162,10 +161,11 @@ class OutputParameter(ParameterBase):
     def get_limits(self):
         l_limit = self.lsl.get_value()
         u_limit = self.usl.get_value()
-        if not np.isnan(float(self.ltl.get_value())):
+        import math
+        if not math.isnan(float(self.ltl.get_value())):
             l_limit = self.ltl.get_value()
 
-        if not np.isnan(float(self.utl.get_value())):
+        if not math.isnan(float(self.utl.get_value())):
             u_limit = self.utl.get_value()
 
         return float(l_limit), float(u_limit)

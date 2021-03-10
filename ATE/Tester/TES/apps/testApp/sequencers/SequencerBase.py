@@ -1,5 +1,5 @@
 # # -*- coding: utf-8 -*-
-from ATE.common.logger import Logger
+from ATE.common.logger import LogLevel, Logger
 from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategyExternal import BinStrategyExternal
 from ATE.Tester.TES.apps.testApp.sequencers.ExecutionPolicy import ExecutionPolicyABC
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import (DutTestCaseABC, DutTestCaseBase)
@@ -62,7 +62,7 @@ class SequencerBase:
 
         self.test_cases.append(test_instance)
 
-    def set_tester_instance(self, tester_instance: DutTestCaseABC):
+    def set_tester_instance(self, tester_instance):
         self.tester_instance = tester_instance
 
     def set_cache_instance(self, cache_instance):
@@ -127,11 +127,16 @@ class SequencerBase:
         self.soft_bin = 1
         self.stdf_data.append(generate_PIR_dict(head_num=0, site_num=int(self.site_id)))
 
+    def pre_test_cb(self, test_index: int):
+        self.logger.log_message(LogLevel.Debug(), f"Enter {self.test_cases[test_index].instance_name}")
+
     def after_test_cb(self, test_index: int, test_result: tuple, test_num: int, exception: bool):
         """
         This function is called after the execution
         of each individual test by the execution policy
         """
+
+        self.logger.log_message(LogLevel.Debug(), f"Leave {self.test_cases[test_index].instance_name}")
 
         # Step 1: Check for failure
         failed = test_result[0] == Result.Fail()
@@ -200,6 +205,8 @@ class SequencerBase:
                                                 x_coord=1, y_coord=1, test_time=execution_time,
                                                 part_id=self.part_id, part_txt="1", part_fix=[0b00000000]))
 
+        self.after_cycle_callback()
+
     def aggregate_tests_summary(self):
         tests_summary = []
         for test_case in self.test_cases:
@@ -215,3 +222,9 @@ class SequencerBase:
             return
 
         self.logger.set_logger_level(level)
+
+    def set_auto_script(self, auto_script):
+        self.auto_script = auto_script
+
+    def after_cycle_callback(self):
+        self.auto_script.after_cycle_teardown()

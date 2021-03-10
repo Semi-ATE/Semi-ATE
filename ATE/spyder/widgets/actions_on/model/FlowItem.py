@@ -1,14 +1,13 @@
+from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem as BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
 from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
                                                                   ExceptionTypes)
+from ATE.spyder.widgets.constants import SUBFLOWS_QUALIFICATION, FLOWS
 
 from PyQt5 import QtGui, QtCore
 import os
-
-
-flows = ['checker', 'maintenance', 'production', 'engineering', 'validation', 'quality']
 
 
 def generate_item_name(item):
@@ -21,12 +20,20 @@ def generate_item_name(item):
     if None in [item.project_info.active_target, item.project_info.active_base]:
         return None
 
-    owner_name = item.project_info.active_hardware.upper() + '_' + item.project_info.active_base.upper() + '_' + item.project_info.active_target + '_' + get_prefix(item)
-    return owner_name
+    groups = [group.name for group in item.project_info.get_groups()]
+    if item.text() in groups:
+        return item.project_info.active_hardware.upper() + '_' + item.project_info.active_base.upper() + '_' + item.project_info.active_target + '_' + item.text()
+
+    # sub_qualification items
+    if item.text() in SUBFLOWS_QUALIFICATION:
+        return item.project_info.active_hardware.upper() + '_' + item.project_info.active_base.upper() + '_' + item.project_info.active_target + '_' + 'qualification' + '_' + item.text()
+
+    # sub_sub_qualification items
+    return item.project_info.active_hardware.upper() + '_' + item.project_info.active_base.upper() + '_' + item.project_info.active_target + '_' + 'qualification' + '_' + item.parent.text() + '_' + item.text()
 
 
 def get_prefix(item):
-    if item.text() in flows:
+    if item.text() in FLOWS:
         prefix = item.text()[0].upper()
     else:
         if item.parent is not None:
@@ -42,7 +49,7 @@ def append_test_program_nodes(item):
 
     programs = item.project_info.get_programs_for_owner(owner_name)
     for index, program in enumerate(programs):
-        item.appendRow(TestprogramTreeItem(item.project_info, program, owner_name, index, len(programs) == 1))
+        item.appendRow(TestprogramTreeItem(item.project_info, program, owner_name, index, len(programs) == 1, item))
 
 
 def add_testprogram_impl(project_info, item):
@@ -66,6 +73,15 @@ class FlowItem(BaseItem):
         for c in range(int(0), self.row_count()):
             item = self.child(c)
             item.update()
+
+    def remove_flow(self, name: str):
+        for index in range(self.rowCount()):
+            flow_item = self.child(index)
+
+            if flow_item.text() != name:
+                continue
+
+            self.removeRow(flow_item.row())
 
 
 class SimpleFlowItem(FlowItem):
@@ -209,11 +225,12 @@ class QualiFlowSubitemInstance(BaseItem):
 
 
 class TestprogramTreeItem(BaseItem):
-    def __init__(self, project_info, program, owner, order, is_single):
+    def __init__(self, project_info: ProjectNavigation, program: str, owner: str, order: int, is_single: bool, parent: QtGui.QStandardItem):
         self.program_name = program.prog_name
         super().__init__(project_info, self.program_name, None)
         self.owner = owner
         self.order = order
+        self.parent = parent
         self.is_single = is_single
 
         if not self._is_test_program_valid():
@@ -232,16 +249,23 @@ class TestprogramTreeItem(BaseItem):
 
         return menu
 
+    @staticmethod
+    def is_valid_functionality(functionality):
+        if functionality in (MenuActionTypes.MoveDown(), MenuActionTypes.MoveUp()):
+            return False
+
+        return True
+
     def edit_item(self):
         import ATE.spyder.widgets.actions_on.program.EditTestProgramWizard as edit
         handle_excpetions(self.project_info.parent,
-                          lambda: edit.edit_program_dialog(self.text(), self.project_info, self.owner),
+                          lambda: edit.edit_program_dialog(self.text(), self.project_info, self.owner, self.parent),
                           ExceptionTypes.Program())
 
     def display_item(self):
         import ATE.spyder.widgets.actions_on.program.ViewTestProgramWizard as view
         handle_excpetions(self.project_info.parent,
-                          lambda: view.view_program_dialog(self.text(), self.project_info, self.owner),
+                          lambda: view.view_program_dialog(self.text(), self.project_info, self.owner, self.parent),
                           ExceptionTypes.Program())
 
     def delete_program(self, emit_event=True):

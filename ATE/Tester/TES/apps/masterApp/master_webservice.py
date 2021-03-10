@@ -16,6 +16,7 @@ class MessageTypes(Enum):
     Logfile = 'logfile'
     Yield = 'yield'
     LotData = 'lotdata'
+    BinTable = 'bintable'
     Configuration = 'masterconfiguration'
 
     def __call__(self):
@@ -90,6 +91,10 @@ class WebsocketCommunicationHandler:
         lotdata_message = self._create_lotdata_message(lotdata)
         await self.send_message_to_all(lotdata_message)
 
+    async def send_bin_table(self, bin_table):
+        yields_message = self._create_bin_table_message(bin_table)
+        await self.send_message_to_all(yields_message)
+
     async def _send_connection_id_to_ws(self, ws, connection_id):
         connection_id_message = self._create_connection_id_message(connection_id)
         await ws.send_json(connection_id_message)
@@ -116,6 +121,9 @@ class WebsocketCommunicationHandler:
 
     def _create_yield_message(self, yields):
         return self._create_message(MessageTypes.Yield(), yields)
+
+    def _create_bin_table_message(self, bin_table: list):
+        return self._create_message(MessageTypes.BinTable(), bin_table)
 
     def _create_lotdata_message(self, lotdata):
         return self._create_message(MessageTypes.LotData(), lotdata)
@@ -207,6 +215,7 @@ async def webservice_init(app):
                     web.get('/control', index_handler),
                     web.get('/records', index_handler),
                     web.get('/logging', index_handler),
+                    web.get('/bin', index_handler),
                     web.get('/ws', ws_comm_handler.receive)])
     # From the aiohttp documentation it is known to use
     # add_static only when developing things

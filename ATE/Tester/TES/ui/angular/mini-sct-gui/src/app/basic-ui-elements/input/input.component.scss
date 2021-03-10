@@ -25,3 +25,43 @@ input {
     opacity: 0.6;
   }
 }
+
+.errorMessage {
+  color: red;
+  font-size: $text;
+  text-align: left;
+}
+
+.inputContainer {
+  position: relative;
+}
+
+.inputHistoryList {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  background-color: $beige;
+  overflow: auto;
+  margin-top: 0px;
+  .histories {
+    text-align: left;
+    color: $micronasBlue;
+    font-size: $label;
+    &:hover {
+      background-color: $grey;
+      color: black;
+    }
+    .highlight {
+      background-color: $micronasBlue;
+      color: white;
+    }
+    li, a {
+      padding: 2px 2px 2px 3px;
+    }
+  }
+}
+
+.hidden {
+  display: none;
+}
+

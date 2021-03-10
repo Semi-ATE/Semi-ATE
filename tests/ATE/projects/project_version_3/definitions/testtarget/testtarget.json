@@ -1,0 +1,42 @@
+[
+  {
+    "name": "adf_checker_check1",
+    "prog_name": "project_version_3_HW0_PR_adf_checker_check1",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "ad",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "a_qualification_LU_lazy",
+    "prog_name": "project_version_3_HW0_FT_a_qualification_LU_lazy",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "ad",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "a_maintenance_lazyme",
+    "prog_name": "project_version_3_HW0_FT_a_maintenance_lazyme",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "iddq",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "adf_checker_asd",
+    "prog_name": "project_version_3_HW0_PR_adf_checker_asd",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "asdf",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

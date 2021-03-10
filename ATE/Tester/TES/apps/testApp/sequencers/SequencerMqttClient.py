@@ -82,6 +82,7 @@ class SequencerMqttClient(Harness.Harness):
         # TODO: execution policy should not be hard coded
         self._execution_policy = SingleShotExecutionPolicy()
         self.logger = None
+        self.after_terminate_callback = None
 
     def set_logger(self, logger: Logger):
         self.logger = logger
@@ -242,9 +243,13 @@ class SequencerMqttClient(Harness.Harness):
         pass
 
     def _execute_cmd_terminate(self):
-        self.logger.log_message(LogLevel.Debug(), 'COMMAND: terminate')
+        self.logger.log_message(LogLevel.Debug(), "COMMAND: terminate")
         result = self._sequencer_instance.aggregate_tests_summary()
         self.send_summary(result)
+        self.after_terminate_callback()
+
+    def set_after_terminate_callback(self, callback: callable):
+        self.after_terminate_callback = callback
 
     # Hack: Since we can only distribute the SequencerMqttClient to actuators, but they
     # need access to some sort of mqtt we reimplement this method as pass through here.

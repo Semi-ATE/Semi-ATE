@@ -1,33 +1,15 @@
-from typing import NewType
-from ATE.sammy.migration.utils import generate_path, VERSION_FILE_NAME, VERSION
-from ATE.sammy.verbs.verbbase import VerbBase
-from enum import Enum
 import os
 import json
 import glob
-import sys
 import pytest
+
+from ATE.projectdatabase.Types import Types
+from ATE.sammy.migration.utils import generate_path, VERSION_FILE_NAME, VERSION
 
 
 ALL_PROJECTS_REL_PATH = '../projects/'
 NEW_PROJECT_REL_PATH = '../spyder/widgets/CI/qt/smoketest/smoke_test'
 DEFINTIONS = 'definitions'
-
-
-class Section(Enum):
-    Program = 'program'
-    Sequence = 'sequence'
-    Hardware = 'hardware'
-    Maskset = 'maskset'
-    Die = 'die'
-    Package = 'package'
-    Device = 'device'
-    Product = 'product'
-    Test = 'test'
-    TestTarget = 'testtarget'
-
-    def __call__(self):
-        return self.value
 
 
 def generate_latest_project_path():
@@ -61,7 +43,7 @@ def generate_section_old(section: str) -> str:
     return generate_path(path, section)
 
 
-class Test_MigrateCheck(VerbBase):
+class Test_MigrateCheck:
     def setup_method(self, test_method):
         self.cwd = os.getcwd()
         os.chdir(os.path.dirname(__file__))
@@ -69,32 +51,8 @@ class Test_MigrateCheck(VerbBase):
     def teardown_method(self, test_method):
         os.chdir(os.path.dirname(self.cwd))
 
-    def run(self) -> int:
-        return self.check(self.generate_new_project_path(), self.generate_latest_project_path())
-
-    def check(self, current_project_path: str, old_project_path: str) -> bool:
-        try:
-            self.check_program(self._generate_section_path(current_project_path, Section.Program()),
-                               self._generate_section_path(old_project_path, Section.Program()))\
-                .check_sequence(self._generate_section_path(current_project_path, Section.Sequence()),
-                                self._generate_section_path(old_project_path, Section.Sequence()))
-        except AttributeError:
-            return sys.exit(-1)
-
-        print('checked.')
-        return sys.exit(0)
-
-    def test_check_program(self):
-        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(Section.Program()), generate_section_old(Section.Program()))
-
-        if (set(self._get_data(cur_program)[0].keys()) == set(self._get_data(old_program)[0].keys())):
-            return self
-
-        print(Test_MigrateCheck.generate_error_message(Section.Program()))
-        assert None
-
     def test_check_sequence(self):
-        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(Section.Sequence()), generate_section_old(Section.Sequence()))
+        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(Types.Sequence()), generate_section_old(Types.Sequence()))
         cur_data = self._get_data(cur_program)[0]
         old_data = self._get_data(old_program)[0]
 
@@ -111,10 +69,21 @@ class Test_MigrateCheck(VerbBase):
             success = set(v_cur['Binning'].keys()) == set(v_old['Binning'].keys()) if success else success
 
         if not success:
-            print(Test_MigrateCheck.generate_error_message(Section.Sequence()))
+            print(Test_MigrateCheck.generate_error_message(Types.Sequence()))
             assert None
 
         return self
+
+    @pytest.mark.parametrize("sections", [Types.Settings(), Types.Die(), Types.Program(), Types.Group()])
+    def test_check_basic_struct(self, sections):
+        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(sections), generate_section_old(sections))
+        cur_data = self._get_data(cur_program)
+        old_data = self._get_data(old_program)
+        if set(cur_data[0].keys()) == set(old_data[0].keys()):
+            return self
+
+        print(Test_MigrateCheck.generate_error_message(sections))
+        assert None
 
     @staticmethod
     def generate_error_message(section_name: str):

@@ -112,13 +112,15 @@ angular_tests:
     - ./cli/ng test --watch false --browsers ChromeHeadless
   tags:
     - pyt
-    
+
 
 unittests:
   stage: test
   script:
    - $ENV:PATH="$ENV:PATH;$CI_PROJECT_DIR/ATE/sammy"
    - Enable-Venv $venvPath
+   - Install-PythonRequirements $venvPath
+   - Install-Plugins $venvPath
    - pytest --cov=ATE tests\ATE\TES\apps
   #  - pytest --cov=ATE tests\ATE\data
    - pytest --cov=ATE tests\ATE\projectdatabase

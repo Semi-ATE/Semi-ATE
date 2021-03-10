@@ -2,6 +2,7 @@ import os
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ATE.sammy.coding.generators import BaseGenerator
+from ATE.sammy.coding.AutoScriptGenerator import AutoScriptGenerator
 
 
 class test_program_generator(BaseGenerator):
@@ -9,10 +10,8 @@ class test_program_generator(BaseGenerator):
         self.last_index = self.last_index + 1
         return self.last_index
 
-    def __init__(self, template_dir, prog_name, owner, datasource):
-        self.datasource = datasource
+    def __init__(self, template_dir, project_path, prog_name, tests_in_program, test_targets, program_configuration):
         self.last_index = 0
-        self.current_param_id = 0
         template_path = os.path.normpath(template_dir)
         file_loader = FileSystemLoader(template_path)
         env = Environment(loader=file_loader)
@@ -27,8 +26,8 @@ class test_program_generator(BaseGenerator):
         template = env.get_template(template_name)
         file_name = f"{prog_name}.py"
 
-        rel_path_to_dir = self._generate_relative_path()
-        abs_path_to_dir = os.path.join(datasource.project_directory, rel_path_to_dir)
+        rel_path_to_dir = self._generate_relative_path(program_configuration.hardware, program_configuration.base)
+        abs_path_to_dir = os.path.join(project_path, rel_path_to_dir)
         self.abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
 
         if not os.path.exists(abs_path_to_dir):
@@ -37,44 +36,36 @@ class test_program_generator(BaseGenerator):
         if os.path.exists(self.abs_path_to_file):
             os.remove(self.abs_path_to_file)
 
-        program_configuration = self.datasource.get_program_configuration_for_owner(owner, prog_name)
-        test_list, test_imports = self.build_test_entry_list(datasource, owner, prog_name)
+        test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
         output = template.render(test_list=test_list, test_imports=test_imports, program_configuration=program_configuration)
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
 
-    def build_test_entry_list(self, datasource, owner, prog_name):
-        # step 1: Get tests and test params in sequence
-        tests_in_program = datasource.get_tests_for_program(prog_name, owner)
+        script_name = os.path.join(abs_path_to_dir, f'{prog_name}_auto_script.py')
+        if not os.path.exists(script_name):
+            AutoScriptGenerator(template_path, script_name)
 
-        # step 2: Get all testtargets for progname
-        test_targets = datasource.get_test_targets_for_program(prog_name)
-
-        # step 3: Augment sequences with actual classnames
+    def build_test_entry_list(self, tests_in_program, test_targets):
         test_list = []
         test_imports = {}
         for program_entry in tests_in_program:
             test_class = self.resolve_class_for_test(program_entry.test, test_targets)
             test_module = self.resolve_module_for_test(program_entry.test, test_targets)
             params = program_entry.definition
-
-            for op in params['output_parameters']:
-                params['output_parameters'][op]['id'] = self.current_param_id
-                self.current_param_id += 1
+            if not params['is_selected']:
+                continue
 
             test_imports.update({test_module: test_class})
             test_list.append({"test_name": program_entry.test,
                               "test_class": test_class,
                               "test_module": test_module,
-                              "test_number": self.current_param_id,
+                              "test_number": params['test_num'],
                               "sbin": params['sbin'],
                               "instance_name": params['description'],
                               "output_parameters": params['output_parameters'],
                               "input_parameters": params['input_parameters']})
-
-            self.current_param_id += 1
 
         return test_list, test_imports
 
@@ -94,9 +85,7 @@ class test_program_generator(BaseGenerator):
                 return f"{test_name}.{target.name}"
         raise Exception(f"Cannot resolve module for test {test_name}")
 
-    def _generate_relative_path(self):
-        hardware = self.datasource.active_hardware
-        base = self.datasource.active_base
+    def _generate_relative_path(self, hardware, base):
         return os.path.join('src', hardware, base)
 
     def _generate_render_data(self, abs_path=''):

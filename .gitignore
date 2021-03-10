@@ -166,3 +166,4 @@ tests/ATE/projectdatabase/definitions/sequence/sequenceprogname2.json
 tests/ATE/projectdatabase/definitions/test/test.json
 tests/ATE/projectdatabase/definitions/testtarget/testtarget.json
 tests/ATE/projectdatabase/definitions/updateitem/updateitem.json
+tests/ATE/projectdatabase/definitions/settings/settings.json

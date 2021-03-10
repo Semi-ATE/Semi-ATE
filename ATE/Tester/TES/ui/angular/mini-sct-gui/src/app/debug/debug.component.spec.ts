@@ -1,7 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import * as constants from 'src/app/services/mockserver-constants';
 import { DebugComponent } from './debug.component';
 import { MockServerService } from '../services/mockserver.service';
+import { DropdownComponent } from '../basic-ui-elements/dropdown/dropdown.component';
+import { CardComponent } from '../basic-ui-elements/card/card.component';
 
 describe('DebugComponent', () => {
   let mockServerService: MockServerService;
@@ -10,7 +11,11 @@ describe('DebugComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DebugComponent ]
+      declarations: [
+        DebugComponent,
+        DropdownComponent,
+        CardComponent,
+      ]
     })
     .compileComponents();
   }));

@@ -1,0 +1,68 @@
+[
+  {
+    "name": "sd",
+    "customer": "",
+    "definition": {
+      "WaferDiameter": 200,
+      "Bondpads": 2,
+      "DieSize": [
+        3323,
+        2322
+      ],
+      "DieRef": [
+        1661.5,
+        1161.0
+      ],
+      "Offset": [
+        0,
+        0
+      ],
+      "Scribe": [
+        100.0,
+        100.0
+      ],
+      "Flat": 95.0,
+      "BondpadTable": [
+        [
+          "d",
+          3,
+          4,
+          100,
+          100,
+          "A",
+          "I"
+        ],
+        [
+          "f",
+          433,
+          343,
+          100,
+          100,
+          "A",
+          "I"
+        ]
+      ],
+      "Wafermap": {
+        "rim": [
+          [
+            100,
+            80
+          ],
+          [
+            -80,
+            -100
+          ]
+        ],
+        "blank": [
+          [
+            80,
+            80
+          ]
+        ],
+        "test_insert": [],
+        "unused": []
+      }
+    },
+    "is_enabled": true
+  }
+]

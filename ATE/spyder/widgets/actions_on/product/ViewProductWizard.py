@@ -16,7 +16,7 @@ class ViewProductWizard(NewProductWizard):
         self.WithHardware.setEnabled(False)
         self.ProductName.setEnabled(False)
         self.FromDevice.setEnabled(False)
-        self.productQuality.setEnabled(False)
+        self.qualityGrade.setEnabled(False)
         self.isAGrade.setChecked(False)
         self.isAGrade.setEnabled(False)
         self.referenceGrade.setEnabled(False)
@@ -34,7 +34,7 @@ class ViewProductWizard(NewProductWizard):
         dialog.ProductName.setText(name)
         dialog.WithHardware.setCurrentText(configuration.hardware)
         dialog.FromDevice.setCurrentText(configuration.device)
-        dialog.productQuality.setCurrentText(configuration.quality)
+        dialog.qualityGrade.setCurrentText(configuration.quality)
         dialog.isAGrade.setChecked(False if configuration.grade != 'A' else True)
         if not configuration.grade == 'A':
             dialog.isAGrade.setChecked(False)

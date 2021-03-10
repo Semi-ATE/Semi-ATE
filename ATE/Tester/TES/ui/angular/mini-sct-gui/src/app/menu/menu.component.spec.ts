@@ -29,6 +29,8 @@ import { consoleReducer } from '../reducers/console.reducer';
 import { AppstateService } from '../services/appstate.service';
 import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 import { yieldReducer } from '../reducers/yield.reducer';
+import { BinTableComponent } from '../bin-table/bin-table.component';
+import { binReducer } from '../reducers/bintable.reducer';
 
 describe('MenuComponent', () => {
   let component: MenuComponent;
@@ -37,7 +39,7 @@ describe('MenuComponent', () => {
   let mockServerService: MockServerService;
   let appstateService: AppstateService;
   let router: Router;
-  const expectedMenuEntries = [ 'Information', 'Control', 'Records', 'Logging'];
+  const expectedMenuEntries = [ 'Information', 'Bin', 'Control', 'Records', 'Logging'];
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -54,6 +56,7 @@ describe('MenuComponent', () => {
         ButtonComponent,
         InputComponent,
         CheckboxComponent,
+        BinTableComponent
       ],
       imports: [
         RouterTestingModule.withRoutes(MINISCT_ROUTES),
@@ -63,7 +66,8 @@ describe('MenuComponent', () => {
           results: resultReducer, // key must be equal to the key define in interface AppState, i.e. results
           consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
           userSettings: userSettingsReducer, // key must be equal to the key define in interface AppState, i.e. userSettings
-          yield: yieldReducer
+          yield: yieldReducer,
+          binTable: binReducer
         }
       )],
       providers: [
@@ -223,5 +227,30 @@ describe('MenuComponent', () => {
     expect(navigateByUrlSpy).toHaveBeenCalled();
     expect(args[0]).toContain(MenuItem.Info);
     expect(args[1].skipLocationChange).toEqual(false, `Location must change to ${MenuItem.Info}`);
+  });
+
+  it('should navigate to' + MenuItem.Bin + ', when menu item ' + MenuItem.Bin + ' is clicked', async () => {
+    mockServerService.setMessages([
+      constants.MESSAGE_WHEN_SYSTEM_STATUS_INITIALIZED
+    ]);
+
+    let binList = debugElement.queryAll(By.css('li'))
+        .filter(e => e.nativeElement.innerText === 'Bin');
+
+    expect(binList.length).toEqual(1, 'Bin menu item is unique');
+
+    spyOnProperty(router, 'url').and.returnValue('/' + MenuItem.Bin);
+
+    let isActiveSpy = spyOn(component, 'isActive').and.callThrough();
+    binList[0].nativeElement.click();
+    let binIsActive = () => debugElement.queryAll(By.css('li a.active'))
+      .filter(r => r.nativeElement.innerText === 'Bin').length === 1;
+
+    await expectWaitUntil(
+      () => fixture.detectChanges(),
+      binIsActive,
+      'Bin menu item should be active');
+
+    expect(isActiveSpy).toHaveBeenCalled();
   });
 });

@@ -304,7 +304,7 @@ class NewDeviceWizard(BaseDialog):
             return
 
         if not self.existing_dies:
-            self.feedback.setText("no die is availabe for the current hardware")
+            self.feedback.setText("no die is available for the current hardware")
             return
 
         self.feedback.setText('')

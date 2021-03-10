@@ -33,6 +33,7 @@ class ViewHardwaresetupSettings(HardwareWizard):
         self.multisiteLoadboard.setDisabled(True)
         self.multisiteDIB.setDisabled(True)
         self.multisiteProbecard.setDisabled(True)
+        self.tester.setEnabled(False)
         self.maxParallelism.setEnabled(False)
         self.finaltestSites.setEnabled(False)
         self.finaltestConfiguration.setEnabled(False)
@@ -69,12 +70,12 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog.multisiteLoadboard.setText(hw_configuration["PCB"]["MultiSiteLoadboard"])
         dialog.multisiteDIB.setText(hw_configuration["PCB"]["MultiSiteDIB"])
         dialog.multisiteProbecard.setText(hw_configuration["PCB"]["MultiSiteProbeCard"])
+        dialog.select_tester(hw_configuration["tester"])
         dialog.maxParallelism.setCurrentIndex(hw_configuration["PCB"]["MaxParallelism"] - 1)
         dialog._available_pattern = hw_configuration["Parallelism"]
         dialog.populate_selected_instruments(hw_configuration["Instruments"])
         dialog.populate_selected_actuators(hw_configuration["Actuator"])
         dialog.populate_selected_gpfunctions(hw_configuration["GPFunctions"])
-        dialog.select_tester(hw_configuration["tester"])
         ViewHardwaresetupSettings._update_available_pattern_list(dialog)
         dialog._verify()
 

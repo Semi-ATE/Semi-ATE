@@ -215,7 +215,7 @@
                 </size>
                </property>
                <property name="text">
-                <string>Availabe :</string>
+                <string>Available :</string>
                </property>
               </widget>
              </item>

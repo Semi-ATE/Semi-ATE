@@ -15,15 +15,9 @@
       <li>Low Limit: <span class="value">{{getScaledLowLimit()}}</span></li>
       <li>High Limit: <span class="value">{{getScaledHighLimit()}}</span></li>
       <li>
-        <div *ngIf="testFlag === 0; else testFlgNotEqualNull">
-          Test Flag:
-          <span class="value">{{getTestFlag()}}</span>
+        <div class="multichoice">
+          <app-multichoice [multichoiceConfig]="computeMultichoiceConfigurationForTestFlagValue(getTestFlag())"><span>{{getTestFlag()}}</span></app-multichoice>
         </div>
-        <ng-template #testFlgNotEqualNull>
-          <div class="multichoice">
-            <app-multichoice [multichoiceConfig]="computeMultichoiceConfigurationForTestFlagValue(getTestFlag())"><span>{{testFlag}}</span></app-multichoice>
-          </div>
-        </ng-template>
       </li>
     </ul>
   </div>

@@ -5,6 +5,10 @@
         <a [ngClass]="{'active': isActive(menuItem.Info)}" routerLink="{{menuItem.Info}}">Information</a>
 	    <a class='space'>Information</a>
       </li>
+      <li [ngClass]="{'disabled': isDisabled(menuItem.Bin)}">
+        <a [ngClass]="{'active': isActive(menuItem.Bin)}" routerLink="{{menuItem.Bin}}">Bin</a>
+	    <a class='space'>Bin</a>
+      </li>
       <li [ngClass]="{'disabled': isDisabled(menuItem.Control)}">
         <a [ngClass]="{'active': isActive(menuItem.Control)}" routerLink="{{menuItem.Control}}">Control</a>
         <a class='space'>Control</a>

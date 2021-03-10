@@ -131,21 +131,6 @@
            <height>22</height>
           </size>
          </property>
-         <item>
-          <property name="text">
-           <string/>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>SCT</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>CT</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -187,7 +172,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="pcbsTab">
         <attribute name="title">
@@ -492,86 +477,6 @@
                  <property name="maxVisibleItems">
                   <number>16</number>
                  </property>
-                 <item>
-                  <property name="text">
-                   <string>1</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>2</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>3</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>4</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>5</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>6</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>7</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>8</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>9</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>10</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>11</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>12</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>13</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>14</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>15</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>16</string>
-                  </property>
-                 </item>
                 </widget>
                </item>
               </layout>
@@ -2245,7 +2150,7 @@
          <item row="1" column="3">
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Availabe:</string>
+            <string>Available:</string>
            </property>
           </widget>
          </item>

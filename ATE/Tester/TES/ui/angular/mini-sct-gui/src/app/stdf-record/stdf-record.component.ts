@@ -13,7 +13,6 @@ export class StdfRecordComponent implements OnInit {
 
   passOrFailTextColor: string;
   passOrFail: string;
-  testFlag: number;
   testFlagBitEncoding: string;
 
   constructor() {
@@ -23,7 +22,6 @@ export class StdfRecordComponent implements OnInit {
     };
     this.passOrFailTextColor = '#0AC473';
     this.passOrFail = 'P';
-    this.testFlag = 0;
     this.testFlagBitEncoding = '0, 0, 0, 0, 0, 0, 0, 0';
   }
 
@@ -79,8 +77,7 @@ export class StdfRecordComponent implements OnInit {
   }
 
   getTestFlag(): number {
-    this.testFlag = stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_FLG) as number;
-    return this.testFlag;
+    return stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_FLG) as number;
   }
 
   private siteNumberToLetter(siteNumber: number): string {

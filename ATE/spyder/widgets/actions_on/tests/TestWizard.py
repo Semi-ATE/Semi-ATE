@@ -28,6 +28,7 @@ from ATE.spyder.widgets.validation import valid_min_float_regex
 from ATE.spyder.widgets.validation import valid_test_name_regex
 from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
 from ATE.spyder.widgets.actions_on.tests.Utils import POWER
+from ATE.spyder.widgets.constants import UpdateOptions
 
 minimal_docstring_length = 80
 
@@ -168,7 +169,7 @@ class TestWizard(BaseDialog):
         self.inputParameterUnselect.setIcon(qta.icon('mdi.select-off', color='orange'))
         self.inputParameterUnselect.setToolTip('Clear selection')
 
-        self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
+        self.inputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
         self.inputParameterFormat.setToolTip('Show parameter formats')
         self.inputParameterFormatVisible = False
 
@@ -211,7 +212,7 @@ class TestWizard(BaseDialog):
         self.outputParameterUnselect.setIcon(qta.icon('mdi.select-off', color='orange'))
         self.outputParameterUnselect.setToolTip('Clear selection')
 
-        self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
+        self.outputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
         self.outputParameterFormat.setToolTip('Show parameter formats')
         self.outputParameterFormatVisible = False
 
@@ -244,6 +245,8 @@ class TestWizard(BaseDialog):
         self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, True)
         self.setOutputParameters(test_content['output_parameters'])
         self.outputParameterSelectionChanged()
+
+        self._init_group()
 
         # TODO: Idea:
         #   limit the number of output parameters to 9, so we have a decade per test-number,
@@ -395,7 +398,7 @@ class TestWizard(BaseDialog):
             ('Gs (magnetic flux density - gauss = 10⁻⁴ Tesla)',
              lambda: unitSetter('Gs', 'magnetic flux density - gauss = 10⁻⁴ Tesla')),
             ('˽ (no dimension / unit)',
-             lambda: unitSetter('', 'no dimension / unit'))]
+             lambda: unitSetter('˽', 'no dimension / unit'))]
         for unit in alternative_units:
             item = menu.addAction(unit[0])
             item.triggered.connect(unit[1])
@@ -1005,12 +1008,12 @@ class TestWizard(BaseDialog):
 
     def toggleInputParameterFormatVisible(self):
         if self.inputParameterFormatVisible:
-            self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
+            self.inputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
             self.inputParameterFormatVisible = False
             self.inputParameterFormat.setToolTip('Show parameter formats')
             self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, True)
         else:
-            self.inputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
+            self.inputParameterFormat.setIcon(qta.icon('mdi.settings-outline', color='orange'))
             self.inputParameterFormatVisible = True
             self.inputParameterFormat.setToolTip('Hide parameter formats')
             self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, False)
@@ -1516,12 +1519,12 @@ class TestWizard(BaseDialog):
 
     def toggleOutputParameterFormatVisible(self):
         if self.outputParameterFormatVisible:
-            self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
+            self.outputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
             self.outputParameterFormatVisible = False
             self.outputParameterFormat.setToolTip('Show parameter formats')
             self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, True)
         else:
-            self.outputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
+            self.outputParameterFormat.setIcon(qta.icon('mdi.settings-outline', color='orange'))
             self.outputParameterFormatVisible = True
             self.outputParameterFormat.setToolTip('Hide parameter formats')
             self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, False)
@@ -1619,7 +1622,9 @@ class TestWizard(BaseDialog):
         if self.Feedback.text() == "":
             self._validate_output_parameters()
 
-        # 11. Enable/disable the OKButton
+        if not len(self._get_groups()):
+            self.Feedback.setText('make sure to select at least one Group')
+
         if self.Feedback.text() == "":
             self.OKButton.setEnabled(True)
         else:
@@ -1664,6 +1669,7 @@ class TestWizard(BaseDialog):
         test_content['type'] = "custom"
         test_content['hardware'] = self.ForHardwareSetup.text()
         test_content['base'] = self.WithBase.text()
+        test_content['groups'] = self._get_groups()
         test_content['docstring'] = self.description.toPlainText().split('\n')
         test_content['input_parameters'] = self.getInputParameters()
         test_content['output_parameters'] = self.getOutputParameters()
@@ -1671,24 +1677,35 @@ class TestWizard(BaseDialog):
         if not self.read_only:
             self.project_info.add_custom_test(test_content)
         else:
-            if not self.__have_parameters_changed(test_content):
-                self.reject()
-                return
-
-            self.project_info.update_custom_test(test_content)
+            update_option = self.__have_parameters_changed(test_content)
+            self.project_info.update_custom_test(test_content, update_option)
 
         self.accept()
 
-    def __have_parameters_changed(self, content):
+    def _get_groups(self):
+        groups = []
+        for index in range(self.group_combo.count()):
+            item = self.group_combo.model().item(index, 0)
+            if item.checkState() == QtCore.Qt.Unchecked:
+                continue
+
+            groups.append(item.text())
+
+        return groups
+
+    def __have_parameters_changed(self, content: dict) -> UpdateOptions:
         if len(content['input_parameters']) != len(self.test_content['input_parameters']) \
            or len(content['output_parameters']) != len(self.test_content['output_parameters']):
-            return True
+            return UpdateOptions.Code_Update()
 
         if self._check_content(self.test_content['input_parameters'], content['input_parameters']) \
            or self._check_content(self.test_content['output_parameters'], content['output_parameters']):
-            return True
+            return UpdateOptions.Code_Update()
 
-        return False
+        if not (set(self.project_info.get_groups_for_test(self.TestName.text())) & set(self._get_groups())):
+            return UpdateOptions.Group_Update()
+
+        return UpdateOptions.DB_Update()
 
     @staticmethod
     def _check_content(old_data, new_data):
@@ -1701,6 +1718,41 @@ class TestWizard(BaseDialog):
                     return True
 
         return False
+
+    def _init_group(self):
+        self.group_combo.blockSignals(True)
+        self.group_combo.activated.connect(self._group_selected)
+        groups = [group.name for group in self.project_info.get_groups()]
+
+        for group_index, group in enumerate(groups):
+            self.group_combo.insertItem(group_index, group)
+            item = self.group_combo.model().item(group_index, 0)
+            groups = [group.name for group in self.project_info.get_groups_for_test(self.TestName.text())]
+            if groups:
+                item.setCheckState(QtCore.Qt.Checked if group in groups else QtCore.Qt.Unchecked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+
+            if self._is_test_used_in_group(group):
+                item.setEnabled(False)
+
+        self.group_combo.setCurrentIndex(1)
+        self.group_combo.blockSignals(False)
+
+    def _is_test_used_in_group(self, group):
+        test_name = self.TestName.text()
+        sections = [target.split('_')[1] for target in self.project_info.get_available_test_targets(self.ForHardwareSetup.text(), self.WithBase.text(), test_name)]
+        return group in sections
+
+    @QtCore.pyqtSlot(int)
+    def _group_selected(self, index: int):
+        item = self.group_combo.model().item(index, 0)
+        is_checked = item.checkState() == QtCore.Qt.Unchecked
+        item.setCheckState(QtCore.Qt.Checked if is_checked else QtCore.Qt.Unchecked)
+
+        # keep popup active till user change the focus
+        self.group_combo.showPopup()
+        self.verify()
 
 
 def make_blank_definition(project_info):

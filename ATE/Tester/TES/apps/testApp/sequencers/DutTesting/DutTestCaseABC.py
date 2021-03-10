@@ -15,8 +15,10 @@ class DutTestCaseABC(ABC):
         try:
             self.do()
         except (NameError, AttributeError) as e:
+            self.context.after_exception_callback(self.instance_name, e)
             raise Exception(e)
         except Exception as e:
+            self.context.after_exception_callback(self.instance_name, e)
             self.logger.log_message(LogLevel.Warning(), e)
             exception = True
 
@@ -45,6 +47,7 @@ class DutTestCaseBase(DutTestCaseABC):
         self.active_hardware = active_hardware
         self._execution_time = 0
         self._test_executions = 0
+        self.instance_name = ""
 
     def aggregate_test_result(self, site_num: int):
         pass

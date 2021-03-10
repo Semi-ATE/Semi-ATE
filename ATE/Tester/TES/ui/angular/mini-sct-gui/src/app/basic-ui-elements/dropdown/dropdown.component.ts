@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { DropdownConfiguration } from './dropdown-config';
+import { DropdownConfiguration, DropdownItemValueType } from './dropdown-config';
 
 @Component({
   selector: 'app-dropdown',
@@ -9,11 +9,11 @@ import { DropdownConfiguration } from './dropdown-config';
 export class DropdownComponent implements OnInit {
 
   @Input() dropdownConfig: DropdownConfiguration;
-  @Output() dropdownChangeEvent: EventEmitter<void>;
+  @Output() dropdownChangeEvent: EventEmitter<DropdownItemValueType>;
 
   constructor() {
     this.dropdownConfig = new DropdownConfiguration();
-    this.dropdownChangeEvent = new EventEmitter<void>();
+    this.dropdownChangeEvent = new EventEmitter<DropdownItemValueType>();
   }
 
   ngOnInit() {
@@ -30,7 +30,7 @@ export class DropdownComponent implements OnInit {
       if (selectedItemIndex !== this.dropdownConfig.selectedIndex) {
         this.dropdownConfig.selectedIndex = selectedItemIndex;
         this.dropdownConfig.value = this.dropdownConfig.items[this.dropdownConfig.selectedIndex].value;
-        this.dropdownChangeEvent.emit();
+        this.dropdownChangeEvent.emit(this.dropdownConfig.value);
       }
     }
   }

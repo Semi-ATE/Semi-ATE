@@ -4,13 +4,33 @@ from ATE.projectdatabase import __version__
 import argparse
 import os
 import sys
+import textwrap
 
-parser = argparse.ArgumentParser(description="sammy - the Semi-ATE.org codegenerator")
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 description=textwrap.dedent('''\
+                                             sammy - the Semi-ATE.org codegenerator
+
+                                             all commands must be executed in a testproject root directory, except for 'generate new <project>'
+
+                                             To generate files:
+                                             > sammy generate all                 --> generates everything
+                                             > sammy generate sequence            --> generates testprograms
+                                             > sammy generate test                --> generates tests
+                                             > sammy generate test_target         --> generates test_targets
+                                             > sammy generate new <project name>  --> generates new project
+                                             To Migrate to the newest release:
+                                             > sammy migrate
+                                             '''))
 parser.add_argument("verb", type=str)
 parser.add_argument("noun", type=str, nargs="?", default="")
 parser.add_argument("params", nargs="*")
 
-allargs = parser.parse_args()
+try:
+    allargs = parser.parse_args()
+except BaseException:
+    parser.print_help()
+    exit(0)
+
 print("-- sammy --")
 print(f"    for projectversion {__version__}")
 cwd = os.getcwd()

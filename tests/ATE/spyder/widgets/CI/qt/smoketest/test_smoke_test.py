@@ -31,6 +31,7 @@ bin_table = {
 }
 
 PROJECT_NAME = 'smoke_test'
+SETTING_QUALITY_GRADE = "Commercial"
 
 
 def generate_bin_table():
@@ -63,6 +64,10 @@ class MockATEWidgets(QMainWindow):
     select_hardware = Signal(str)
     update_settings = Signal(str, str, str)
     test_target_deleted = Signal(str, str)
+    group_state_changed = Signal()
+    group_added = Signal(str)
+    group_removed = Signal(str)
+    groups_update = Signal(str, list)
 
     def __init__(self):
         super().__init__()
@@ -79,8 +84,8 @@ definitions = {'hardware': 'HW0',
                'test2': 'EFG'}
 
 
-# TODO: edit wizard is planned for future extension to cover more cases
 test_configruation = {'name': definitions['test'],
+# TODO: edit wizard is planned for future extension to cover more cases
                       'hardware': definitions['hardware'],
                       'type': 'custom',
                       'base': 'PR',
@@ -88,7 +93,7 @@ test_configruation = {'name': definitions['test'],
                       'prog_name': 'smoke_test_HW0_PR_Die1_Production_PR_1',
                       'input_parameters': {'T': {'name': 'foo', 'Min': -40, 'Max': 170, 'Default': 25, 'Unit': '°C', 'fmt': '.3f', '10ᵡ': '1', 'Shmoo': 'False'}},
                       'output_parameters': {'parameter2_name': {'name': 'foo', 'LSL': 100, 'USL': -100, 'LTL': 0, 'UTL': 0, 'Nom': 2.5, 'Unit': 'mV', 'fmt': '.3f', '10ᵡ': '1'}},
-                      'docstring': 'test DBC',
+                      'docstring': 'test DBC'
                       }
 
 
@@ -132,14 +137,23 @@ def model(project_navigation):
 
 
 @pytest.fixture
-def project(qtbot):
-    dialog = ProjectWizard(None, 'project_name', 'New Project')
+def project(qtbot, project_navigation):
+    dialog = ProjectWizard(project_navigation)
     qtbot.addWidget(dialog)
     return dialog
 
 
 def test_create_new_project_cancel_before_enter_name(project, qtbot):
     qtbot.mouseClick(project.CancelButton, QtCore.Qt.LeftButton)
+
+
+def test_create_new_project_ok(project, qtbot):
+    project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
+    qtbot.mouseClick(project.OKButton, QtCore.Qt.LeftButton)
+
+
+def test_check_settings_quality_grade(project_navigation):
+    assert project_navigation.get_default_quality_grade() == SETTING_QUALITY_GRADE
 
 
 @pytest.fixture
@@ -358,6 +372,7 @@ def test_create_new_test_cancel_before_enter_name(new_test, qtbot):
 
 
 def test_create_new_test_enter_name(new_test, qtbot):
+    new_test.group_combo.model().item(0, 0).setCheckState(QtCore.Qt.Checked)
     with qtbot.waitSignal(new_test.TestName.textChanged, timeout=500):
         qtbot.keyClicks(new_test.TestName, definitions['test'])
     qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
@@ -368,8 +383,10 @@ def test_create_and_edit_test(project_navigation, qtbot):
     project_navigation.active_base = 'PR'
     new_test = TestWizard(project_navigation)
     qtbot.addWidget(new_test)
+    new_test.group_combo.model().item(0, 0).setCheckState(QtCore.Qt.Checked)
     with qtbot.waitSignal(new_test.TestName.textChanged, timeout=500):
         qtbot.keyClicks(new_test.TestName, definitions['test2'])
+
     qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
 
     the_test = project_navigation.get_test(definitions['test2'], definitions['hardware'], 'PR')
@@ -396,9 +413,10 @@ def new_test_program(mocker, qtbot, project_navigation):
     project_navigation.active_hardware = definitions['hardware']
     project_navigation.active_base = 'PR'
     project_navigation.active_target = definitions['device']
+    from qtpy.QtGui import QStandardItem
+    parent = QStandardItem('production')
     mocker.patch.object(ProjectNavigation, 'get_devices_for_hardwares', return_value=[definitions['device']])
-    dialog = TestProgramWizard(project_navigation, test_configruation['owner'])
-    qtbot.addWidget(dialog)
+    dialog = TestProgramWizard(project_navigation, test_configruation['owner'], parent)
     return dialog
 
 
@@ -408,7 +426,8 @@ def test_create_new_test_program_cancel_before_enter_name(new_test_program, qtbo
 
 def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard, qtbot):
     new_test_program._verify()
-
+    # hack: we cannot simulate combo box selection
+    new_test_program.availableTests.addItem(definitions['test'])
     new_test_program.availableTests.item(0).setSelected(True)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
@@ -421,6 +440,7 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
 
         iterator += 1
 
+    new_test_program.user_name.setText('TheTest')
     new_test_program.binning_table.setRowCount(1)
     sb_name = QtWidgets.QTableWidgetItem()
     sb_name.setText('bin_1')
@@ -454,6 +474,7 @@ def edit_test_program(qtbot, project_navigation):
     project_navigation.active_hardware = definitions['hardware']
     project_navigation.active_base = 'PR'
     project_navigation.active_target = definitions['device']
+    project_navigation.user_name = definitions['usertext']
     dialog = EditTestProgramWizard(test_configruation['prog_name'], project_navigation, "HW0_PR_Die1_Production_PR")
     qtbot.addWidget(dialog)
     return dialog

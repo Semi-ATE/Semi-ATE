@@ -73,7 +73,7 @@ export class StdfRecordTestTextFilterComponent implements OnInit, OnDestroy {
   private defaultSettings() {
     this.containedText = '';
     this.testTextCheckboxConfig.initCheckBox('Value contained in TEST_TXT', false, false);
-    this.testTextInputConfig.initInput('Contained text', true, '');
+    this.testTextInputConfig.initInput('Contained text', true, '', /./);
   }
 
   private restoreSettings() {

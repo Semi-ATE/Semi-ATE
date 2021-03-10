@@ -29,9 +29,6 @@ class SiteInformation:
         self.site_infos = self.generate_site_infos(site_infos)
 
     def store_test_result(self, prr_record: dict):
-        # make sure the record is a prr record
-        assert prr_record['type'] == 'PRR'
-
         self.site_infos[str(prr_record['SOFT_BIN'])].update_infos(prr_record['PART_FLG'], int(prr_record['HEAD_NUM']))
 
     @staticmethod

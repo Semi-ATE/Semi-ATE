@@ -1,0 +1,22 @@
+[
+  {
+    "name": "c_production_proc_1",
+    "prog_name": "project_version_4_HW0_PR_c_production_proc_1",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "abcdef",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "aaa_production_proc_2",
+    "prog_name": "project_version_4_HW0_FT_aaa_production_proc_2",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "abcedefg",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

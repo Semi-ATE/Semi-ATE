@@ -38,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 XML_PATH = './tests/ATE/TES/apps/le306426001_template.xml'
 XML_PATH_NEW = './tests/ATE/TES/apps/le306426001.xml'
-TEST_PROGRAM = './tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py'
+TEST_PROGRAM = './tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_TheTest.py'
 # TEST_PROGRAM = '.\\src\\ATE\\apps\\testApp\\thetest_application.py'
 
 

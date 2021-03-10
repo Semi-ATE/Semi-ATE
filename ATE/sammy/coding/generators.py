@@ -30,9 +30,10 @@ from jinja2 import FileSystemLoader
 from ATE.sammy.coding.BaseGenerator import BaseGenerator
 from ATE.sammy.coding.ProperGenerator import test_proper_generator
 from ATE.sammy.coding.BaseTestGenerator import test_base_generator, BaseTestGenerator
+from ATE.projectdatabase import __version__
 
 
-def project_generator(project_path):
+def project_generator(template_path, project_path):
     """This function generates the
 
     This generator should be called upon the creation of a new project.
@@ -41,34 +42,34 @@ def project_generator(project_path):
         - doc_generator
         - src__init__generator
     """
-    project_root_generator(project_path)
-    src__init__generator(project_path)
-    src_common_generator(project_path)
-    project_doc_generator(project_path)
+    project_root_generator(template_path, project_path)
+    src__init__generator(template_path, project_path)
+    src_common_generator(template_path, project_path)
+    project_doc_generator(template_path, project_path)
 
 
 def hardware_generator(template_path, project_path, hardware):
     """Generator for a new hardware structure."""
 
-    HW__init__generator(template_path,project_path, hardware)
-    HW_common_generator(template_path,project_path, hardware)
+    HW__init__generator(template_path, project_path, hardware)
+    HW_common_generator(template_path, project_path, hardware)
 
-    PR__init__generator(template_path,project_path, hardware)
-    PR_common_generator(template_path,project_path, hardware)
+    PR__init__generator(template_path, project_path, hardware)
+    PR_common_generator(template_path, project_path, hardware)
 
-    FT__init__generator(template_path,project_path, hardware)
-    FT_common_generator(template_path,project_path, hardware)
-
-
-def test_generator(project_path, definition):
-    test_base_generator(project_path, definition)
-    test_proper_generator(project_path, definition)
-    test__init__generator(project_path, definition)
+    FT__init__generator(template_path, project_path, hardware)
+    FT_common_generator(template_path, project_path, hardware)
 
 
-def test_update(project_path, definition):
-    test_base_generator(project_path, definition)
-    test_proper_generator(project_path, definition, do_update=True)
+def test_generator(template_path, project_path, definition):
+    test_base_generator(template_path, project_path, definition)
+    test_proper_generator(template_path, project_path, definition)
+    test__init__generator(template_path, project_path, definition)
+
+
+def test_update(template_path, project_path, definition):
+    test_base_generator(template_path, project_path, definition)
+    test_proper_generator(template_path, project_path, definition, do_update=True)
 
 
 def copydir(source, destination, ignore_dunder=True):
@@ -107,9 +108,9 @@ def copydir(source, destination, ignore_dunder=True):
 class test__init__generator(BaseTestGenerator):
     """Generator for the __init__.py file of a given test."""
 
-    def __init__(self, project_path, definition):
+    def __init__(self, template_path, project_path, definition):
         file_name = '__init__.py'
-        super().__init__(project_path, definition, file_name)
+        super().__init__(template_path, project_path, definition, file_name)
         self.defintion = definition
 
     def _generate_relative_path(self):
@@ -138,15 +139,14 @@ class test__init__generator(BaseTestGenerator):
                                imports=render_data['imports'])
 
 
-def project_root_generator(project_path):
+def project_root_generator(template_dir, project_path):
     """This function will create the base project structure.
 
     Here we put everything that live in ther project root.
     """
-
-    project__main__generator(project_path)
-    project__init__generator(project_path)
-    project_gitignore_generator(project_path)
+    project__main__generator(template_dir, project_path)
+    project__init__generator(template_dir, project_path)
+    project_gitignore_generator(template_dir, project_path)
     project_defintinion_generator(project_path)
 
 
@@ -178,6 +178,18 @@ def project_defintinion_generator(project_path):
     _make_definition_dir(definition_path, "test")
     _make_definition_dir(definition_path, "testtarget")
     _make_definition_dir(definition_path, "qualification")
+    _make_definition_dir(definition_path, "group")
+    _make_definition_dir(definition_path, "settings")
+    _generate_version_file(definition_path)
+
+def _generate_version_file(definition_path):
+	    _make_definition_dir(definition_path, "version")
+	    import os
+	    import json
+	    from pathlib import Path
+	    path = os.path.join(definition_path, "version", "version.json")
+	    with open(os.fspath(Path(path)), 'w') as f:
+	        json.dump({"version": __version__}, f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):
@@ -225,22 +237,22 @@ class BaseProjectGenerator:
 class project__main__generator(BaseProjectGenerator):
     """Generator for the project's __main__.py file."""
 
-    def __init__(self, project_path, file_name='__main__.py'):
-        super().__init__(project_path, file_name)
+    def __init__(self, template_dir, project_path, file_name='__main__.py'):
+        super().__init__(template_dir, project_path, file_name)
 
 
 class project__init__generator(BaseProjectGenerator):
     """Generator for the project's __init__.py file."""
 
-    def __init__(self, project_path, file_name='__init__.py'):
-        super().__init__(project_path, file_name)
+    def __init__(self, template_dir, project_path, file_name='__init__.py'):
+        super().__init__(template_dir, project_path, file_name)
 
 
 class project_gitignore_generator(BaseProjectGenerator):
     """Generator for the project's .gitignore file."""
 
-    def __init__(self, project_path, file_name='.gitignore'):
-        super().__init__(project_path, file_name)
+    def __init__(self, template_dir, project_path, file_name='.gitignore'):
+        super().__init__(template_dir, project_path, file_name)
 
 
 class src__init__generator(BaseProjectGenerator):
@@ -251,8 +263,8 @@ class src__init__generator(BaseProjectGenerator):
     This generator should be called upon the creation of a new project.
     """
 
-    def __init__(self, project_path, file_name='__init__.py'):
-        super().__init__(project_path, file_name)
+    def __init__(self, template_dir, project_path, file_name='__init__.py'):
+        super().__init__(template_dir, project_path, file_name)
 
     def _generate_relative_path(self):
         return 'src'
@@ -287,35 +299,39 @@ class HW_common_generator(HW__init__generator):
         super().__init__(template_path, project_path, definition, file_name)
 
 
-class PR__init__generator(BaseGenerator):
+class Base_Source_generator(BaseGenerator):
+    def __init__(self, base_name, template_path, project_path, definition, file_name='__init__.py', template_file_name=None):
+        self.base_name = base_name
+        definition["active_base"] = base_name
+        super().__init__(template_path, project_path, definition, file_name, template_file_name)
+
+    def _generate_relative_path(self):
+        return os.path.join('src', self.definition['hardware'], self.base_name)
+
+
+class PR__init__generator(Base_Source_generator):
     """Generator for the __init__.py file of 'PR' for the given hardware."""
 
     def __init__(self, template_path, project_path, definition, file_name='__init__.py'):
-        super().__init__(template_path, project_path, definition, file_name)
-
-    def _generate_relative_path(self):
-        return os.path.join('src', self.definition['hardware'], 'PR')
+        super().__init__('PR', template_path, project_path, definition, file_name, template_file_name="base_init_template.jinja2")
 
 
-class PR_common_generator(PR__init__generator):
+class PR_common_generator(Base_Source_generator):
     """Generator for the common.py file of 'PR' for the given hardware."""
 
     def __init__(self, template_path, project_path, definition):
-        super().__init__(template_path, project_path, definition, file_name='common.py')
+        super().__init__('PR', template_path, project_path, definition, file_name='common.py', template_file_name="base_common_template.jinja2")
 
 
-class FT__init__generator(BaseGenerator):
+class FT__init__generator(Base_Source_generator):
     """Generator for the __init__.py file of 'FT' for the given hardware."""
 
     def __init__(self, template_path, project_path, definition, file_name='__init__.py'):
-        super().__init__(template_path, project_path, definition, file_name)
-
-    def _generate_relative_path(self):
-        return os.path.join('src', self.definition['hardware'], 'FT')
+        super().__init__('FT', template_path, project_path, definition, file_name, template_file_name="base_init_template.jinja2")
 
 
-class FT_common_generator(FT__init__generator):
+class FT_common_generator(Base_Source_generator):
     """Generator for the common.py file of 'FT' for the given hardware."""
 
     def __init__(self, template_path, project_path, definition):
-        super().__init__(template_path, project_path, definition, file_name='common.py')
+        super().__init__('FT', template_path, project_path, definition, file_name='common.py', template_file_name="base_common_template.jinja2")

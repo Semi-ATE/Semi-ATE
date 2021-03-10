@@ -4,6 +4,7 @@ import mock
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
 from ATE.Tester.TES.apps.testApp.sequencers.ExecutionPolicy import SingleShotExecutionPolicy
+from tests.ATE.TES.apps.sequencers.Loggerstub import LoggerStub
 
 
 @pytest.fixture
@@ -15,6 +16,7 @@ class BooleanTest(DutTestCaseBase):
     def __init__(self, returnValue=True):
         self.returnValue = returnValue
         self.ran = False
+        self.instance_name = ""
 
     def run(self, site_num):
         self.ran = self.returnValue
@@ -38,6 +40,7 @@ class CbCountingSequencer(SequencerBase):
         super().__init__("Testprog", None)
         self.aftertest_calls = 0
         self.aftercycle_calls = 0
+        self.set_logger(LoggerStub())
 
     def after_test_cb(self, test_index, test_result, test_num, exception):
         self.aftertest_calls += 1

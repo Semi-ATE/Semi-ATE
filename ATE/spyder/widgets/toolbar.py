@@ -39,6 +39,7 @@ class ToolBar(ApplicationToolbar):
         self._hardware_changed(hardware)
         self._base_changed(base)
         self._update_target()
+        self._init__group()
 
         self.project_info.update_toolbar_elements(hardware, base, target)
         self.project_info.store_settings(hardware, base, target)
@@ -54,7 +55,8 @@ class ToolBar(ApplicationToolbar):
         # Add items to toolbar
         for item in [run_action, self.hardware_label,
                      self.hardware_combo, self.base_label, self.base_combo,
-                     self.target_label, self.target_combo]:
+                     self.target_label, self.target_combo, self.group_label,
+                     self.group_combo]:
             self.parent.add_item_to_toolbar(
                 item,
                 self,
@@ -65,6 +67,7 @@ class ToolBar(ApplicationToolbar):
         self._setup_hardware()
         self._setup_base()
         self._setup_target()
+        self._setup_group()
 
     def _setup_hardware(self):
         self.hardware_label = QtWidgets.QLabel("Hardware:")
@@ -99,6 +102,33 @@ class ToolBar(ApplicationToolbar):
         self.target_combo.addItems([''])
         self.target_combo.setCurrentText(self.active_target)
 
+    def _setup_group(self):
+        self.group_label = QtWidgets.QLabel("Groups:")
+        self.group_label.setStyleSheet("background-color: transparent;")
+
+        self.group_combo = QtWidgets.QComboBox()
+        self.group_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+
+    def _init__group(self):
+        self.group_combo.blockSignals(True)
+        groups = self.project_info.get_groups()
+        # remove tests section
+        # tests section is active by default (removing it would avoid some confusions)
+        for index, group in enumerate(groups):
+            if group.name != 'tests':
+                continue
+
+            groups.pop(index)
+            break
+
+        for group_index, group in enumerate(groups):
+            self.group_combo.insertItem(group_index, group.name)
+            item = self.group_combo.model().item(group_index, 0)
+            item.setCheckState(QtCore.Qt.Unchecked if not group.is_selected else QtCore.Qt.Checked)
+
+        self.group_combo.setCurrentIndex(0)
+        self.group_combo.blockSignals(False)
+
     def _connect_event_handler(self):
         self.hardware_combo.currentTextChanged.connect(self._hardware_changed)
         self.base_combo.currentTextChanged.connect(self._base_changed)
@@ -109,7 +139,29 @@ class ToolBar(ApplicationToolbar):
         self.parent.select_target.connect(self._target_selected)
         self.parent.update_settings.connect(self._settings_update)
         self.parent.hardware_activated.connect(self._update_hardware)
+        self.parent.group_added.connect(self._group_added)
 
+        self.group_combo.activated.connect(self._group_selected)
+
+    @QtCore.pyqtSlot(int)
+    def _group_selected(self, index: int):
+        item = self.group_combo.model().item(index, 0)
+        is_checked = item.checkState() == QtCore.Qt.Unchecked
+        item.setCheckState(QtCore.Qt.Checked if is_checked else QtCore.Qt.Unchecked)
+        self.project_info.update_group_state(item.text(), is_checked)
+
+        # keep popup active till user change the focus
+        self.group_combo.showPopup()
+
+    @QtCore.pyqtSlot(str)
+    def _group_added(self, name: str):
+        self.group_combo.addItem(name)
+        item = self.group_combo.model().item(self.group_combo.count() - 1, 0)
+        item.setCheckState(QtCore.Qt.Checked)
+
+    def _update_group_item_state(self, index: int, state: QtCore.Qt):
+        item = self.group_combo.model().item(index, 0)
+        item.setCheckState(state)
 
     @QtCore.pyqtSlot(str)
     def _target_selected(self, target):

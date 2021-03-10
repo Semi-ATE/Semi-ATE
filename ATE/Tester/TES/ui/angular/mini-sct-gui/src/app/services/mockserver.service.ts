@@ -27,7 +27,7 @@ export class MockServerService implements OnDestroy {
 
   setSendMessageInterval(milliseconds: number) {
     if (typeof(this.timer) !== 'undefined')
-      this.timerSubscription.unsubscribe();
+      this.timerSubscription?.unsubscribe();
 
     this.timer = interval(milliseconds);
     this.mockServer.on('connection', socket => {
@@ -70,6 +70,14 @@ export class MockServerService implements OnDestroy {
     div.setAttribute('id', constants.MOCK_SEVER_SERVICE_NEVER_REMOVABLE_ID);
     div.innerHTML = 'MOCK SERVER SERVICE IS RUNNING';
     document.body.appendChild(div);
+    div.style.position = 'absolute';
+    div.style.zIndex = '10000';
+    div.style.top = '50px';
+    div.style.color = 'red';
+    div.style.left = '40%';
+    setInterval(() => {
+      div.style.opacity = div.style.opacity === '0'? '1': '0';
+    }, 500);
     this.mockServer = new Server(BACKEND_URL_RUNNING_IN_PYTHON_MASTER_APPLICATION);
   }
 

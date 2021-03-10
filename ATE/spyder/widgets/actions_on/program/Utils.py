@@ -97,6 +97,8 @@ class ErrorMessage(Enum):
     TestDescriptionNotUnique = 'test description must be unique'
     ParameterNotValid = 'parameter are not valid'
     BinTableNotfilled = 'make sure to fill bin table'
+    UserNameMissing = 'user naming is missing'
+    UserNameUsed = 'user name used already'
 
     def __call__(self):
         return self.value

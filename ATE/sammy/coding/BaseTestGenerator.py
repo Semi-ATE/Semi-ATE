@@ -88,9 +88,9 @@ class BaseTestGenerator:
 class test_base_generator(BaseTestGenerator):
     """Generator for the Test Base Class."""
 
-    def __init__(self, project_path, definition):
+    def __init__(self, template_path, project_path, definition):
         file_name = f"{definition['name']}_BC.py"
-        super().__init__(project_path, definition, file_name)
+        super().__init__(template_path, project_path, definition, file_name)
 
     def _generate_relative_path(self):
         hardware = self.definition['hardware']

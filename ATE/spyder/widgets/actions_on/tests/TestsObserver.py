@@ -24,18 +24,17 @@ class EventHandler(EventHandlerBase):
             return
 
         # TODO: workaround
-        if self.section_root.get_child(os.path.splitext(base_name)[0]) is None:
-            if not modify:
-                self.section_root.add_file_item(base_name, os.path.dirname(path))
-            else:
-                self.section_root.add_file_item(base_name, os.path.dirname(os.path.dirname(path)))
+        # if self.section_root.get_child(os.path.splitext(base_name)[0]) is None:
+        #     if not modify:
+        #         self.section_root.add_file_item(base_name, os.path.dirname(path))
+        #     else:
+        #         self.section_root.add_file_item(base_name, os.path.dirname(os.path.dirname(path)))
 
     def _on_deleted(self, path):
         if not self._is_python_file(path):
             return
 
         file_name = os.path.basename(path)
-
         self.section_root.remove_child(os.path.splitext(file_name)[0])
 
     def _on_moved(self, path, dest_path):

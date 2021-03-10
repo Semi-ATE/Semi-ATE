@@ -1,0 +1,13 @@
+[
+  {
+    "name": "c",
+    "hardware": "HW0",
+    "maskset": "a",
+    "quality": "Industrial",
+    "grade": "A",
+    "grade_reference": "",
+    "type": "ASSP",
+    "customer": "",
+    "is_enabled": true
+  }
+]

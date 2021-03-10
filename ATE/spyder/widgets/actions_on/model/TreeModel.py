@@ -4,11 +4,14 @@ from qtpy.QtCore import Signal
 
 from ATE.spyder.widgets.actions_on.model import FlowItem as FlowItem
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
-from ATE.spyder.widgets.actions_on.tests.TestItem import TestItem
 from ATE.spyder.widgets.constants import TableIds
 from ATE.semiateplugins.pluginmanager import get_plugin_manager
+from ATE.spyder.widgets.actions_on.model.sections.TestSection import TestSection
 
 from ATE.spyder.widgets.actions_on.model.FileItemHandler import FileItemHandler
+
+
+QualificationFlow = 'qualification'
 
 
 class TreeModel(QtGui.QStandardItemModel):
@@ -84,9 +87,17 @@ class TreeModel(QtGui.QStandardItemModel):
         self.parent.select_base.connect(self._update_test_section)
         self.parent.select_hardware.connect(self._update_test_items_hw_changed)
         self.parent.test_target_deleted.connect(self._remove_test_target_item)
+        self.parent.group_state_changed.connect(self._update_test_section)
+        self.parent.group_added.connect(self._add_group)
+        self.parent.group_removed.connect(self._remove_group)
+        self.parent.groups_update.connect(self._update_groups)
 
     @QtCore.Slot(str)
     def _update_test_section(self, base):
+        self.tests_section.update()
+
+    @QtCore.Slot()
+    def _update_test_section(self):
         self.tests_section.update()
 
     @QtCore.Slot(str, str, str)
@@ -101,6 +112,19 @@ class TreeModel(QtGui.QStandardItemModel):
 
         if rebuild_flows:
             self._reset_flows(self.project_info)
+
+    @QtCore.Slot(str)
+    def _add_group(self, name):
+        self.new_group_flow = FlowItem.SimpleFlowItem(self.project_info, name)
+        self.flows.appendRow(self.new_group_flow)
+
+    @QtCore.Slot(str)
+    def _remove_group(self, name):
+        self.flows.remove_flow(name)
+
+    @QtCore.Slot(str, list)
+    def _update_groups(self, name, groups):
+        self.tests_section.update_group_items(name, groups)
 
     def _setup(self):
         project_name = self.project_info.project_name
@@ -132,19 +156,7 @@ class TreeModel(QtGui.QStandardItemModel):
             return
 
         self.flows.set_children_hidden(False)
-
-        self.production_flows = FlowItem.SimpleFlowItem(project_info, "checker")
-        self.flows.appendRow(self.production_flows)
-        self.production_flows = FlowItem.SimpleFlowItem(project_info, "maintenance")
-        self.flows.appendRow(self.production_flows)
-        self.production_flows = FlowItem.SimpleFlowItem(project_info, "production")
-        self.flows.appendRow(self.production_flows)
-        self.engineering_flows = FlowItem.SimpleFlowItem(project_info, "engineering")
-        self.flows.appendRow(self.engineering_flows)
-        self.validation_flows = FlowItem.SimpleFlowItem(project_info, "validation")
-        self.flows.appendRow(self.validation_flows)
-        self.characterisation_flows = FlowItem.SimpleFlowItem(project_info, "quality")
-        self.flows.appendRow(self.characterisation_flows)
+        self._append_flows()
 
         if self.base == "FT":
 
@@ -173,6 +185,17 @@ class TreeModel(QtGui.QStandardItemModel):
                 self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ATE.spyder.widgets.actions_on.flow.RSH.rshwizard"))
 
             self.flows.appendRow(self.quali_flows)
+
+    def _append_flows(self):
+        groups = self.project_info.get_groups()
+        self.groups = []
+        for group in groups:
+            if group.name in (self.tests_section.text(), QualificationFlow):
+                continue
+            self.groups.append(FlowItem.SimpleFlowItem(self.project_info, group.name))
+
+        for group in self.groups:
+            self.flows.appendRow(group)
 
     def _make_single_instance_quali_flow_item(self, parent, module):
         return FlowItem.SingleInstanceQualiFlowItem(parent, "Tmp", module)
@@ -278,7 +301,7 @@ class TreeModel(QtGui.QStandardItemModel):
                 self.die.set_children_hidden(True)
 
     def _setup_tests(self):
-        self.tests_section = TestItem(self.project_info, "tests", self.base_path, self)
+        self.tests_section = TestSection(self.project_info, "tests", self.base_path, self)
         self.root_item.appendRow(self.tests_section)
 
     def _update_tests(self):
@@ -289,45 +312,15 @@ class TreeModel(QtGui.QStandardItemModel):
 
     @QtCore.Slot(str)
     def _update_test_items(self, text):
-        for index in range(self.tests_section.rowCount()):
-            item = self.tests_section.child(index)
-
-            item._set_tree_state(True)
-            available_test_targets_for_current_test_item = item.get_available_test_targets()
-            actual_test_targets_for_current_test_item = item.get_children()
-            new_items = list(set(available_test_targets_for_current_test_item) - set(actual_test_targets_for_current_test_item))
-
-            for new_item in new_items:
-                item.add_target_item(new_item)
-
-            for test_target_index in range(item.rowCount()):
-                test_target_item = item.child(test_target_index)
-                if test_target_item is None:
-                    continue
-
-                test_target_item.update_state(text)
+        self.tests_section.update_test_items(text)
 
     @QtCore.Slot(str, str)
-    def _remove_test_target_item(self, target_name, test_name):
-        for index in range(self.tests_section.rowCount()):
-            test_item = self.tests_section.child(index)
-            if test_item.text() != test_name:
-                continue
-
-            for test_target_index in range(test_item.rowCount()):
-                test_target_item = test_item.child(test_target_index)
-                if test_target_item is None or target_name != test_target_item.text():
-                    continue
-
-                test_target_item.clean_up()
-                test_item.removeRow(test_target_index)
+    def _remove_test_target_item(self, target_name: str, test_name: str):
+        self.tests_section.remove_test_target_item(target_name, test_name)
 
     @QtCore.Slot(str)
     def _update_test_items_hw_changed(self, hardware):
-        for index in range(self.tests_section.rowCount()):
-            self.tests_section.takeChild(index)
-
-        self.tests_section.update()
+        self.tests_section.update_test_items_hw_changed(hardware)
 
     def set_tree_items_state(self, name, dependency_list, enabled):
         for key, elements in dependency_list.items():

@@ -21,8 +21,8 @@ if (!$env)
 $root_location = $(Get-Location)
 $webui_location = "ATE/Tester/TES/ui/angular/mini-sct-gui"
 $plugin_location = "Plugins/TDKMicronas"
+$stdf_location = "Semi-ATE-STDF"
 $spyder_location = ".."
-$spyder1_location = "spyder"
 $spyder2_location = "../spyder"
 $smoke_test_location = "tests/ATE/spyder/widgets/CI/qt/smoketest"
 $apps_location = "ATE/Tester/TES/apps"
@@ -41,9 +41,22 @@ function Install-Dependencies {
     Invoke-Expression "python setup.py develop"
     Rename-Item -Path ".\MANIFEST.in.abc" -NewName ".\MANIFEST.in"
 
+    Write-Host "get stdf package"
+    Invoke-Expression "git submodule init"
+    Invoke-Expression "git submodule update --remote"
+
+    Set-Location -Path $root_location
+    Write-Host "install stdf package"
+    Invoke-Expression "cd $stdf_location"
+    Invoke-Expression "python setup.py develop"
+
+    Set-Location -Path $root_location
     Write-Host "install TDKMicronas plugin package"
     Invoke-Expression "cd $plugin_location"
     Invoke-Expression "python setup.py develop"
+
+    Write-Host "install STDF-Package"
+    Invoke-Expression "pip install Semi-ATE-STDF"
 }
 
 
@@ -61,7 +74,7 @@ catch
     if (($confirmation -eq $confirm) -or (!$confirmation))
     {
         Write-Host "create new conda environment: " $env
-        Invoke-Expression "conda create -n $env python=3.7 -y"
+        Invoke-Expression "conda create -n $env python=3.8 -y"
         Invoke-Expression "conda config --append channels conda-forge"
         Invoke-Expression "conda deactivate $env"
         Invoke-Expression "conda activate $env"
@@ -120,10 +133,10 @@ Set-Location -Path $root_location
 $confirmation = Read-Host "do you want to get spyder sources [y/n]"
 if (($confirmation -eq $confirm) -or (!$confirmation))
 {
-    Set-Location -Path $spyder_location
     $spyder = $(Get-Location)
     Invoke-Expression "git clone https://github.com/spyder-ide/spyder.git"
-    Invoke-Expression "git checkout 413c994"
+    Set-Location -Path $spyder2_location
+    Invoke-Expression "git checkout 06562dd073d3473c24e658849a09ab6266af3426"
     Write-Host "to run spyder-IDE use the following command, first change directroy to: " $spyder"/spyder"
     Write-Host "python bootstrap.py"
 }

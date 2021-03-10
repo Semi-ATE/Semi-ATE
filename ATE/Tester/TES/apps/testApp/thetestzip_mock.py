@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional
 
 import base64
-from ATE.data.STDF import FAR, MIR, PIR, PTR, PRR, PCR, MRR, STDR
+from Semi_ATE.STDF import FAR, MIR, PIR, PTR, PRR, PCR, MRR, STDR
 
 import contextlib
 
