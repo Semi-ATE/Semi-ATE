@@ -5,6 +5,7 @@ include *.yaml
 include *.md
 include *.ps1
 include *.bat
+
 recursive-include docs *.md
 recursive-include docs *.pdf
 recursive-include docs *.png
@@ -18,10 +19,17 @@ recursive-include docs *.jpg
 recursive-include docs *.xml
 recursive-include docs *.txt
 recursive-include docs *.docx
-recursive-include tests/ATE/projects *.pdf
-recursive-include tests/ATE/projects *.gitignore
-recursive-include tests/ATE/projects *.md
-recursive-include tests/ATE/projects *.lastsettings
+
+recursive-include tests *.pdf
+recursive-include tests *.gitignore
+recursive-include tests *.md
+recursive-include tests *.lastsettings
+recursive-include tests *.json
+recursive-include tests *.xml
+recursive-include tests *.py
+recursive-include tests *.gitkeep
+recursive-include tests *.xml
+
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.bat
@@ -45,16 +53,11 @@ recursive-include ATE *.scss
 recursive-include ATE *.ts
 recursive-include ATE *.txt
 recursive-include ATE *.xml
-recursive-include requirements *.txt
-recursive-include tests *.py
 recursive-include ATE/TES *.*
+include ATE/Tester/TES/ui/angular/mini-sct-gui/browserslist
+
+recursive-include requirements *.txt
 recursive-include Plugins *.*
-recursive-include tests *.gitkeep
 include .flake8
 include .gitlab-ci.yml
-
-
-include ATE/Tester/TES/ui/angular/mini-sct-gui/browserslist
 include pax_global_header
-recursive-include tests *.json
-recursive-include tests *.xml
