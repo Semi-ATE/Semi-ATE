@@ -64,8 +64,9 @@ jobs:
       - name: build Web-UI dependencies
         run: |
           cd ATE/Tester/TES/ui/angular/mini-sct-gui
+          npm i -g @angular/cli
           npm install
-          npm build
+          ng build
           cd ../../../../../..
 
       - name: Run manifest checks
