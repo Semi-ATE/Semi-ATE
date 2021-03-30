@@ -57,6 +57,16 @@ jobs:
         run: |
           pip install -e .
 
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: build Web-UI dependencies
+        working-directory: ATE\Tester\TES\ui\angular\mini-sct-gui
+        run: |
+          npm install
+          npm build
+
       - name: Run manifest checks
         shell: bash -l {0}
         run: check-manifest
