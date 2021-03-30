@@ -62,10 +62,11 @@ jobs:
           node-version: '14'
 
       - name: build Web-UI dependencies
-        working-directory: ATE\Tester\TES\ui\angular\mini-sct-gui
         run: |
+          cd ATE/Tester/TES/ui/angular/mini-sct-gui
           npm install
           npm build
+          cd ../../../../../..
 
       - name: Run manifest checks
         shell: bash -l {0}
