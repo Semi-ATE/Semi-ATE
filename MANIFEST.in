@@ -1,39 +1,6 @@
-include *.md
-include *.rst
-include *.txt
-include *.yaml
-include *.md
-include *.ps1
-include *.bat
-
-recursive-include docs *.md
-recursive-include docs *.pdf
-recursive-include docs *.png
-recursive-include docs *.xcf
-recursive-include docs *.xlsx
-recursive-include docs *.pptx
-recursive-include docs *.odt
-recursive-include docs *.pptm
-recursive-include docs *.ppt
-recursive-include docs *.jpg
-recursive-include docs *.xml
-recursive-include docs *.txt
-recursive-include docs *.docx
-
-recursive-include tests *.pdf
-recursive-include tests *.gitignore
-recursive-include tests *.md
-recursive-include tests *.lastsettings
-recursive-include tests *.json
-recursive-include tests *.xml
-recursive-include tests *.py
-recursive-include tests *.gitkeep
-recursive-include tests *.xml
-
 recursive-include ATE *.jinja2
 recursive-include ATE *.md
 recursive-include ATE *.bat
-recursive-include ATE *.lastsettings
 recursive-include ATE *.pdf
 recursive-include ATE *.png
 recursive-include ATE *.jpg
@@ -41,8 +8,6 @@ recursive-include ATE *.py
 recursive-include ATE *.regmap
 recursive-include ATE *.ui
 recursive-include ATE *.xcf
-recursive-include ATE *.xlsx
-recursive-include ATE *.pptx
 recursive-include ATE *.editorconfig
 recursive-include ATE *.gitkeep
 recursive-include ATE *.html
@@ -53,11 +18,22 @@ recursive-include ATE *.scss
 recursive-include ATE *.ts
 recursive-include ATE *.txt
 recursive-include ATE *.xml
-recursive-include ATE/TES *.*
-include ATE/Tester/TES/ui/angular/mini-sct-gui/browserslist
+
+recursive-exclude tests *.*
+recursive-exclude Plugins *.*
+recursive-exclude ATE/Tester/TES/ui/angular/mini-sct-gui *.*
+recursive-include ATE/Tester/TES/ui/angular/mini-sct-gui/dist *.*
+
+include *.md
+include *.rst
+include *.txt
+include *.yaml
+include *.md
+include *.ps1
+include *.bat
+
 
 recursive-include requirements *.txt
-recursive-include Plugins *.*
 include .flake8
 include .gitlab-ci.yml
 include pax_global_header
