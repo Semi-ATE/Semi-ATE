@@ -44,9 +44,9 @@ jobs:
       - name: Install project dependencies
         shell: bash -l {0}
         run: |
-          mamba install --file requirements/run.txt -c conda-forge -y -q
-          mamba install --file requirements/test.txt -c conda-forge -y -q
-          mamba install Semi-ATE-STDF
+          mamba install --file requirements/run.txt -y -q
+          mamba install --file requirements/test.txt -y -q
+          mamba install Semi-ATE-STDF -y -q
           python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
           cd Plugins/TDKMicronas
           python setup.py develop
