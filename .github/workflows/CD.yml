@@ -11,37 +11,52 @@ jobs:
     - name: Checkout 
       uses: actions/checkout@v2
 
-    - name: Install dependencies
+    - name: Install test dependencies
       shell: bash
       run: |
         sudo apt-get update --fix-missing
         sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
-    - name: Install Conda
+    - name: Setup miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: test
-        auto-update-conda: false
-        auto-activate-base: false
+        miniconda-version: "latest" 
         python-version: '3.8'
-        use-only-tar-bz2: true
+        channel-priority: "strict"
+        channels: "conda-forge"  
+        mamba-version: "*"
+        show-channel-urls: true 
 
     - name: Install project dependencies
       shell: bash -l {0}
       run: |
-        conda config --append channels conda-forge/label/beta 
-        conda install --file requirements/run.txt -c conda-forge -y -q
-        conda install --file requirements/test.txt -c conda-forge -y -q
+        mamba install --file requirements/run.txt -y -q
+        mamba install --file requirements/test.txt -y -q
+        mamba install Semi-ATE-STDF -y -q
         python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
-        python -m pip install Semi-ATE-STDF
+        cd Plugins/TDKMicronas
+        python setup.py develop
+        cd ../..
 
     - name: tag to version
       run: echo "__version__='${GITHUB_REF#refs/*/}'" >> ATE/__init__.py
 
-    - name: Install package
+    - name: Install project
       shell: bash -l {0}
       run: pip install -e .
       # shouldn't this be someting like `python setup.py install` ?
+
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: build Web-UI dependencies
+      run: |
+        cd ATE/Tester/TES/ui/angular/mini-sct-gui
+        npm i -g @angular/cli
+        npm install
+        ng build
+        cd ../../../../../..
 
     - name: Run manifest checks
       shell: bash -l {0}
@@ -50,34 +65,40 @@ jobs:
     - name: Run tests
       shell: bash -l {0}
       run: |
-        xvfb-run --auto-servernum pytest tests/ATE/data --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
         xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
 
-    - name: Create package
+    - name: Create project package
       run: python setup.py sdist
 
     - name: Check package
       shell: bash -l {0}
       run:  twine check dist/*
       
-    - name: Upload maxiconda to Github artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload release assets
+      uses: alexellis/upload-assets@0.2.3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-        path: dist/*
-        name: pypi
-        
-#     - name: Upload to PyPi
-#       uses: pypa/gh-action-pypi-publish@v1.4.2
+        asset_paths: '["dist/Semi-ATE-*.tar.gz"]'      
+      
+#     - name: Upload maxiconda to Github artifact
+#       uses: actions/upload-artifact@v2
 #       with:
-#         password: ${{ secrets.PYPI_TOKEN }}
-#         verbose: 1
+#         path: dist/*
+#         name: pypi
 
-#     - name: Upload coverage to Codecov  
-#       uses: codecov/codecov-action@v1
-#       with:
-#         token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Upload to PyPi
+      uses: pypa/gh-action-pypi-publish@v1.4.2
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
+        verbose: 1
+
+    - name: Upload coverage to Codecov  
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
 
 

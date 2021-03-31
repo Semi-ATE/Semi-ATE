@@ -4,13 +4,14 @@
 
 [![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/main/LICENSE)
 [![Conda](https://img.shields.io/conda/pn/conda-forge/Semi-ATE?color=black)](https://anaconda.org/conda-forge/Semi-ATE)
-![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)
+![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.8-black)
 
-[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=main)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
+[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=master)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
 [![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
+[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/Semi-ATE/Semi-ATE/latest)](https://github.com/Semi-ATE/Semi-ATE)
 [![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
 ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)
 
@@ -27,6 +28,16 @@ The `Semi-ATE` package is writen purely in Python (noarch) and provides besides 
 Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
 ## Installation
+
+### maxiconda
+
+Semi-ATE, [Semi-ATE-STDF](https://github.com/Semi-ATE/STDF), [Semi-ATE-STIL](https://github.com/Semi-ATE/STIL), [Semi-ATE-DT](https://github.com/Semi-ATE/STDF) and [QScreenCast](https://github.com/Semi-ATE/QScreenCast) are all bundeled with [spyder >= 5](https://github.com/spyder-ide/spyder) in the `_spyder_` environment when one installs conda using the [maxiconda](https://github.com/Semi-ATE/maxiconda) installers. 
+
+### miniconda / miniforge
+
+### anaconda
+
+
 
 
 
@@ -50,7 +61,7 @@ Once, each step of the setup.ps1 is succeeded the following steps must be checke
 1) testprogram name must be adapted in ATE/Tester/TES/apps/le123456000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
 
     ```Console
-    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py
+    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py 
     ```
 
     you will find the smoketest directory in the root level of Semi-ATE directory
