@@ -31,23 +31,23 @@ jobs:
           sudo apt-get update --fix-missing
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
-      - name: Install Conda
+      - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: test
-          auto-update-conda: false
-          auto-activate-base: false
+          miniconda-version: "latest" 
           python-version: ${{ matrix.PYTHON_VERSION }}
-          use-only-tar-bz2: true
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
 
       - name: Install project dependencies
         shell: bash -l {0}
         run: |
-          conda config --append channels conda-forge/label/beta 
-          conda install --file requirements/run.txt -c conda-forge -y -q
-          conda install --file requirements/test.txt -c conda-forge -y -q
+          mamba install --file requirements/run.txt -y -q
+          mamba install --file requirements/test.txt -y -q
+          mamba install Semi-ATE-STDF -y -q
           python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
-          python -m pip install Semi-ATE-STDF
           cd Plugins/TDKMicronas
           python setup.py develop
           cd ../..
@@ -56,6 +56,18 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: build Web-UI dependencies
+        run: |
+          cd ATE/Tester/TES/ui/angular/mini-sct-gui
+          npm i -g @angular/cli
+          npm install
+          ng build
+          cd ../../../../../..
 
       - name: Run manifest checks
         shell: bash -l {0}
