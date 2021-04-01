@@ -1,5 +1,5 @@
 pyqt==5.12.3
-qtawesome==1.0.2
+qtawesome==0.7.2
 
 
 
