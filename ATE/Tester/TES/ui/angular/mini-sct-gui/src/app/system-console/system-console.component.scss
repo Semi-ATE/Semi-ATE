@@ -12,6 +12,12 @@
     margin-bottom: 5px;
     margin-right: 20px;
     width: 120px;
+    label {
+      text-align: left;
+      padding: 0px;
+      color: $micronasBlue;
+      font-size: $label;
+    }
   }
 }
 

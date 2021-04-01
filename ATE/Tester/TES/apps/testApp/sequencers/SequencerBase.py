@@ -94,7 +94,7 @@ class SequencerBase:
 
         self.cache_instance.do_fetch(self.part_id)
 
-    def run(self, execution_policy: object, test_settings: dict = {}):
+    def run(self, execution_policy: ExecutionPolicyABC, test_settings: dict = {}):
         # TODO: raise an exception if test_settings is None !?
         if test_settings:
             self.test_settings = test_settings

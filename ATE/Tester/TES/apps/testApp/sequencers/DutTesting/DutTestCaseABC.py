@@ -39,15 +39,41 @@ class DutTestCaseABC(ABC):
     def do(self):
         pass
 
+    def log_info(self, message: str):
+        self.logger.log_message(LogLevel.Info(), message)
+
+    def log_debug(self, message: str):
+        self.logger.log_message(LogLevel.Debug(), message)
+
+    def log_warning(self, message: str):
+        self.logger.log_message(LogLevel.Warning(), message)
+
+    def log_error(self, message: str):
+        self.logger.log_message(LogLevel.Error(), message)
+
+    def log_measure(self, message: str):
+        self.logger.log_message(LogLevel.Measure(), message)
+
 
 class DutTestCaseBase(DutTestCaseABC):
-    def __init__(self, sbins: list, active_hardware: str, logger: Logger):
-        super().__init__(logger)
+    def __init__(self, sbins: list, active_hardware: str, instance_name, sbin, test_num, context):
+        super().__init__(context)
         self.sbins = sbins
         self.active_hardware = active_hardware
         self._execution_time = 0
         self._test_executions = 0
-        self.instance_name = ""
+        self.instance_name = instance_name
+        self._sbin = sbin
+        self.test_num = test_num
+
+    def set_sbin(self, sbin: int):
+        self._sbin = sbin
+
+    def get_sbin(self):
+        return self._sbin
+
+    def get_test_num(self):
+        return self.test_num
 
     def aggregate_test_result(self, site_num: int):
         pass

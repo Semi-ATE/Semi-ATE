@@ -3,7 +3,9 @@
 .footer {
   padding-left: 10px;
   height: $footerHeight;
-  min-width: 1550px;
+  max-height: $footerHeight;
+  width: 100%;
+  overflow-y: auto;
 }
 
 #fixedFooter {
@@ -12,5 +14,4 @@
   width: 100%;
   position: fixed;
   background-color: $colorFooter;
-  overflow-x: auto;
 }

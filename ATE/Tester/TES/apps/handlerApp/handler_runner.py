@@ -13,6 +13,7 @@ class HandlerRunner:
         loglevel = LogLevel.Warning() if configuration.get('loglevel') is None else configuration['loglevel']
         self._log.set_logger_level(loglevel)
         self.comm = comm
+        self._serial_communication = None
 
         self._get_configuration(configuration)
         self._machine = HandlerStateMachine()
@@ -24,6 +25,7 @@ class HandlerRunner:
             self.device_ids = configuration['device_ids']
             self.broker = configuration['broker_host']
             self.broker_port = configuration['broker_port']
+            self.head_layout = configuration['head_layout']
         except KeyError as e:
             self._log.log_message(LogLevel.Error(), f'Handler got invalid configuration: {e}')
             raise
@@ -40,6 +42,7 @@ class HandlerRunner:
                                                             self._app,
                                                             event)
 
+        self._machine.set_send_layout_callback(lambda: self._connection_handler.publish_head_layout(self.head_layout))
         self._machine.after_state_change(lambda message: self._connection_handler.publish_state(self._machine.model.state, message))
         self._serial_communication.start()
         self._connection_handler.start()

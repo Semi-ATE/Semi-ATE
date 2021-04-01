@@ -2,7 +2,7 @@ from ATE.Tester.TES.apps.common.mqtt_connection import MqttConnection
 from ATE.common.logger import LogLevel
 import json
 import re
-from typing import Optional
+from typing import List, Optional
 
 TOPIC_CONTROLSTATUS = "Control/status"
 TOPIC_CONTROLLOG = "Control/log"
@@ -107,7 +107,13 @@ class MasterConnectionHandler:
         topic = f'ate/{self.device_id}/Handler/command'
         self.mqtt.publish(topic, json.dumps(message, 0, False))
 
-    def _generate_command_message(self, command, sites=None):
+    def send_get_execution_strategy_command(self, layout):
+        topic = f'ate/{self.device_id}/TestApp/cmd'
+        message = self._generate_command_message('getexecutionstrategy')
+        message.update({'layout': layout})
+        self.mqtt.publish(topic, json.dumps(message), 0, False)
+
+    def _generate_command_message(self, command: str, sites: List[str] = None):
         return {'type': 'cmd',
                 'command': command,
                 'sites': self.sites if sites is None else sites,
@@ -199,7 +205,7 @@ class MasterConnectionHandler:
 
     def __extract_siteid_from_testapp_topic(self, topic):
         patterns = [rf'ate/{self.device_id}/TestApp/(?:status|testresult)/site(.+)$',
-                    rf'ate/{self.device_id}/TestApp/(?:status|testsummary|log)/site(.+)$',
+                    rf'ate/{self.device_id}/TestApp/(?:status|testsummary|log|execution_strategy)/site(.+)$',
                     rf'ate/{self.device_id}/TestApp/io-control/site(.+)/request$',
                     rf'ate/{self.device_id}/TestApp/binsettings/site(.+)$']
         for pattern in patterns:
@@ -251,6 +257,8 @@ class MasterConnectionHandler:
             self.status_consumer.on_testapp_status_changed(siteid, msg)
         elif "log" in topic:
             self.status_consumer.on_log_message(siteid, msg)
+        elif "execution_strategy":
+            self.status_consumer.on_execution_strategy_message(siteid, msg['payload'])
         else:
             assert False
 

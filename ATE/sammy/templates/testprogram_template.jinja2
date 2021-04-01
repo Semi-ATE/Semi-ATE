@@ -1,5 +1,5 @@
 {% if program_configuration["is_valid"] == False %}
-raise Exception("test program not valid")
+raise Exception("This testprogram is not valid. Check the IDE to see flagged issues.")
 {% endif %}
 
 from math import inf, nan
@@ -9,17 +9,19 @@ import os
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.sequencers.CommandLineParser import CommandLineParser
 from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategyFactory import create_bin_strategy
-from ATE.common.logger import Logger
+from ATE.Tester.TES.apps.testApp.stages_sequence_generator.stages_sequence_generator import StagesSequenceGenerator
 
 
 if __name__ == '__main__':
-    # Start MQTT using the sequencer.
-    # Note that run_from_command_line_with_sequencer will
-    # only return when the program should terminate.
     params = CommandLineParser(sys.argv)
     test_program_name, _ = os.path.splitext(__file__)
     bin_table_name = f'{test_program_name}_binning.json'
     bin_table_path = os.path.join(os.path.dirname(__file__), bin_table_name)
+
+    execution_strategy_name = f'{test_program_name}_execution_strategy.json'
+    execution_strategy_path = os.path.join(os.path.dirname(__file__), execution_strategy_name)
+
+    execution_strategy = StagesSequenceGenerator(execution_strategy_path)
     bin_strategy = create_bin_strategy(params.binstrategytype, bin_table_path, test_program_name)
 
     program_name = os.path.basename(__file__).replace(".py", "")
@@ -28,21 +30,11 @@ if __name__ == '__main__':
     from {{program_configuration['prog_name']}}_auto_script import AutoScript
     auto_script = AutoScript()
     source = f"TestApp{params.site_id}"
-    context = common.make_context(source, params, sequencer, auto_script)
-
-    logger = context.get_logger()
-    sequencer.set_logger(logger)
-    auto_script.set_logger(logger)
-    auto_script.set_context(context)
-
-    sequencer.set_auto_script(auto_script)
-
+    context = common.make_context(source, params, sequencer, auto_script, execution_strategy)
     {% for testinstance in test_list %}
-    from {{ testinstance.test_module }} import {{ testinstance.test_class }}
-    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", context)
-    _ate_var_{{ testinstance.instance_name }}.set_sbin({{ testinstance.sbin }})
-    _ate_var_{{ testinstance.instance_name }}.set_test_num({{ testinstance.test_number }})
 
+    from {{ testinstance.test_module }} import {{ testinstance.test_class }}
+    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context)
     {% for ip in testinstance.input_parameters %}
     {% if testinstance.input_parameters[ip]['type'] == 'static' or testinstance.input_parameters[ip]['type'] ==  'local' %}
     _ate_var_{{ testinstance.instance_name }}.ip.set_parameter('{{ip}}', '{{testinstance.input_parameters[ip]['type']}}', {{testinstance.input_parameters[ip]['value']}}, {{testinstance.input_parameters[ip]['Min']}}, {{testinstance.input_parameters[ip]['Max']}}, {{testinstance.input_parameters[ip]['10ᵡ']}}, context)
@@ -50,22 +42,19 @@ if __name__ == '__main__':
     _ate_var_{{ testinstance.instance_name }}.ip.set_parameter('{{ip}}', '{{testinstance.input_parameters[ip]['type']}}', '{{testinstance.input_parameters[ip]['value']}}', {{testinstance.input_parameters[ip]['Min']}}, {{testinstance.input_parameters[ip]['Max']}}, {{testinstance.input_parameters[ip]['10ᵡ']}}, context)
     {% endif %}
     {% endfor %}
-
     {% for op in testinstance.output_parameters %}
     _ate_var_{{ testinstance.instance_name }}.op.set_parameter('{{op}}', {{testinstance.output_parameters[op]['test_num']}}, {{testinstance.output_parameters[op]['LTL']}}, {{testinstance.output_parameters[op]['UTL']}}, {{testinstance.output_parameters[op]['Binning']['bin']}}, {{testinstance.output_parameters[op]['Binning']['result']}}, '{{ testinstance.instance_name }}')
     {% endfor %}
-
     sequencer.register_test(_ate_var_{{ testinstance.instance_name }})
     {% endfor %}
-
-    sequencer.set_tester_instance(context.tester_instance)
 
     {% if program_configuration.caching_policy != "disable" and  program_configuration.cache_type != "" %}
     sequencer.set_caching_policy("{{program_configuration.caching_policy}}")
     sequencer.set_cache_instance(context.gp_dict["{{program_configuration.cache_type}}"])
     {% endif %}
 
-    context.mqtt.set_logger(logger)
-    context.mqtt.run_from_command_line_with_sequencer()
-    logger.cleanup()
-
+    # Start MQTT using the sequencer.
+    # Note that "run()" will
+    # only return when the program should terminate.
+    context.harness.run()
+    context.get_logger().cleanup()

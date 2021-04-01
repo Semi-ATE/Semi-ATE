@@ -194,6 +194,8 @@ class Logger:
         structured_logs = []
         for log in logs:
             line = log.split('|')
+            if len(line) < 3:
+                continue
             structured_logs.append({'source': line[0], 'date': line[1], 'type': line[2], 'description': line[3].strip()})
 
         return structured_logs

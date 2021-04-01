@@ -30,11 +30,12 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.testRemove.setEnabled(False)
         self.binning_tree.setEnabled(False)
         self.user_name.setEnabled(False)
+        self.ping_pong_widget.set_ui_enabled(False)
 
     @staticmethod
     def setup_view(dialog: TestProgramWizard, name: str):
-        configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
-        dialog._custom_parameter_handler.set_test_num_ranges(configuration['test_ranges'])
+        program_configuration = dialog.project_info.get_program_configuration_for_owner(dialog.owner, name)
+        dialog._custom_parameter_handler.set_test_num_ranges(program_configuration['test_ranges'])
         # TODO: can we edit any of the following property
         dialog.hardware.clear()
         dialog.base.clear()
@@ -45,21 +46,23 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog.user_name.setEnabled(False)
         dialog.sequencerType.setEnabled(False)
 
-        dialog.hardware.addItem(configuration['hardware'])
-        dialog.base.addItem(configuration['base'])
-        dialog.target.addItem(configuration['target'])
-        dialog.cacheType.setCurrentText(configuration['cache_type'])
-        dialog.user_name.setText(configuration['usertext'])
+        dialog.hardware.addItem(program_configuration['hardware'])
+        dialog.base.addItem(program_configuration['base'])
+        dialog.target.addItem(program_configuration['target'])
+        dialog.cacheType.setCurrentText(program_configuration['cache_type'])
+        dialog.user_name.setText(program_configuration['usertext'])
 
         dialog._custom_parameter_handler.import_tests_parameters(dialog.project_info.get_program_test_configuration(name, dialog.owner))
+        dialog._custom_parameter_handler.import_tests_executions(program_configuration['execution_sequence'])
         dialog._update_selected_test_list()
+        dialog.execution_widget.update_rows_view()
         dialog._load_bin_table(os.path.join(dialog.project_info.project_directory,
                                             'src',
                                             dialog.hardware.currentText(),
                                             dialog.base.currentText(),
                                             f'{name}_binning.json'))
         dialog._populate_binning_tree()
-        caching_policy = configuration['caching_policy']
+        caching_policy = program_configuration['caching_policy']
         # cacheDisable is checked by default, we just check
         # the others, if they apply.
         if caching_policy == "store":
@@ -67,12 +70,8 @@ class ViewTestProgramWizard(TestProgramWizard):
         elif caching_policy == "drop":
             dialog.cacheDrop.setChecked(True)
 
-        dialog.sequencerType.blockSignals(True)
-        dialog.sequencerType.clear()
-        dialog.sequencerType.addItem(configuration['sequencer_type'])
-        dialog.sequencerType.blockSignals(False)
-
-        dialog.temperature.setText(configuration['temperature'])
+        dialog.sequencerType.setCurrentText(program_configuration['sequencer_type'])
+        dialog.temperature.setText(program_configuration['temperature'])
 
         dialog._verify()
 

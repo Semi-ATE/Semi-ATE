@@ -1,3 +1,6 @@
+import pytest
+import mock
+
 from ATE.Tester.TES.apps.masterApp import master_application
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
 
@@ -16,6 +19,7 @@ class TestApplication:
                 'jobformat': 'xml.micronas',
                 'enable_timeouts': True,
                 'Handler': "abc",
+                'tester_type': 'DummyTester.MaxiSCT',
                 'environment': "abs"}
 
     def default_configuration_with_persistent_user_settings(self):
@@ -35,6 +39,8 @@ class TestApplication:
     def test_masterapp_usersettings_persistent_config_disabled_without_filepath(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')
         mocker.patch.object(UserSettings, 'load_from_file')
+        mocker.patch.object(master_application.MasterApplication, 'get_tester')
+        mocker.patch.object(master_application.MasterApplication, 'get_execution_strategy')
 
         cfg = self.default_configuration()
         app = master_application.MasterApplication(cfg)
@@ -49,6 +55,8 @@ class TestApplication:
     def test_masterapp_usersettings_persistent_config_default_initialized_if_file_not_exists(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')
         mocker.patch.object(UserSettings, 'load_from_file')
+        mocker.patch.object(master_application.MasterApplication, 'get_tester')
+        mocker.patch.object(master_application.MasterApplication, 'get_execution_strategy')
         UserSettings.load_from_file.side_effect = FileNotFoundError()
 
         cfg = self.default_configuration_with_persistent_user_settings()
@@ -63,6 +71,8 @@ class TestApplication:
 
     def test_masterapp_usersettings_persistent_config_initialized_from_existing_file(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')
+        mocker.patch.object(master_application.MasterApplication, 'get_tester')
+        mocker.patch.object(master_application.MasterApplication, 'get_execution_strategy')
 
         mocker.patch.object(UserSettings, 'load_from_file')
         custom_usersettings = self.default_UserSettings()  # UserSettings.load_from_file includes all default settings
@@ -82,6 +92,8 @@ class TestApplication:
     def test_masterapp_usersettings_saved_on_modify(self, mocker):
         mocker.patch.object(UserSettings, 'save_to_file')  # mock to avoid file creation
         mocker.patch.object(UserSettings, 'load_from_file')
+        mocker.patch.object(master_application.MasterApplication, 'get_tester')
+        mocker.patch.object(master_application.MasterApplication, 'get_execution_strategy')
         UserSettings.load_from_file.side_effect = FileNotFoundError()
 
         cfg = self.default_configuration_with_persistent_user_settings()

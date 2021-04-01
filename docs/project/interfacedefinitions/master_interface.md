@@ -112,6 +112,44 @@ informationen über das zu ladene lot (Losnumber, Temperature, etc..). Viele Bef
 
 Unterstützte Befehle
 
+#### site-layout
+Der site-layout Befehl teilt dem Master mit welches physische Layout die Sites des Testers zueinander haben. 
+Der Master ermittelt anhand dieses Layouts, welche Pingpong Konfiguration zu verwenden ist. 
+```json
+{
+    "type": "site-layout",
+    "payload": 
+        {
+            "sites": [
+                [0, 1],
+                [1, 0]
+            ]
+        }
+}
+```
+
+
+* [0, 1] are the x and y coordinates
+* the index of the tuple (x and y) is the sideid
+from the example above:
+    - siteid 0 ==>  (x: 0, y: 1)
+
+
+* Für jede Site des Testers wird ein Eintrag im "sites" Array erwartet.
+* Die Positionen müssen mit den Positionen, die im Master hinterlegt sind übereinstimmen.
+
+Positionen der Sites im Master:
+* Der Master speichert die Sitepositionen als vielfaches der Größe einer Site, mit dem 0 Punkt links oben.
+* Es gibt keine negativen Koordinaten für Sites.
+* Der Master erlaubt einen Versatz vom 0-Punkt von maximal <Anzahl Sites> - 1, d.h. bei 4 Sites ist die Maximale X Koordinate 3.
+* Es gibt keine Bruchteile von Schritten, sondern nur ganze Zahlen.
+
+Der Nutzer des Interface ist dafür verantwortlich die Sitekoordinaten mittels einer geeigneten Transformation in das Masterkoordinatensystem zu überführen.
+
+Randbedingungen: 
+- Der Master akzeptiert dieses Paket nur, solange noch kein Testprogramm geladen ist.
+- Sollte ein Testprogramm geladen werden, bevor dieses Paket geladen wurde, so verwendet der Master eine in seiner  Konfigurationsdatei hinterlegtes Layout. Hierbei handelt es sich um einen Fallback um es weiterhin zu ermöglichen Lose über das WebUI zu ermöglichen wenn kein Handler verfügbar ist.
+
 #### load
 Der Loadbefehl weist die Masterapplikation an ein Los zu laden.
 Bei Erfolg wechselt der Master in den Zustand XXX
@@ -162,7 +200,7 @@ Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge vo
 
 * **siteid**: Siteid einer Site, auf der getestet werden soll. Diese Siteid muss mit einer Site übereinstimmen, die beim Master angemeldet ist.
 * **deviceid**: Bauteilnummer
-* **binning**: Bin Ergebnis
+* **binning**: Bin Ergebnis einer vorherigen Teststation für das Bauteil
 * **logflag**:  LOG FLAG
 * **additionalinfo**: Informationen die Zwischen meherere Tester ausgetauscht werden
 
@@ -269,7 +307,6 @@ Der Master konsumiert Statusinformationen aus den Topics:
 
 * \<device-id>/Control/status
 * \<device-id>/TestApp/status
-* \<device-id>/Webserver/status
 * \<device-id>/Periphery/status
 
 * \<handler-id>/Handler/status

@@ -1,17 +1,21 @@
 import os
 import re
+from typing import Dict
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidgetItemIterator
 
+from ATE.projectdatabase.Hardware import ParallelismStore
 from ATE.spyder.widgets.actions_on.program.Binning.BinningHandler import BinningHandler
 from ATE.spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
+from ATE.spyder.widgets.actions_on.program.ExecutionWidget import ExecutionWidget
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.actions_on.program.Utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
                                                          ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
 from ATE.spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
+from ATE.spyder.widgets.actions_on.program.PingPongWidget import PingPongWidget
 from ATE.spyder.widgets.navigation import ProjectNavigation
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 from ATE.spyder.widgets.constants import SUBFLOWS_QUALIFICATION
@@ -50,6 +54,13 @@ class TestProgramWizard(BaseDialog):
         self.binning_table: QTableWidget = self.binning_table
         self._available_gp_functions = self.project_info.get_hardware_definition(self.project_info.active_hardware)["GPFunctions"]
         self._binning_handler = BinningHandler(self.binning_table, self._bin_table, self)
+
+        self.parallelism_store: ParallelismStore = self.project_info.get_hardware_parallelism_store(self.project_info.active_hardware)
+        self.ping_pong_widget = PingPongWidget(self)
+        self.tab_layout.addTab(self.ping_pong_widget, "Ping-Pong")
+
+        self.execution_widget = ExecutionWidget(self)
+        self.tab_layout.addTab(self.execution_widget, "Execution")
 
         self._setup()
         self._view()
@@ -93,7 +104,9 @@ class TestProgramWizard(BaseDialog):
         self.temperature.setValidator(integer_validator)
 
     def _connect_event_handler(self):
-        self.selectedTests.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+        self.tab_layout.currentChanged.connect(self._tab_changed_handler)
+
+        self.selectedTests.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.selectedTests.horizontalHeader().setStretchLastSection(True)
         self.selectedTests.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
         self.selectedTests.itemDoubleClicked.connect(self._selected_list_double_click_handler)
@@ -191,6 +204,11 @@ class TestProgramWizard(BaseDialog):
 
         self._verify()
 
+    def _tab_changed_handler(self, index: int):
+        new_tab = self.tab_layout.widget(index)
+        if new_tab == self.execution_widget:
+            self.execution_widget.update_rows_view()
+
     @QtCore.pyqtSlot(QtCore.QPoint)
     def _context_menu_binning_tree(self, point: QtCore.QPoint):
         item = self.binning_tree.itemAt(point)
@@ -274,14 +292,40 @@ class TestProgramWizard(BaseDialog):
             return
 
     def _selected_list_double_click_handler(self, item):
-        if item.column() in (CLASS_NAME_COL, CHECK_TEST_COL):
+        column = item.column()
+        if column in (CLASS_NAME_COL, CHECK_TEST_COL):
             return
 
         from ATE.spyder.widgets.validation import valid_test_name_description_regex
         regx = QtCore.QRegExp(valid_test_name_description_regex)
         name_validator = QtGui.QRegExpValidator(regx, self)
 
-        self._create_checkable_cell(item.text(), self.selectedTests, item, name_validator)
+        row = item.row()
+        checkable_widget = QtWidgets.QLineEdit()
+        checkable_widget.setText(item.text())
+        checkable_widget.setValidator(name_validator)
+
+        self.selectedTests.setCellWidget(row, column, checkable_widget)
+        checkable_widget.editingFinished.connect(
+            lambda row=row, column=column, checkable_widget=checkable_widget, table=self.selectedTests:
+            self._edit_cell_done(item.text(), table, checkable_widget, row, column)
+        )
+
+    def _edit_cell_done(self, test_name, table, checkable_widget, row, column):
+        description = checkable_widget.text()
+        if self._is_description_valid(table, description):
+            self._custom_parameter_handler.update_test_name(test_name, description)
+            self.selectedTests.item(row, column).setText(str(checkable_widget.text()))
+        else:
+            self._update_feedback(ErrorMessage.TestDescriptionNotUnique())
+
+        self._update_row(row)
+        if not self.selectedTests.selectedItems():
+            self.parametersInput.setRowCount(0)
+            self.parametersOutput.setRowCount(0)
+
+        self._populate_binning_tree()
+        self._verify()
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _input_param_table_clicked(self, item):
@@ -361,8 +405,8 @@ class TestProgramWizard(BaseDialog):
 
         from ATE.spyder.widgets.validation import valid_temp_sequence_regex
         regx = QtCore.QRegExp(valid_temp_sequence_regex)
-        integer_validator = QtGui.QRegExpValidator(regx, self)
-        self.temperature.setValidator(integer_validator)
+        float_validator = QtGui.QRegExpValidator(regx, self)
+        self.temperature.setValidator(float_validator)
 
         self.temperature.setText(f'{DEFAULT_TEMPERATURE},')
 
@@ -407,17 +451,9 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.item(row, TEST_INSTANCE_COL).setSelected(is_selected)
         self.selectedTests.item(row, CHECK_TEST_COL).setSelected(is_selected)
 
-    def _validate_test_parameters(self, test_name):
-        self._custom_parameter_handler.validate_test_parameters(test_name, self._standard_parameter_handler)
-
-    @staticmethod
-    def _extract_base_test_name(indexed_test_name):
-        return indexed_test_name.split('_')[0]
-
     def _get_in_output_paramters(self, test_name):
-        name = self._extract_base_test_name(test_name)
-        self.current_selected_test = name
-        parameters = self._get_test_parameters(name)
+        self.current_selected_test = test_name
+        parameters = self._get_test_parameters(test_name)
 
         import copy
         return copy.deepcopy(parameters['input_parameters']), copy.deepcopy(parameters['output_parameters'])
@@ -437,6 +473,8 @@ class TestProgramWizard(BaseDialog):
             raise f"action '{action}' not recognized"
         except Exception as e:
             raise e
+
+        self.execution_widget.update_rows_view()
 
         self._verify()
 
@@ -565,11 +603,8 @@ class TestProgramWizard(BaseDialog):
         alltests = self._get_available_tests()
         for t in alltests:
             self.availableTests.addItem(t.name)
-            self._fill_standard_parameter_handler(t.name, t.name)
-
-    def _fill_standard_parameter_handler(self, test_name, test_instance_name):
-        self.input_parameters, self.output_parameters = self._get_in_output_paramters(test_name)
-        self._standard_parameter_handler.add_test(test_instance_name, test_name, self.input_parameters, self.output_parameters, is_custom=False)
+            self.input_parameters, self.output_parameters = self._get_in_output_paramters(t.name)
+            self._standard_parameter_handler.add_test(t.name, t.name, self.input_parameters, self.output_parameters, is_custom=False)
 
     def _validate_temperature_input(self, text, pattern):
         index = text.rfind(pattern)
@@ -606,8 +641,10 @@ class TestProgramWizard(BaseDialog):
 
     def _get_available_tests(self):
         available_tests = []
-        tests = self.project_info.get_tests_from_db(self.hardware.currentText(),
-                                                    self.base.currentText())
+        tests = self.project_info.get_tests_from_db(
+            self.project_info.active_hardware,
+            self.project_info.active_base
+        )
         if not self.temperature.text():
             return tests
 
@@ -624,7 +661,11 @@ class TestProgramWizard(BaseDialog):
             if self.owner_section_name.split('_')[0] not in groups:
                 continue
 
-            min, max = self.project_info.get_test_temp_limits(test.name, self.project_info.active_hardware, self.project_info.active_base)
+            min, max = self.project_info.get_test_temp_limits(
+                test.name,
+                self.project_info.active_hardware,
+                self.project_info.active_base
+            )
             for temp in temps:
                 if temp > (min - 1) and temp < max + 1 and \
                    test not in available_tests:
@@ -677,10 +718,15 @@ class TestProgramWizard(BaseDialog):
             success = False
 
         if self.enable_edit:
-            if self.owner_section_name in self.project_info.get_groups():
+            group_names = [group.name for group in self.project_info.get_groups()]
+            if self.owner_section_name in group_names:  # HACK: ignore qualification children, to be seen as groups
                 if self._generate_test_program_name(self._get_test_program_infos()[0]) in self.project_info.get_program_names_for_group(self.owner_section_name):
                     self._update_feedback(ErrorMessage.UserNameUsed())
                     success = False
+
+        if self.parallelism_store.get_count_matching_base(self.project_info.active_base) == 0:
+            self._update_feedback("At least on parallelism needed.")
+            success = False
 
         if not self.user_name.text():
             self._update_feedback(ErrorMessage.UserNameMissing())
@@ -689,6 +735,10 @@ class TestProgramWizard(BaseDialog):
         validator_message = self._custom_parameter_handler.output_validator.get_message()
         if len(validator_message):
             self._update_feedback(validator_message)
+            success = False
+
+        if not self.execution_widget.verify_execution():
+            self._update_feedback("Execution not correct")
             success = False
 
         if success:
@@ -722,11 +772,8 @@ class TestProgramWizard(BaseDialog):
     def sequencer_type(self):
         return self.sequencerType.currentText()
 
-    def _update_feedback(self, message):
-        if message:
-            self.Feedback.setText(message)
-        else:
-            self.Feedback.setText('')
+    def _update_feedback(self, message=''):
+        self.Feedback.setText(message)
 
     @staticmethod
     def _generate_color(color: tuple):
@@ -751,7 +798,7 @@ class TestProgramWizard(BaseDialog):
         return ('%' + fmt) % float(value)
 
     def _get_test_parameters(self, test_name):
-        return self.project_info.get_test_table_content(self._extract_base_test_name(test_name), self.project_info.active_hardware, self.project_info.active_base)
+        return self.project_info.get_test_table_content(test_name, self.project_info.active_hardware, self.project_info.active_base)
 
     def _resize_table_cell(self, parameter_table, cell, item):
         font = QtGui.QFont()
@@ -777,34 +824,6 @@ class TestProgramWizard(BaseDialog):
 
     def edit_param_complete(self, param):
         self._validate_parameter(param)
-        self._verify()
-
-    def _create_checkable_cell(self, test_name, table, item, validator):
-        column = item.column()
-        row = item.row()
-        checkable_widget = QtWidgets.QLineEdit()
-        checkable_widget.setText(item.text())
-        checkable_widget.setValidator(validator)
-
-        table.setCellWidget(row, column, checkable_widget)
-        checkable_widget.editingFinished.connect(lambda row=row, column=column,
-                                                 checkable_widget=checkable_widget, table=table:
-                                                 self._edit_cell_done(test_name, table, checkable_widget, row, column))
-
-    def _edit_cell_done(self, test_name, table, checkable_widget, row, column):
-        description = checkable_widget.text()
-        if self._is_description_valid(table, description):
-            self._custom_parameter_handler.update_test_name(test_name, description)
-            self.selectedTests.item(row, column).setText(str(checkable_widget.text()))
-        else:
-            self._update_feedback(ErrorMessage.TestDescriptionNotUnique())
-
-        self._update_row(row)
-        if not self.selectedTests.selectedItems():
-            self.parametersInput.setRowCount(0)
-            self.parametersOutput.setRowCount(0)
-
-        self._populate_binning_tree()
         self._verify()
 
     @staticmethod
@@ -839,7 +858,7 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.blockSignals(True)
         self.selectedTests.setRowCount(len(self._custom_parameter_handler.get_test_names()))
         for index, test in enumerate(self._custom_parameter_handler.get_tests()):
-            self._validate_test_parameters(test.get_test_name())
+            self._custom_parameter_handler.validate_test_parameters(test.get_test_name(), self._standard_parameter_handler)
             self._insert_test_tuple_items(index, test.get_test_base(), test.get_test_name(), test.get_valid_flag(), test.get_selectability())
 
         self.selectedTests.blockSignals(False)
@@ -882,10 +901,18 @@ class TestProgramWizard(BaseDialog):
 
     def _add_test_tuple_items(self, test_name: str, pos: int):
         indexed_test = self._generate_test_name(test_name)
-        test_name = indexed_test.split('_')[0]
+        test_name = '_'.join(indexed_test.split('_')[:-1])
 
         input_parameters, output_parameters = self._get_in_output_paramters(test_name)
-        self._custom_parameter_handler.add_test(indexed_test, test_name, input_parameters, output_parameters)
+        self._custom_parameter_handler.add_test(
+            indexed_test,
+            test_name,
+            input_parameters,
+            output_parameters,
+            True,
+            pos,
+            executions=self._generate_new_executions()
+        )
         test_names = self._custom_parameter_handler.get_test_names()
 
         self.selectedTests.setRowCount(len(test_names))
@@ -893,9 +920,15 @@ class TestProgramWizard(BaseDialog):
         bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
         self._add_tests_to_bin_table(bin_info)
 
+    def _generate_new_executions(self) -> Dict[str, int]:
+        return {
+            parallelism.name: parallelism.get_default_first_ping_pong().id
+            for parallelism in self.parallelism_store.get_all_matching_base(self.project_info.active_base).values()
+        }
+
     def _generate_test_name(self, test_base):
         test_names = self._custom_parameter_handler.get_test_names()
-        test_indexes = [test.split('_')[1] for test in test_names if test_base in test]
+        test_indexes = [test.split('_')[-1] for test in test_names if test_base in test]
         numbers = []
         for test_index in test_indexes:
             try:
@@ -932,7 +965,7 @@ class TestProgramWizard(BaseDialog):
     def _populate_binning_tree(self):
         self.binning_tree.clear()
         self._bin_table.clear_alarm_table()
-        binning_infos = self._custom_parameter_handler.binning_information()
+        binning_infos = self._custom_parameter_handler.get_binning_information()
         for test in binning_infos:
             self._add_tests_to_bin_table(test)
 
@@ -1110,21 +1143,31 @@ class TestProgramWizard(BaseDialog):
         definition = self._custom_parameter_handler.build_defintion()
         test_ranges = self._custom_parameter_handler.get_ranges()
         target_prefix = f"{self.target.currentText()}_{self.owner_section_name}_{self.user_name.text()}"
+
+        self.ping_pong_widget.save_config()
+
         if not self.read_only and self.enable_edit:
             owner, count = self._get_test_program_infos()
             self.prog_name = self._generate_test_program_name(owner)
             group = self.owner_section_name.split('_')[0]
 
-            self.project_info.insert_program(self.prog_name, self.hardware.currentText(), self.base.currentText(), self.target.currentText(),
-                                             self.user_name.text(), self.sequencer_type, self._get_temperature_value(),
-                                             definition, owner, count, target_prefix,
-                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges, group)
+            self.project_info.insert_program(
+                self.prog_name, self.hardware.currentText(), self.base.currentText(),
+                self.target.currentText(), self.user_name.text(), self.sequencer_type,
+                self._get_temperature_value(), definition, owner, count, target_prefix,
+                self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges,
+                group, len(self._custom_parameter_handler.get_tests()),
+                self._custom_parameter_handler.serialize_execution()
+            )
         else:
             self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
-            self.project_info.update_program(self.prog_name, self.hardware.currentText(), self.base.currentText(),
-                                             self.target.currentText(), self.user_name.text(), self.sequencer_type,
-                                             self._get_temperature_value(), definition, self.owner, target_prefix,
-                                             self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges)
+            self.project_info.update_program(
+                self.prog_name, self.hardware.currentText(), self.base.currentText(),
+                self.target.currentText(), self.user_name.text(), self.sequencer_type,
+                self._get_temperature_value(), definition, self.owner, target_prefix,
+                self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges,
+                len(self._custom_parameter_handler.get_tests()), self._custom_parameter_handler.serialize_execution()
+            )
 
         self._bin_table.create_binning_file(os.path.join(self.project_info.project_directory,
                                                          'src',

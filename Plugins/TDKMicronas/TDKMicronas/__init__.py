@@ -1,6 +1,7 @@
 from ATE.common.logger import Logger
 from ATE.semiateplugins.hookspec import hookimpl
 from TDKMicronas.Testers import MiniSCT, MaxiSCT
+from TDKMicronas.TestersMaster import MiniSCT as MasterMiniSCT, MaxiSCT as MasterMaxiSCT
 from TDKMicronas.Flatcache import Flatcache
 
 
@@ -120,11 +121,18 @@ class Plugin:
             return BusinessObjectStandin()
 
     @hookimpl
-    def get_tester(tester_name):
+    def get_tester(tester_name: str):
         if tester_name == "TDKMicronas.MiniSCT":
             return MiniSCT.MiniSCT()
         elif tester_name == "TDKMicronas.MaxiSCT":
             return MaxiSCT.MaxiSCT()
+
+    @hookimpl
+    def get_tester_master(tester_name: str):
+        if tester_name == "TDKMicronas.MasterMiniSCT":
+            return MasterMiniSCT.MiniSCT()
+        elif tester_name == "TDKMicronas.MasterMaxiSCT":
+            return MasterMaxiSCT.MaxiSCT()
 
     @hookimpl
     def get_general_purpose_function(func_name: str, logger: Logger):

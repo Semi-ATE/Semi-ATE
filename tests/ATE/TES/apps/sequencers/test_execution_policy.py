@@ -5,6 +5,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
 from ATE.Tester.TES.apps.testApp.sequencers.ExecutionPolicy import SingleShotExecutionPolicy
 from tests.ATE.TES.apps.sequencers.Loggerstub import LoggerStub
+from tests.ATE.TES.apps.sequencers.utils import DummyTester
 
 
 @pytest.fixture
@@ -41,6 +42,7 @@ class CbCountingSequencer(SequencerBase):
         self.aftertest_calls = 0
         self.aftercycle_calls = 0
         self.set_logger(LoggerStub())
+        self.set_tester_instance(DummyTester())
 
     def after_test_cb(self, test_index, test_result, test_num, exception):
         self.aftertest_calls += 1

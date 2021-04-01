@@ -179,7 +179,6 @@ The files ```master_config_file_template.json``` and
     ],
     "webui_host": "127.0.0.1",
     "webui_port": 8081,
-    "webui_static_path": "./ATE/TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",              // web-ui build artifacts path
     // the following fields are information to simulate a test-program execition
     "Handler": "HTO92-20F",
     "environment": "F1",

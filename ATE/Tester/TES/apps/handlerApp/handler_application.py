@@ -47,8 +47,8 @@ class HandlerApplication(MultiSitesMasterHandler):
         self._log = log
         self.prev_master_state = None
 
-        self.pending_transistion_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_detected(),
-                                                            lambda master, state: self._on_unexpected_master_state(master, state))
+        self.pending_transition_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_detected(),
+                                                           lambda master, state: self._on_unexpected_master_state(master, state))
         self.arm_timeout(STARTUP_TIMEOUT, lambda: self.on_error('master(s) could not be recognized'))
 
     def on_master_state_changed(self, master_id, state):
@@ -56,7 +56,7 @@ class HandlerApplication(MultiSitesMasterHandler):
         self.prev_master_state = state
 
         try:
-            self.pending_transistion_master.trigger_transition(master_id, state, must_match_transition=self.state == MasterStates.connecting())
+            self.pending_transition_master.trigger_transition(master_id, state, must_match_transition=self.state == MasterStates.connecting())
         except KeyError:
             self._machine.model.on_error(f'unconfigured master_id: {master_id}')
 
@@ -69,8 +69,8 @@ class HandlerApplication(MultiSitesMasterHandler):
             self.on_error(f'master changes state from "{self.prev_master_state}" to {state}')
 
         if state == MasterStates.initialized() and self.state == MasterStates.ready():
-            self.pending_transistion_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_initialized(),
-                                                                lambda master, state: self._on_unexpected_master_state(master, state))
+            self.pending_transition_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_initialized(),
+                                                               lambda master, state: self._on_unexpected_master_state(master, state))
             self.arm_timeout(TOINITIALIZED_TIMEOUT, lambda: self.on_error('master(s) could not be recognized'))
 
     def startup_done(self, message):
@@ -79,8 +79,8 @@ class HandlerApplication(MultiSitesMasterHandler):
     def on_error(self, message):
         self._machine.model.on_error(message + ' ' + self.prev_master_state)
         self._log.log_message(LogLevel.Error(), message)
-        self.pending_transistion_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_detected(),
-                                                            lambda master, state: self._on_unexpected_master_state(master, state))
+        self.pending_transition_master = SequenceContainer([MasterStates.initialized()], self._device_ids, lambda: self._all_testers_detected(),
+                                                           lambda master, state: self._on_unexpected_master_state(master, state))
         self.arm_timeout(STARTUP_TIMEOUT, lambda: self.on_error('master(s) could not be recognized'))
 
     def _all_testers_detected(self):
@@ -125,8 +125,8 @@ class HandlerApplication(MultiSitesMasterHandler):
         if expected_master_state[0] == MasterStates.unknown():
             return {}
 
-        self.pending_transistion_master = SequenceContainer(expected_master_state, self._device_ids, lambda: self._get_call_back(expected_master_state[0]),
-                                                            lambda site, state: self._on_unexpected_master_state(site, state))
+        self.pending_transition_master = SequenceContainer(expected_master_state, self._device_ids, lambda: self._get_call_back(expected_master_state[0]),
+                                                           lambda site, state: self._on_unexpected_master_state(site, state))
 
         return {}
 

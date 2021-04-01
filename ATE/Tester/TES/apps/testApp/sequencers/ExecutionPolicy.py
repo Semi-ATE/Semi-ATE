@@ -1,6 +1,28 @@
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 from abc import ABC, abstractmethod
 import time
+from enum import Enum
+
+
+TIMEOUT = 100
+
+
+class ExecutionType(Enum):
+    SingleShot = 'singleShot'
+    LoopCycle = 'loopCycle'
+
+    def __call__(self):
+        return self.value
+
+
+def get_execution_policy(execution_type: ExecutionType):
+    try:
+        return {
+            ExecutionType.SingleShot(): lambda: SingleShotExecutionPolicy(),
+            ExecutionType.LoopCycle(): lambda: LoopCycleExecutionPolicy(),
+        }[execution_type]()
+    except Exception as e:
+        raise Exception(f'exception occurred while instantiating execution policy: {e}')
 
 
 class ExecutionPolicyABC(ABC):
@@ -22,6 +44,10 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
             sequencer_instance.pre_cycle_cb()       # ToDo: This will kill all records generated up to now, which is probably not what we want if num_cycles > 1
             test_result = Result.Inconclusive()
             for test_case in sequencer_instance.test_cases:
+                if not sequencer_instance.tester_instance.do_request(int(sequencer_instance.site_id), TIMEOUT):
+                    raise Exception('no response')
+
+                sequencer_instance.tester_instance.test_in_progress(int(sequencer_instance.site_id))
 
                 sequencer_instance.pre_test_cb(test_index)
                 result, exception = test_case.run(sequencer_instance.site_id)

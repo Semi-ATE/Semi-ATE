@@ -1,5 +1,8 @@
 @import './../styles.scss';
 
 main {
-    margin-bottom: $footerHeight;
+    .pageContent {
+        height: calc(100vh - #{$headerHeight} - #{$footerHeight});
+        overflow: auto;
+    }
 }

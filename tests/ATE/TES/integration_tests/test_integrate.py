@@ -3,7 +3,6 @@ import multiprocessing as mp
 
 from ATE.Tester.TES.apps.launch_master import launch_master
 from ATE.Tester.TES.apps.launch_control import launch_control
-from ATE.Tester.TES.apps.launch_testapp import launch_testapp
 from ATE.Tester.TES.apps.handlerApp.handler_runner import HandlerRunner
 from tests.ATE.TES.integration_tests.DummySerial import DummySerialGeringer
 
@@ -108,6 +107,7 @@ async def handler_runner():
         "broker_host": BROKER_HOST,
         "broker_port": BROKER_PORT,
         "device_ids": [DEVICE_ID],
+        "head_layout": [[0, 0], [0, 1]],
         "loglevel": 10
     }
 
@@ -128,12 +128,19 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         'sites': sites,
         'webui_port': webui_port,
         "skip_jobdata_verification": False,
-        "webui_static_path": "./ATE/Tester/TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",
         "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json",
+        "layout": [[0, 0], [1, 0]],
+        "tester_type": "DummyTesterMaster.MaxiSCT",
         "loglevel": 10
     }
+
+    if len(sites) > 1:
+        config['layout'] = [[1, 0], [0, 1]]
+    else:
+        config['layout'] = [[0, 0]]
+
     launch_master(config_file_path='ATE/Tester/TES/apps/master_config_file_template.json',
                   user_config_dict=config)
 
@@ -148,20 +155,6 @@ def run_control(device_id, site_id, broker_host, broker_port):
     }
     launch_control(config_file_path='ATE/Tester/TES/apps/control_config_file_template.json',
                    user_config_dict=config)
-
-
-# executed in own process with multiprocessing, no references to testenv state
-def run_testapp(device_id, site_id, broker_host, broker_port, thetestzipname):
-    launch_testapp([
-        'thetest_application.py',
-        '--device_id', device_id,
-        '--site_id', site_id,
-        '--broker_host', broker_host,
-        '--broker_port', str(broker_port),
-        '--verbose',
-        '--thetestzip_name', thetestzipname,
-        '--file', 'external'
-    ])
 
 
 class ProcessManagerItem:
@@ -481,17 +474,18 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
         assert not (set(seen_states) - {'loading', 'ready'})
 
         # STEP 3: run test
-        await ws.send_json({'type': 'cmd', 'command': 'next'})
-        # TODO: If 'tests' are finished too fast, we also don't seetesting (same as the problem with 'loading' above)
-        #       Currently these tests rely on the fact that testing takes longer. This needs to be fixed.
-        # TODO: Add an issue that short state changes are properly sent to the frontend (needs fix in master background task loop)
-        await expect_message_with_state(ws, 'testing', 5.0)
-        await expect_message_with_state(ws, 'ready', 10.0)
-        # TODO: assert message with type=testresult is received. not sure if received before or after ready status message.
+        for _ in range(5):
+            await ws.send_json({'type': 'cmd', 'command': 'next'})
+            # TODO: If 'tests' are finished too fast, we also don't seetesting (same as the problem with 'loading' above)
+            #       Currently these tests rely on the fact that testing takes longer. This needs to be fixed.
+            # TODO: Add an issue that short state changes are properly sent to the frontend (needs fix in master background task loop)
+            await expect_message_with_state(ws, 'testing', 5.0)
+            await expect_message_with_state(ws, 'ready', 10.0)
+            # TODO: assert message with type=testresult is received. not sure if received before or after ready status message.
 
         # STEP 4: unload lot
         await ws.send_json({'type': 'cmd', 'command': 'unload'})
-        seen_states = await expect_message_with_state(ws, 'initialized', 5.0)
+        seen_states = await expect_message_with_state(ws, 'initialized', 10.0)
         assert not (set(seen_states) - {'unloading', 'initialized'})
 
         # STEP 5: kill controls
@@ -1012,10 +1006,12 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
         await asyncio.sleep(3.0)
         await read_messages_until_master_state(buffer, 'ready', 5.0, ['loading', 'ready'])
 
-        handler_runner.comm.put('next', site_num=sites[1])
-        # to make sure that test execution is done
-        await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
-        await asyncio.sleep(5.0)
+        # do multiple times
+        for _ in range(5):
+            handler_runner.comm.put('next', site_num=sites[1])
+            # to make sure that test execution is done
+            await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
+            await asyncio.sleep(2.0)
 
         # TODO: analyse the problem with CI build, why this fail
         # handler_runner.comm.put('unload')
@@ -1246,7 +1242,7 @@ async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, _, process_
 
 
 @pytest.mark.asyncio
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this, tester type is set to be a MaxiSCT which execution must be synchronized using a master")
 async def test_standalone_testapp_test_process(process_manager):
     subscriptions = [
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
@@ -1265,51 +1261,49 @@ async def test_standalone_testapp_test_process(process_manager):
                                                       'job_data': {'sites_info': [{'siteid': f'{site_id}', 'partid': '1', 'binning': -1}]}})
         await read_messages_until_testapp_state(buffer, site_id, 'testing', 5.0, ['idle', 'testing'])
 
-        await asyncio.sleep(5.0)
+        await asyncio.sleep(10.0)
 
         # STEP 3: send terminate command
         mqtt.publish(f'ate/{DEVICE_ID}/TestApp/cmd', {'type': 'cmd', 'command': 'terminate', 'sites': [site_id]})
-        await read_messages_until_testapp_state(buffer, site_id, 'terminated', 5.0, ['idle', 'testing', 'terminated'])
+        await read_messages_until_testapp_state(buffer, site_id, 'terminated', 10.0, ['idle', 'testing', 'terminated'])
 
 
 # This test does not test the way the feature is intended. ToDo: Check ATE-82 against actual requiremens.
-# @pytest.mark.asyncio
-# @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
-# @pytest.mark.parametrize("testzipmockname", TESTZIPMOCKS)
-# async def test_master_reset_if_error_occured(sites, testzipmockname, process_manager, ws_connection):
-#     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
-#              (f'ate/{DEVICE_ID}/TestApp/testresult/#', 2)]
+@pytest.mark.asyncio
+@pytest.mark.parametrize("sites", [['0'], ['0', '1']])
+async def test_master_reset_if_error_occurred(sites, process_manager, ws_connection):
+    topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
+             (f'ate/{DEVICE_ID}/TestApp/testresult/#', 2)]
 
-#     async with mqtt_connection(BROKER_HOST, BROKER_PORT, topic) as mqtt:
-#         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
+    async with mqtt_connection(BROKER_HOST, BROKER_PORT, topic) as mqtt:
+        buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
-#         # Create master, wait for 'connecting'
-#         _ = create_master(process_manager, sites)
-#         await read_messages_until_master_state(buffer, 'connecting', 5.0, ['connecting'])
+        # Create master, wait for 'connecting'
+        _ = create_master(process_manager, sites)
+        await read_messages_until_master_state(buffer, 'connecting', 5.0, ['connecting'])
 
-#         # create controls, wait for initialized (all controls connected)
-#         control = create_controls(process_manager, sites)
-#         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        # create controls, wait for initialized (all controls connected)
+        control = create_controls(process_manager, sites)
+        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
-#         async with ws_connection() as ws:
+        async with ws_connection() as ws:
+            # load
+            await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
+            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
 
-#             # load
-#             await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}|{testzipmockname}'})
-#             await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
+            # kill control: since we can't provoke crash of testapp from here we just kill the controlapp
+            process_manager.kill_processes(*(c.proc_name for c in control))
+            await read_messages_until_master_state(buffer, 'softerror', 5.0, ['initialized', 'softerror'])
 
-#             # kill control: since we can't provoke crash of testapp from here we just kill the controlapp
-#             process_manager.kill_processes(*(c.proc_name for c in control))
-#             await read_messages_until_master_state(buffer, 'softerror', 5.0, ['initialized', 'softerror'])
+            await asyncio.sleep(0.5)
 
-#             await asyncio.sleep(0.5)
+            # reset command from websocket
+            await ws.send_json({'type': 'cmd', 'command': 'reset'})
+            await read_messages_until_master_state(buffer, 'connecting', 5.0, ['softerror', 'connecting'])
 
-#             # reset command from websocket
-#             await ws.send_json({'type': 'cmd', 'command': 'reset'})
-#             await read_messages_until_master_state(buffer, 'connecting', 5.0, ['softerror', 'connecting'])
-
-#             # recreate control
-#             control = create_controls(process_manager, sites)
-#             await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+            # recreate control
+            control = create_controls(process_manager, sites)
+            await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
 
 # @pytest.mark.asyncio

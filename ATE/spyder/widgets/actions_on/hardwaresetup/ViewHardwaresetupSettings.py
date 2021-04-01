@@ -1,3 +1,4 @@
+from ATE.projectdatabase.Utils import DB_KEYS
 import os
 import re
 from enum import Enum
@@ -17,7 +18,6 @@ class ViewHardwaresetupSettings(HardwareWizard):
     def __init__(self, hw_name, project_info):
         super().__init__(project_info)
         self._setup_view(hw_name)
-        self.finaltestConfiguration.setFixedSize(626, 374)
         ViewHardwaresetupSettings._setup_dialog_fields(self, hw_name)
 
     def _setup_view(self, hw_name):
@@ -35,13 +35,8 @@ class ViewHardwaresetupSettings(HardwareWizard):
         self.multisiteProbecard.setDisabled(True)
         self.tester.setEnabled(False)
         self.maxParallelism.setEnabled(False)
-        self.finaltestSites.setEnabled(False)
-        self.finaltestConfiguration.setEnabled(False)
-        self.reset_button.setEnabled(False)
-        self.type_box.setEnabled(False)
 
-        self.right_button.setEnabled(False)
-        self.left_button.setEnabled(False)
+        self.parallelism_widget.set_ui_enabled(False)
 
         self.OKButton.setEnabled(True)
         self.OKButton.clicked.connect(self.accept)
@@ -64,25 +59,25 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog.feedback.setText('')
         dialog.feedback.setStyleSheet('')
 
-        dialog.singlesiteLoadboard.setText(hw_configuration["PCB"]["SingleSiteLoadboard"])
-        dialog.singlesiteDIB.setText(hw_configuration["PCB"]["SingleSiteDIB"])
-        dialog.singlesiteProbecard.setText(hw_configuration["PCB"]["SingleSiteProbeCard"])
-        dialog.multisiteLoadboard.setText(hw_configuration["PCB"]["MultiSiteLoadboard"])
-        dialog.multisiteDIB.setText(hw_configuration["PCB"]["MultiSiteDIB"])
-        dialog.multisiteProbecard.setText(hw_configuration["PCB"]["MultiSiteProbeCard"])
-        dialog.select_tester(hw_configuration["tester"])
-        dialog.maxParallelism.setCurrentIndex(hw_configuration["PCB"]["MaxParallelism"] - 1)
-        dialog._available_pattern = hw_configuration["Parallelism"]
-        dialog.populate_selected_instruments(hw_configuration["Instruments"])
-        dialog.populate_selected_actuators(hw_configuration["Actuator"])
-        dialog.populate_selected_gpfunctions(hw_configuration["GPFunctions"])
-        ViewHardwaresetupSettings._update_available_pattern_list(dialog)
-        dialog._verify()
+        # The tester must be set/initialized before maxParallelism
+        dialog.select_tester(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.TESTER])
 
-    @staticmethod
-    def _update_available_pattern_list(dialog):
-        for k, _ in dialog._available_pattern.items():
-            dialog.finaltestAvailableConfigurations.addItem(k)
+        pcb = hw_configuration[DB_KEYS.HARDWARE.DEFINITION.PCB.KEY()]
+        dialog.singlesiteLoadboard.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_LOADBOARD])
+        dialog.singlesiteDIB.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_DIB])
+        dialog.singlesiteProbecard.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_PROBE_CARD])
+        dialog.multisiteLoadboard.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_LOADBOARD])
+        dialog.multisiteDIB.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_DIB])
+        dialog.multisiteProbecard.setText(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_CARD])
+        dialog.maxParallelism.setCurrentIndex(pcb[DB_KEYS.HARDWARE.DEFINITION.PCB.MAX_PARALLELISM] - 1)
+
+        dialog.populate_selected_instruments(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.INSTRUMENTS.KEY()])
+        dialog.populate_selected_actuators(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.ACTUATOR.KEY()])
+        dialog.populate_selected_gpfunctions(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.GP_FUNCTIONS.KEY()])
+
+        dialog.parallelism_widget.parallelism_store = dialog.project_info.get_hardware_parallelism_store(hw_name)
+
+        dialog._verify()
 
     def OKButtonPressed(self):
         self.accept()

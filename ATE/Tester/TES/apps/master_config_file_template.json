@@ -9,13 +9,14 @@
     "environment": "F1",
     "webui_host": "127.0.0.1",
     "webui_port": "8081",
-    "webui_static_path": "../TES/ui/angular/mini-sct-gui/dist/mini-sct-gui",
     "jobsource": "filesystem",
     "jobformat": "xml.micronas",
     "skip_jobdata_verification": false,
     "filesystemdatasource.path": ".",
-    "filesystemdatasource.jobpattern": "le123456001.xml",
+    "filesystemdatasource.jobpattern": "le123456000.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
+    "layout": [[0, 0]],
+    "tester_type": "TDKMicronas.MasterMiniSCT",
     "loglevel": 10
 }

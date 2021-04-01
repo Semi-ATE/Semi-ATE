@@ -10,7 +10,7 @@
       <li>Head: <span class="value">{{getHeadNumber()}}</span></li>
       <li>Site: <span class="value">{{getSiteNumber()}}</span></li>
       <li>Test Result:<span class="value">{{getScaledResult()}}</span></li>
-      <li>Pass/Fail:<span id="passFailStyle" [style.color]="passOrFailTextColor">{{getPassStatus()}}</span></li>
+      <li>Pass/Fail:<span id="passFailStyle" [style.color]="getPassOrFailTextColor()">{{getPassStatus()}}</span></li>
       <li>Test Text: <span class="value">{{getTestText()}}</span></li>
       <li>Low Limit: <span class="value">{{getScaledLowLimit()}}</span></li>
       <li>High Limit: <span class="value">{{getScaledHighLimit()}}</span></li>

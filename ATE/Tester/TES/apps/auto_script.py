@@ -9,6 +9,10 @@ MASTER_CONFIG_FILENAME = "master_config_file.json"
 CONTROL_CONFIG_FILENAME = "control_config_file.json"
 HANDLER_CONFIG_FILENAME = "handler_config_file.json"
 
+MASTER_CONFIG_FILENAME_TEMPLATE = "master_config_file_template.json"
+CONTROL_CONFIG_FILENAME_TEMPLATE = "control_config_file_template.json"
+HANDLER_CONFIG_FILENAME_TEMPLATE = "handler_config_file_template.json"
+
 
 class Configs(Enum):
     site_id = "site"
@@ -34,44 +38,33 @@ def create_master_config_file(sites, device_id,
                               port=None,
                               webui_host=None,
                               webui_port=None):
-    config = {"broker_host": Configs.host.value if host is None else host,
-              "broker_port": Configs.port.value if port is None else port,
-              "device_id": device_id,
-              "sites": sites,
-              "webui_host": Configs.webui_host.value if webui_host is None else webui_host,
-              "webui_port": Configs.webui_port.value if webui_port is None else webui_port,
-              "webui_static_path": "../ui/angular/mini-sct-gui/dist/mini-sct-gui",
-              "Handler": "HTO92-20F",
-              "environment": "F1",
-              "jobsource": "filesystem",
-              "jobformat": "xml.micronas",
-              "skip_jobdata_verification": False,
-              "filesystemdatasource.path": ".",
-              "filesystemdatasource.jobpattern": "le123456000.xml",
-              "enable_timeouts": True,
-              "user_settings_filepath": "master_user_settings.json",
-              "loglevel": 10
-              }
+    config = read_template_config(MASTER_CONFIG_FILENAME_TEMPLATE)
+    config["broker_host"] = Configs.host.value if host is None else host
+    config["broker_port"] = Configs.port.value if port is None else port
+    config["device_id"] = device_id
+    config["sites"] = sites
+    config["webui_host"] = Configs.webui_host.value if webui_host is None else webui_host
+    config["webui_port"] = Configs.webui_port.value if webui_port is None else webui_port
 
     dump_to_file("master", config)
 
 
 def create_control_config_file(site_id, device_id, host=None, port=None):
-    config = {"broker_host": Configs.host.value if host is None else host,
-              "broker_port": Configs.port.value if port is None else port,
-              "device_id": device_id,
-              "site_id": site_id,
-              "loglevel": 10
-              }
+    config = read_template_config(CONTROL_CONFIG_FILENAME_TEMPLATE)
+    config["broker_host"] = Configs.host.value if host is None else host
+    config["broker_port"] = Configs.port.value if port is None else port
+    config["device_id"] = device_id
+    config["site_id"] = site_id
+    config["loglevel"] = 1
 
     dump_to_file("control", config)
 
 
 def create_handler_config_file(device_id, host=None, port=None):
-    config = {"broker_host": Configs.host.value if host is None else host,
-              "broker_port": Configs.port.value if port is None else port,
-              "device_id": device_id
-              }
+    config = read_template_config(HANDLER_CONFIG_FILENAME_TEMPLATE)
+    config["broker_host"] = Configs.host.value if host is None else host
+    config["broker_port"] = Configs.port.value if port is None else port
+    config["device_id"] = device_id
 
     dump_to_file("handler", config)
 

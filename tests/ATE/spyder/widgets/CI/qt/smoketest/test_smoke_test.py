@@ -172,6 +172,47 @@ def test_create_new_hardware_enter_name(hardware, qtbot):
     hardware.hardware.setEnabled(True)
     qtbot.keyClicks(hardware.hardware, definitions['hardware'])
     qtbot.keyClicks(hardware.singlesiteLoadboard, 'abc')
+
+    # select Tester: maxi SCT
+    hardware.tester.blockSignals(True)
+    hardware.tester.setCurrentIndex(1)
+    hardware.tester.blockSignals(False)
+
+    # Copied from HardwareWizard "_set_parallelism_sites_count()"
+    # because it does not work if it is called there
+    sites = [str(site + 1) for site in range(16)]
+    hardware.maxParallelism.blockSignals(True)
+    hardware.maxParallelism.clear()
+    hardware.maxParallelism.addItems(sites)
+    hardware.maxParallelism.setCurrentIndex(0)
+    hardware.maxParallelism.blockSignals(False)
+
+    # select Parallelism count
+    hardware.maxParallelism.setCurrentIndex(1)
+
+    # Add parallelisms
+    # PR1A
+    hardware.parallelism_widget.sites_count_select.setCurrentIndex(0)
+    qtbot.mouseClick(hardware.parallelism_widget.add_testconfig, QtCore.Qt.LeftButton)
+    hardware.parallelism_widget.testconfig_store.setCurrentRow(0)
+    hardware.parallelism_widget.selected_site_num = 0
+    hardware.parallelism_widget._table_cell_clicked(0, 0)
+    # PR2A
+    hardware.parallelism_widget.sites_count_select.setCurrentIndex(1)
+    qtbot.mouseClick(hardware.parallelism_widget.add_testconfig, QtCore.Qt.LeftButton)
+    hardware.parallelism_widget.testconfig_store.setCurrentRow(1)
+    hardware.parallelism_widget.selected_site_num = 0
+    hardware.parallelism_widget._table_cell_clicked(0, 0)
+    hardware.parallelism_widget.selected_site_num = 1
+    hardware.parallelism_widget._table_cell_clicked(1, 1)
+    # PR2B
+    qtbot.mouseClick(hardware.parallelism_widget.add_testconfig, QtCore.Qt.LeftButton)
+    hardware.parallelism_widget.testconfig_store.setCurrentRow(2)
+    hardware.parallelism_widget.selected_site_num = 0
+    hardware.parallelism_widget._table_cell_clicked(0, 1)
+    hardware.parallelism_widget.selected_site_num = 1
+    hardware.parallelism_widget._table_cell_clicked(1, 0)
+
     qtbot.mouseClick(hardware.OKButton, QtCore.Qt.LeftButton)
 
 
@@ -457,6 +498,21 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
 
     generate_bin_table()
     new_test_program._verify()
+
+    # add ping pong
+    NEW_NAME = "new_ping_pong"
+    new_test_program.ping_pong_widget.cur_parallelism = new_test_program.ping_pong_widget.parallelism_store.get(new_test_program.ping_pong_widget.parallelism.item(1).text())
+    # Patch input dialog away
+    new_test_program.ping_pong_widget.__setattr__("_get_ping_pong_name_from_user", lambda: (True, NEW_NAME))
+    qtbot.mouseClick(new_test_program.ping_pong_widget.add_ping_pong_config, QtCore.Qt.LeftButton)
+    new_test_program.ping_pong_widget.cur_ping_pong_config = new_test_program.ping_pong_widget.cur_parallelism.get_ping_pong(NEW_NAME)
+    new_test_program.ping_pong_widget.cur_ping_pong_config.stage_count = 2
+    new_test_program.ping_pong_widget.cur_ping_pong_config.stages[0].stage.add(0)
+    new_test_program.ping_pong_widget.cur_ping_pong_config.stages[1].stage.add(1)
+    new_test_program.ping_pong_widget._verify_ping_pong()
+
+    # use ping_pong in execution
+    new_test_program._custom_parameter_handler.get_test('DBC_1')[0].executions['PR2A'] = new_test_program.ping_pong_widget.cur_parallelism.get_ping_pong(NEW_NAME).id
 
     qtbot.mouseClick(new_test_program.OKButton, QtCore.Qt.LeftButton)
 
