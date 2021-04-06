@@ -7,7 +7,7 @@ from ATE.common.logger import LogLevel, Logger
 
 
 class MqttConnection:
-    def __init__(self, host: str, port: str, mqtt_client_id: str, logger: Logger):
+    def __init__(self, host: str, port: int, mqtt_client_id: str, logger: Logger):
         self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         self.mqtt_client.reconnect_delay_set(10, 15)
         self.log = logger

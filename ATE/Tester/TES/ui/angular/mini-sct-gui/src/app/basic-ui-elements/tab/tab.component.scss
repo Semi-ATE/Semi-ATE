@@ -24,7 +24,6 @@ $tabLineColor: $tabBorderColor;
       padding-left: 10px;
       padding-right: 10px;
       font-size: $text;
-      min-width: 88px;
       &:focus, &:hover {
         background-color: $hoverBackgroundColor;
         color: $white;

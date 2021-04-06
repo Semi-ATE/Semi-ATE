@@ -12,26 +12,19 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizardListItem import HardwareWizardListItem
-from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ATE.projectdatabase.Hardware import DB_KEYS
+from ATE.projectdatabase.Utils import BaseType
 from ATE.semiateplugins.pluginmanager import get_plugin_manager
+from ATE.spyder.widgets.actions_on.hardwaresetup.HardwareWizardListItem import HardwareWizardListItem
+from ATE.spyder.widgets.actions_on.hardwaresetup.ParallelismWidget import ParallelismWidget
+from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.validation import valid_pcb_name_regex
-
-
-PR = 'PR'
-FT = 'FT'
 
 
 class HardwareWizard(BaseDialog):
     def __init__(self, project_info):
         super().__init__(__file__, project_info.parent)
         self.project_info = project_info
-        self._site = None
-        self._pattern_type = None
-        self._pattern = {}
-        self._available_pattern = {}
-        self._available_definiton = None
-        self._selected_available_item = ''
         self._plugin_manager = get_plugin_manager()
         self._plugin_configurations = {}
 
@@ -58,7 +51,8 @@ class HardwareWizard(BaseDialog):
             for tester_type in tester_list:
                 self._availableTesters[tester_type["display_name"]] = tester_type["name"]
                 self.tester.addItem(tester_type["display_name"])
-        self.tester.setCurrentIndex(0)
+        if self.tester.count() > 0:
+            self.tester.setCurrentIndex(0)
 
     # PCBs
         rxPCBName = QtCore.QRegExp(valid_pcb_name_regex)
@@ -102,24 +96,13 @@ class HardwareWizard(BaseDialog):
             for gpfunction in gpfunction_list:
                 self._append_gpfunction_to_manufacturer(gpfunction)
 
-    # Parallelism
-        self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
-        self.finaltestConfiguration.setRowCount(self._max_parallelism_value)
-        self.finaltestSites.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self._set_list_visible_items(self.finaltestSites.count())
-        self._init_table()
-        # TODO: find a better solution
-        self.finaltestConfiguration.setFixedSize(626, 374)
-
-        self.right_button.setEnabled(False)
-        self.probing_button.setChecked(True)
-        self._pattern_type = PR
-
     # general
         self.feedback.setText('')
         self.feedback.setStyleSheet('color: orange')
 
         self.tabLayout.setCurrentIndex(0)
+        self.parallelism_widget = ParallelismWidget(self, self._max_parallelism_value)
+        self.tabLayout.addTab(self.parallelism_widget, "Parallelism")
 
         self._set_icons()
 
@@ -162,8 +145,6 @@ class HardwareWizard(BaseDialog):
         manufacturer_node.addChild(instrumentNode)
 
     def _set_icons(self):
-        self.right_button.setIcon(qta.icon('mdi.arrow-right-bold', color='orange'))
-        self.left_button.setIcon(qta.icon('mdi.arrow-left-bold', color='orange'))
         self.collapse.setIcon(qta.icon('mdi.unfold-less-horizontal', color='orange'))
         self.expand.setIcon(qta.icon('mdi.unfold-more-horizontal', color='orange'))
         self.addInstrument.setIcon(qta.icon('mdi.arrow-right-bold', color='orange'))
@@ -175,27 +156,17 @@ class HardwareWizard(BaseDialog):
         self.probecardLink.setIcon(qta.icon('mdi.link', color='orange'))
 
     def _connect_event_handler(self):
-        # Parallelism
-        self.finaltestConfiguration.cellClicked.connect(self._table_cell_clicked)
-        self.finaltestConfiguration.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.finaltestConfiguration.customContextMenuRequested.connect(self._clear_cell)
-        self.probecardLink.clicked.connect(self._link_probecard)
-        self.probing_button.clicked.connect(self._on_probing_toggeled)
-        self.final_test_button.clicked.connect(self._on_final_test_toggeled)
-        self.finaltestSites.clicked.connect(self._final_test_list_clicked)
-        self.reset_button.clicked.connect(self._init_table)
-        self.right_button.clicked.connect(self._right_button_clicked)
-        self.left_button.clicked.connect(self._left_button_clicked)
-        self.finaltestAvailableConfigurations.clicked.connect(self._edit_pattern)
-
         # PCBs
         self.singlesiteLoadboard.textChanged.connect(self._verify)
         self.singlesiteDIB.textChanged.connect(self._verify)
         self.singlesiteProbecard.textChanged.connect(self._verify)
+
+        self.probecardLink.clicked.connect(self._link_probecard)
+
+        self.maxParallelism.currentTextChanged.connect(self._max_parallelism_value_changed)
         self.multisiteLoadboard.textChanged.connect(self._verify)
         self.multisiteProbecard.textChanged.connect(self._verify)
         self.multisiteDIB.textChanged.connect(self._verify)
-        self.maxParallelism.currentTextChanged.connect(self._max_parallelism_value_changed)
 
         # Instruments
         self.tester.currentTextChanged.connect(self.testerChanged)
@@ -222,178 +193,9 @@ class HardwareWizard(BaseDialog):
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
         self.OKButton.clicked.connect(self.OKButtonPressed)
 
-    def _edit_pattern(self, index):
-        item = self.finaltestAvailableConfigurations.itemFromIndex(index)
-        pattern = self._available_pattern[item.text()]
-        self._selected_available_item = item.text()
-
-        self.finaltestConfiguration.setColumnCount(len(pattern[0]))
-        self.finaltestConfiguration.setRowCount(len(pattern))
-        self._set_list_visible_items(len(pattern))
-        self._init_table()
-        self.maxParallelism.setCurrentText(str(len(pattern)))
-
-        for row in range(self.finaltestConfiguration.rowCount()):
-            for col in range(self.finaltestConfiguration.columnCount()):
-                element = pattern[row][col]
-                if element == 0:
-                    element = ''
-
-                item = self.finaltestConfiguration.item(row, col)
-                item.setText(str(element))
-
-        self._set_final_test_sites(False)
-
-    def _deselect_list_item(self):
-        self._selected_available_item = ''
-        for item in self.finaltestAvailableConfigurations.selectedItems():
-            item.setSelected(False)
-
-    def _set_final_test_sites(self, visible):
-        for index in range(self.finaltestSites.count()):
-            item = self.finaltestSites.item(index)
-            if not visible:
-                item.setFlags(QtCore.Qt.NoItemFlags)
-            else:
-                item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-
-    def _does_name_already_exist(self, name):
-        for index in range(self.finaltestAvailableConfigurations.count()):
-            item = self.finaltestAvailableConfigurations.item(index)
-            if item.text() == name:
-                return True
-
-        return False
-
-    def _right_button_clicked(self):
-        if not self._does_name_already_exist(self.name):
-            self.finaltestAvailableConfigurations.addItem(self.name)
-
-        self._available_pattern.update(self._pattern)
-        self._pattern.clear()
-        self.name = ''
-        self.right_button.setEnabled(False)
-        self._init_table()
-        self._selected_available_item = ''
-
-    def _left_button_clicked(self):
-        self.finaltestAvailableConfigurations.clearFocus()
-        item = self.finaltestAvailableConfigurations.currentItem()
-        if not item:
-            return
-
-        for index in range(self.finaltestAvailableConfigurations.count()):
-            element = self.finaltestAvailableConfigurations.item(index)
-            if element.text() == item.text():
-                self.finaltestAvailableConfigurations.takeItem(index)
-
-        for key, _ in self._available_pattern.items():
-            if key == item.text():
-                self._available_pattern.pop(key)
-                return
-
-    def _init_table(self):
-        for row in range(self.finaltestConfiguration.rowCount()):
-            for col in range(self.finaltestConfiguration.columnCount()):
-                item = self.finaltestConfiguration.item(row, col)
-                if not item:
-                    item = QtWidgets.QTableWidgetItem('')
-                    self.finaltestConfiguration.setItem(row, col, item)
-
-                if item.text():
-                    self._update_final_test_item(item.text())
-
-                item.setText('')
-                item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-
-    def _clear_cell(self, point):
-        item = self.finaltestConfiguration.itemAt(point)
-        if not item:
-            return
-
-        item_content = item.text()
-        if not item_content:
-            return
-
-        self._update_final_test_item(item_content)
-        self.right_button.setEnabled(False)
-        item.setText('')
-
-    def _on_probing_toggeled(self):
-        self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
-        self.finaltestConfiguration.setRowCount(self._max_parallelism_value)
-        self._init_table()
-        self._pattern_type = PR
-
-    def _on_final_test_toggeled(self):
-        self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
-        self._init_table()
-        self.finaltestConfiguration.setRowCount(1)
-        self._pattern_type = FT
-
-    def _set_list_visible_items(self, count):
-        for index in range(count):
-            item = self.finaltestSites.item(index)
-            if index < self._max_parallelism_value:
-                item.setHidden(False)
-                continue
-
-            item.setHidden(True)
-
-    def _final_test_list_clicked(self, index):
-        self._site = None
-        item = self.finaltestSites.itemFromIndex(index)
-        if not self._is_site_selectable(item):
-            return
-
-        self._site = item
-
-    def _table_cell_clicked(self, row, column):
-        if not self._site:
-            return
-
-        if not self._site.text():
-            return
-
-        item = self.finaltestConfiguration.item(row, column)
-        if not self._is_site_selectable(self._site):
-            return
-
-        # we should update site list when we override an already set cell
-        if item.text():
-            self._update_final_test_item(item.text())
-
-        item.setText(self._site.text())
-        self._site.setFlags(QtCore.Qt.NoItemFlags)
-        if not self._are_all_sites_used():
-            return
-
-        self._verify_table()
-
-    def _is_site_selectable(self, site):
-        flag = site.flags()
-        if not bool(flag & QtCore.Qt.ItemIsSelectable):
-            return False
-
-        return True
-
-    def _update_final_test_item(self, name):
-        for index in range(self._max_parallelism_value):
-            item = self.finaltestSites.item(index)
-            if item.text() == name:
-                item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-
-    def _are_all_sites_used(self):
-        for index in range(self._max_parallelism_value):
-            item = self.finaltestSites.item(index)
-            if self._is_site_selectable(item):
-                self.right_button.setEnabled(False)
-                return False
-
-        return True
-
 # PCBs
     def _max_parallelism_value_changed(self, selected_parallelism):
+        self.parallelism_widget.parallelism_count = self._max_parallelism_value
         if not self.maxParallelism.isEnabled():
             return
 
@@ -407,24 +209,11 @@ class HardwareWizard(BaseDialog):
             self._multi_site_dib_value = ''
 
             self.probecardLink.setDisabled(True)
-            self.finaltestConfiguration.setColumnCount(1)
-            self.finaltestConfiguration.setRowCount(1)
         else:
             self.multisiteLoadboard.setEnabled(True)
             self.multisiteDIB.setEnabled(True)
             self.multisiteProbecard.setEnabled(True)
             self.probecardLink.setDisabled(False)
-            self.finaltestConfiguration.setColumnCount(self._max_parallelism_value)
-            if self.probing_button.isChecked():
-                self.finaltestConfiguration.setRowCount(self._max_parallelism_value)
-            else:
-                self.finaltestConfiguration.setRowCount(1)
-
-            self._deselect_list_item()
-
-        self._init_table()
-        self._set_list_visible_items(self.finaltestSites.count())
-        self._set_final_test_sites(True)
         self._verify()
 
     def _link_probecard(self):
@@ -443,7 +232,7 @@ class HardwareWizard(BaseDialog):
         self.OKButton.setEnabled(False)
 
         if self.tester.currentIndex() < 0:
-            self.feedback.setTest("no tester selected")
+            self.feedback.setText("no tester selected")
 
         elif self._max_parallelism_value == 1:
             if not self._single_site_loadboard_value:
@@ -475,72 +264,21 @@ class HardwareWizard(BaseDialog):
             # if self._single_site_dib_value == self._single_site_dib_value:
             #     self.feedback.setText("no singlesite_loadboard is specified")
 
+        min_required_parallelism = self.parallelism_widget.parallelism_store.min_required_parallelism()
+        if self._max_parallelism_value < min_required_parallelism:
+            self.feedback.setText(f'There is a parallelism configuration which needs more sites enabled. At least {min_required_parallelism}.')
+
         if self.feedback.text() == '':
             self.OKButton.setEnabled(True)
 
-    def _verify_table(self):
-        pattern = self._get_pattern()
-        name = self._pattern_type + str(len(pattern))
-        if self._does_pattern_exist(name, pattern):
-            self.feedback.setText("pattern exists already")
-            self.feedback.setStyleSheet('color: orange')
-            self.right_button.setEnabled(False)
-            return
-
-        self.feedback.setText("")
-        if not self._selected_available_item:
-            names = []
-            for index in range(self.finaltestAvailableConfigurations.count()):
-                item = self.finaltestAvailableConfigurations.item(index)
-                if name not in item.text():
-                    continue
-
-                names.append(item.text())
-
-            if len(names) == 0:
-                name += 'A'
-            else:
-                name = names[-1]
-                new_char = chr(ord(name[-1]) + 1)
-                name = name[:-1]
-                name += new_char
-        else:
-            name = self._selected_available_item
-
-        self.name = name
-        self._pattern[name] = pattern
-        self.right_button.setEnabled(True)
-
-    def _get_pattern(self):
-        pattern = []
-        for row in range(self.finaltestConfiguration.rowCount()):
-            row_elements = []
-            for column in range(self.finaltestConfiguration.columnCount()):
-                item_content = self.finaltestConfiguration.item(row, column).text()
-                if item_content:
-                    row_elements.append(int(item_content))
-                else:
-                    row_elements.append(0)
-
-            pattern.append(tuple(row_elements))
-
-        return pattern
-
-    def _does_pattern_exist(self, name, pattern):
-        if self._available_definiton:
-            # hardware exists already, edit case
-            pass
-
-        for key, value in self._available_pattern.items():
-            if name in key:
-                if value == pattern:
-                    return True
-
-        return False
-
     @property
     def _max_parallelism_value(self):
-        return int(self.maxParallelism.currentText())
+        ret_val = 0
+        try:
+            ret_val = int(self.maxParallelism.currentText())
+        except ValueError:
+            pass
+        return ret_val
 
     @property
     def _single_site_loadboard_value(self):
@@ -593,15 +331,15 @@ class HardwareWizard(BaseDialog):
         return retVal
 
     def _collect_actuators(self):
-        retVal = {'PR': [], 'FT': []}
+        retVal = {BaseType.PR.value: [], BaseType.FT.value: []}
         for row in range(0, self.usedActuators.rowCount()):
             actuator_type = self.usedActuators.item(row, 0).text()
             used_in_probing = self.usedActuators.item(row, 1).checkState() == 2
             used_in_final = self.usedActuators.item(row, 2).checkState() == 2
             if used_in_probing:
-                retVal['PR'].append(actuator_type)
+                retVal[BaseType.PR.value].append(actuator_type)
             if used_in_final:
-                retVal['FT'].append(actuator_type)
+                retVal[BaseType.FT.value].append(actuator_type)
         return retVal
 
     def _get_current_configuration(self):
@@ -609,22 +347,24 @@ class HardwareWizard(BaseDialog):
         if self.tester.currentIndex() >= 0:
             testername = self._availableTesters[self.tester.currentText()]
 
-        return {'hardware': self.hardware.text(),
-                'PCB':
-                {'SingleSiteLoadboard': self.singlesiteLoadboard.text(),
-                 'SingleSiteDIB': self.singlesiteDIB.text(),
-                 'SingleSiteDIBisCable': self.singleSiteDIBisCable.isChecked(),
-                 'SingleSiteProbeCard': self.singlesiteProbecard.text(),
-                 'MultiSiteLoadboard': self.multisiteLoadboard.text(),
-                 'MultiSiteDIB': self.multisiteDIB.text(),
-                 'MultiSiteDIBisCable': self.multiSiteDIBisCable.isChecked(),
-                 'MultiSiteProbeCard': self.multisiteProbecard.text(),
-                 'MaxParallelism': int(self.maxParallelism.currentText())},
-                'Parallelism': self._available_pattern,
-                'tester': testername,
-                'Actuator': self._collect_actuators(),
-                'Instruments': self._collect_instruments(),
-                'GPFunctions': self._collect_gpfunctions()}
+        return {
+            DB_KEYS.HARDWARE.DEFINITION.PCB.KEY(): {
+                DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_LOADBOARD: self.singlesiteLoadboard.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_DIB: self.singlesiteDIB.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_DIB_IS_CABLE: self.singleSiteDIBisCable.isChecked(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.SINGLE_SITE_PROBE_CARD: self.singlesiteProbecard.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_LOADBOARD: self.multisiteLoadboard.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_DIB: self.multisiteDIB.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_DIB_IS_CABLE: self.multiSiteDIBisCable.isChecked(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.MULTI_SITE_CARD: self.multisiteProbecard.text(),
+                DB_KEYS.HARDWARE.DEFINITION.PCB.MAX_PARALLELISM: int(self.maxParallelism.currentText())
+            },
+            DB_KEYS.HARDWARE.DEFINITION.PARALLELISM.KEY(): self.parallelism_widget.parallelism_store.serialize(),
+            DB_KEYS.HARDWARE.DEFINITION.TESTER: testername,
+            DB_KEYS.HARDWARE.DEFINITION.ACTUATOR.KEY(): self._collect_actuators(),
+            DB_KEYS.HARDWARE.DEFINITION.INSTRUMENTS.KEY(): self._collect_instruments(),
+            DB_KEYS.HARDWARE.DEFINITION.GP_FUNCTIONS.KEY(): self._collect_gpfunctions()
+        }
 
 # instruments
     def testerChanged(self, new_tester):
@@ -719,20 +459,19 @@ class HardwareWizard(BaseDialog):
 
 # Actuator
     def populate_selected_actuators(self, actuator_settings):
-        for row in range(0, self.usedActuators.rowCount()):
+        for row in range(self.usedActuators.rowCount()):
             actuator_type = self.usedActuators.item(row, 0).text()
-            actuator_type = actuator_type.replace(' ', '_')
-            if 'PR' in actuator_settings:
-                if actuator_type in actuator_settings['PR']:
-                    self.usedActuators.item(row, 1).setCheckState(2)
+            if BaseType.PR.value in actuator_settings:
+                if actuator_type in actuator_settings[BaseType.PR.value]:
+                    self.usedActuators.item(row, 1).setCheckState(QtCore.Qt.Checked)
                 else:
-                    self.usedActuators.item(row, 1).setCheckState(0)
+                    self.usedActuators.item(row, 1).setCheckState(QtCore.Qt.Unchecked)
 
-            if 'FT' in actuator_settings:
-                if actuator_type in actuator_settings['FT']:
-                    self.usedActuators.item(row, 2).setCheckState(2)
+            if BaseType.FT.value in actuator_settings:
+                if actuator_type in actuator_settings[BaseType.FT.value]:
+                    self.usedActuators.item(row, 2).setCheckState(QtCore.Qt.Checked)
                 else:
-                    self.usedActuators.item(row, 2).setCheckState(0)
+                    self.usedActuators.item(row, 2).setCheckState(QtCore.Qt.Unchecked)
 
     def collapseAvailableInstruments(self):
         print("collapse available Instruments")
@@ -758,7 +497,7 @@ class HardwareWizard(BaseDialog):
         self.reject()
 
     def OKButtonPressed(self):
-        self.project_info.add_hardware(self._get_current_configuration())
+        self.project_info.add_hardware(self.hardware.text(), self._get_current_configuration())
         self._store_plugin_configuration()
         self.accept()
 

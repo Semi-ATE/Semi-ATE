@@ -44,6 +44,10 @@ export interface LogLevelFilterSetting {
   logLevelFilter: Array<LogLevelString>;
 }
 
+export interface SourceFilterSetting {
+  sourceFilter: string;
+}
+
 export enum SettingType {
   RecordTypeFilter = 'typeFilter',
   RecordViewAutoscroll = 'autoscroll',
@@ -54,5 +58,6 @@ export enum SettingType {
   ProgramFilter = 'programFilter',
   Yield = 'yield',
   LotData =  'lotdata',
-  LogLevelFilter = 'logLevelFilter'
+  LogLevelFilter = 'logLevelFilter',
+  SourceFilter = 'sourceFilter'
 }

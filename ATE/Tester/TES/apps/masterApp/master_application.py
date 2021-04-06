@@ -1,24 +1,23 @@
 """ master App """
 
 # External imports
-from aiohttp import web
 from transitions.core import MachineError
 from transitions.extensions import HierarchicalMachine as Machine
 from queue import Empty, Full, Queue
 import asyncio
 import mimetypes
 import sys
-import os
 
-from typing import Callable
+from typing import Callable, List
 
 from ATE.common.logger import Logger, LogLevel
 from ATE.Tester.TES.apps.common.sequence_container import SequenceContainer
 from ATE.Tester.TES.apps.masterApp.master_connection_handler import MasterConnectionHandler
-from ATE.Tester.TES.apps.masterApp.master_webservice import webservice_setup_app
 from ATE.Tester.TES.apps.masterApp.parameter_parser import parser_factory
 from ATE.Tester.TES.apps.masterApp.user_settings import UserSettings
-from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings, GetYields, GetBinTable)
+from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings,
+                                                                  GetYields, GetBinTable)
+from ATE.Tester.TES.apps.masterApp.task_handler.task_handler import TaskHandler
 
 from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
 from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler import ResultsCollector
@@ -27,7 +26,7 @@ from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import Resul
 from ATE.Tester.TES.apps.masterApp.peripheral_controller import PeripheralController
 
 from ATE.Tester.TES.apps.masterApp.statemachines.MultiSite import (MultiSiteTestingModel, MultiSiteTestingMachine)
-
+from ATE.Tester.TES.apps.masterApp.execution_strategy.execution_strategy import IExecutionStrategy, get_execution_strategy
 
 INTERFACE_VERSION = 1
 MAX_NUM_OF_TEST_PROGRAM_RESULTS = 1000
@@ -102,12 +101,14 @@ class MasterApplication(MultiSiteTestingModel):
 
     # multiple space code style "error" will be ignored for a better presentation of the possible state machine transitions
     transitions = [
-        {'source': 'startup',            'dest': 'connecting',  'trigger': "startup_done",                'after': "on_startup_done"},               # noqa: E241
-        {'source': 'connecting',         'dest': 'initialized', 'trigger': 'all_sites_detected',          'after': "on_allsitesdetected"},           # noqa: E241
-        {'source': 'connecting',         'dest': 'error',       'trigger': 'bad_interface_version'},                                                 # noqa: E241
+        {'source': 'startup',            'dest': 'connecting',  'trigger': "startup_done",                           'after': "on_startup_done"},               # noqa: E241
+        {'source': 'connecting',         'dest': 'initialized', 'trigger': 'all_sites_detected',                     'after': "on_allsitesdetected"},           # noqa: E241
+        {'source': 'connecting',         'dest': 'error',       'trigger': 'bad_interface_version'},                                                            # noqa: E241
 
-        {'source': 'initialized',        'dest': 'loading',     'trigger': 'load_command',                'after': 'on_loadcommand_issued'},         # noqa: E241
-        {'source': 'loading',            'dest': 'ready',       'trigger': 'all_siteloads_complete',      'after': 'on_allsiteloads_complete'},      # noqa: E241
+        {'source': 'initialized',        'dest': 'loading',     'trigger': 'load_command',                           'after': 'on_loadcommand_issued'},         # noqa: E241
+        {'source': 'loading',            'dest': 'ready',       'trigger': 'all_siteloads_complete',                 'after': 'on_allsiteloads_complete'},      # noqa: E241
+        # {'source': 'loading',            'dest': 'waiting_for_execution_strategy',    'trigger': 'all_sitesendexecution_complete',         'after': 'on_allsitesendexecution_complete'},      # noqa: E241
+        # {'source': 'waiting_for_execution_strategy',     'dest': 'ready',             'trigger': 'all_siteloads_complete',                 'after': 'on_allsiteloads_complete'},      # noqa: E241
         {'source': 'loading',            'dest': 'initialized', 'trigger': 'load_error',                             'after': 'on_load_error'},                 # noqa: E241
 
         # TODO: properly limit source states to valid states where usersettings are allowed to be modified
@@ -128,8 +129,10 @@ class MasterApplication(MultiSiteTestingModel):
         {'source': '*',                  'dest': 'softerror',              'trigger': 'testapp_disconnected',      'after': 'on_disconnect_error'},             # noqa: E241
         {'source': '*',                  'dest': 'softerror',              'trigger': 'timeout',                   'after': 'on_timeout'},                      # noqa: E241
         {'source': '*',                  'dest': 'softerror',              'trigger': 'on_error',                  'after': 'on_error_occurred'},               # noqa: E241
-        {'source': 'softerror',          'dest': 'connecting',             'trigger': 'reset',                     'after': 'on_reset_received'}                # noqa: E241
+        {'source': 'softerror',          'dest': 'connecting',             'trigger': 'reset',                     'after': 'on_reset_received'},               # noqa: E241
+        {'source': 'testing',            'dest': 'testing',                'trigger': 'all_site_request_testing',  'after': "on_all_sites_request_testing"},       # noqa: E241
 
+        {'source': '*',                  'dest': 'ready',                  'trigger': 'all_sitetests_complete',    'after': "on_allsitetestscomplete"},         # noqa: E241
     ]
 
     """ MasterApplication """
@@ -154,14 +157,12 @@ class MasterApplication(MultiSiteTestingModel):
         self.received_site_test_results = []
         self.received_sites_test_results = ResultsCollector(MAX_NUM_OF_TEST_PROGRAM_RESULTS)
 
-        self.loaded_jobname = ""
         self.loaded_lot_number = ""
         self.error_message = ''
 
         self.prev_state = ''
         self.summary_counter = 0
         self.tsr_messages = []
-        self.sites_to_test = []
 
         self.command_queue = Queue(maxsize=50)
         self._result_info_handler = ResultInformationHandler(self.sites)
@@ -171,6 +172,32 @@ class MasterApplication(MultiSiteTestingModel):
         self.dummy_partid = 1
         self._first_part_tested = False
         self._stdf_aggregator = None
+
+        self.testing_sites = []
+        self.test_num = 0
+        tester = self.get_tester(configuration['tester_type'])
+        strategy_type = self.get_strategy_type(tester)
+        self.testing_strategy: IExecutionStrategy = self.get_execution_strategy(strategy_type, tester)
+
+        self.testing_event = asyncio.Event()
+
+    @staticmethod
+    def get_strategy_type(tester):
+        return tester.get_strategy_type()
+
+    @staticmethod
+    def get_execution_strategy(strategy_type, tester):
+        return get_execution_strategy(strategy_type, tester)
+
+    def get_tester(self, tester_type: str):
+        from ATE.semiateplugins.pluginmanager import get_plugin_manager
+        plugin_manager = get_plugin_manager()
+        try:
+            master_tester = plugin_manager.hook.get_tester_master(tester_name=tester_type)[0]
+        except Exception as e:
+            raise Exception(f'tester object for {tester_type} could not be load, reason: {e}')
+
+        return master_tester
 
     def init(self):
         self.siteStates = {site_id: CONTROL_STATE_UNKNOWN for site_id in self.configuredSites}
@@ -299,6 +326,9 @@ class MasterApplication(MultiSiteTestingModel):
     def on_error_occurred(self, message):
         self.log.log_message(LogLevel.Error(), f'Master entered state error, reason: {message}')
         self.error_message = message
+        self.testing_event.clear()
+
+        self.testing_strategy.reset_stages()
 
     def on_load_error(self):
         self.log.log_message(LogLevel.Warning(), self.error_message)
@@ -324,8 +354,6 @@ class MasterApplication(MultiSiteTestingModel):
         self._result_info_handler.clear_all()
 
         jobname = param_data['lot_number']
-        # TODO: see no difference !!
-        self.loaded_jobname = str(jobname)
         self.loaded_lot_number = str(jobname)
 
         jobformat = self.configuration.get('jobformat')
@@ -335,6 +363,21 @@ class MasterApplication(MultiSiteTestingModel):
                                                  parser,
                                                  self.log)
 
+        self.set_test_data(source)
+
+        self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
+        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_LOADING, CONTROL_STATE_BUSY], self.configuredSites, lambda: None,
+                                                           lambda site, state: self.on_error(f"Bad statetransition of control {site} during load to {state}"))
+        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_IDLE], self.configuredSites, lambda: self.all_siteloads_complete(),
+                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during load to {state}"))
+        self.error_message = ''
+
+        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(self._test_program_data))
+        self._store_user_settings(UserSettings.get_defaults())
+
+        self.command_queue.put_nowait(GetBinTable(lambda: self._generate_bin_table_message()))
+
+    def set_test_data(self, source: object):
         if self.configuration.get('skip_jobdata_verification', False):
             self._test_program_data = {"DEBUG_OPTION": "no content because skip_jobdata_verification enabled"}
         else:
@@ -358,18 +401,6 @@ class MasterApplication(MultiSiteTestingModel):
 
             self.log.log_message(LogLevel.Debug(), f'testprogram information: {self._test_program_data}')
 
-        self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_LOADING, CONTROL_STATE_BUSY], self.configuredSites, lambda: None,
-                                                           lambda site, state: self.on_error(f"Bad statetransition of control {site} during load to {state}"))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_IDLE], self.configuredSites, lambda: self.all_siteloads_complete(),
-                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during load to {state}"))
-        self.error_message = ''
-
-        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(self._test_program_data))
-        self._store_user_settings(UserSettings.get_defaults())
-
-        self.command_queue.put_nowait(GetBinTable(lambda: self._generate_bin_table_message()))
-
     @staticmethod
     def get_test_parameters(data):
         # TODO: workaround until we specify the connection to the server or even mount the project locally
@@ -386,20 +417,42 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
         self.disarm_timeout()
 
-        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_jobname, self.sites)
+        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_lot_number, self.sites)
         self._stdf_aggregator.set_test_program_data(self._test_program_data)
         self._send_set_log_level()
 
-    def _send_set_log_level(self):
-        level = {
-            LogLevel.Debug(): 'Debug',
-            LogLevel.Info(): 'Info',
-            LogLevel.Warning(): 'Warning',
-            LogLevel.Error(): 'Error',
-        }[self.loglevel]
+        self._send_get_execution_strategy()
 
-        self.log.log_message(LogLevel.Info(), f'set loglevel to {level}')
+    def _send_get_execution_strategy(self):
+        # TODO: layout should be received from handler or. prober
+        self._layout = self.configuration['layout']
+        self.connectionHandler.send_get_execution_strategy_command(self._layout)
+
+    def _send_set_log_level(self):
+        try:
+            {
+                LogLevel.Debug(): 'Debug',
+                LogLevel.Info(): 'Info',
+                LogLevel.Warning(): 'Warning',
+                LogLevel.Error(): 'Error',
+            }[self.loglevel]
+        except KeyError:
+            self.log.log_message(LogLevel.Warning(), f'loglevel is not support: {self.loglevel}')
+
         self.connectionHandler.send_set_log_level(self.loglevel)
+
+    def set_execution_strategy_configuration(self, strategy_config: List[List[List[str]]]):
+        available_sites = []
+        # use test_num 0 as a reference
+        # make sure that all sites are contained in the list of stages
+        for config in strategy_config[0]:
+            available_sites.extend(config)
+
+        if set(available_sites) != set(self.sites):
+            self.on_error(f"configured sites {self.sites} are not all contained in the strategy configuration {available_sites}")
+
+        # assuming the testprogram knew the layout of the configured sites
+        self.testing_strategy.set_configuration(strategy_config)
 
     def on_next_command_issued(self, param_data: dict):
         if not self._first_part_tested:
@@ -414,26 +467,41 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
 
         settings = self.user_settings.copy()
+
+        import copy
+        self.testing_sites = settings['sites'] if settings.get('sites') else copy.deepcopy(self.sites)
+
+        if not set(self.testing_sites).issubset(set(self.sites)):
+            self.on_error(f'not all testing sites "{self.testing_sites}" are in the configured site list "{self.sites}"')
+
+        # TODO: clean up extracting sites information
         settings.update(self._extract_sites_information(param_data))
         self.connectionHandler.send_next_to_all_sites(settings)
+
+        self.testing_event.set()
 
     def _extract_sites_information(self, parameters):
         try:
             sites_info = parameters['sites']
-            self.sites_to_test = [site['siteid'] for site in sites_info]
-            self.sites_to_test.sort()
+            sites_to_test = [site['siteid'] for site in sites_info]
+            sites_to_test.sort()
             self.sites.sort()
 
-            if not (self.sites_to_test == self.sites):
-                self.log.log_message(LogLevel.Error(), f'Master do not support site(s): {set(self.sites_to_test) - set(self.sites)}')
-                self.on_error('"next command", handler requiers not configured site(s)')
-            return self._generate_sites_message(self.sites_to_test, sites_info)
+            sites = []
+            sites.extend(sites_to_test)
+            sites.extend(self.sites)
+            sites = list(set(sites))
+
+            if len(self.sites) < len(sites):
+                self.log.log_message(LogLevel.Error(), f'Master do not support site(s): {set(sites) - set(self.sites)}')
+                self.on_error(f'"next command", handler requires "{sites}" but seems some are not configured: configured sites "{self.sites}"')
+
+            return self._generate_sites_message(sites_to_test, sites_info)
         except Exception:
             return self._generate_default_sites_configuration()
 
     def _generate_default_sites_configuration(self):
         sites_info = []
-        self.sites_to_test = self.sites
         for index in range(len(self.sites)):
             sites_info.append({'siteid': str(index), 'partid': str(self.dummy_partid), 'binning': -1})
             self.dummy_partid += 1
@@ -451,6 +519,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TERMINATED], self.configuredSites, lambda: None, lambda site, state: None)
         self.error_message = ''
         self.connectionHandler.send_terminate_to_all_sites()
+        self.handle_reset_command()
         self._first_part_tested = False
 
     def on_reset_received(self, param_data: dict):
@@ -470,17 +539,34 @@ class MasterApplication(MultiSiteTestingModel):
 
         self.received_sites_test_results.clear()
         self.loaded_lot_number = ''
+        self._reset_execution_strategy()
 
     def on_allsitetestscomplete(self):
+        self.testing_event.clear()
         self._send_test_results()
         self.test_results = []
         self.disarm_timeout()
         self.handle_reset()
+        self._reset_execution_strategy()
+
+    def _reset_execution_strategy(self):
+        try:
+            self.testing_strategy.reset_stages()
+        except Exception as e:
+            self.on_error(e)
+
+    def on_all_sites_request_testing(self):
+        try:
+            released_sites = self.testing_strategy.handle_release(self.testing_sites)
+            self.handle_release(released_sites)
+        except Exception as e:
+            self.on_error(f'{self.on_all_sites_request_testing.__name__}: {e}')
 
     def _send_test_results(self):
         self.connectionHandler.send_test_results(self.test_results)
 
     def on_site_test_result_received(self, site_id, param_data):
+        self.test_num = 0
         payload = param_data['payload']
         self._write_stdf_data(payload)
 
@@ -532,8 +618,6 @@ class MasterApplication(MultiSiteTestingModel):
 
         newstatus = status_msg['payload']['state']
         self.log.log_message(LogLevel.Info(), f'Testapp {siteid} state is {newstatus}')
-        if self.is_testing(allow_substates=True) and newstatus == TEST_STATE_IDLE:
-            self.handle_status_idle(siteid)
 
         if self.pendingTransitionsTest:
             self.pendingTransitionsTest.trigger_transition(siteid, newstatus)
@@ -547,6 +631,10 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_site_test_result_received(siteid, status_msg)
         else:
             self.on_error(f"Received unexpected testresult from site {siteid}")
+
+    def on_execution_strategy_message(self, siteid: str, execution_strategy: dict):
+        if self.handle_execution_strategy_message(siteid, execution_strategy):
+            self.set_execution_strategy_configuration(execution_strategy)
 
     def on_testapp_testsummary_changed(self, message: dict):
         self.summary_counter += 1
@@ -566,6 +654,9 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_testapp_resource_changed(self, siteid: str, resource_request_msg: dict):
         self.handle_resource_request(siteid, resource_request_msg)
+
+    def on_testapp_test_request_changed(self, siteid: str):
+        self.handle_test_request(siteid)
 
     def on_peripheral_response_received(self, response):
         self.peripheral_controller.on_response_received(response)
@@ -607,11 +698,15 @@ class MasterApplication(MultiSiteTestingModel):
                 'reset': lambda param_data: self.reset(param_data),
                 'identify': lambda param_data: self._send_tester_identification(param_data),
                 'get-state': lambda param_data: self._send_tester_state(param_data),
+                'site-layout': lambda param_data: self._set_layout(param_data),
             }[cmd](payload)
         except KeyError:
             self.log.log_message(LogLevel.Error(), f'Failed to execute command: {cmd}')
         except MachineError:
             self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
+
+    def _set_layout(self, param_data):
+        self.layout = param_data['sites']
 
     def _send_tester_identification(self, _):
         self.connectionHandler.send_identification()
@@ -686,16 +781,6 @@ class MasterApplication(MultiSiteTestingModel):
         except KeyError:
             pass
 
-    async def _mqtt_loop_ctx(self, app):
-        self.connectionHandler.start()
-        # ToDo Get rid of this, propably no longer needed!
-        app['mqtt_handler'] = self.connectionHandler
-
-        yield
-
-        app['mqtt_handler'] = None
-        await self.connectionHandler.stop()
-
     def on_new_connection(self, connection_id):
         self.command_queue.put_nowait(GetUserSettings(lambda: self._generate_usersettings_message(self.user_settings)))
         self.command_queue.put_nowait(GetTestResultsCommand(self.received_sites_test_results, connection_id))
@@ -704,23 +789,6 @@ class MasterApplication(MultiSiteTestingModel):
 
         if self._stdf_aggregator:
             self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message(), connection_id))
-
-    async def _master_background_task(self, app):
-        try:
-            while True:
-                ws_comm_handler = app['ws_comm_handler']
-                if ws_comm_handler is None:
-                    await asyncio.sleep(1)
-                    continue
-
-                if not ws_comm_handler.is_ws_connection_established():
-                    self.log.clear_logs()
-
-                await self._handle_sending_data(ws_comm_handler)
-                await asyncio.sleep(1)
-
-        except asyncio.CancelledError:
-            pass
 
     async def _execute_commands(self, ws_comm_handler):
         while True:
@@ -778,29 +846,41 @@ class MasterApplication(MultiSiteTestingModel):
     def _generate_lot_data_message(self):
         return self._stdf_aggregator.get_MIR_dict()
 
-    async def _master_background_task_ctx(self, app):
-        task = asyncio.create_task(self._master_background_task(app))
+    async def _master_background_task(self, app):
+        try:
+            while True:
+                ws_comm_handler = app['ws_comm_handler']
+                if ws_comm_handler is None:
+                    await asyncio.sleep(1)
+                    continue
 
-        yield
+                if not ws_comm_handler.is_ws_connection_established():
+                    self.log.clear_logs()
 
-        task.cancel()
-        await task
+                await self._handle_sending_data(ws_comm_handler)
+                await asyncio.sleep(1)
+
+        except asyncio.CancelledError:
+            pass
+
+    async def _master_request_task(self, app):
+        try:
+            while True:
+                await self.testing_event.wait()
+
+                sites = await self.testing_strategy.get_site_states(1)
+                self.handle_sites_request(sites)
+
+        except asyncio.CancelledError:
+            pass
 
     def run(self):
-        app = web.Application()
-        app['master_app'] = self
-
-        # initialize static file path from config (relative paths are interpreted
-        # relative to the current working directory).
-        # TODO: the default value of the static file path (here and config template) should
-        #       not be based on the development folder structure and simply be './mini-sct-gui'.
-        webui_static_path = self.configuration.get('webui_static_path', './src/ATE/ui/angular/mini-sct-gui/dist/mini-sct-gui')
-        static_file_path = os.path.realpath(webui_static_path)
-
-        webservice_setup_app(app, static_file_path)
-        app.cleanup_ctx.append(self._mqtt_loop_ctx)
-        app.cleanup_ctx.append(self._master_background_task_ctx)
-
-        host = self.configuration.get('webui_host', 'localhost')
-        port = self.configuration.get('webui_port', 8081)
-        web.run_app(app, host=host, port=port)
+        try:
+            task_handler = TaskHandler(self,
+                                       self.configuration,
+                                       self.connectionHandler,
+                                       lambda app: self._master_request_task(app),
+                                       lambda app: self._master_background_task(app))
+            task_handler.run()
+        except KeyboardInterrupt:
+            pass

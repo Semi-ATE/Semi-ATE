@@ -3,9 +3,13 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+from ATE.spyder.widgets.actions_on.program.Utils import Sequencer
 import json
 import os
 import platform
+from typing import Dict, List
+
+from ATE.projectdatabase.Hardware.ParallelismStore import ParallelismStore
 
 from PyQt5.QtCore import QObject
 
@@ -18,7 +22,7 @@ from ATE.projectdatabase.Hardware import Hardware
 from ATE.projectdatabase.Maskset import Maskset
 from ATE.projectdatabase.Package import Package
 from ATE.projectdatabase.Product import Product
-from ATE.projectdatabase.Program import Program
+from ATE.projectdatabase.Program import Program, ExecutionSequenceType
 from ATE.projectdatabase.QualificationFlow import QualificationFlowDatum
 from ATE.projectdatabase.Sequence import Sequence
 from ATE.projectdatabase.Test import Test
@@ -177,56 +181,18 @@ class ProjectNavigation(QObject):
             print(stdout.decode('UTF-8'))
         return process.returncode
 
-    def add_hardware(self, definition, is_enabled=True):
-        '''This method adds a hardware setup to the project.
-
-        The hardware is defined in the 'definition' parameter as follows:
-            hardware_definition = {
-                'hardware': 'HW0',
-                'PCB': {},
-                'tester': ('SCT', 'import stuff'),
-                'instruments': {},
-                'actuators': {}}
-
-        This method returns the name of the Hardware on success and raises an
-        exception on fail (no sense of continuing, this should work!)
-        '''
-        definition = self._prepare_hardware_definiton(definition)
-        new_hardware = definition['hardware']
-        definition.pop('hardware')
+    def add_hardware(self, new_hardware, definition, is_enabled=True):
         Hardware.add(self.get_file_operator(), new_hardware, definition, is_enabled)
         _ = self.run_build_tool("generate", "hardware", self.project_directory, new_hardware)
 
         self.parent.hardware_added.emit(new_hardware)
         self.parent.database_changed.emit(TableId.Hardware())
 
-    @staticmethod
-    def _prepare_hardware_definiton(definition):
-        for index, hw in enumerate(definition['Actuator']['FT']):
-            definition['Actuator']['FT'][index] = hw.replace(" ", "_")
-        for index, hw in enumerate(definition['Actuator']['PR']):
-            definition['Actuator']['PR'][index] = hw.replace(" ", "_")
-
-        definition['InstrumentNames'] = {}
-        for instrument in definition['Instruments']:
-            definition['InstrumentNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
-
-        definition['GPFunctionNames'] = {}
-
-        for instrument in definition['GPFunctions']:
-            definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
-
-        return definition
-
     def update_hardware(self, hardware, definition):
-        '''
-        this method will update hardware 'name' with 'definition'
-        if name doesn't exist, a KeyError will be thrown
-        '''
-        definition = self._prepare_hardware_definiton(definition)
-        definition.pop('hardware')
-        Hardware.update(self.get_file_operator(), hardware, definition)
+        Hardware.update_definition(self.get_file_operator(), hardware, definition)
         _ = self.run_build_tool("generate", "hardware", self.project_directory, hardware)
+
+        _ = self.run_build_tool("generate", "sequence", self.project_directory)
 
     def get_file_operator(self):
         return self.file_operator
@@ -267,6 +233,12 @@ class ProjectNavigation(QObject):
         if hwr_nr doesn't exist, an empty dictionary is returned
         '''
         return Hardware.get_definition(self.get_file_operator(), name)
+
+    def update_hardware_parallelism_store(self, name, parallelism_store: ParallelismStore):
+        Hardware.update_parallelism_store(self.get_file_operator(), name, parallelism_store)
+
+    def get_hardware_parallelism_store(self, name) -> ParallelismStore:
+        return Hardware.get_parallelism_store(self.get_file_operator(), name)
 
     def remove_hardware(self, name):
         Hardware.remove(self.get_file_operator(), name)
@@ -746,12 +718,19 @@ class ProjectNavigation(QObject):
         QualificationFlowDatum.remove(self.get_file_operator(), quali_flow_data)
         self.parent.database_changed.emit(TableId.Flow())
 
-    def insert_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, order, test_target, cache_type, caching_policy, test_ranges, group):
+    def insert_program(
+        self, name, hardware, base, target, usertext, sequencer_typ, temperature,
+        definition, owner_name, order, test_target, cache_type, caching_policy,
+        test_ranges, group, instance_count: int, execution_sequence: ExecutionSequenceType
+    ):
         for _, test in enumerate(definition):
             base_test_name = test['name']
             self.add_test_target(name, test_target, hardware, base, base_test_name, True, False)
 
-        Program.add(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, order, cache_type, caching_policy, test_ranges)
+        Program.add(
+            self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
+            temperature, owner_name, order, cache_type, caching_policy, test_ranges, instance_count, execution_sequence
+        )
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
 
@@ -767,10 +746,18 @@ class ProjectNavigation(QObject):
         for index, test in enumerate(definition):
             Sequence.add_sequence_information(self.get_file_operator(), owner_name, prog_name, test['name'], index, test)
 
-    def update_program(self, name, hardware, base, target, usertext, sequencer_typ, temperature, definition, owner_name, test_target, cache_type, caching_policy, test_ranges):
+    def update_program(
+        self, name, hardware, base, target, usertext, sequencer_typ, temperature,
+        definition, owner_name, test_target, cache_type, caching_policy, test_ranges,
+        instance_count: int, execution_sequence: ExecutionSequenceType
+    ):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
         Program.set_program_validity(self.get_file_operator(), name, True)
-        Program.update(self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ, temperature, owner_name, cache_type, caching_policy, test_ranges)
+        Program.update(
+            self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
+            temperature, owner_name, cache_type, caching_policy, test_ranges,
+            instance_count, execution_sequence
+        )
 
         self._delete_program_sequence(name, owner_name)
         self._insert_sequence_informations(owner_name, name, definition)
@@ -917,20 +904,9 @@ class ProjectNavigation(QObject):
 
     def get_program_configuration_for_owner(self, owner_name, prog_name):
         prog = Program.get_by_name_and_owner(self.get_file_operator(), prog_name, owner_name)
-        retval = {}
-        retval.update({"hardware": prog.hardware})
-        retval.update({"base": prog.base})
-        retval.update({"target": prog.target})
-        retval.update({"usertext": prog.usertext})
-        retval.update({"sequencer_type": prog.sequencer_type})
-        retval.update({"caching_policy": prog.caching_policy})
-        retval.update({"cache_type": prog.cache_type})
-        retval.update({"test_ranges": prog.test_ranges})
-        if prog.sequencer_type == 'Fixed Temperature':
-            retval.update({"temperature": prog.temperature})
-        # ToDo: Fix Me!
-        # else:
-        #     retval.update({"temperature": ','.join(str(x) for x in pickle.loads(prog.temperature))})
+        retval = prog.__dict__.copy()
+        if prog.sequencer_type != Sequencer.Static():
+            retval.update({"temperature": ','.join(str(x) for x in prog.temperature)})
 
         return retval
 
@@ -977,6 +953,23 @@ class ProjectNavigation(QObject):
             retval.setdefault(row[1], []).append(row[0])
 
         return retval
+
+    def get_programs_executions_matching_hardware(self, hardware) -> Dict[str, ExecutionSequenceType]:
+        return {
+            x.prog_name: x.execution_sequence
+            for x in Program.get_programs_for_hardware(self.get_file_operator(), hardware)
+        }
+
+    def add_parallelism_to_execution_sequence(self, parallelism_name: str, ping_pong_id: int):
+        Program.add_parallelism_to_execution_sequence(self.get_file_operator(), self.active_hardware, parallelism_name, ping_pong_id)
+        _ = self.run_build_tool('generate', 'sequence', self.project_directory)
+
+    def remove_parallelism_from_execution_sequence(self, parallelism_name: str):
+        Program.remove_parallelism_from_execution_sequence(self.get_file_operator(), self.active_hardware, parallelism_name)
+        _ = self.run_build_tool('generate', 'sequence', self.project_directory)
+
+    def get_ping_pong_in_executions(self, parallelism_name, ping_pong_id) -> List[str]:
+        return Program.get_ping_pong_in_executions(self.get_file_operator(), parallelism_name, ping_pong_id)
 
     def add_test_target(self, prog_name, name, hardware, base, test, is_default, is_enabled=False):
         if TestTarget.exists(self.get_file_operator(), name, hardware, base, test, prog_name):
@@ -1134,17 +1127,11 @@ class ProjectNavigation(QObject):
     def get_dependant_objects_for_test(self, test):
         return self.get_programs_for_test(test)
 
-    def _get_state(self, name, type):
-        return tables[type].get(self.get_file_operator(), name).is_enabled
-
-    def _update_state(self, name, state, type):
-        tables[type].update_state(self.get_file_operator(), name, state)
-
     def get_hardware_state(self, name):
-        return self._get_state(name, 'hardwares')
+        return Hardware.get_state(self.get_file_operator(), name)
 
     def update_hardware_state(self, name, state):
-        self._update_state(name, state, 'hardwares')
+        Hardware.update_state(self.get_file_operator(), name, state)
         if not state:
             self.parent.hardware_removed.emit(name)
         else:
@@ -1160,27 +1147,27 @@ class ProjectNavigation(QObject):
         return Die.get(self.get_file_operator(), name).is_enabled
 
     def update_die_state(self, name, state):
-        self._update_state(name, state, 'dies')
+        Die.update_state(self.get_file_operator(), name, state)
         self.parent.update_target.emit()
 
     def get_package_state(self, name):
-        return self._get_state(name, 'packages')
+        return Package.get(self.get_file_operator(), name).is_enabled
 
     def update_package_state(self, name, state):
-        self._update_state(name, state, 'packages')
+        Package.update_state(self.get_file_operator(), name, state)
 
     def get_device_state(self, name):
         return Device.get(self.get_file_operator(), name).is_enabled
 
     def update_device_state(self, name, state):
-        self._update_state(name, state, 'devices')
+        Device.update_state(self.get_file_operator(), name, state)
         self.parent.update_target.emit()
 
     def get_product_state(self, name):
         return Product.get(self.get_file_operator(), name).is_enabled
 
     def update_product_state(self, name, state):
-        self._update_state(name, state, 'products')
+        Product.update_state(self.get_file_operator(), name, state)
 
     def get_test(self, name, hardware, base):
         return Test.get(self.get_file_operator(), name, hardware, base)

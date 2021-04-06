@@ -1,5 +1,5 @@
 from ATE.Tester.TES.apps.testApp.sequencers.TheTestAppStatusAlive import TheTestAppStatusAlive
-from typing import Optional
+from typing import List, Optional
 
 FRAMEWORK_VERSION = 1
 
@@ -46,7 +46,18 @@ class TopicFactory:
     def test_log_topic(self):
         return f'ate/{self._device_id}/TestApp/log/site{self._site_id}'
 
-    def test_status_payload(self, alive: TheTestAppStatusAlive):
+    def test_execution_strategy_topic(self):
+        return f'ate/{self._device_id}/TestApp/execution_strategy/site{self._site_id}'
+
+    @staticmethod
+    def test_execution_strategy_payload(execution_strategy: List[List[str]]):
+        return {
+            "type": "execution_strategy",
+            "payload": execution_strategy
+        }
+
+    @staticmethod
+    def test_status_payload(alive: TheTestAppStatusAlive):
         return {
             "type": "status",
             "framework_version": FRAMEWORK_VERSION,

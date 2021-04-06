@@ -182,14 +182,15 @@ def project_defintinion_generator(project_path):
     _make_definition_dir(definition_path, "settings")
     _generate_version_file(definition_path)
 
+
 def _generate_version_file(definition_path):
-	    _make_definition_dir(definition_path, "version")
-	    import os
-	    import json
-	    from pathlib import Path
-	    path = os.path.join(definition_path, "version", "version.json")
-	    with open(os.fspath(Path(path)), 'w') as f:
-	        json.dump({"version": __version__}, f, indent=4)
+    _make_definition_dir(definition_path, "version")
+    import os
+    import json
+    from pathlib import Path
+    path = os.path.join(definition_path, "version", "version.json")
+    with open(os.fspath(Path(path)), 'w') as f:
+        json.dump({"version": __version__}, f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):

@@ -78,17 +78,17 @@ describe('StdfRecordComponent', () => {
   describe('siteNumberToLetter', () => {
     it('should compute "A" when site number is 0', () => {
       let siteNumber = 0;
-     expect((component as any).siteNumberToLetter(siteNumber)).toEqual('A');
+      expect((component as any).siteNumberToLetter(siteNumber)).toEqual('A');
     });
 
     it('should compute "B" when site number is 1', () => {
       let siteNumber = 1;
-     expect((component as any).siteNumberToLetter(siteNumber)).toEqual('B');
+      expect((component as any).siteNumberToLetter(siteNumber)).toEqual('B');
     });
 
     it('should compute "undefined" when site number is smaller as 0', () => {
       let siteNumber = -1;
-     expect((component as any).siteNumberToLetter(siteNumber)).toEqual(undefined);
+      expect((component as any).siteNumberToLetter(siteNumber)).toEqual(undefined);
     });
   });
 
@@ -181,14 +181,13 @@ describe('StdfRecordComponent', () => {
       };
 
       expect(component.getPassStatus()).toEqual('P');
-      expect(component.passOrFailTextColor).toEqual('#0AC473');
+      expect(component.getPassOrFailTextColor()).toEqual('#0AC473');
       expect(component.getTestFlag()).toEqual(0);
 
       expectedEntries[0].value = -1;
-      component.getPassStatus();
 
-      expect(component.passOrFail).toEqual('F');
-      expect(component.passOrFailTextColor).toEqual('#BD2217');
+      expect(component.getPassStatus()).toEqual('F');
+      expect(component.getPassOrFailTextColor()).toEqual('#BD2217');
       expect(component.getTestFlag()).toEqual(-1);
     });
   });

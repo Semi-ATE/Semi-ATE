@@ -12,8 +12,8 @@ class TestSection(TestItem):
             test_item = self.child(index)
             if isinstance(test_item, GroupItem):
                 for index in range(test_item.rowCount()):
-                    test_item = test_item.child(index)
-                    self._remove_test_target(test_item, test_name, target_name)
+                    group_item = test_item.child(index)
+                    self._remove_test_target(group_item, test_name, target_name)
                 continue
 
             self._remove_test_target(test_item, test_name, target_name)

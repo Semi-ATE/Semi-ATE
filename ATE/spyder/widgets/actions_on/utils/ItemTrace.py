@@ -1,4 +1,5 @@
 import os
+from typing import Dict, List, Union
 
 from PyQt5 import QtWidgets
 
@@ -9,14 +10,13 @@ class ItemTrace(BaseDialog):
     def __init__(self, dependency_list, name, parent, message=''):
         ui_file = '.'.join(os.path.realpath(__file__).split('.')[:-1]) + '.ui'
         super().__init__(ui_file, parent)
-        self.dependency_list = dependency_list
+        self.dependency_list: Dict[str, Union[List[str], Dict[str, List[str]]]] = dependency_list
         self.name = name
         self.message = message
         self._setup()
 
     def _setup(self):
         self.setWindowTitle(self.name)
-        self.setFixedSize(self.size())
         self.feedback.setText(self.message)
         self.feedback.setStyleSheet('color: orange')
         self.tree_view.setHeaderHidden(True)

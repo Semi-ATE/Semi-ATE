@@ -25,7 +25,7 @@ export class InputConfiguration {
     this.autocompleteId = '';
   }
 
-  initInput(placeholder: string, disabled: boolean, value: string, validCharacterRegexp: RegExp = /./, autocompleteId: string = ''): void {
+  initInput(placeholder: string, disabled: boolean, value: string, validCharacterRegexp: RegExp = /./, autocompleteId?: string): void {
     this.placeholder = placeholder;
     this.disabled = disabled;
     this.value = value;

@@ -1,3 +1,4 @@
+from typing import Dict, List
 import paho.mqtt.client as mqtt
 import json
 import queue
@@ -44,50 +45,32 @@ class MqttClient():
     def publish_status(self, alive: TheTestAppStatusAlive, statedict: dict) -> mqtt.MQTTMessageInfo:
         payload = self._topic_factory.test_status_payload(alive)
         payload.update(statedict)
-        return self._client.publish(
-            topic=self._topic_factory.test_status_topic(),
-            payload=json.dumps(payload),
-            qos=2,
-            retain=False)
+        return self._publish(self._topic_factory.test_status_topic(), json.dumps(payload))
 
     def publish_result(self, testdata: object) -> mqtt.MQTTMessageInfo:
-        _topic = self._topic_factory.test_result_topic()
-        _payload = json.dumps(self._topic_factory.test_result_payload(testdata))
-        return self._client.publish(
-            topic=_topic,
-            payload=_payload,
-            qos=2,
-            retain=False)
+        return self._publish(self._topic_factory.test_result_topic(), json.dumps(self._topic_factory.test_result_payload(testdata)))
 
     def publish_tests_summary(self, tests_summary: object) -> mqtt.MQTTMessageInfo:
-        _topic = self._topic_factory.tests_summary_topic()
-        _payload = json.dumps(self._topic_factory.test_result_payload(tests_summary))
-        return self._client.publish(
-            topic=_topic,
-            payload=_payload,
-            qos=2,
-            retain=False)
+        return self._publish(self._topic_factory.tests_summary_topic(), json.dumps(self._topic_factory.test_result_payload(tests_summary)))
 
     def publish_stdf_part(self, blob: bytes) -> mqtt.MQTTMessageInfo:
-        return self._client.publish(
-            topic=self._topic_factory.test_stdf_topic(),
-            payload=blob,
-            qos=2,
-            retain=False)
+        return self._publish(self._topic_factory.test_stdf_topic(), blob)
 
     def publish_resource_request(self, resource_id: str, config: dict) -> mqtt.MQTTMessageInfo:
-        return self._client.publish(
-            topic=self._topic_factory.test_resource_topic(resource_id),
-            payload=json.dumps(self._topic_factory.test_resource_payload(resource_id, config)),
-            qos=2,
-            retain=False),
+        return self._publish(self._topic_factory.test_resource_topic(resource_id), self._topic_factory.test_resource_payload(resource_id, config))
 
     def publish_log_information(self, log: str) -> mqtt.MQTTMessageInfo:
+        return self._publish(self._topic_factory.test_log_topic(), json.dumps(self._topic_factory.test_log_payload(log)))
+
+    def publish_execution_strategy(self, execution_strategy: List[List[str]]) -> mqtt.MQTTMessageInfo:
+        return self._publish(self._topic_factory.test_execution_strategy_topic(), json.dumps(self._topic_factory.test_execution_strategy_payload(execution_strategy)))
+
+    def _publish(self, topic: str, payload: Dict[str, str]):
         return self._client.publish(
-            topic=self._topic_factory.test_log_topic(),
-            payload=json.dumps(self._topic_factory.test_log_payload(log)),
+            topic=topic,
+            payload=payload,
             qos=2,
-            retain=False),
+            retain=False)
 
     def _create_mqtt_client(self, topic_factory: TopicFactory) -> mqtt.Client:
         mqttc = mqtt.Client(client_id=topic_factory.mqtt_client_id)
@@ -100,7 +83,8 @@ class MqttClient():
                                    self._on_message_cmd_callback)
         mqttc.message_callback_add(self._topic_factory.master_resource_topic(),
                                    self._on_message_resource_callback)
-        mqttc.message_callback_add(self._topic_factory.generic_resource_response(), self._on_message_resource_callback)
+        mqttc.message_callback_add(self._topic_factory.generic_resource_response(),
+                                   self._on_message_resource_callback)
 
         payload = self._topic_factory.test_status_payload(TheTestAppStatusAlive.DEAD)
         payload.update({'state': 'crash'})

@@ -4,6 +4,7 @@ from ATE.Tester.TES.apps.masterApp.master_application import MasterApplication, 
 from ATE.Tester.TES.apps.common import configuration_reader
 from argparse import ArgumentParser
 
+
 DEFAULT_LOGFILE_NAME = "master_app.log"
 DEFAULT_CONFIGFILE_PATH = "./master_config_file.json"
 

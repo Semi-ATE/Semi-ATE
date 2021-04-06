@@ -36,6 +36,7 @@ export class InputComponent implements OnInit, OnDestroy {
   @Input() inputConfig: InputConfiguration;
   @Output() inputChangeEvent: EventEmitter<void>;
   @Output() carriageReturnEvent: EventEmitter<void>;
+  @Output() keyPressed: EventEmitter<void>;
 
   historyVisible: boolean;
   historyItemIndex: number;
@@ -49,6 +50,7 @@ export class InputComponent implements OnInit, OnDestroy {
     this.inputConfig = new InputConfiguration();
     this.inputChangeEvent = new EventEmitter<void>();
     this.carriageReturnEvent = new EventEmitter<void>();
+    this.keyPressed = new EventEmitter<void>();
     this.historyVisible = false;
     this.historyItemIndex = -1;
     this.history = [];
@@ -124,6 +126,7 @@ export class InputComponent implements OnInit, OnDestroy {
       } else {
         this.historyItemIndex = -1;
       }
+      this.keyPressed.emit();
     }
   }
 
@@ -152,6 +155,7 @@ export class InputComponent implements OnInit, OnDestroy {
     }
     this.hideHistory();
     this.carriageReturnEvent.emit();
+    this.keyPressed.emit();
   }
 
   private resetErrorMsg() {
@@ -171,6 +175,10 @@ export class InputComponent implements OnInit, OnDestroy {
   }
 
   private insertToHistory(value: string): void {
+    if (!this.inputConfig.autocompleteId) {
+      return;
+    }
+
     if (!this.history.some(e => e === value)) {
       this.history.push(this.inputConfig.value);
     }
@@ -178,6 +186,9 @@ export class InputComponent implements OnInit, OnDestroy {
   }
 
   private popFromHistory(): void {
+    if (!this.inputConfig.autocompleteId) {
+      return;
+    }
     this.history = this.history.slice(0, this.history.length - 1);
     this.saveSettings();
   }
@@ -202,7 +213,9 @@ export class InputComponent implements OnInit, OnDestroy {
   private updateStatus(status: Status) {
     if (this.status?.deviceId !== status.deviceId) {
       this.status = status;
-      this.restoreSettings();
+      if(this.inputConfig.autocompleteId) {
+        this.restoreSettings();
+      }
     }
     this.status = status;
   }

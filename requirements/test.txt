@@ -1,3 +1,8 @@
+pyqt==5.12.3
+qtawesome==0.7.2
+
+
+
 mock
 pytest-qt
 pytest==6.1.1
@@ -7,6 +12,4 @@ pytest-asyncio==0.14.0
 coverage
 check-manifest
 pre-commit
-tqdm
 twine
-tree
