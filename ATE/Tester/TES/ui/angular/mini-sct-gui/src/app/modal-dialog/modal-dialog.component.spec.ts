@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { StoreModule } from '@ngrx/store';
+import { Store, StoreModule } from '@ngrx/store';
 import { Router } from '@angular/router';
 import { ButtonComponent } from '../basic-ui-elements/button/button.component';
 import { consoleReducer } from '../reducers/console.reducer';
@@ -9,10 +9,12 @@ import { expectWaitUntil, spyOnStoreArguments } from '../test-stuff/auxillary-te
 import { ModalDialogComponent } from './modal-dialog.component';
 import { AppstateService } from '../services/appstate.service';
 import { CommunicationService } from '../services/communication.service';
-import { WebsocketService } from '../services/websocket.service';
 import { ConsoleEntry } from '../models/console.model';
 import * as constants from 'src/app/services/mockserver-constants';
 import { MockServerService } from '../services/mockserver.service';
+import { StorageMap } from '@ngx-pwa/local-storage';
+import { statusReducer } from '../reducers/status.reducer';
+import { userSettingsReducer } from '../reducers/usersettings.reducer';
 
 describe('ModalDialogComponent', () => {
   let component: ModalDialogComponent;
@@ -20,6 +22,8 @@ describe('ModalDialogComponent', () => {
   let router: Router;
   let appStateService: AppstateService;
   let mockServerService: MockServerService;
+  let store: Store;
+  let storage: StorageMap;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -31,10 +35,11 @@ describe('ModalDialogComponent', () => {
         RouterTestingModule.withRoutes(MINISCT_ROUTES),
         StoreModule.forRoot({
           consoleEntries: consoleReducer, // key must be equal to the key define in interface AppState, i.e. consoleEntries
+          systemStatus: statusReducer, // key must be equal to the key define in interface AppState, i.e. systemStatus
+          userSettings: userSettingsReducer, // key must be equal to the key define in interface AppState, i.e. userSettings
         }),
       ],
       providers: [
-        WebsocketService,
         CommunicationService,
         AppstateService
       ]
@@ -42,9 +47,11 @@ describe('ModalDialogComponent', () => {
     .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    store = TestBed.inject(Store);
+    storage = TestBed.inject(StorageMap);
+    await storage.clear().toPromise();
     mockServerService = TestBed.inject(MockServerService);
-    TestBed.inject(WebsocketService);
     fixture = TestBed.createComponent(ModalDialogComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);

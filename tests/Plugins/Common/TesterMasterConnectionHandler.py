@@ -34,7 +34,10 @@ class TesterConnectionHandler(ConnectionHandler):
 
     def send_release_message(self, sites: list):
         for site in sites:
-            self._mqtt.publish(self._parent.get_site_topic(site),
+            topic = self._parent.get_site_topic(site)
+            if not topic:
+                continue
+            self._mqtt.publish(topic,
                                json.dumps(self._topicFactory.tester_release_message(site)),
                                2,
                                False)

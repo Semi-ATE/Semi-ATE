@@ -44,12 +44,12 @@ class MqttConnection:
         return None
 
     def set_last_will(self, topic, msg):
-        self.mqtt_client.will_set(topic, msg, 0, False)
+        self.mqtt_client.will_set(topic, msg, 2, False)
 
     def subscribe(self, topic):
         self.mqtt_client.subscribe(topic)
 
-    def publish(self, topic, payload=None, qos=0, retain=False):
+    def publish(self, topic, payload=None, qos=2, retain=False):
         self.mqtt_client.publish(topic, payload, qos, retain)
 
     def register_route(self, route, callback):

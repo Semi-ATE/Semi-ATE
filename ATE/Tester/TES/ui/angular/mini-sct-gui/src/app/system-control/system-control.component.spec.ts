@@ -18,12 +18,20 @@ import { userSettingsReducer } from 'src/app/reducers/usersettings.reducer';
 import { SystemHandlingComponent } from './system-handling/system-handling/system-handling.component';
 import { DropdownComponent } from '../basic-ui-elements/dropdown/dropdown.component';
 import { MockServerService } from '../services/mockserver.service';
+import { MultichoiceComponent } from '../basic-ui-elements/multichoice/multichoice.component';
+import { StorageMap } from '@ngx-pwa/local-storage';
+import { AppstateService } from '../services/appstate.service';
+import { expectWaitUntil } from '../test-stuff/auxillary-test-functions';
+import { ModalDialogFilterSetting } from '../models/storage.model';
+import { LogLevel } from '../models/usersettings.model';
 
 describe('SystemControlComponent', () => {
   let component: SystemControlComponent;
   let fixture: ComponentFixture<SystemControlComponent>;
   let debugElement: DebugElement;
   let mockServerService: MockServerService;
+  let storage: StorageMap;
+  let appstateService: AppstateService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -37,7 +45,8 @@ describe('SystemControlComponent', () => {
         InputComponent,
         ButtonComponent,
         CheckboxComponent,
-        DropdownComponent
+        DropdownComponent,
+        MultichoiceComponent
       ],
       imports: [
         FormsModule,
@@ -50,18 +59,20 @@ describe('SystemControlComponent', () => {
       ],
       schemas: []
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
-  beforeEach( () => {
+  beforeEach(() => {
+    storage = TestBed.inject(StorageMap);
     mockServerService = TestBed.inject(MockServerService);
+    appstateService = TestBed.inject(AppstateService);
     fixture = TestBed.createComponent(SystemControlComponent);
     component = fixture.componentInstance;
     debugElement = fixture.debugElement;
     fixture.detectChanges();
   });
 
-  afterEach( () => {
+  afterEach(() => {
     mockServerService.ngOnDestroy();
   });
 
@@ -104,6 +115,22 @@ describe('SystemControlComponent', () => {
     it('should contain an app-test-option tag', () => {
       let componentElement = debugElement.nativeElement.querySelector('app-test-option');
       expect(componentElement).not.toEqual(null);
+    });
+  });
+
+  describe('System Message', () => {
+    it('should show a multichoice field', () => {
+      const multichoice = debugElement.queryAll(By.css('app-multichoice'));
+      expect(multichoice.length).toBe(1, 'There should be an unique multichoice filed');
+    });
+
+    it('should show label text', () => {
+      expect(component.systemMessageCardConfiguration.labelText).toEqual('System Message', 'Expected label text should be "System Message"');
+    });
+
+    it('should show expected multichoice items', () => {
+      const expectedMultichoiceItems = ['Debug', 'Info', 'Warning', 'Error'];
+      expect(component.modalDialogFilterConfig.items.map(e => e.label)).toEqual(expectedMultichoiceItems, `Multichoice items should be ${expectedMultichoiceItems}`);
     });
   });
 });

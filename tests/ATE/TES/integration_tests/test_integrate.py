@@ -107,7 +107,7 @@ async def handler_runner():
         "broker_host": BROKER_HOST,
         "broker_port": BROKER_PORT,
         "device_ids": [DEVICE_ID],
-        "head_layout": [[0, 0], [0, 1]],
+        "head_layout": [[1, 0], [0, 1]],
         "loglevel": 10
     }
 
@@ -131,7 +131,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json",
-        "layout": [[0, 0], [1, 0]],
+        "head_layout": [[1, 0], [0, 1]],
         "tester_type": "DummyTesterMaster.MaxiSCT",
         "loglevel": 10
     }
@@ -474,17 +474,19 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
         assert not (set(seen_states) - {'loading', 'ready'})
 
         # STEP 3: run test
-        for _ in range(5):
-            await ws.send_json({'type': 'cmd', 'command': 'next'})
-            # TODO: If 'tests' are finished too fast, we also don't seetesting (same as the problem with 'loading' above)
-            #       Currently these tests rely on the fact that testing takes longer. This needs to be fixed.
-            # TODO: Add an issue that short state changes are properly sent to the frontend (needs fix in master background task loop)
-            await expect_message_with_state(ws, 'testing', 5.0)
-            await expect_message_with_state(ws, 'ready', 10.0)
-            # TODO: assert message with type=testresult is received. not sure if received before or after ready status message.
+        try:
+            for _ in range(5):
+                await ws.send_json({'type': 'cmd', 'command': 'next'})
+                # TODO: If 'tests' are finished too fast, we also don't seetesting (same as the problem with 'loading' above)
+                #       Currently these tests rely on the fact that testing takes longer. This needs to be fixed.
+                # TODO: Add an issue that short state changes are properly sent to the frontend (needs fix in master background task loop)
+                await expect_message_with_state(ws, 'testing', 10.0)
+                await expect_message_with_state(ws, 'ready', 10.0)
+                # TODO: assert message with type=testresult is received. not sure if received before or after ready status message.
+        finally:
+            # STEP 4: unload lot
+            await ws.send_json({'type': 'cmd', 'command': 'unload'})
 
-        # STEP 4: unload lot
-        await ws.send_json({'type': 'cmd', 'command': 'unload'})
         seen_states = await expect_message_with_state(ws, 'initialized', 10.0)
         assert not (set(seen_states) - {'unloading', 'initialized'})
 
@@ -533,7 +535,7 @@ class MqttSession:
         self._client = client
         self.message_queue = message_queue
 
-    def publish(self, topic, payload=None, qos=0, retain=False):
+    def publish(self, topic, payload=None, qos=2, retain=False):
         if isinstance(payload, dict):
             payload = json.dumps(payload)
         return self._client.publish(topic, payload, qos, retain)
@@ -1006,17 +1008,18 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
         await asyncio.sleep(3.0)
         await read_messages_until_master_state(buffer, 'ready', 5.0, ['loading', 'ready'])
 
-        # do multiple times
-        for _ in range(5):
-            handler_runner.comm.put('next', site_num=sites[1])
-            # to make sure that test execution is done
-            await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
-            await asyncio.sleep(2.0)
+        try:
+            for _ in range(5):
+                handler_runner.comm.put('next', site_num=sites[1])
+                # to make sure that test execution is done
+                await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
+                await asyncio.sleep(2.0)
+        finally:
+            handler_runner.comm.put('unload')
 
         # TODO: analyse the problem with CI build, why this fail
-        # handler_runner.comm.put('unload')
         # await asyncio.sleep(3.0)
-        # await read_messages_until_master_state(buffer, 'initialized', 5.0, ['unloading', 'initialized'])
+        # await read_messages_until_master_state(buffer, 'initialized', 10.0, ['unloading', 'initialized'])
 
 
 @pytest.mark.asyncio
@@ -1122,17 +1125,19 @@ async def test_master_states_during_load_and_unload(sites, process_manager, ws_c
         _ = create_controls(process_manager, sites)
         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
-        async with ws_connection() as ws:
-            await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
-            await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
+        try:
+            async with ws_connection() as ws:
+                await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
+                await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
 
-        async with ws_connection() as ws:
-            await ws.send_json({'type': 'cmd', 'command': 'next'})
-            msgs_while_testing = await read_messages_until_master_state(buffer, 'testing', 5.0, ['ready', 'testing'])
-            msgs_while_testing += await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
+            async with ws_connection() as ws:
+                await ws.send_json({'type': 'cmd', 'command': 'next'})
+                msgs_while_testing = await read_messages_until_master_state(buffer, 'testing', 5.0, ['ready', 'testing'])
+                msgs_while_testing += await read_messages_until_master_state(buffer, 'ready', 10.0, ['testing', 'ready'])
+        finally:
+            async with ws_connection() as ws:
+                await ws.send_json({'type': 'cmd', 'command': 'unload'})
 
-        async with ws_connection() as ws:
-            await ws.send_json({'type': 'cmd', 'command': 'unload'})
             await read_messages_until_master_state(buffer, 'initialized', 5.0, ['ready', 'unloading', 'initialized'])
 
             process_manager.kill_processes(master.proc_name)

@@ -13,3 +13,6 @@ class MiniSCT(InterfaceSCT):
 
     def test_done(self, site_id: int):
         pass
+
+    def do_init_state(self, site_id: int):
+        pass

@@ -43,13 +43,13 @@ class ConnectionHandler:
     def subscribe(self, topic) -> None:
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic, payload, qos=0, retain=False) -> None:
+    def publish(self, topic, payload, qos=2, retain=False) -> None:
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
     def publish_state(self, state) -> None:
         self.publish(self._topicFactory.tester_status_topic(self._client_id),
                      self._topicFactory.tester_status_message(state),
-                     qos=1,
+                     qos=2,
                      retain=False)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:

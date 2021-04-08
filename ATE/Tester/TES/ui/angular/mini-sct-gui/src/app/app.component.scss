@@ -2,7 +2,7 @@
 
 main {
     .pageContent {
-        height: calc(100vh - #{$headerHeight} - #{$footerHeight});
+        height: calc(100vh - #{$headerHeight} - #{$footerHeight} - 10px);
         overflow: auto;
     }
 }

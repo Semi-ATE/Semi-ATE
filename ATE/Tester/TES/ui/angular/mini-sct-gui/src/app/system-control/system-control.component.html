@@ -5,6 +5,11 @@
       <div class="lotHandlingAndTestExecution">
         <app-lot-handling id="lothandling"></app-lot-handling>
         <app-system-handling></app-system-handling>
+        <app-card id="systemMessage" [cardConfiguration]="systemMessageCardConfiguration">
+          <div class="modalDialogFilter">
+            <app-multichoice [multichoiceConfig]="modalDialogFilterConfig" (multichoiceChangeEvent)="setModalDialogFilter()"></app-multichoice>
+          </div>
+        </app-card>
       </div>
       <app-test-option id="option"></app-test-option>
     </div>

@@ -175,7 +175,6 @@ class SequencerHarness(Harness.Harness):
         elif cmd == 'next':
             self._statemachine.cmd_next()
             self._execute_cmd_next(payload.get('job_data'))
-            self._statemachine.cmd_done()
         elif cmd == 'terminate':
             self._execute_cmd_terminate()
             self._statemachine.cmd_terminate()
@@ -208,6 +207,7 @@ class SequencerHarness(Harness.Harness):
 
         self.send_status("TESTING")
         result = self._sequencer_instance.run(self._execution_policy, job_data)
+        self._statemachine.cmd_done()
         self.send_status("IDLE")
 
         self.send_testresult(result)
@@ -270,7 +270,7 @@ class SequencerHarness(Harness.Harness):
     def subscribe(self, topic: str):
         self.mqtt_client.subscribe(topic)
 
-    def publish(self, topic: str, payload: object = None, qos: int = 0, retain: bool = False):
+    def publish(self, topic: str, payload: object = None, qos: int = 2, retain: bool = False):
         self.mqtt_client.publish(topic, payload, qos, retain)
 
 

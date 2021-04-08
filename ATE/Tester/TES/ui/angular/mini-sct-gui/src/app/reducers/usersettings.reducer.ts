@@ -5,7 +5,7 @@ import { on, Action, createReducer } from '@ngrx/store';
 let computeInitialState = () => {
   let settings: UserSettings = {
     testOptions: [],
-    logLevel: LogLevel.Warning
+    logLevel: LogLevel.Warning,
   };
   Object.keys(TestOptionType).forEach(e => {
     settings.testOptions.push(

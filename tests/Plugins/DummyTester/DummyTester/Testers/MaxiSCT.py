@@ -45,6 +45,9 @@ class MaxiSCT(InterfaceSCT):
     def test_done(self, site_id: int):
         self.requests.append(self._generate_request_flag(is_requested=True, site_id=site_id, state=GPIOState.ON))
 
+    def do_init_state(self, site_id: int):
+        self.requests.append(self._generate_request_flag(is_requested=True, site_id=site_id, state=GPIOState.OFF))
+
     # help functions to simulate Tester to Tester connection
     def reset_request(self):
         self.request.update({'is_requested': False})

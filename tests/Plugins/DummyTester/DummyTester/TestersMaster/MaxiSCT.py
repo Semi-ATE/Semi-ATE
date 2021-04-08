@@ -1,6 +1,7 @@
 import asyncio
 from threading import Thread, Event
 from typing import List
+import random
 
 from ATE.common.logger import Logger
 from tests.Plugins.Common.utils import GPIOState
@@ -20,7 +21,7 @@ def get_broker_address():
 
 class MaxiSCT(InterfaceSCT):
     def __init__(self):
-        self.name = 'master'
+        self.name = f'master_{random.randint(0, 10000)}'
         self._log = Logger('tester')
         self.event = Event()
         self.sites = []

@@ -64,6 +64,7 @@ class SequencerBase:
 
     def set_tester_instance(self, tester_instance):
         self.tester_instance = tester_instance
+        self.tester_instance.do_init_state(int(self.site_id))
 
     def set_cache_instance(self, cache_instance):
         self.cache_instance = cache_instance

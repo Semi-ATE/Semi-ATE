@@ -1,5 +1,6 @@
 import { StdfRecordType } from '../stdf/stdf-stuff';
 import { LogLevelString } from '../system-console/system-console.component';
+import { LogLevel } from './usersettings.model';
 
 export interface RecordTypeFilterSetting {
   selectedTypes: Array<StdfRecordType>;
@@ -48,6 +49,10 @@ export interface SourceFilterSetting {
   sourceFilter: string;
 }
 
+export interface ModalDialogFilterSetting {
+  modalDialogFilter: Array<LogLevel>;
+}
+
 export enum SettingType {
   RecordTypeFilter = 'typeFilter',
   RecordViewAutoscroll = 'autoscroll',
@@ -59,5 +64,6 @@ export enum SettingType {
   Yield = 'yield',
   LotData =  'lotdata',
   LogLevelFilter = 'logLevelFilter',
-  SourceFilter = 'sourceFilter'
+  SourceFilter = 'sourceFilter',
+  ModalDialogFilter = 'modalDialogFilter'
 }

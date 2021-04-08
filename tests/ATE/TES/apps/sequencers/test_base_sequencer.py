@@ -192,6 +192,9 @@ class TriggerOut:
     def test_done(self, site_id: int):
         pass
 
+    def do_init_state(seld, site_id: int):
+        pass
+
 
 def test_trigger_on_test_will_pulse_triggerout(sequencer):
     trigger = TriggerOut()

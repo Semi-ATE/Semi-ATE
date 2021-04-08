@@ -22,6 +22,11 @@
 }
 
 table {
+  max-height: 700px;
+  height: 700px;
+  display: block;
+  overflow: auto;
+
   font-size: $label;
   table-layout: fixed;
   margin-top: -30px;

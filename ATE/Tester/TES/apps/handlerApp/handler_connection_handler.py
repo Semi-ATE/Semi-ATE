@@ -45,7 +45,7 @@ class HandlerConnectionHandler:
     def subscribe(self, topic) -> None:
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic, payload, qos=0, retain=False) -> None:
+    def publish(self, topic, payload, qos=2, retain=False) -> None:
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
     def publish_state(self, state, message) -> None:

@@ -18,3 +18,7 @@ class InterfaceSCT(ABC):
     @abstractmethod
     def test_done(site_id: int, timeout: int):
         pass
+
+    @abstractmethod
+    def do_init_state(site_id: int):
+        pass

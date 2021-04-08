@@ -85,6 +85,13 @@ Tester Plugin should implement the following function:
    ```
 
    __test_done__ function signalize that the site is done with testing and wait to be released again 
+   
+*  ```python
+    def do_init_state(site_id: int)
+   ```
+
+   __do_init_state__ function sets the tester gpio state to low
+
 
 ## Signal Flow
 

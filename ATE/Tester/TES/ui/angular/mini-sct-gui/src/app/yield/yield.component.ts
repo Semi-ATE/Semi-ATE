@@ -91,9 +91,9 @@ export class YieldComponent implements OnInit, OnDestroy {
     rowsOfInterest.forEach(e => {
       this.yieldTableConfiguration.rows.push(
         [
-          generateTableEntry(e.name),
-          generateTableEntry(e.count.toString(), Alignment.Right),
-          generateTableEntry(e.name ==='Sum'?'': e.value.toString(), Alignment.Right)]
+          generateTableEntry(e.name, {}),
+          generateTableEntry(e.count.toString(), {align: Alignment.Right}),
+          generateTableEntry(e.name ==='Sum'?'': e.value.toString(), {align: Alignment.Right})]
       );
     });
   }
@@ -114,7 +114,7 @@ export class YieldComponent implements OnInit, OnDestroy {
   private initElements() {
     this.yieldTabConfiguration.initTab([false], ['Total'], 0);
     this.yieldTableConfiguration.initTable(
-      [generateTableEntry(''), generateTableEntry('Amount', Alignment.Right), generateTableEntry('Percentage', Alignment.Right)],
+      [generateTableEntry('', {}), generateTableEntry('Amount', {align: Alignment.Right}), generateTableEntry('Percentage', {align: Alignment.Right})],
       [],
       ['40%', '30%', '30%']
     );
