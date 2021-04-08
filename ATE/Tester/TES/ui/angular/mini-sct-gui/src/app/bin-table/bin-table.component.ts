@@ -8,6 +8,7 @@ import { BinTableData } from '../models/bintable.model';
 import { Status } from '../models/status.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CommunicationService } from '../services/communication.service';
 
 @Component({
   selector: 'app-bin-table',
@@ -24,7 +25,7 @@ export class BinTableComponent implements OnInit, OnDestroy {
   private status: Status;
   private readonly unsubscribe: Subject<void>;
 
-  constructor(private readonly store: Store<AppState>) {
+  constructor(private readonly communicationService: CommunicationService, private readonly store: Store<AppState>) {
     this.captionCardConfiguration = new CardConfiguration();
     this.tableCardConfiguration = new CardConfiguration();
     this.binTableConfiguration = new TableConfiguration();
@@ -58,8 +59,10 @@ export class BinTableComponent implements OnInit, OnDestroy {
   }
 
   private updateStatus(status: Status): void {
-    this.status = status;
-    this.computeBinTable();
+    if (status.sites.length !== this.status?.sites?.length) {
+      this.status = status;
+      this.computeBinTable();
+    }
   }
 
   private updateBinTable(table: BinTableData): void {
@@ -77,13 +80,13 @@ export class BinTableComponent implements OnInit, OnDestroy {
     this.computeTableHeaderLabels();
 
     let widths = [
-      '145px', // bin-name column
+      '150px', // bin-name column
       '80px',  // soft-bin column
       '85px',  // hard-bin column
-      '125px', // type column
+      '160px', // type column
       '85px'   // total column
     ];
-    for(let i = 0; i < this.status.sites.length; ++i ) {
+    for (let i = 0; i < this.status.sites.length; ++i) {
       widths.push('75px');
     }
     this.binTableConfiguration.tableWidth = widths;
@@ -109,7 +112,7 @@ export class BinTableComponent implements OnInit, OnDestroy {
       if (e === 'Name') {
         alignment = Alignment.Left;
       }
-      return generateTableEntry(e, alignment);
+      return generateTableEntry(e, { align: alignment });
     });
   }
 
@@ -135,12 +138,40 @@ export class BinTableComponent implements OnInit, OnDestroy {
       texts.push(binEntryOfRow.siteCounts[i].count.toString());
     }
 
-    return texts.map((e,i) => {
+    return texts.map((e, i) => {
       if (i === 0) {
-        return generateTableEntry(e, Alignment.Left);
+        return generateTableEntry(e, { align: Alignment.Left });
+      }
+      if (i === 2) {
+        return generateTableEntry(e, { align: Alignment.Left },
+          {
+            editable: true,
+            onUserInput: (value: string) => {
+              this.sendHardBin(texts[0], value);
+            },
+            valid: (value: string)  => {
+              if (/[0-9]*/.test(value)) {
+                const VALUE = parseInt(value, 10);
+                if (VALUE > -1 && VALUE < 65536) {
+                  return true;
+                }
+              }
+              return false;
+            }
+          });
       } else {
-        return generateTableEntry(e, Alignment.Right);
+        return generateTableEntry(e, { align: Alignment.Right });
       }
     });
+  }
+
+  private sendHardBin(binName: string, hbin: string): void {
+    this.communicationService.send(
+      {
+        type: 'cmd',
+        command: 'binMap',
+        name: binName,
+        hBin: parseInt(hbin, 10)
+      });
   }
 }

@@ -84,12 +84,12 @@ class TestApplication:
     def test_masterconnhandler_sendload_sends_correct_data(self, mocker):
         mocker.patch.object(MqttConnection, "publish")
         self.connection_handler.send_load_test_to_all_sites("placeholder_string___this_should_be_a_dict_with_certain_keys_for_a_valid_cmd_payload")
-        MqttConnection.publish.assert_called_once_with("ate/sct01/Control/cmd", "{\"type\": \"cmd\", \"command\": \"loadTest\", \"testapp_params\": \"placeholder_string___this_should_be_a_dict_with_certain_keys_for_a_valid_cmd_payload\", \"sites\": [0, 1, 2]}", 0, False)
+        MqttConnection.publish.assert_called_once_with("ate/sct01/Control/cmd", "{\"type\": \"cmd\", \"command\": \"loadTest\", \"testapp_params\": \"placeholder_string___this_should_be_a_dict_with_certain_keys_for_a_valid_cmd_payload\", \"sites\": [0, 1, 2]}", 2, False)
 
     def test_masterconnhandler_sendterminate_sends_correct_data(self, mocker):
         mocker.patch.object(MqttConnection, "publish")
         self.connection_handler.send_terminate_to_all_sites()
-        MqttConnection.publish.assert_called_once_with("ate/sct01/TestApp/cmd", "{\"type\": \"cmd\", \"command\": \"terminate\", \"sites\": [0, 1, 2]}", 0, False)
+        MqttConnection.publish.assert_called_once_with("ate/sct01/TestApp/cmd", "{\"type\": \"cmd\", \"command\": \"terminate\", \"sites\": [0, 1, 2]}", 2, False)
 
     def test_masterconnhandler_identify_is_routed_correctly(self, mocker):
         mocker.patch.object(MqttConnection, "publish")

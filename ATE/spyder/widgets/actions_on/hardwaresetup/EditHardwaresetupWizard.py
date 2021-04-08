@@ -16,6 +16,7 @@ class EditHardwaresetupWizard(HardwareWizard):
 
     def OKButtonPressed(self):
         self.project_info.update_hardware(self.hardware.text(), self._get_current_configuration())
+        self.parallelism_widget.save_execution_sequence_changes()
         self._store_plugin_configuration()
         self.accept()
 

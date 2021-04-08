@@ -59,13 +59,10 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     base = '{{ definition['base'] }}'
     Type = '{{ definition['type'] }}'
 
-    def __init__(self, instance_name: str, context):
-        super().__init__(None, None, context)
+    def __init__(self, instance_name: str, sbin, test_num, context):
+        super().__init__(None, None, instance_name, sbin, test_num, context)
         self.ip = {{ definition['name'] }}_IP()
         self.op = {{ definition['name'] }}_OP()
-        self._sbin = None
-        self._test_num = None
-        self.instance_name = instance_name
 
     def aggregate_test_result(self, site_num: int, exception: bool):
         stdf_data = []
@@ -94,33 +91,6 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
         {% endfor %}
 
         return stdf_data
-
-    def set_sbin(self, sbin: int):
-        self._sbin = sbin
-
-    def get_sbin(self):
-        return self._sbin
-
-    def set_test_num(self, test_num: int):
-        self._test_num = test_num
-
-    def get_test_num(self):
-        return self._test_num
-
-    def log_info(self, message: str):
-        self.logger.log_message(LogLevel.Info(), message)
-
-    def log_debug(self, message: str):
-        self.logger.log_message(LogLevel.Debug(), message)
-
-    def log_warning(self, message: str):
-        self.logger.log_message(LogLevel.Warning(), message)
-
-    def log_error(self, message: str):
-        self.logger.log_message(LogLevel.Error(), message)
-
-    def log_measure(self, message: str):
-        self.logger.log_message(LogLevel.Measure(), message)
 
     def get_test_nums(self) -> int:
         return self.op.get_output_nums()

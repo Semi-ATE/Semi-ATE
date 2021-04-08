@@ -89,31 +89,31 @@ export class LotDataComponent implements OnInit, OnDestroy {
     this.lotDataTableConfiguration.tableWidth = ['40%', '30%', '30%'];
     this.lotDataTableConfiguration.rows = [
       [
-        generateTableEntry(MirAttributeDescriptionMap.LOT_ID + ' / ' + MirAttributeDescriptionMap.SBLOT_ID, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.LOT_ID), Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.SBLOT_ID), Alignment.Right)
+        generateTableEntry(MirAttributeDescriptionMap.LOT_ID + ' / ' + MirAttributeDescriptionMap.SBLOT_ID, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.LOT_ID), {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.SBLOT_ID), {align: Alignment.Right})
       ],
       [
-        generateTableEntry(MirAttributeDescriptionMap.MODE_COD, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.MODE_COD), Alignment.Left),
-        generateTableEntry('', Alignment.Right)
+        generateTableEntry(MirAttributeDescriptionMap.MODE_COD, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.MODE_COD), {align: Alignment.Left}),
+        generateTableEntry('', {align: Alignment.Right})
       ],
       [
-        generateTableEntry(MirAttributeDescriptionMap.USER_TXT, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.USER_TXT), Alignment.Left),
-        generateTableEntry('', Alignment.Right)],
+        generateTableEntry(MirAttributeDescriptionMap.USER_TXT, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.USER_TXT), {align: Alignment.Left}),
+        generateTableEntry('', {align: Alignment.Right})],
       [
-        generateTableEntry(MirAttributeDescriptionMap.TST_TEMP, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.TST_TEMP), Alignment.Left),
-        generateTableEntry('', Alignment.Right)],
+        generateTableEntry(MirAttributeDescriptionMap.TST_TEMP, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.TST_TEMP), {align: Alignment.Left}),
+        generateTableEntry('', {align: Alignment.Right})],
       [
-        generateTableEntry(MirAttributeDescriptionMap.JOB_NAM, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.JOB_NAM), Alignment.Left),
-        generateTableEntry('', Alignment.Right)],
+        generateTableEntry(MirAttributeDescriptionMap.JOB_NAM, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.JOB_NAM), {align: Alignment.Left}),
+        generateTableEntry('', {align: Alignment.Right})],
       [
-        generateTableEntry(MirAttributeDescriptionMap.JOB_REV, Alignment.Left),
-        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.JOB_REV), Alignment.Left),
-        generateTableEntry('', Alignment.Right)
+        generateTableEntry(MirAttributeDescriptionMap.JOB_REV, {align: Alignment.Left}),
+        generateTableEntry(this.getMirAttributeValue(STDF_MIR_ATTRIBUTES.JOB_REV), {align: Alignment.Left}),
+        generateTableEntry('', {align: Alignment.Right})
       ],
     ];
   }
@@ -124,8 +124,8 @@ export class LotDataComponent implements OnInit, OnDestroy {
 
   private computeMirTable() {
     this.lotDataTableConfiguration.headerRow = [
-      generateTableEntry('Name', Alignment.Left),
-      generateTableEntry('Wert', Alignment.Left)
+      generateTableEntry('Name', {align: Alignment.Left}),
+      generateTableEntry('Wert', {align: Alignment.Left})
     ];
     this.lotDataTableConfiguration.tableWidth = [
       '40%',
@@ -134,8 +134,8 @@ export class LotDataComponent implements OnInit, OnDestroy {
     this.lotDataTableConfiguration.rows = this.lotData?.values.map(
       (e: StdfRecordProperty) => {
         return [
-          generateTableEntry(e.key, Alignment.Left),
-          generateTableEntry(e.value.toString(), Alignment.Left),
+          generateTableEntry(e.key, {align: Alignment.Left}),
+          generateTableEntry(e.value.toString(), {align: Alignment.Left}),
         ];
       }
     );

@@ -1,5 +1,10 @@
-from ATE.sammy.verbs.verbbase import VerbBase
+from ATE.projectdatabase.Program import Program
+import json
+from pathlib import Path
 from ATE.projectdatabase.FileOperator import FileOperator
+from ATE.projectdatabase.Hardware import Hardware
+from ATE.projectdatabase.Utils import BaseType
+from ATE.sammy.verbs.verbbase import VerbBase
 
 
 class Generate(VerbBase):
@@ -56,10 +61,34 @@ class Generate(VerbBase):
             test_targets = TestTarget.get_for_program(self.file_operator, program.prog_name)
             program_configuration = Program.get_by_name_and_owner(self.file_operator, program.prog_name, program.owner_name)
 
+            self._create_layout_file(program.hardware, program.prog_name, BaseType(program.base), cwd)
+
             print(f"        gen {program.prog_name}")
             test_program_generator(self.template_path, cwd, program.prog_name, tests_in_program, test_targets, program_configuration)
 
         return 0
+
+    def _create_layout_file(self, hw_name, program_name, base_type: BaseType, project_base_dir):
+        parallelism_store = Hardware.get_parallelism_store(self.file_operator, hw_name)
+        execution_sequence_table = Program.get_program_execution_sequence(self.file_operator, program_name)
+
+        data = {}
+        for parallelism_name, parallelism in parallelism_store.get_all_matching_base(base_type).items():
+            execution_strategy = []
+            configs = {ping_pong.name: [stage.serialize() for stage in ping_pong.stages] for ping_pong in parallelism.configs}
+            test_configs = [parallelism.get_ping_pong_by_id(ping_pong_id).name for ping_pong_id in execution_sequence_table[parallelism_name]]
+
+            for test_config in test_configs:
+                execution_strategy.append(configs[test_config])
+
+            data[parallelism_name] = {
+                "sites": list(parallelism.cells.values()),
+                "execution_strategy": execution_strategy,
+            }
+
+        file_path = Path(project_base_dir, "src", hw_name, base_type.value, f'{program_name}_execution_strategy.json')
+        with open(file_path, "w") as file:
+            json.dump(data, file, indent=4)
 
     def gen_tests(self, cwd: str, arglist: list):
         print("    -> generate test(s)")
@@ -135,7 +164,8 @@ class Generate(VerbBase):
             hardware_generator(self.template_path, cwd, definition)
         return 0
 
-    def _prepare_hardware_definiton(self, definition):
+    @staticmethod
+    def _prepare_hardware_definiton(definition):
         for index, hw in enumerate(definition['Actuator']['FT']):
             definition['Actuator']['FT'][index] = hw.replace(" ", "_")
         for index, hw in enumerate(definition['Actuator']['PR']):

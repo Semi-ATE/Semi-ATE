@@ -2,7 +2,7 @@ from ATE.Tester.TES.apps.common.mqtt_connection import MqttConnection
 from ATE.common.logger import LogLevel
 import json
 import re
-from typing import Optional
+from typing import List, Optional
 
 TOPIC_CONTROLSTATUS = "Control/status"
 TOPIC_CONTROLLOG = "Control/log"
@@ -57,7 +57,7 @@ class MasterConnectionHandler:
             'sites': self.sites,
         }
         self.log.log_message(LogLevel.Info(), 'Send LoadLot to sites...')
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(params), 2, False)
 
     def send_next_to_all_sites(self, job_data: Optional[dict] = None):
         topic = f'ate/{self.device_id}/TestApp/cmd'
@@ -66,38 +66,38 @@ class MasterConnectionHandler:
         if job_data is not None:
             params['job_data'] = job_data
             job_data.pop('sites')
-        self.mqtt.publish(topic, json.dumps(params), 0, False)
+        self.mqtt.publish(topic, json.dumps(params), 2, False)
 
     def send_terminate_to_all_sites(self):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 2, False)
 
     def send_test_results(self, test_results):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_test_results_message(test_results)), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_test_results_message(test_results)), 2, False)
 
     def send_identification(self):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_identification_message()), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_identification_message()), 2, False)
 
     def send_state(self, state, message):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)), 0, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)), 2, False)
 
     def send_reset_to_all_sites(self):
         control_topic = f'ate/{self.device_id}/Control/cmd'
-        self.mqtt.publish(control_topic, json.dumps(self._generate_command_message('reset')), 0, False)
+        self.mqtt.publish(control_topic, json.dumps(self._generate_command_message('reset')), 2, False)
 
         # hack: this make sure to terminate any zombie test application that do not have a parent process(control)
         testApp_topic = f'ate/{self.device_id}/TestApp/cmd'
-        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('reset')), 0, False)
+        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('reset')), 2, False)
 
     def send_set_log_level(self, level):
         topics = [f'ate/{self.device_id}/TestApp/cmd', f'ate/{self.device_id}/Control/cmd']
         default_message = self._generate_command_message('setloglevel')
         default_message.update({'level': level})
         for topic in topics:
-            self.mqtt.publish(topic, json.dumps(default_message), 0, False)
+            self.mqtt.publish(topic, json.dumps(default_message), 2, False)
 
     def send_handler_get_temperature_command(self):
         message = self._generate_message('temperature', {})
@@ -105,9 +105,15 @@ class MasterConnectionHandler:
 
     def send_handler_command(self, message):
         topic = f'ate/{self.device_id}/Handler/command'
-        self.mqtt.publish(topic, json.dumps(message, 0, False))
+        self.mqtt.publish(topic, json.dumps(message, 2, False))
 
-    def _generate_command_message(self, command, sites=None):
+    def send_get_execution_strategy_command(self, layout):
+        topic = f'ate/{self.device_id}/TestApp/cmd'
+        message = self._generate_command_message('getexecutionstrategy')
+        message.update({'layout': layout})
+        self.mqtt.publish(topic, json.dumps(message), 2, False)
+
+    def _generate_command_message(self, command: str, sites: List[str] = None):
         return {'type': 'cmd',
                 'command': command,
                 'sites': self.sites if sites is None else sites,
@@ -170,7 +176,7 @@ class MasterConnectionHandler:
 
     def publish_ioctl_response(self, resource_request, result):
         response_topic = self.__generate_ioctl_response_topic(resource_request)
-        self.mqtt.publish(response_topic, result, 0)
+        self.mqtt.publish(response_topic, result, 2)
 
     def publish_ioctl_timeout(self, resource_request):
         response_topic = self.__generate_ioctl_response_topic(resource_request)
@@ -179,7 +185,7 @@ class MasterConnectionHandler:
             "ioctl_name": resource_request["ioctl_name"],
             "result": "Timeout"
         }
-        self.mqtt.publish(response_topic, json.dumps(message), 0)
+        self.mqtt.publish(response_topic, json.dumps(message), 2)
 
     def _generate_usersettings_message(self, usersettings: dict):
         message = {
@@ -199,7 +205,7 @@ class MasterConnectionHandler:
 
     def __extract_siteid_from_testapp_topic(self, topic):
         patterns = [rf'ate/{self.device_id}/TestApp/(?:status|testresult)/site(.+)$',
-                    rf'ate/{self.device_id}/TestApp/(?:status|testsummary|log)/site(.+)$',
+                    rf'ate/{self.device_id}/TestApp/(?:status|testsummary|log|execution_strategy)/site(.+)$',
                     rf'ate/{self.device_id}/TestApp/io-control/site(.+)/request$',
                     rf'ate/{self.device_id}/TestApp/binsettings/site(.+)$']
         for pattern in patterns:
@@ -251,6 +257,8 @@ class MasterConnectionHandler:
             self.status_consumer.on_testapp_status_changed(siteid, msg)
         elif "log" in topic:
             self.status_consumer.on_log_message(siteid, msg)
+        elif "execution_strategy":
+            self.status_consumer.on_execution_strategy_message(siteid, msg['payload'])
         else:
             assert False
 

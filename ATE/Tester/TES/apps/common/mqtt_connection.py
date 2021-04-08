@@ -7,7 +7,7 @@ from ATE.common.logger import LogLevel, Logger
 
 
 class MqttConnection:
-    def __init__(self, host: str, port: str, mqtt_client_id: str, logger: Logger):
+    def __init__(self, host: str, port: int, mqtt_client_id: str, logger: Logger):
         self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         self.mqtt_client.reconnect_delay_set(10, 15)
         self.log = logger
@@ -44,12 +44,12 @@ class MqttConnection:
         return None
 
     def set_last_will(self, topic, msg):
-        self.mqtt_client.will_set(topic, msg, 0, False)
+        self.mqtt_client.will_set(topic, msg, 2, False)
 
     def subscribe(self, topic):
         self.mqtt_client.subscribe(topic)
 
-    def publish(self, topic, payload=None, qos=0, retain=False):
+    def publish(self, topic, payload=None, qos=2, retain=False):
         self.mqtt_client.publish(topic, payload, qos, retain)
 
     def register_route(self, route, callback):

@@ -12,7 +12,7 @@ const reducer = createReducer(
       if (entries.length >= MAX_CONSOLE_ENTRIES) {
         return entries.slice(0, MAX_CONSOLE_ENTRIES);
       } else if (entries.length + state.length > MAX_CONSOLE_ENTRIES) {
-        return [...entries, state.slice(0, MAX_CONSOLE_ENTRIES - entries.length)];
+        return [...entries].concat(state.slice(0, MAX_CONSOLE_ENTRIES - entries.length));
       } else {
         return [...entries,...state];
       }

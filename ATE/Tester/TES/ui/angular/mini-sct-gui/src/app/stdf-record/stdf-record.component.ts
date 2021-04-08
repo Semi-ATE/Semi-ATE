@@ -11,18 +11,11 @@ export class StdfRecordComponent implements OnInit {
   @Input()
   stdfRecord: StdfRecord;
 
-  passOrFailTextColor: string;
-  passOrFail: string;
-  testFlagBitEncoding: string;
-
   constructor() {
     this.stdfRecord  = {
       type: StdfRecordType.Unknown,
       values: []
     };
-    this.passOrFailTextColor = '#0AC473';
-    this.passOrFail = 'P';
-    this.testFlagBitEncoding = '0, 0, 0, 0, 0, 0, 0, 0';
   }
 
   ngOnInit(): void {
@@ -47,13 +40,18 @@ export class StdfRecordComponent implements OnInit {
   getPassStatus(): string {
     let passStatus = computePassedInformationForTestFlag(stdfGetValue(this.stdfRecord, STDF_RECORD_ATTRIBUTES.TEST_FLG) as number);
     if (passStatus === true) {
-      this.passOrFail = 'P';
-      this.passOrFailTextColor = '#0AC473';
+      return 'P';
     } else {
-      this.passOrFail = 'F';
-      this.passOrFailTextColor = '#BD2217';
+      return 'F';
     }
-    return this.passOrFail;
+  }
+
+  getPassOrFailTextColor(): string {
+    if(this.getPassStatus() === 'P') {
+      return '#0AC473';
+    } else {
+      return '#BD2217';
+    }
   }
 
   getTestNumber(): number {
@@ -99,7 +97,6 @@ export class StdfRecordComponent implements OnInit {
 
   computeMultichoiceConfigurationForTestFlagValue(testFlag: number): MultichoiceConfiguration {
     let bitEncoding = [...Array(8)].map( (_x , i )=> (testFlag >> i ) & 1 );
-    this.testFlagBitEncoding = bitEncoding.reverse().toString();
     let label = 'Test Flag: ';
     let readonly = true;
     let items = new Array<MultichoiceEntry>();

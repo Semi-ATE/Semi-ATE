@@ -1,10 +1,9 @@
 import copy
 
-from ATE.spyder.widgets.actions_on.program.Utils import (ParameterState, ParameterEditability, ResolverTypes, ValidatorTypes, Range, InputFieldsPosition)
+from ATE.spyder.widgets.actions_on.program.Utils import ParameterState, ParameterEditability, ResolverTypes, ValidatorTypes, Range, InputFieldsPosition
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
-
 from ATE.spyder.widgets.actions_on.program.Parameters.ParameterBase import ParameterBase
-PARAM_PREFIX = '_ate_var_'
+from ATE.spyder.widgets.actions_on.program.Parameters.Utils import PARAM_PREFIX
 
 
 class InputParameter(ParameterBase):

@@ -56,6 +56,14 @@ before_script:
         python -m pip install -e .
         cd ..\..
     }
+  - >
+    function Install-Tester-Plugins {
+        param($VenvPath)
+
+        cd .\tests\Plugins\DummyTester
+        python -m pip install -e .
+        cd ..\..\..
+    }
   - >       
     function Install-AngularRequirementsAndBuild {
         param($VenvPath)
@@ -152,6 +160,7 @@ integrationtests:
    - Enable-Venv $venvPath
    - Install-PythonRequirements $venvPath
    - Install-Plugins $venvPath
+   - Install-Tester-Plugins $venvPath
    - pytest --cov=ATE tests\ATE\spyder\widgets\CI
 
    - mkdir .\ATE\Tester\TES\ui\angular\mini-sct-gui\dist\mini-sct-gui
@@ -159,7 +168,10 @@ integrationtests:
    - $env:ATE_INTEGRATION_TESTENV_DEVICE_ID = "gitlab_CI_"+$CI_PIPELINE_ID
    - $env:PIPELINE_ID = $CI_PIPELINE_ID
    # TODO: use --cov-append to combine coverage stats from test and integration-test? or simply don't split these into two jobs anymore?
-   - python -m pytest -v -o log_cli=true --cov=ATE tests\ATE\TES\integration_tests
+   - python -m pytest -v -s -o log_cli=true --cov=ATE tests\ATE\TES\integration_tests
+  after_script:
+   - taskkill.exe /IM python.exe /F 
+   - exit 0
   artifacts:
     paths:
       - log

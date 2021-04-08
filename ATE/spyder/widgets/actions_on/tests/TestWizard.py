@@ -1736,7 +1736,7 @@ class TestWizard(BaseDialog):
             if self._is_test_used_in_group(group):
                 item.setEnabled(False)
 
-        self.group_combo.setCurrentIndex(1)
+        self.group_combo.setCurrentIndex(0)
         self.group_combo.blockSignals(False)
 
     def _is_test_used_in_group(self, group):

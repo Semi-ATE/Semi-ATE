@@ -1,5 +1,6 @@
 from asyncio.queues import Queue, QueueEmpty
 import json
+from typing import List, Tuple
 
 from ATE.common.logger import LogLevel
 from ATE.Tester.TES.apps.common.mqtt_connection import MqttConnection
@@ -44,7 +45,7 @@ class HandlerConnectionHandler:
     def subscribe(self, topic) -> None:
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic, payload, qos=0, retain=False) -> None:
+    def publish(self, topic, payload, qos=2, retain=False) -> None:
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
     def publish_state(self, state, message) -> None:
@@ -105,6 +106,10 @@ class HandlerConnectionHandler:
                                self._mqtt.create_message(message),
                                False)
 
+    def publish_head_layout(self, layout: List[Tuple[int]]):
+        message = self._generate_layout_message(layout)
+        self.send_command_message(message)
+
     def send_response_message(self, message):
         self._mqtt.publish(self._generate_handler_response_topic(),
                            self._mqtt.create_message(message),
@@ -130,6 +135,10 @@ class HandlerConnectionHandler:
     def _generate_status_message(self, state, message):
         payload = {'state': state, 'message': message}
         return self._generate_message('status', payload)
+
+    def _generate_layout_message(self, layout):
+        payload = {'sites': layout}
+        return self._generate_message('site-layout', payload)
 
     @staticmethod
     def _generate_command_topic(device_id):

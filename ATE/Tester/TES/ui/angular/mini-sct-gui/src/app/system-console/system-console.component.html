@@ -6,6 +6,12 @@
       <app-button class="leftButtons" [buttonConfig]="reloadLogsButtonConfig" (buttonClickEvent)="reloadLogs()"></app-button>
       <app-button class="leftButtons" [buttonConfig]="getLogFileButtonConfig" (buttonClickEvent)="getLogFile()"></app-button>
       <app-multichoice class="leftButtons" [multichoiceConfig]="setLogLevelFilterConfig" (multichoiceChangeEvent)="setLogLevelFilter()"></app-multichoice>
+      <div class="leftButtons">
+        <label class="sourceFilterLabel">Source Filter</label>
+        <app-input class="sourceFilter"
+          [inputConfig]="sourceFilterInputConfig"
+          (keyPressed)="sourceFilterChanged()"></app-input>
+      </div>
     </div>
     <div class="main">
       <table>

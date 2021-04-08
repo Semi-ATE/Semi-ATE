@@ -51,10 +51,10 @@ Tester Plugin should implement the following functions:
         * or we can simulate the connection and handle all the communication in a file. This approach requires that the master application is running on the MiniSCT itself (could be a bit faster than mqtt)
 
 * ```python
-    def get_gpio_states() -> list
+    async def get_sites_states(timeout: int) -> list
     ```
-    the __get_requests__ function returns a list of all GPIOs suppose to be connected to a MiniSCT (list length = 16).
-    * in case of MaxiSCT, each of the outputs reserved to be connected to a MiniSCT should be read and evaluated
+    the __get_sites_states__ is an async function that returns a list of all GPIOs suppose to be connected to a MSCT (list length = 16) within a given timeout.
+    * in case of MaxiSCT, each of the outputs connected to a MiniSCT should be read and evaluated
     * in case of MiniSCT, this function could be ignored
 
 
@@ -67,11 +67,31 @@ Tester Plugin should implement the following function:
     def do_request(site_id: int, timeout: int) -> bool
    ```
 
-   the __do_request__ function will be called as soon as a test execution is done
+   __do_request__ function will be called as soon as a next command is received
    depend on the type of the Tester ether MaxiSCT or MiniSCT, we can determine which form the request should take e.g.:
 
-    * In case of MaxiSCT, set the output connected to the MaxiSCT to high or low according to the specification and wait until a request is received or timeout 
+    * In case of MaxiSCT, set the output connected to the MaxiSCT to high and wait until the release signal is set or timeout 
     * in case of MiniSCT: the function will return always true. Tests must not be synchronized in this case.
+
+*  ```python
+    def test_in_progress(site_id: int, timeout: int)
+   ```
+
+   __test_in_progress__ function signalize the site is busy (e.g testing)
+
+
+*  ```python
+    def test_done(site_id: int, timeout: int)
+   ```
+
+   __test_done__ function signalize that the site is done with testing and wait to be released again 
+   
+*  ```python
+    def do_init_state(site_id: int)
+   ```
+
+   __do_init_state__ function sets the tester gpio state to low
+
 
 ## Signal Flow
 

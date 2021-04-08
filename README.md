@@ -4,14 +4,13 @@
 
 [![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/main/LICENSE)
 [![Conda](https://img.shields.io/conda/pn/conda-forge/Semi-ATE?color=black)](https://anaconda.org/conda-forge/Semi-ATE)
-![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.8-black)
+![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)
 
-[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=master)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
+[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=main)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
 [![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
-[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/Semi-ATE/Semi-ATE/latest)](https://github.com/Semi-ATE/Semi-ATE)
 [![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
 ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)
 
@@ -28,16 +27,6 @@ The `Semi-ATE` package is writen purely in Python (noarch) and provides besides 
 Still interested? Visit the [wiki](https://github.com/ate-org/Semi-ATE/wiki).
 
 ## Installation
-
-### maxiconda
-
-Semi-ATE, [Semi-ATE-STDF](https://github.com/Semi-ATE/STDF), [Semi-ATE-STIL](https://github.com/Semi-ATE/STIL), [Semi-ATE-DT](https://github.com/Semi-ATE/STDF) and [QScreenCast](https://github.com/Semi-ATE/QScreenCast) are all bundeled with [spyder >= 5](https://github.com/spyder-ide/spyder) in the `_spyder_` environment when one installs conda using the [maxiconda](https://github.com/Semi-ATE/maxiconda) installers. 
-
-### miniconda / miniforge
-
-### anaconda
-
-
 
 
 
@@ -56,54 +45,39 @@ Powershell -ep Unrestricted -file setup.ps1
 
 ### Before starting the applications
 
-Once, each step of the setup.ps1 is succeeded the following steps must be checked:
+Once, each step of the setup.ps1 is succeeded, we are good to go.
 
-1) testprogram name must be adapted in ATE/Tester/TES/apps/le123456000.xml, therefore replace the 'PROGRAM_DIR#' in 'STATION' section with the following:
+make sure conda environment is activated
 
-    ```Console
-    <missing_part>/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_PR_1.py 
-    ```
+Spyder-IDE:
+1) start spyder from the terminal to create your own project:
+$ spyder
 
-    you will find the smoketest directory in the root level of Semi-ATE directory
+* create a new Semi-ATE project and then your own tests and testprograms
 
-    \<missing_part> must be replaced with the missing path piece to fit the absolut path of the test program
 
-2) lot number must be adapted in ATE/Tester/TES/apps/le123456000.xml.
-Therefore, 'LOTNUMBER' field muss be fit. Assuming the xml file name is
-'le123456000.xml', LOTNUMNBER field should look as follow:
+Applications:
+to test the generated testprogram in a virtual environment, follow the steps below:
 
-    __\<LOTNUMBER>123456.000\</LOTNUMBER>__
+1) make sure you got an mqtt-broker runs locally in your machine.
+mosquitto can be used for this purpose.
 
-3) After configuring xml-file there still one thing to do.
-open the master configuration file (ATE/Tester/TES/apps/master_configuration_file.json)
-and replace the 'filesystemdatasource.jobpattern' key-value with
-the xml file name.
+    For further information please contact your IT.
 
-    Based on the example above, this should look something like this:
-    __'filesystemdatasource.jobpattern': 'le123456000.xml'__
+2) Make sure to change the current directory as described below:
+  - from the root directory, change directory to: ATE/Tester/TES/apps
 
-    ---
-    __NOTE__
-    </br>
-    As soon the xml-file name is changed, make sure to update the lot number as discribed in 2) and 3)  !
+xml file (le123456000.xml) should be adapted to support the new configured sbins, the testprogram path could be  
+copied from Spyder-IDE directly. (the information should be adapted inside the 'Station' section)
 
-    ---
+3) now, you can start the master and control application.
+    * start master and control applications in different terminal (environment must be activated in both terminals)
+        $ python launch_master.py (terminal 1)
+        $ python launch_control.py (terminal 2)
 
-4) in case you generate your own test-program you need to make sure
-that the bin mapping inside the XML-file mappe those sbins the test-program uses.
+    hint: master and control apps could be configured via it's configuration files 'master_config_file.json' and 'control_config_file.json'
 
-5) make sure you got an mqtt-broker runs in your local machine.
-mosquitto can be used for this purpos.
+5) after all steps 1) to 4) are done
+start a browser your choice and past the following url: http://localhost:8081/
 
-    For further informations please contact your IT.
-
-## Running Spyder-IDE
-
-before you can use spyder you should have already cloned the
-repository from git (could be done using the 'setup.ps1' script)
-
-If already done, than switch to spyder directory and run the following command:
-
-```Console
-python bootstrap.py
-```
+you will be able to see the MiniSCT UI

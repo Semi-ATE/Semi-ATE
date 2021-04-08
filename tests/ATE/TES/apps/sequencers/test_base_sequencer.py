@@ -7,6 +7,7 @@ from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.DutTestCaseABC import Dut
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 from ATE.Tester.TES.apps.testApp.sequencers.binning.BinStrategy import BinStrategy
 from tests.ATE.TES.apps.sequencers.Loggerstub import LoggerStub
+from tests.ATE.TES.apps.sequencers.utils import DummyTester
 
 
 import os
@@ -80,6 +81,7 @@ def sequencer():
     ret_val = SequencerBase("Testprog", bin_strategy)
     ret_val.set_logger(LoggerStub())
     ret_val.set_auto_script(AutoScript())
+    ret_val.set_tester_instance(DummyTester())
     return ret_val
 
 
@@ -180,6 +182,18 @@ class TriggerOut:
         self.was_triggered = True
         self.pulse_width = pulse_width_ms
         self.num_pulses = self.num_pulses + 1
+
+    def do_request(self, site_id: int, timeout: int) -> bool:
+        return True
+
+    def test_in_progress(self, site_id: int):
+        pass
+
+    def test_done(self, site_id: int):
+        pass
+
+    def do_init_state(seld, site_id: int):
+        pass
 
 
 def test_trigger_on_test_will_pulse_triggerout(sequencer):

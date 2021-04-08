@@ -1,10 +1,9 @@
-import os
 import json
-import glob
+from pathlib import Path
 import pytest
 
 from ATE.projectdatabase.Types import Types
-from ATE.sammy.migration.utils import generate_path, VERSION_FILE_NAME, VERSION
+from ATE.sammy.migration.utils import VERSION_FILE_NAME, VERSION
 
 
 ALL_PROJECTS_REL_PATH = '../projects/'
@@ -12,97 +11,89 @@ NEW_PROJECT_REL_PATH = '../spyder/widgets/CI/qt/smoketest/smoke_test'
 DEFINTIONS = 'definitions'
 
 
-def generate_latest_project_path():
-    path = ALL_PROJECTS_REL_PATH
-    projects = {}
-    for root, directories, _ in os.walk(path):
-        for directory in directories:
-            version_path = os.path.join(root, directory, DEFINTIONS, VERSION)
-            if not os.path.exists(version_path):
-                continue
-
-            ver = generate_path(version_path, VERSION_FILE_NAME)
-            if not os.path.exists(ver):
-                continue
-
-            with open(ver, 'r') as f:
-                projects[directory] = json.load(f)['version']
-
-        return generate_path(path, max(projects, key=lambda key: projects[key]))
-
-    return '.'
+@pytest.fixture(scope="module")
+def base_path():
+    return Path(__file__).resolve().parent
 
 
-def generate_section_new(section: str) -> str:
-    path = os.path.join(NEW_PROJECT_REL_PATH, DEFINTIONS)
-    return generate_path(path, section)
+@pytest.fixture(scope="module")
+def new_proj_dir(base_path):
+    return base_path.joinpath(NEW_PROJECT_REL_PATH)
 
 
-def generate_section_old(section: str) -> str:
-    path = os.path.join(generate_latest_project_path(), DEFINTIONS)
-    return generate_path(path, section)
+@pytest.fixture(scope="module")
+def old_proj_dir(base_path):
+    """return the path to the last versionised Project version in "../projects"
+    """
+
+    project_dirs = base_path.joinpath(ALL_PROJECTS_REL_PATH).glob('*')
+    versions_projects = {}
+    for cur_proj_path in project_dirs:
+        version_file = cur_proj_path.joinpath(DEFINTIONS, VERSION, VERSION_FILE_NAME)
+        if version_file.exists():
+            with open(version_file, 'r') as file:
+                version_num = json.load(file)['version']
+                versions_projects[version_num] = cur_proj_path
+    return versions_projects[max(versions_projects.keys())]
 
 
-class Test_MigrateCheck:
-    def setup_method(self, test_method):
-        self.cwd = os.getcwd()
-        os.chdir(os.path.dirname(__file__))
+def get_section_file_path(project_path: Path, section: str) -> str:
+    section_file = project_path.joinpath(DEFINTIONS, section).glob("*.json")
+    return section_file.__next__()
 
-    def teardown_method(self, test_method):
-        os.chdir(os.path.dirname(self.cwd))
 
-    def test_check_sequence(self):
-        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(Types.Sequence()), generate_section_old(Types.Sequence()))
-        cur_data = self._get_data(cur_program)[0]
-        old_data = self._get_data(old_program)[0]
+def load_db_section(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
 
-        success = set(cur_data.keys()) == set(old_data.keys())
 
-        defs_cur_data, defs_ols_data = cur_data['definition'], old_data['definition']
-        success = set(defs_cur_data.keys()) == set(defs_ols_data.keys()) if success else success
+@pytest.fixture
+def data(new_proj_dir, old_proj_dir, request):
+    """With request.param we get the Parameter which was parametrized at the test.
+    """
+    return (
+        load_db_section(get_section_file_path(new_proj_dir, request.param))[0],
+        load_db_section(get_section_file_path(old_proj_dir, request.param))[0]
+    )
 
-        for (_, v_cur), (_, v_old) in zip(defs_cur_data['input_parameters'].items(), defs_ols_data['input_parameters'].items()):
-            success = set(v_cur.keys()) == set(v_old.keys()) if success else success
 
-        for (_, v_cur), (_, v_old) in zip(defs_cur_data['output_parameters'].items(), defs_ols_data['output_parameters'].items()):
-            success = set(v_cur.keys()) == set(v_old.keys()) if success else success
-            success = set(v_cur['Binning'].keys()) == set(v_old['Binning'].keys()) if success else success
+@pytest.mark.parametrize("data", [Types.Sequence()], indirect=True)
+def test_check_sequence(data):
+    cur_data, old_data = data
 
-        if not success:
-            print(Test_MigrateCheck.generate_error_message(Types.Sequence()))
-            assert None
+    assert set(cur_data.keys()) == set(old_data.keys())
 
-        return self
+    defs_cur_data, defs_old_data = cur_data['definition'], old_data['definition']
+    assert set(defs_cur_data.keys()) == set(defs_old_data.keys())
 
-    @pytest.mark.parametrize("sections", [Types.Settings(), Types.Die(), Types.Program(), Types.Group()])
-    def test_check_basic_struct(self, sections):
-        cur_program, old_program = self._get_db_struct_to_compare(generate_section_new(sections), generate_section_old(sections))
-        cur_data = self._get_data(cur_program)
-        old_data = self._get_data(old_program)
-        if set(cur_data[0].keys()) == set(old_data[0].keys()):
-            return self
+    for (_, v_cur), (_, v_old) in zip(defs_cur_data['input_parameters'].items(), defs_old_data['input_parameters'].items()):
+        assert set(v_cur.keys()) == set(v_old.keys())
 
-        print(Test_MigrateCheck.generate_error_message(sections))
-        assert None
+    for (_, v_cur), (_, v_old) in zip(defs_cur_data['output_parameters'].items(), defs_old_data['output_parameters'].items()):
+        assert set(v_cur.keys()) == set(v_old.keys())
+        assert set(v_cur['Binning'].keys()) == set(v_old['Binning'].keys())
 
-    @staticmethod
-    def generate_error_message(section_name: str):
-        return f'{section_name} structure has been changed, and is not compatible with older project\'s version any more, make sure to update the version number'
 
-    @staticmethod
-    def _generate_section_path(project_path: str, section: str) -> str:
-        path = os.path.join(project_path, DEFINTIONS)
-        return generate_path(path, section)
+@pytest.mark.parametrize("data", [Types.Hardware()], indirect=True)
+def test_check_hardware(data):
+    cur_data, old_data = data
 
-    @staticmethod
-    def _get_data(file_name: str) -> dict:
-        with open(file_name, 'r') as f:
-            all = json.load(f)
+    assert set(cur_data.keys()) == set(old_data.keys())
 
-        return all
+    defs_cur_data, defs_old_data = cur_data['definition'], old_data['definition']
+    assert set(defs_cur_data.keys()) == set(defs_old_data.keys())
 
-    @staticmethod
-    def _get_db_struct_to_compare(cur_sec_path: str, old_sec_path: str) -> tuple:
-        cur_program = glob.glob(os.path.join(cur_sec_path, '*.json'))[0]
-        old_program = glob.glob(os.path.join(old_sec_path, '*.json'))[0]
-        return cur_program, old_program
+    pcb_cur_data, pcb_old_data = cur_data['definition']['PCB'], old_data['definition']['PCB']
+    assert set(pcb_cur_data.keys()) == set(pcb_old_data.keys())
+
+    actuator_cur_data, actuator_old_data = cur_data['definition']['Actuator'], old_data['definition']['Actuator']
+    assert set(actuator_cur_data.keys()) == set(actuator_old_data.keys())
+
+    parallelism_cur_data, parallelism_old_data = cur_data['definition']['Parallelism'], old_data['definition']['Parallelism']
+    assert set(parallelism_cur_data.keys()) == set(parallelism_old_data.keys())
+
+
+@pytest.mark.parametrize("data", [Types.Settings(), Types.Die(), Types.Program(), Types.Group()], indirect=True)
+def test_check_basic_struct(data):
+    cur_data, old_data = data
+    assert set(cur_data.keys()) == set(old_data.keys())

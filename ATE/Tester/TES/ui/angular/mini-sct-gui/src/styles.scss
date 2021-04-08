@@ -25,7 +25,6 @@ sans-serif;
 $lineHeight: 1.5;
 
 body {
-    // min-width: 1208px;
     min-height: 100vh;
     scroll-behavior: smooth;
     text-rendering: optimizeSpeed;
@@ -103,7 +102,8 @@ $button: 12px;
 $checkbox: 14px; 
 $dropdown: 14px; 
 $text: 12px;
-$footerHeight: 120px;
+$footerHeight: 110px;
+$headerHeight: 180px;
 
 /* Mixin border-borded */
 @mixin disabled {
@@ -168,7 +168,6 @@ h2 {
     flex: 70%;
     background-color: white;
     padding:30px;
-    height: 650px;
     overflow: auto;
 }
 

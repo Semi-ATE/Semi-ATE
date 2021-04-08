@@ -1,22 +1,34 @@
+from typing import Dict, List
 from ATE.projectdatabase.Types import Types
 from ATE.projectdatabase.FileOperator import DBObject, FileOperator
 from uuid import uuid1
+
+ExecutionSequenceType = Dict[str, List[int]]
 
 
 class Program:
 
     @staticmethod
-    def add(session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
-            sequencer_typ: str, temperature: str, owner_name: str, order: int, cache_type: str, caching_policy: str, test_ranges: list):
-        prog = {"id": str(uuid1()), "prog_name": name, "hardware": hardware, "base": base, "target": target, "usertext": usertext,
-                "sequencer_type": sequencer_typ, "temperature": temperature, "owner_name": owner_name, "prog_order": order,
-                "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy, "test_ranges": test_ranges}
+    def add(
+        session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
+        sequencer_typ: str, temperature: str, owner_name: str, order: int, cache_type: str,
+        caching_policy: str, test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType
+    ):
+        prog = {
+            "id": str(uuid1()), "prog_name": name, "hardware": hardware, "base": base, "target": target, "usertext": usertext,
+            "sequencer_type": sequencer_typ, "temperature": temperature, "owner_name": owner_name, "prog_order": order,
+            "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy, "test_ranges": test_ranges,
+            "instance_count": instance_count, "execution_sequence": execution_sequence
+        }
         session.query(Types.Program()).add(prog)
         session.commit()
 
     @staticmethod
-    def update(session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
-               sequencer_type: str, temperature: str, owner_name: str, cache_type: str, caching_policy: str, test_ranges: list):
+    def update(
+        session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
+        sequencer_type: str, temperature: str, owner_name: str, cache_type: str, caching_policy: str,
+        test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType
+    ):
         prog = Program.get_by_name_and_owner(session, name, owner_name)
         prog.hardware = hardware
         prog.base = base
@@ -27,6 +39,8 @@ class Program:
         prog.cache_type = cache_type
         prog.caching_policy = caching_policy
         prog.test_ranges = test_ranges
+        prog.instance_count = instance_count
+        prog.execution_sequence = execution_sequence
         session.commit()
 
     @staticmethod
@@ -92,7 +106,7 @@ class Program:
                       .all()
 
     @staticmethod
-    def get_all(session: FileOperator) -> list:
+    def get_all(session: FileOperator) -> List[DBObject]:
         return session.query(Types.Program())\
                       .all()
 
@@ -103,7 +117,7 @@ class Program:
                       .count()
 
     @staticmethod
-    def get_programs_for_hardware(session: FileOperator, hardware: str) -> list:
+    def get_programs_for_hardware(session: FileOperator, hardware: str) -> List[DBObject]:
         return session.query(Types.Program())\
                       .filter(lambda Program: Program.hardware == hardware)\
                       .sort(lambda Program: Program.prog_order)\
@@ -121,6 +135,31 @@ class Program:
         return session.query(Types.Program())\
                       .filter(lambda Program: (Program.target == target_name))\
                       .all()
+
+    @staticmethod
+    def get_program_execution_sequence(session: FileOperator, program_name: str) -> ExecutionSequenceType:
+        cur_obj = Program.get(session, program_name)
+        return cur_obj.execution_sequence
+
+    @staticmethod
+    def get_ping_pong_in_executions(session: FileOperator, parallelism_name: str, ping_pong_id: int) -> List[str]:
+        ret = []
+        for x in Program.get_all(session):
+            if ping_pong_id in x.execution_sequence[parallelism_name]:
+                ret.append(x.name)
+        return ret
+
+    @staticmethod
+    def add_parallelism_to_execution_sequence(session: FileOperator, hardware: str, parallelism_name: str, ping_pong_id: int):
+        for x in Program.get_programs_for_hardware(session, hardware):
+            x.execution_sequence[parallelism_name] = [ping_pong_id for _ in range(x.instance_count)]
+        session.commit()
+
+    @staticmethod
+    def remove_parallelism_from_execution_sequence(session: FileOperator, hardware: str, parallelism_name: str):
+        for x in Program.get_programs_for_hardware(session, hardware):
+            del x.execution_sequence[parallelism_name]
+        session.commit()
 
     @staticmethod
     def set_program_validity(session: FileOperator, name: str, is_valid: bool):

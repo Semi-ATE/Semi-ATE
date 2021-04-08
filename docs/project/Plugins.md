@@ -93,6 +93,7 @@ The complete layout of the results of this function is:
 ```
 
 ### Tester
+The following function returns all installed testers use to be run beyond the MiniSCT, which will be used by the testprogram to synchronize the test execution
 ```
 get_tester_names() -> []
 ```
@@ -184,7 +185,25 @@ This hook shall return an instance of a tester with the given name.
 A tester is expected to have the following interface:
 ```
 get_sites_count() -> int
+def do_request(self, site_id: int, timeout: int) -> bool
+def test_in_progress(site_id: int, timeout: int)
+def test_done(site_id: int, timeout: int)
 ```
+
+```
+get_tester_master(tester_name) -> TesterInstance
+```
+
+This hook shall return an instance of a tester master type with the given name.
+
+A tester master is expected to have the following interface:
+```
+get_sites_count() -> int
+def get_site_states(self) -> list
+def release_test_execution(self, sites: list)
+def get_strategy_type(self)
+```
+
 
 ## Configuration
 Pluginobjects may provide configuration data in the form of key-value pairs. Each plugin shall provide a list of configuration options for a given object when the function:
@@ -224,6 +243,7 @@ get_instrument(instrument_name) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
 
 get_tester(tester_name) -> TesterInstance
+get_tester_master(tester_name) -> TesterInstance
 
 get_general_purpose_function(func_name) -> FunctionInstance
 
@@ -297,6 +317,10 @@ class ThePlugin(object):
 
     @hookimpl
     def get_tester(tester_name) -> TesterInstance:
+        raise NotImplementedError
+
+    @hookimpl
+    def get_tester_master(tester_name) -> TesterInstance:
         raise NotImplementedError
 
     @hookimpl

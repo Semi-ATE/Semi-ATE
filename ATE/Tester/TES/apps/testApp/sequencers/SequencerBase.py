@@ -64,6 +64,7 @@ class SequencerBase:
 
     def set_tester_instance(self, tester_instance):
         self.tester_instance = tester_instance
+        self.tester_instance.do_init_state(int(self.site_id))
 
     def set_cache_instance(self, cache_instance):
         self.cache_instance = cache_instance
@@ -94,7 +95,7 @@ class SequencerBase:
 
         self.cache_instance.do_fetch(self.part_id)
 
-    def run(self, execution_policy: object, test_settings: dict = {}):
+    def run(self, execution_policy: ExecutionPolicyABC, test_settings: dict = {}):
         # TODO: raise an exception if test_settings is None !?
         if test_settings:
             self.test_settings = test_settings

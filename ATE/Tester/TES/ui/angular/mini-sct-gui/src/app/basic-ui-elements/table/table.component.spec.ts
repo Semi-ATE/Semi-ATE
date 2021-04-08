@@ -2,7 +2,7 @@ import { DebugElement } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { expectWaitUntil } from 'src/app/test-stuff/auxillary-test-functions';
-import { Alignment, generateTableEntry } from './table-config';
+import { Alignment, generateTableEntry, TableEntry } from './table-config';
 import { TableComponent } from './table.component';
 
 describe('TableComponent', () => {
@@ -27,30 +27,43 @@ describe('TableComponent', () => {
   const tableHeaders = [
     {
       text: '',
-      align: undefined,
-      textColor: undefined,
-      backgroundColor: undefined
+      style: {
+        align: undefined,
+        textColor: undefined,
+        backgroundColor: undefined
+      }
     },
     {
       text: 'Header 1',
-      align: Alignment.Center,
-      textColor: 'black',
-      backgroundColor: 'blue'
+      style: {
+        align: Alignment.Center,
+        textColor: 'black',
+        backgroundColor: 'blue'
+      }
     },
   ];
 
   const tableRows = [[
     {
       text: 'Row 1-1',
-      align: Alignment.Center,
-      textColor: 'black',
-      backgroundColor: 'white'
+      style: {
+        align: Alignment.Center,
+        textColor: 'black',
+        backgroundColor: 'white'
+      }
     },
     {
       text: 'Row 1-2',
-      align: Alignment.Center,
-      textColor: 'red',
-      backgroundColor: 'black'
+      style: {
+        align: Alignment.Center,
+        textColor: 'red',
+        backgroundColor: 'black'
+      },
+      callBack: {
+        editable: true,
+        onUserInput: (value: string) => console.log(value),
+        valid: (value: string) => true
+      }
     }
   ]];
 
@@ -66,17 +79,17 @@ describe('TableComponent', () => {
 
   it('should support table header and rows', () => {
     component.tableConfig.initTable(
-      [generateTableEntry('header'), generateTableEntry('header')],
+      [generateTableEntry('header', {}), generateTableEntry('header', {})],
       [
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
-        [generateTableEntry('entry'), generateTableEntry('entry')],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
+        [generateTableEntry('entry', {}), generateTableEntry('entry', {})],
       ]
     );
     fixture.detectChanges();
@@ -106,7 +119,7 @@ describe('TableComponent', () => {
       let tableheaderElement = debugElement.query(By.css('.tableHeader li')).nativeElement;
       expect(tableheaderElement.getAttribute('style').backgroundColor).toEqual(undefined);
 
-      component.tableConfig.headerRow[0].backgroundColor = 'red';
+      component.tableConfig.headerRow[0].style.backgroundColor = 'red';
 
       await expectWaitUntil(
         () => fixture.detectChanges(),
@@ -118,12 +131,11 @@ describe('TableComponent', () => {
 
   describe('Table Rows', () => {
     it('should support texts', () => {
-      const expectedRowEntryTexts = ['Row 1-1', 'Row 1-2'];
       component.tableConfig.rows = tableRows;
       fixture.detectChanges();
 
       let tableRowEntry = debugElement.queryAll(By.css('.tableRow li')).map(e => e.nativeElement.innerText);
-      expect(tableRowEntry).toEqual(expectedRowEntryTexts);
+      expect(tableRowEntry).toContain('Row 1-1');
     });
 
     it('should support styles', () => {
@@ -135,9 +147,9 @@ describe('TableComponent', () => {
       let tableRowEntryElement = debugElement.query(By.css('.tableRow li')).nativeElement;
       expect(tableRowEntryElement.getAttribute('style')).toContain(defaultRowEntryStyle);
 
-      component.tableConfig.rows[0][0].align = Alignment.Left;
-      component.tableConfig.rows[0][0].backgroundColor = '#ddd';
-      component.tableConfig.rows[0][0].textColor = 'blue';
+      component.tableConfig.rows[0][0].style.align = Alignment.Left;
+      component.tableConfig.rows[0][0].style.backgroundColor = '#ddd';
+      component.tableConfig.rows[0][0].style.textColor = 'blue';
       fixture.detectChanges();
 
       expect(tableRowEntryElement.getAttribute('style')).toContain(expectedRowEntryStyle);
@@ -161,7 +173,7 @@ describe('TableComponent', () => {
 
     it('should compute width array automatically if not provided', async () => {
       const expectedWidths = ['50%', '50%'];
-      component.tableConfig.initTable(undefined, [[generateTableEntry('entry 1'), generateTableEntry('entry 2')]]);
+      component.tableConfig.initTable(undefined, [[generateTableEntry('entry 1', {}), generateTableEntry('entry 2', {})]]);
       fixture.detectChanges();
 
       let firstTableEntries = debugElement.query(By.css('.tableRow')).queryAll(By.css('li'));
@@ -183,5 +195,56 @@ describe('TableComponent', () => {
         fixture.detectChanges();
       }).toThrow(new Error(expectedErrorMessage));
     });
+
+    describe('Input field for hard bin', async () => {
+      it('should be rendered in DOM', () => {
+        component.tableConfig.rows = tableRows;
+        fixture.detectChanges();
+
+        const hardBinInput = debugElement.query(By.css('.tableRow input'));
+        expect(hardBinInput).toBeTruthy();
+      });
+    });
   });
+
+  it('should define an entry as not editable if callback is not defined or editable is set to false', () => {
+    const entryWithoutCallback: TableEntry = {
+      text: 'TEXT'
+    };
+
+    const entryWithCallbackButNotEditable: TableEntry = {
+      text: 'TEXT',
+      callBack: {
+        editable: false,
+        onUserInput: (value: string) => {},
+        valid: (value: string) => true
+      }
+    };
+    expect(component.inputFieldEditable(entryWithoutCallback)).toBe(false);
+    expect(component.inputFieldEditable(entryWithCallbackButNotEditable)).toBe(false);
+  });
+
+  it('should update entry value on user input', () => {
+    const entry: TableEntry = {
+      text: 'TEXT'
+    };
+    component.onInput(entry, 'NEW_VALUE');
+    expect(entry.text).toBe('NEW_VALUE');
+  });
+
+  it('should call input callback if input is valid', () => {
+    const entry: TableEntry = {
+      text: 'TEXT',
+      callBack: {
+        editable: true,
+        onUserInput: (value: string) => {},
+        valid: (value: string) => true
+      }
+    };
+
+    const CALLBACK_SPY = spyOn(entry.callBack, 'onUserInput');
+    component.onInput(entry, 'NEW_VALUE');
+    expect(CALLBACK_SPY).toHaveBeenCalled();
+  });
+
 });

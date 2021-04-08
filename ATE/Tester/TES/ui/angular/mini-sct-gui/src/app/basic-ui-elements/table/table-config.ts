@@ -3,19 +3,29 @@ export enum Alignment {
   Left = 'left',
   Right = 'right'
 }
-export interface TableEntry {
-  text: string;
-  align: Alignment;
-  textColor: string;
-  backgroundColor: string;
+
+export interface TableEntryCallback {
+  editable: boolean;
+  onUserInput: (value: string) => void;
+  valid: (value: string) => boolean;
 }
 
-export function generateTableEntry(text: string, align?: Alignment, textColor?: string, backgroundColor?: string): TableEntry {
+export interface TableEntryStyle {
+  align?: Alignment;
+  textColor?: string;
+  backgroundColor?: string;
+}
+export interface TableEntry {
+  text: string;
+  style?: TableEntryStyle;
+  callBack?: TableEntryCallback;
+}
+
+export function generateTableEntry(text: string, style?: TableEntryStyle, callBack?: TableEntryCallback): TableEntry {
   return {
     text,
-    align,
-    textColor,
-    backgroundColor
+    style,
+    callBack
   };
 }
 
@@ -35,7 +45,7 @@ export class TableConfiguration {
     this.tableWidth = [];
     if (!tableWidth && this.rows.length > 0) {
       let numberOfColumns = this.rows[0].length;
-      const columnWidth = `${100/numberOfColumns}%`;
+      const columnWidth = `${100 / numberOfColumns}%`;
       for (var i = 0; i < numberOfColumns; ++i) {
         this.tableWidth.push(columnWidth);
       }
