@@ -184,8 +184,13 @@ class SequencerHarness(Harness.Harness):
             self._execute_cmd_setloglevel(payload['level'])
         elif cmd == 'getexecutionstrategy':
             self._execute_cmd_get_execution_strategy(payload['layout'])
+        elif cmd == 'sethbin':
+            self._execute_cmd_set_hbin(payload['sbin'], payload['hbin'])
         else:
             raise Exception(f'invalid command: "{cmd}"')
+
+    def _execute_cmd_set_hbin(self, sbin: str, hbin: str):
+        self._sequencer_instance.set_new_hbin_for_sbin(sbin, hbin)
 
     def _execute_cmd_init(self):
         self.logger.log_message(LogLevel.Debug(), 'COMMAND: init')

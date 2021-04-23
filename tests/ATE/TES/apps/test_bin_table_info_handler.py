@@ -54,3 +54,8 @@ class TestBinTableInformationHandler:
                     continue
 
                 assert site_count['count'] == count
+
+    def test_handle_update_hbin(self):
+        assert self.bin_table_handler._bin_table['1']['hBin'] == 1
+        self.bin_table_handler._update_hbin_num('1', '100')
+        assert self.bin_table_handler._bin_table['1']['hBin'] == 100

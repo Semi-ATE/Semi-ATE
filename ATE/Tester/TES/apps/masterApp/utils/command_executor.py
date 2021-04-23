@@ -1,4 +1,4 @@
-from ATE.Tester.TES.apps.masterApp.master_webservice import WebsocketCommunicationHandler
+from ATE.Tester.TES.apps.masterApp.master_webservice import WebSocketConnection, WebsocketCommunicationHandler
 import threading
 
 
@@ -12,6 +12,7 @@ class NonBlockingCommand:
     def __init__(self, obj, connection_id=None):
         self._is_ready = False
         self.connection_id = connection_id
+        self._reply = None
         NonBlockingCall(lambda: self.acquire_data(obj))
 
     def acquire_data(self, obj):
@@ -21,7 +22,14 @@ class NonBlockingCommand:
     def is_data_ready(self):
         return self._is_ready
 
-    async def execute(self, ws_conn_handler):
+    async def execute(self, ws_conn_handler: WebSocketConnection):
+        if not self._reply:
+            # skip executing if rely not read yet
+            return
+
+        await self.execute_impl(ws_conn_handler)
+
+    async def execute_impl(self, ws_conn_handler: WebSocketConnection):
         raise Exception("Implement me")
 
     def acquire_data_impl(self, data):
@@ -29,7 +37,7 @@ class NonBlockingCommand:
 
 
 class GetLogFileCommand(NonBlockingCommand):
-    async def execute(self, ws_comm_handler):
+    async def execute_impl(self, ws_comm_handler):
         await ws_comm_handler.send_logfile(self._reply, self.connection_id)
 
     def acquire_data_impl(self, obj):
@@ -37,7 +45,7 @@ class GetLogFileCommand(NonBlockingCommand):
 
 
 class GetTestResultsCommand(NonBlockingCommand):
-    async def execute(self, ws_comm_handler):
+    async def execute_impl(self, ws_comm_handler):
         await ws_comm_handler.send_testresults_to_client(self._reply, self.connection_id)
 
     def acquire_data_impl(self, data):
@@ -45,7 +53,7 @@ class GetTestResultsCommand(NonBlockingCommand):
 
 
 class GetLogsCommand(NonBlockingCommand):
-    async def execute(self, ws_comm_handler):
+    async def execute_impl(self, ws_comm_handler):
         await ws_comm_handler.send_logs(self._reply, self.connection_id)
 
     def acquire_data_impl(self, data):
@@ -53,7 +61,7 @@ class GetLogsCommand(NonBlockingCommand):
 
 
 class GetUserSettings(NonBlockingCommand):
-    async def execute(self, ws_comm_handler):
+    async def execute_impl(self, ws_comm_handler):
         await ws_comm_handler.send_user_settings(self._reply)
 
     def acquire_data_impl(self, get_user_settings_call_back):
@@ -61,7 +69,7 @@ class GetUserSettings(NonBlockingCommand):
 
 
 class GetYields(NonBlockingCommand):
-    async def execute(self, ws_comm_handler):
+    async def execute_impl(self, ws_comm_handler):
         await ws_comm_handler.send_yields(self._reply)
 
     def acquire_data_impl(self, get_yield_call_back):
@@ -69,7 +77,7 @@ class GetYields(NonBlockingCommand):
 
 
 class GetLotData(NonBlockingCommand):
-    async def execute(self, ws_comm_handler: WebsocketCommunicationHandler):
+    async def execute_impl(self, ws_comm_handler: WebsocketCommunicationHandler):
         await ws_comm_handler.send_lotdata(self._reply)
 
     def acquire_data_impl(self, get_lotdata_call_back: callable):
@@ -77,7 +85,7 @@ class GetLotData(NonBlockingCommand):
 
 
 class GetBinTable(NonBlockingCommand):
-    async def execute(self, ws_comm_handler: WebsocketCommunicationHandler):
+    async def execute_impl(self, ws_comm_handler: WebsocketCommunicationHandler):
         await ws_comm_handler.send_bin_table(self._reply)
 
     def acquire_data_impl(self, get_lotdata_call_back: callable):

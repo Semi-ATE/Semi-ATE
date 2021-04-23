@@ -754,9 +754,18 @@ class MasterApplication(MultiSiteTestingModel):
                 'getlogs': lambda param_data: self._handle_command_with_response(param_data),
                 'getlogfile': lambda param_data: self._handle_command_with_response(param_data),
                 'setloglevel': lambda param_data: self.setloglevel(param_data),
+                'binMap': lambda param_data: self._update_hbin_number(param_data),
             }[cmd](json_data)
         except Exception as e:
             self.log.log_message(LogLevel.Error(), f'Failed to execute command {cmd}: {e}')
+
+    def _update_hbin_number(self, param_data: dict):
+        # TODO: UI message should contain sbin number
+        sbin = str(param_data['sBin'])
+        hbin = str(param_data['hBin'])
+
+        self._result_info_handler.update_hbin_number(sbin, hbin)
+        self.connectionHandler.send_set_new_hbin(sbin, hbin)
 
     def on_setloglevel_command(self, param_data):
         loglevel = param_data['level']

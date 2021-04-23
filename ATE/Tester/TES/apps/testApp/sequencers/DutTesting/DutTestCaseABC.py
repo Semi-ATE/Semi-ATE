@@ -1,5 +1,5 @@
 from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
-from ATE.common.logger import (LogLevel, Logger)
+from ATE.common.logger import LogLevel
 from abc import ABC, abstractmethod
 import time
 

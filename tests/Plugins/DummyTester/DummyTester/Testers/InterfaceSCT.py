@@ -16,7 +16,7 @@ class InterfaceSCT(ABC):
         pass
 
     @abstractmethod
-    def test_in_progress(site_id: int, timeout: int):
+    def test_in_progress(site_id: int):
         pass
 
     @abstractmethod

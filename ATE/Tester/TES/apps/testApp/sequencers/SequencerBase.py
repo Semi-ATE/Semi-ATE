@@ -129,7 +129,7 @@ class SequencerBase:
         self.stdf_data.append(generate_PIR_dict(head_num=0, site_num=int(self.site_id)))
 
     def pre_test_cb(self, test_index: int):
-        self.logger.log_message(LogLevel.Debug(), f"Enter {self.test_cases[test_index].instance_name}")
+        self.logger.log_message(LogLevel.Info(), f"Enter {self.test_cases[test_index].instance_name}")
 
     def after_test_cb(self, test_index: int, test_result: tuple, test_num: int, exception: bool):
         """
@@ -137,7 +137,7 @@ class SequencerBase:
         of each individual test by the execution policy
         """
 
-        self.logger.log_message(LogLevel.Debug(), f"Leave {self.test_cases[test_index].instance_name}")
+        self.logger.log_message(LogLevel.Info(), f"Leave {self.test_cases[test_index].instance_name}")
 
         # Step 1: Check for failure
         failed = test_result[0] == Result.Fail()
@@ -229,3 +229,6 @@ class SequencerBase:
 
     def after_cycle_callback(self):
         self.auto_script.after_cycle_teardown()
+
+    def set_new_hbin_for_sbin(self, sbin: int, hbin: int):
+        self.bin_strategy.set_new_hbin(sbin, hbin)

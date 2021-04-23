@@ -1,4 +1,3 @@
-from tests.ATE.TES.apps.test_site_information import PRR_RECORD
 from pytest import fixture
 from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import ResultInformationHandler
 
@@ -8,14 +7,14 @@ BIN_TABLE = [{'SBIN': '1', 'HBIN': '1', 'SBINNAME': 'SB_GOOD1', 'GROUP': 'BT_PAS
              {'SBIN': '60000', 'HBIN': '0', 'SBINNAME': 'SB_SMU_ALARM1', 'GROUP': 'BT_ALARM', 'DESCRIPTION': ' SMU Compliance Warning'}]
 
 PRR_RECORD_SITE0 = {'type': 'PRR', 'REC_LEN': None, 'REC_TYP': 5, 'REC_SUB': 20,
-                     'HEAD_NUM': 0, 'SITE_NUM': 0, 'PART_FLG': 0, 'NUM_TEST': 1,
-                     'HARD_BIN': 1, 'SOFT_BIN': 1, 'X_COORD': 1, 'Y_COORD': 1,
-                     'TEST_T': 0, 'PART_ID': '1', 'PART_TXT': '1', 'PART_FIX': 0}
+                    'HEAD_NUM': 0, 'SITE_NUM': 0, 'PART_FLG': 0, 'NUM_TEST': 1,
+                    'HARD_BIN': 1, 'SOFT_BIN': 1, 'X_COORD': 1, 'Y_COORD': 1,
+                    'TEST_T': 0, 'PART_ID': '1', 'PART_TXT': '1', 'PART_FIX': 0}
 
 PRR_RECORD_SITE1 = {'type': 'PRR', 'REC_LEN': None, 'REC_TYP': 5, 'REC_SUB': 20,
-                     'HEAD_NUM': 0, 'SITE_NUM': 1, 'PART_FLG': 0, 'NUM_TEST': 1,
-                     'HARD_BIN': 1, 'SOFT_BIN': 1, 'X_COORD': 1, 'Y_COORD': 1,
-                     'TEST_T': 0, 'PART_ID': '2', 'PART_TXT': '1', 'PART_FIX': 0}
+                    'HEAD_NUM': 0, 'SITE_NUM': 1, 'PART_FLG': 0, 'NUM_TEST': 1,
+                    'HARD_BIN': 1, 'SOFT_BIN': 1, 'X_COORD': 1, 'Y_COORD': 1,
+                    'TEST_T': 0, 'PART_ID': '2', 'PART_TXT': '1', 'PART_FIX': 0}
 
 SITES = ['0', '1']
 

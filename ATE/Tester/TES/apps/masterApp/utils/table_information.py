@@ -14,6 +14,9 @@ class BinTableInformationHandler:
 
         return {'name': bin_name, 'sBin': sbin, 'hBin': hbin, 'type': typ, 'siteCounts': site_counts}
 
+    def _update_hbin_num(self, sbin: str, hbin: str):
+        self._bin_table[sbin]['hBin'] = int(hbin)
+
     def clear_bin_table(self):
         self._bin_table.clear()
 
