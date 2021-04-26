@@ -63,6 +63,9 @@ class ResultInformationHandler:
         self._part_info_handler.set_bin_settings(bin_settings)
         self._bin_table_info_handler.set_bin_table(bin_table)
 
+    def update_hbin_number(self, sbin: str, hbin: str):
+        self._bin_table_info_handler._update_hbin_num(sbin, hbin)
+
     @staticmethod
     def get_bin_settings(bin_table: list) -> dict:
         settings = {}

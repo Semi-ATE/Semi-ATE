@@ -147,7 +147,7 @@ export class BinTableComponent implements OnInit, OnDestroy {
           {
             editable: true,
             onUserInput: (value: string) => {
-              this.sendHardBin(texts[0], value);
+              this.sendHardBin(texts[1], value);
             },
             valid: (value: string)  => {
               if (/[0-9]*/.test(value)) {
@@ -165,13 +165,13 @@ export class BinTableComponent implements OnInit, OnDestroy {
     });
   }
 
-  private sendHardBin(binName: string, hbin: string): void {
+  private sendHardBin(softBin: string, hardBin: string): void {
     this.communicationService.send(
       {
         type: 'cmd',
         command: 'binMap',
-        name: binName,
-        hBin: parseInt(hbin, 10)
+        sBin: parseInt(softBin, 10),
+        hBin: parseInt(hardBin, 10)
       });
   }
 }

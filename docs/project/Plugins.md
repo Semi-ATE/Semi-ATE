@@ -186,7 +186,7 @@ A tester is expected to have the following interface:
 ```
 get_sites_count() -> int
 def do_request(self, site_id: int, timeout: int) -> bool
-def test_in_progress(site_id: int, timeout: int)
+def test_in_progress(site_id: int)
 def test_done(site_id: int, timeout: int)
 ```
 

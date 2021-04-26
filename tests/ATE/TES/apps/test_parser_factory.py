@@ -3,10 +3,12 @@ from ATE.Tester.TES.apps.masterApp.parameter_parser.xml_parameter_parser import 
 from ATE.Tester.TES.apps.masterApp.parameter_parser.filesystem_data_source import FileSystemDataSource
 from utils import (create_xml_file, DEVICE_ID)
 
+import os
 
-BASE_PATH = './tests/ATE/TES/apps'
-XML_PATH = './tests/ATE/TES/apps/le306426001_template.xml'
-XML_PATH_NEW = './tests/ATE/TES/apps/le306426001.xml'
+
+BASE_PATH = os.path.dirname(__file__)
+XML_PATH = os.path.join(BASE_PATH, 'le306426001_template.xml')
+XML_PATH_NEW = os.path.join(BASE_PATH, 'le306426001.xml')
 
 
 create_xml_file(XML_PATH, XML_PATH_NEW, DEVICE_ID)

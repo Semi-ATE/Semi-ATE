@@ -1,11 +1,13 @@
 import pytest
 import json
+import os
 from ATE.Tester.TES.apps.common.configuration_reader import ConfigReader
 
 
-CONFIG_FILE_PATH = "./tests/ATE/TES/apps/config_file_test.json"
-CONFIG_FILE_PATH_USER = "./tests/ATE/TES/apps/config_file_test_partial_user.json"
-CONFIG_FILE_PATH_BAD = "./tests/ATE/TES/apps/config_file_test_bad.json"
+BASE_PATH = os.path.dirname(__file__)
+CONFIG_FILE_PATH = os.path.join(BASE_PATH, "config_file_test.json")
+CONFIG_FILE_PATH_USER = os.path.join(BASE_PATH, "config_file_test_partial_user.json")
+CONFIG_FILE_PATH_BAD = os.path.join(BASE_PATH, "config_file_test_bad.json")
 
 
 class TestConfigReader:

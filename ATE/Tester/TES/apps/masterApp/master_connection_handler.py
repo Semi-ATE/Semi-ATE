@@ -44,9 +44,9 @@ class MasterConnectionHandler:
 
     def publish_state(self, state, statedict=None):
         self.mqtt.publish(self._generate_base_topic_status(),
-                          self.mqtt.create_message(
-                          self._generate_status_message(state, statedict)),
-                          False)
+                          self.mqtt.create_message(self._generate_status_message(state, statedict)),
+                          qos=0,
+                          retain=False)
 
     def send_load_test_to_all_sites(self, testapp_params):
         topic = f'ate/{self.device_id}/Control/cmd'
@@ -70,34 +70,42 @@ class MasterConnectionHandler:
 
     def send_terminate_to_all_sites(self):
         topic = f'ate/{self.device_id}/TestApp/cmd'
-        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')), 2, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_command_message('terminate')))
 
     def send_test_results(self, test_results):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_test_results_message(test_results)), 2, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_test_results_message(test_results)))
 
     def send_identification(self):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_identification_message()), 2, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_identification_message()))
 
     def send_state(self, state, message):
         topic = f'ate/{self.device_id}/Master/response'
-        self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)), 2, False)
+        self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)))
 
     def send_reset_to_all_sites(self):
         control_topic = f'ate/{self.device_id}/Control/cmd'
-        self.mqtt.publish(control_topic, json.dumps(self._generate_command_message('reset')), 2, False)
+        self.mqtt.publish(control_topic, json.dumps(self._generate_command_message('reset')))
 
         # hack: this make sure to terminate any zombie test application that do not have a parent process(control)
         testApp_topic = f'ate/{self.device_id}/TestApp/cmd'
-        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('reset')), 2, False)
+        self.mqtt.publish(testApp_topic, json.dumps(self._generate_command_message('reset')))
 
     def send_set_log_level(self, level):
         topics = [f'ate/{self.device_id}/TestApp/cmd', f'ate/{self.device_id}/Control/cmd']
         default_message = self._generate_command_message('setloglevel')
         default_message.update({'level': level})
         for topic in topics:
-            self.mqtt.publish(topic, json.dumps(default_message), 2, False)
+            self.mqtt.publish(topic, json.dumps(default_message))
+
+    def send_set_new_hbin(self, sbin: int, hbin: int):
+        testApp_topic = f'ate/{self.device_id}/TestApp/cmd'
+        message = self._generate_command_message('sethbin')
+        message.update({'sbin': sbin})
+        message.update({'hbin': hbin})
+
+        self.mqtt.publish(testApp_topic, json.dumps(message))
 
     def send_handler_get_temperature_command(self):
         message = self._generate_message('temperature', {})
@@ -105,13 +113,13 @@ class MasterConnectionHandler:
 
     def send_handler_command(self, message):
         topic = f'ate/{self.device_id}/Handler/command'
-        self.mqtt.publish(topic, json.dumps(message, 2, False))
+        self.mqtt.publish(topic, json.dumps(message))
 
     def send_get_execution_strategy_command(self, layout):
         topic = f'ate/{self.device_id}/TestApp/cmd'
         message = self._generate_command_message('getexecutionstrategy')
         message.update({'layout': layout})
-        self.mqtt.publish(topic, json.dumps(message), 2, False)
+        self.mqtt.publish(topic, json.dumps(message))
 
     def _generate_command_message(self, command: str, sites: List[str] = None):
         return {'type': 'cmd',

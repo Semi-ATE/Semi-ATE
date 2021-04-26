@@ -178,7 +178,7 @@ class ControlConnectionHandler:
         self.mqtt.publish(
             topic=self._generate_log_topic(),
             payload=json.dumps(self.log_payload(log)),
-            qos=2,
+            qos=0,
             retain=False),
 
     def send_log(self, log):

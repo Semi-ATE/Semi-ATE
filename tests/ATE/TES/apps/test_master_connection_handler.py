@@ -89,7 +89,7 @@ class TestApplication:
     def test_masterconnhandler_sendterminate_sends_correct_data(self, mocker):
         mocker.patch.object(MqttConnection, "publish")
         self.connection_handler.send_terminate_to_all_sites()
-        MqttConnection.publish.assert_called_once_with("ate/sct01/TestApp/cmd", "{\"type\": \"cmd\", \"command\": \"terminate\", \"sites\": [0, 1, 2]}", 2, False)
+        MqttConnection.publish.assert_called_once_with("ate/sct01/TestApp/cmd", "{\"type\": \"cmd\", \"command\": \"terminate\", \"sites\": [0, 1, 2]}")
 
     def test_masterconnhandler_identify_is_routed_correctly(self, mocker):
         mocker.patch.object(MqttConnection, "publish")

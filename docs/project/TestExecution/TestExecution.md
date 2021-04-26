@@ -74,7 +74,7 @@ Tester Plugin should implement the following function:
     * in case of MiniSCT: the function will return always true. Tests must not be synchronized in this case.
 
 *  ```python
-    def test_in_progress(site_id: int, timeout: int)
+    def test_in_progress(site_id: int)
    ```
 
    __test_in_progress__ function signalize the site is busy (e.g testing)

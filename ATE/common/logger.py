@@ -7,6 +7,8 @@ from enum import IntEnum
 
 
 MAX_NUM_OF_LOGS = 4000
+MAX_LINE_LENGTH_IN_BYTE = 100
+MAX_DATA_TO_READ = MAX_LINE_LENGTH_IN_BYTE * MAX_NUM_OF_LOGS
 LOG_FILE_LIFETIME_DAYS = 14
 
 
@@ -21,7 +23,7 @@ class LogLevel(IntEnum):
         return self.value
 
 
-def add_log_level(level_num, level_name):
+def add_log_level(level_num: int, level_name: str):
     def logForLevel(self, message, *args, **kwargs):
         if self.isEnabledFor(level_num):
             self._log(level_num, message, args, **kwargs)
@@ -31,8 +33,8 @@ def add_log_level(level_num, level_name):
 
     logging.addLevelName(level_num, level_name)
     setattr(logging, level_name, level_num)
-    setattr(logging.getLoggerClass(), 'measure', logForLevel)
-    setattr(logging, 'measure', logToRoot)
+    setattr(logging.getLoggerClass(), level_name.lower(), logForLevel)
+    setattr(logging, level_name.lower(), logToRoot)
 
 
 add_log_level(LogLevel.Measure(), 'MEASURE')
@@ -130,7 +132,19 @@ class Logger:
     def get_logs(self):
         self.clear_logs()
         with open(self.log_file, 'r') as f:
-            return self._generate_logs(list(reversed(list(f)[:MAX_NUM_OF_LOGS])))
+            # go to the end of the file
+            f.seek(0, os.SEEK_END)
+            if f.tell() > MAX_DATA_TO_READ:
+                # if we have more than we need then
+                # go to the end of the file and go back the size of data to be read
+                f.seek(-MAX_DATA_TO_READ, os.SEEK_END)
+            else:
+                # if the data we have not large enough then
+                # go to the beginning of the file and read from there
+                f.seek(0, os.SEEK_SET)
+
+            data = f.readlines(MAX_DATA_TO_READ)
+            return self._generate_logs(list(reversed(data)))
 
     def append_log(self, log):
         # Attention: This approach will replace the date of the original
