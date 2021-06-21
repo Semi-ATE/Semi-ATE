@@ -192,7 +192,7 @@ class TriggerOut:
     def test_done(self, site_id: int):
         pass
 
-    def do_init_state(seld, site_id: int):
+    def do_init_state(self, site_id: int):
         pass
 
 

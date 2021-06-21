@@ -47,20 +47,6 @@ class YieldInformationHandler:
         self.prr_rec_information = {}
         self.sites_yield_information = {}
 
-    def extract_yield_information(self, param_data):
-        if not self._bin_settings:
-            return False, "bin settings are not received yet"
-
-        param_data = param_data[-1]
-        part_id = self._get_part_id(param_data)
-
-        if not self.prr_rec_information.get(part_id):
-            self.prr_rec_information[part_id] = param_data
-            return self._accumulate_site_bin_info(param_data)
-        else:
-            self.prr_rec_information.update({part_id: param_data})
-            return self._reaccumulate_bin_info()
-
     @staticmethod
     def _get_part_id(prr_record):
         part_id = ''
@@ -82,7 +68,7 @@ class YieldInformationHandler:
 
         return {'siteid': siteid, 'partid': part_id, 'binning': hard_bin, 'logflag': 0, 'additionalinfo': 0}
 
-    def _accumulate_site_bin_info(self, site_num, soft_bin):
+    def accumulate_site_bin_info(self, site_num, soft_bin):
         if not self._bin_settings:
             return False, "bin settings are not received yet"
 
@@ -112,14 +98,20 @@ class YieldInformationHandler:
         self.sites_yield_information[all_id] = all_yield_info
         return True, ''
 
-    def _reaccumulate_bin_info(self, prr_rec_information):
+    def reaccumulate_bin_info(self, prr_rec_information):
         self.sites_yield_information.clear()
+
+        if len(prr_rec_information) == 0:
+            return self._accumulate_all_bin_info()
+
         for _, prr_rec in prr_rec_information.items():
             site_num = str(prr_rec['SITE_NUM'])
             soft_bin = str(prr_rec['SOFT_BIN'])
-            return self._accumulate_site_bin_info(site_num, soft_bin)
+            result = self.accumulate_site_bin_info(site_num, soft_bin)
+            if not result[0]:
+                return result
 
-        return self._accumulate_all_bin_info()
+        return True, ''
 
     def set_bin_settings(self, bin_settings: dict):
         self._bin_settings = bin_settings

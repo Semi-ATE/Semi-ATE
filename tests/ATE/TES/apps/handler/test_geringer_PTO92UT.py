@@ -78,12 +78,12 @@ def test_dispatch_start_test_message(geringer):
          'partid': '12345',
          'binning': -1,
          'logflag': 2,
-         'additionalinfo': 0},
+         'additionalinfo': '000'},
         {'siteid': '1',
          'partid': '12346',
          'binning': -1,
          'logflag': 2,
-         'additionalinfo': 0}]
+         'additionalinfo': '000'}]
 
     assert message['payload'] == {'sites': sites}
 
@@ -96,7 +96,7 @@ def test_dispatch_start_test_only_site_1_message(geringer):
          'partid': '12346',
          'binning': -1,
          'logflag': 2,
-         'additionalinfo': 0}]
+         'additionalinfo': '000'}]
 
     assert message['payload'] == {'sites': sites}
 

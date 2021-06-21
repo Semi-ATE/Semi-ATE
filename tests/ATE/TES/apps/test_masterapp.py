@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 import pytest
 import mock
 import os
@@ -7,7 +7,9 @@ from ATE.Tester.TES.apps.masterApp import master_application
 from ATE.Tester.TES.apps.masterApp import master_connection_handler
 from ATE.Tester.TES.apps.masterApp.utils.yield_information import YieldInformationHandler
 
+
 LOT_NUMBER = '306426.001'
+WRONG_LOT_NUMBER = '000000.000'
 FILE_PATH = os.path.dirname(__file__)
 
 XML_PATH = os.path.join(FILE_PATH, 'le306426001_template.xml')
@@ -42,7 +44,7 @@ def default_configuration():
             'environment': "abs",
             'Handler': "HTO92-20F",
             'tester_type': 'DummyTester.MaxiSCT',
-            "layout": {"0": [0, 1], "1": [1, 2]},
+            "site_layout": {"0": [0, 1], "1": [1, 2]},
             "user_settings_filepath": "master_user_settings.json"}
 
 
@@ -65,8 +67,7 @@ class TestApplication:
     def trigger_test_state_change(self, app: master_application.MasterApplication, site: str, newstate: str):
         app.on_testapp_status_changed(site, {"type": "status", "payload": {"state": newstate}, "interface_version": 1})
 
-    @mock.patch.object(YieldInformationHandler, 'extract_yield_information', return_value=(True, ''))
-    def trigger_test_result_change(self, app: master_application.MasterApplication, site: str, mocker):
+    def trigger_test_result_change(self, app: master_application.MasterApplication, site: str):
         app.on_testapp_testresult_changed(site, {"type": 'testresult', "payload":
                                                  [{'type': 'PIR', 'REC_LEN': None, 'REC_TYP': 5, 'REC_SUB': 10, 'HEAD_NUM': 0, 'SITE_NUM': 0},
                                                   {'type': 'PTR', 'REC_LEN': None, 'REC_TYP': 15, 'REC_SUB': 10, 'TEST_NUM': 1, 'HEAD_NUM': 0, 'SITE_NUM': 0, 'TEST_FLG': 0, 'PARM_FLG': 0, 'RESULT': 3.0, 'TEST_TXT': 'sfg_1.new_parameter1', 'ALARM_ID': '', 'OPT_FLAG': 2, 'RES_SCAL': 0, 'LLM_SCAL': 0, 'HLM_SCAL': 0, 'LO_LIMIT': 3.0, 'HI_LIMIT': 5.0, 'UNITS': '', 'C_RESFMT': '%7.3f', 'C_LLMFMT': '%7.3f', 'C_HLMFMT': '%7.3f', 'LO_SPEC': -2, 'HI_SPEC': 4},
@@ -324,6 +325,22 @@ class TestApplication:
 
     def trigger_next_test(self):
         self.app.handle_sites_request(16 * [1])
+
+    def test_master_received_wrong_lot_number(self):
+        self.app.startup_done()
+        self.app.all_sites_detected()
+        cmd = {'command': 'load', 'lot_number': WRONG_LOT_NUMBER}
+        assert(self.app.external_state == "initialized")
+        self.app.load_command(cmd)
+        assert(self.app.external_state == "initialized")
+
+    def test_master_received_wrong_lot_number1(self):
+        self.app.startup_done()
+        self.app.all_sites_detected()
+        cmd = {'command': 'load', 'lot_number': LOT_NUMBER}
+        assert(self.app.external_state == "initialized")
+        self.app.load_command(cmd)
+        assert(self.app.external_state == "loading")
 
     def test_masterapp_testing_both_sites_request_resources_simultaneously(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)

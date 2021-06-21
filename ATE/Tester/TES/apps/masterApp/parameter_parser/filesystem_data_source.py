@@ -24,7 +24,7 @@ class FileSystemDataSource:
 
     def does_file_exist(self):
         if not os.path.exists(self.fullpath):
-            self.log.log_message(LogLevel.Error(), f'file not found: {self.fullpath}')
+            self.log.log_message(LogLevel.Error(), f'job file "{self.fullpath}" could not be not found')
             return False
 
         return True
@@ -42,7 +42,7 @@ class FileSystemDataSource:
         param_data = self.parser.parse(self.fullpath)
         for key, value in param_data.items():
             if value is None:
-                self.log.log_message(LogLevel.Error(), f'{key} section missing')
+                self.log.log_message(LogLevel.Error(), f'{key} section is missing')
                 return None
 
         return param_data
@@ -63,7 +63,7 @@ class FileSystemDataSource:
                 test_information['PART_ID'] = f"{param_data['MAIN']['MATCHCODE']}_{test_information['TESTERPRG']}"
                 return test_information
 
-        self.log.log_message(LogLevel.Warning(), 'device information in station section are missed')
+        self.log.log_message(LogLevel.Warning(), f'device information for "{self.device_id}" in the STATION section are missing')
         return None
 
     def remove_digit_from_keys(self, data: dict):
@@ -75,14 +75,16 @@ class FileSystemDataSource:
 
     def is_lot_number_valid(self, param_data: dict, lot_number):
         if not (param_data.get("LOTNUMBER") == lot_number):
-            self.log.log_message(LogLevel.Warning(), 'lot number could not be found')
+            self.log.log_message(LogLevel.Warning(),
+                                 f'lot number: {lot_number} could not be found, lot number defined in xml file: {param_data.get("LOTNUMBER")}')
             return False
 
         return True
 
     def does_handler_id_exist(self, param_data: dict):
         if not (param_data.get("HANDLER_PROBER") == self.device_handler):
-            self.log.log_message(LogLevel.Warning(), 'HANDLER name does not match')
+            self.log.log_message(LogLevel.Warning(),
+                                 f'HANDLER: {self.device_handler} name could not be found, handler name defined in xml file: {param_data.get("HANDLER_PROBER")}')
             return False
 
         return True
@@ -93,7 +95,6 @@ class FileSystemDataSource:
                 if self.device_id == value:
                     return True
 
-        self.log.log_message(LogLevel.Warning(), 'tester could not be found')
         return False
 
     def is_station_valid(self, param_data: dict):
@@ -101,7 +102,7 @@ class FileSystemDataSource:
             if self.does_device_id_exist(value):
                 return True
 
-        self.log.log_message(LogLevel.Warning(), f'device id {self.device_id} mismatch in station section')
+        self.log.log_message(LogLevel.Warning(), f'device id {self.device_id} could not be found in STATION section')
         return False
 
     @staticmethod

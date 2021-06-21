@@ -107,7 +107,7 @@ async def handler_runner():
         "broker_host": BROKER_HOST,
         "broker_port": BROKER_PORT,
         "device_ids": [DEVICE_ID],
-        "head_layout": [[1, 0], [0, 1]],
+        "site_layout": [[1, 0], [0, 1]],
         "loglevel": 10
     }
 
@@ -131,15 +131,15 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         "filesystemdatasource.path": "./tests/ATE/TES/apps/",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json",
-        "head_layout": [[1, 0], [0, 1]],
+        "site_layout": [[1, 0], [0, 1]],
         "tester_type": "DummyTesterMaster.MaxiSCT",
         "loglevel": 10
     }
 
     if len(sites) > 1:
-        config['layout'] = [[1, 0], [0, 1]]
+        config['site_layout'] = [[1, 0], [0, 1]]
     else:
-        config['layout'] = [[0, 0]]
+        config['site_layout'] = [[0, 0]]
 
     launch_master(config_file_path='ATE/Tester/TES/apps/master_config_file_template.json',
                   user_config_dict=config)
@@ -985,7 +985,7 @@ async def test_handler_connecting_state(handler_runner):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("sites", [(['0'], 1)])
+@pytest.mark.parametrize("sites", [(['0', '1'], 2)])
 @pytest.mark.parametrize("handler", [DummySerialGeringer()])
 async def test_handler_send_commands_to_load_next_and_unload(sites, handler, process_manager, handler_runner):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
@@ -1023,7 +1023,7 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("sites", [(['0'], 1)])
+@pytest.mark.parametrize("sites", [(['0', '1'], 2)])
 @pytest.mark.parametrize("handler", [DummySerialGeringer()])
 async def test_handler_send_temperature(sites, handler, process_manager, handler_runner):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
@@ -1054,7 +1054,7 @@ async def test_handler_send_temperature(sites, handler, process_manager, handler
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("sites", ['0'])
+@pytest.mark.parametrize("sites", [(['0', '1'], 2)])
 @pytest.mark.parametrize("handler", [DummySerialGeringer()])
 async def test_handler_send_command_identify_to_master(sites, handler, process_manager, handler_runner):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
@@ -1066,8 +1066,8 @@ async def test_handler_send_command_identify_to_master(sites, handler, process_m
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, topic) as mqtt:
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
-        _ = create_master(process_manager, sites)
-        _ = create_controls(process_manager, sites)
+        _ = create_master(process_manager, sites[0])
+        _ = create_controls(process_manager, sites[0])
         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
         handler_runner.start()
@@ -1085,7 +1085,7 @@ async def test_handler_send_command_identify_to_master(sites, handler, process_m
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("sites", ['0'])
+@pytest.mark.parametrize("sites", ['0', '1'])
 @pytest.mark.parametrize("handler", [DummySerialGeringer()])
 async def test_handler_send_command_getstate_to_master(sites, handler, process_manager, handler_runner):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),

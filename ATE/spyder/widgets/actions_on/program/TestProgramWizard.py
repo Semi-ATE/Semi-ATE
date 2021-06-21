@@ -157,8 +157,8 @@ class TestProgramWizard(BaseDialog):
         self.add_bin.clicked.connect(self._add_new_bin)
         self.import_bin_table.clicked.connect(self._import_bin_table)
 
-        from ATE.spyder.widgets.validation import valid_testprogram_name_regex
-        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_testprogram_name_regex), self)
+        from ATE.spyder.widgets.validation import valid_name_regex
+        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
         self.user_name.setValidator(name_validator)
         self.user_name.textChanged.connect(self._user_name_changed)
 
@@ -296,8 +296,8 @@ class TestProgramWizard(BaseDialog):
         if column in (CLASS_NAME_COL, CHECK_TEST_COL):
             return
 
-        from ATE.spyder.widgets.validation import valid_test_name_description_regex
-        regx = QtCore.QRegExp(valid_test_name_description_regex)
+        from ATE.spyder.widgets.validation import valid_name_regex
+        regx = QtCore.QRegExp(valid_name_regex)
         name_validator = QtGui.QRegExpValidator(regx, self)
 
         row = item.row()

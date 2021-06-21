@@ -16,7 +16,7 @@
     "filesystemdatasource.jobpattern": "le123456000.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
-    "layout": [[0, 0]],
+    "site_layout": [[0, 0]],
     "tester_type": "TDKMicronas.MasterMiniSCT",
     "loglevel": 10
 }

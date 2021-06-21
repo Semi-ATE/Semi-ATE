@@ -44,6 +44,12 @@ class Group:
         session.commit()
 
     @staticmethod
+    def remove_tesprogram_from_group(session: FileOperator, group: str, prog_name: str):
+        group = session.query(Types.Group()).filter(lambda Group: Group.name == group).one()
+        group.programs.pop(group.programs.index(prog_name))
+        session.commit()
+
+    @staticmethod
     def get_programs_for_group(session: FileOperator, group: str) -> list:
         group = session.query(Types.Group()).filter(lambda Group: Group.name == group).one()
         return group.programs

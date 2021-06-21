@@ -13,7 +13,9 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.hardware.clear()
         self.base.clear()
         self.target.clear()
+        self.sequencerType.blockSignals(True)
         self.sequencerType.clear()
+        self.sequencerType.blockSignals(False)
         self.hardware.setEnabled(False)
         self.base.setEnabled(False)
         self.target.setEnabled(False)
@@ -29,6 +31,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         self.testAdd.setEnabled(False)
         self.testRemove.setEnabled(False)
         self.binning_tree.setEnabled(False)
+        self.binning_table.setEnabled(False)
         self.user_name.setEnabled(False)
         self.ping_pong_widget.set_ui_enabled(False)
 

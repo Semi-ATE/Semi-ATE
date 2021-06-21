@@ -88,6 +88,23 @@ Erhält der Handler einen Befehl, den er nicht bearbeiten kann, oder den er nich
 }
 ```
 
+### send-layout
+Handler sendet beim Hochfahren folgende Nachricht an Master:
+```json
+{
+    "type": "site-layout",
+    "payload":
+    {
+        "sites": [[0,1], [1,0]]
+    }
+}
+```
+
+* sites: ist ein Liste an Koordinaten für die definierten Test sites
+         (die Position eine Koordinate entspricht die Seite-Nummer)
+
+
+
 ```mermaid
 stateDiagram
     [*] --> connecting

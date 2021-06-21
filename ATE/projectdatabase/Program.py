@@ -124,9 +124,8 @@ class Program:
                       .all()
 
     @staticmethod
-    def update_program_order_and_name(session: FileOperator, new_name: str, new_order: int, owner_name: str, current_order: str):
+    def update_program_order(session: FileOperator, new_order: int, owner_name: str, current_order: int):
         prog = Program.get_by_order_and_owner(session, current_order, owner_name)
-        prog.prog_name = new_name
         prog.prog_order = new_order
         session.commit()
 

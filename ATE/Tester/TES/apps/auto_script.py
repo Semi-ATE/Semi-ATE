@@ -55,7 +55,6 @@ def create_control_config_file(site_id, device_id, host=None, port=None):
     config["broker_port"] = Configs.port.value if port is None else port
     config["device_id"] = device_id
     config["site_id"] = site_id
-    config["loglevel"] = 1
 
     dump_to_file("control", config)
 

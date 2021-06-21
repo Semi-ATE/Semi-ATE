@@ -25,8 +25,8 @@ from ATE.spyder.widgets.validation import valid_default_float_regex
 from ATE.spyder.widgets.validation import valid_fmt_regex
 from ATE.spyder.widgets.validation import valid_max_float_regex
 from ATE.spyder.widgets.validation import valid_min_float_regex
-from ATE.spyder.widgets.validation import valid_test_name_regex
-from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
+from ATE.spyder.widgets.validation import valid_name_regex
+from ATE.spyder.widgets.validation import valid_name_regex
 from ATE.spyder.widgets.actions_on.tests.Utils import POWER
 from ATE.spyder.widgets.constants import UpdateOptions
 
@@ -127,7 +127,7 @@ class TestWizard(BaseDialog):
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
     # TestName
-        TestName_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_test_name_regex), self)
+        TestName_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
         self.TestName.setValidator(TestName_validator)
 
     # ForHardwareSetup
@@ -183,7 +183,7 @@ class TestWizard(BaseDialog):
         self.inputParameterModel = QtGui.QStandardItemModel()
         self.inputParameterModel.setObjectName('inputParameters')
         self.inputParameterModel.setHorizontalHeaderLabels(inputParameterHeaderLabels)
-        self.nameDelegator_input_parameters_view = Delegator(valid_test_parameter_name_regex, parent=self, table=self.inputParameterView, column=INPUT_NAME_COLUMN_INDEX)
+        self.nameDelegator_input_parameters_view = Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=INPUT_NAME_COLUMN_INDEX)
 
         self.inputParameterView.horizontalHeader().setVisible(True)
         self.inputParameterView.verticalHeader().setVisible(True)
@@ -233,7 +233,7 @@ class TestWizard(BaseDialog):
         self.outputParameterView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionBehavior-enum
         self.outputParameterView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)  # https://doc.qt.io/qt-5/qabstractitemview.html#SelectionMode-enum
         self.outputParameterView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)  # https://doc.qt.io/qt-5/qt.html#ContextMenuPolicy-enum
-        self.nameDelegator_output_parameters_view = Delegator(valid_test_parameter_name_regex, parent=self, table=self.outputParameterView, column=0)
+        self.nameDelegator_output_parameters_view = Delegator(valid_name_regex, parent=self, table=self.outputParameterView, column=0)
 
         self.outputParameterView.setItemDelegateForColumn(0, self.nameDelegator_output_parameters_view)
         self.outputParameterView.setItemDelegateForColumn(1, self.LSLDelegator)

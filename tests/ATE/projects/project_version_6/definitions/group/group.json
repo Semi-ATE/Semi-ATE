@@ -1,0 +1,55 @@
+[
+  {
+    "name": "checker",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_6_HW0_PR_adf_checker_abvf"
+    ],
+    "tests": [
+      "contact"
+    ]
+  },
+  {
+    "name": "maintenance",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "production",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "engineering",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "validation",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "quality",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "qualification",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  }
+]
