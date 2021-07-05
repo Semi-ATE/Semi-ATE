@@ -1,5 +1,6 @@
 import asyncio
 import os
+from pathlib import Path
 import sys
 from transitions import Machine
 import json
@@ -17,32 +18,32 @@ class ControlAppMachine:
 
     # multiple space code style "error" will be ignored for a better presentation of the possible state machine transitions
     transitions = [
-        {'source': 'idle',      'dest': 'loading',   'trigger': 'load',                   'after': 'on_load'},            # noqa: E241
-        {'source': 'loading',   'dest': 'busy',      'trigger': 'testapp_active',         'before': 'testapp_before_active'},  # noqa: E241
+        {'source': 'idle',      'dest': 'loading',   'trigger': 'load',                   'after': 'on_load'},                 # noqa: E241
+        {'source': 'loading',   'dest': 'busy',      'trigger': 'testapp_active'},                                             # noqa: E241
         {'source': 'busy',      'dest': 'idle',      'trigger': 'testapp_exit',           'after': 'on_test_app_exit'},        # noqa: E241
         {'source': 'idle',      'dest': 'idle',      'trigger': 'testapp_exit',           'after': 'on_test_app_exit'},        # noqa: E241
 
-        {'source': '*',         'dest': 'resetting', 'trigger': 'reset',                  'after': 'on_reset'},     # noqa: E241
+        {'source': '*',         'dest': 'resetting', 'trigger': 'reset',                  'after': 'on_reset'},                # noqa: E241
         {'source': 'resetting', 'dest': 'idle',      'trigger': 'to_idle'},                                                    # noqa: E241
 
-        {'source': '*',         'dest': 'error',     'trigger': 'load_error',            'after': 'on_error'},                 # noqa: E241
-        {'source': '*',         'dest': 'error',     'trigger': 'test_app_error',        'after': 'on_error'},                 # noqa: E241
-        {'source': '*',         'dest': 'error',     'trigger': 'error',                 'after': 'on_error'},                 # noqa: E241
+        {'source': '*',         'dest': 'error',     'trigger': 'load_error',             'after': 'on_error'},                 # noqa: E241
+        {'source': '*',         'dest': 'error',     'trigger': 'test_app_error',         'after': 'on_error'},                 # noqa: E241
+        {'source': '*',         'dest': 'error',     'trigger': 'error',                  'after': 'on_error'},                 # noqa: E241
     ]
 
     def __init__(self, conhandler):
         self._conhandler = conhandler
-        self._task = None
         self.log = conhandler.log
         self.prev_state = ''
         self._error_message = ''
 
         self.process = None
         self.stderr = None
+        self.do_reset = False
 
         self.machine = Machine(model=self, states=self.states, transitions=self.transitions, initial='idle', after_state_change=self.publish_current_state)
 
-    def publish_current_state(self, info):
+    def publish_current_state(self, info: str):
         self._conhandler.publish_state(self.state, self._error_message)
 
         if self.prev_state != self.state:
@@ -50,7 +51,7 @@ class ControlAppMachine:
 
         self.prev_state = self.state
 
-    def on_master_state_changed(self, info):
+    def on_master_state_changed(self, info: str):
         self.publish_current_state(info)
 
     async def _run_testapp_task(self, testapp_params: dict):
@@ -77,7 +78,7 @@ class ControlAppMachine:
         except asyncio.CancelledError:
             self._terminate()
 
-    def on_error(self, message):
+    def on_error(self, message: str):
         self.log.log_message(LogLevel.Error(), f'{message}')
 
     def on_load(self, testapp_params: dict):
@@ -87,24 +88,27 @@ class ControlAppMachine:
             self.load_error(f'Test program could not be found: {testapp_params["cwd"]}/{testapp_params["testapp_script_path"]}')
             return
 
-        self._task = asyncio.create_task(self._run_testapp_task(testapp_params))
+        _ = asyncio.create_task(self._run_testapp_task(testapp_params))
 
     @staticmethod
-    def _does_test_program_exist(testapp_params):
-        if not os.path.exists(os.path.join(testapp_params.get('cwd'), testapp_params['testapp_script_path'])):
+    def _does_test_program_exist(testapp_params: dict):
+        path = Path(testapp_params.get('cwd'))
+        if not path.joinpath(testapp_params['testapp_script_path']).exists():
             return False
 
         return True
 
-    def on_test_app_exit(self, return_code):
+    def on_test_app_exit(self, return_code: int):
         self.process = None
+
+        # ignore testprogram cancellation if reset is required
+        if self.do_reset:
+            self.do_reset = False
+            return
 
         if return_code != 0:
             self._error_message = self.stderr.decode('ascii')
-            self.test_app_error(f'Test Program ends with an error:\n {self._error_message}')
-
-    def testapp_before_active(self, pid):
-        print('testapp_active: ', pid)
+            self.test_app_error(f'test program ends with an error:\n {self._error_message}')
 
     def on_reset(self, _):
         try:
@@ -113,20 +117,12 @@ class ControlAppMachine:
         except Exception as e:
             self.log.log_message(LogLevel.Error(), f"could not terminate testapp properly: {e}")
 
+        self.do_reset = True
         self.to_idle(_)
-
-    def before_error(self, info):
-        self.log.log_message(LogLevel.Error(), f'{info}')
-
-        if self._task is not None:
-            self._task.cancel()
-
-    def before_reset(self, info):
-        print('reset')
 
     def _terminate(self):
         import platform
-        if platform.system() == "windows":
+        if platform.system() == "Windows":
             self.process.terminate()
         else:
             self.process.kill()

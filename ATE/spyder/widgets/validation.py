@@ -12,19 +12,15 @@ valid_product_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_maskset_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_device_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_package_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
-valid_test_name_regex = r"^[a-zA-Z-][a-zA-Z0-9-_]*$"
-valid_test_parameter_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
-valid_testprogram_name_regex = r"^[a-zA-Z][a-zA-Z0-9-_]*$"
-valid_project_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
+
+valid_name_regex = r"^[a-zA-Z][a-zA-Z0-9_]*$"
+
 valid_pcb_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
-valid_user_text_name_regex = r"^[a-zA-Z_][a-zA-Z0-9_]*$"
 valid_positive_integer_regex = r"^[+]?\d*"
 valid_positive_float_1_regex = r"[+]?\d*\.?\d?"
 
 valid_integer_regex = r"^[+-]?\d*"
 valid_temp_sequence_regex = r"^([+-]?\d*\,?\d*)*"
-
-valid_test_name_description_regex = r"^[a-zA-Z][a-zA-Z0-9_]*$"
 
 valid_float_regex = "[+-]?(∞|[0-9]+(\\.[0-9]+)?)"
 valid_min_float_regex = "[+-]?(∞|[0-9]+(\\.[0-9]+)?)"
@@ -91,7 +87,7 @@ def is_valid_test_name(name):
     '''
     if 'TEST' in name.upper():
         return False
-    pattern = re.compile(valid_test_name_regex)
+    pattern = re.compile(valid_name_regex)
     if pattern.match(name):
         return True
     else:
@@ -104,7 +100,7 @@ def is_valid_project_name(name):
     '''
     if 'TEST' in name.upper():
         return False
-    pattern = re.compile(valid_project_name_regex)
+    pattern = re.compile(valid_name_regex)
     if pattern.match(name):
         return True
     else:

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "adf_checker_abvf",
+    "prog_name": "project_version_6_HW0_PR_adf_checker_abvf",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "contact",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

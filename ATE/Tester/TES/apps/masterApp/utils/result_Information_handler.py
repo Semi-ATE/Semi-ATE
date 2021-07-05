@@ -25,14 +25,14 @@ class ResultInformationHandler:
         if not self.prr_rec_information.get(part_id):
             prr_record['PART_RETEST'] = 0
             self.prr_rec_information[part_id] = self._extract_needed_fields(prr_record)
-            message_handle_result = self._yield_info_handler._accumulate_site_bin_info(site_num, soft_bin)
+            message_handle_result = self._yield_info_handler.accumulate_site_bin_info(site_num, soft_bin)
             self._bin_table_info_handler.accumulate_bin_table_info(site_num, soft_bin)
         else:
             old_prr_rec = self.prr_rec_information[part_id]
             part_count = old_prr_rec['PART_RETEST']
             prr_record['PART_RETEST'] = part_count + 1
             self.prr_rec_information.update({part_id: prr_record})
-            message_handle_result = self._yield_info_handler._reaccumulate_bin_info(self.prr_rec_information)
+            message_handle_result = self._yield_info_handler.reaccumulate_bin_info(self.prr_rec_information)
             self._bin_table_info_handler.reaccumulate_bin_table_info(self.prr_rec_information)
 
         return message_handle_result

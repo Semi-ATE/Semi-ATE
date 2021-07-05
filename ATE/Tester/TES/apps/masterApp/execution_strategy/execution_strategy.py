@@ -21,7 +21,7 @@ class IExecutionStrategy(ABC):
         pass
 
     @abstractmethod
-    def set_configuration(self, strategy_config: dict):
+    def set_configuration(self, strategy_config: list):
         pass
 
     @abstractmethod

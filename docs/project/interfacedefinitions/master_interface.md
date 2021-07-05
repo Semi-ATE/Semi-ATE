@@ -187,7 +187,7 @@ Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge vo
             "sites": [
                 {
                     "siteid": "site-id",
-                    "deviceid": "", 
+                    "partid": "", 
                     "binning": "", 
                     "logflag": "", 
                     "additionalinfo": ""
@@ -199,40 +199,13 @@ Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge vo
 ```
 
 * **siteid**: Siteid einer Site, auf der getestet werden soll. Diese Siteid muss mit einer Site übereinstimmen, die beim Master angemeldet ist.
-* **deviceid**: Bauteilnummer
+* **partid**: Bauteilnummer
 * **binning**: Bin Ergebnis einer vorherigen Teststation für das Bauteil
 * **logflag**:  LOG FLAG
 * **additionalinfo**: Informationen die Zwischen meherere Tester ausgetauscht werden
 
 **Fehlerfälle**:
 Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in den Zustand "Error".
-
-
-Antwort:
-```json
-{
-    "type": "next",
-    "payload": 
-        {
-            "sites": [
-                {
-                    "siteid": "site-id",
-                    "deviceid": "", 
-                    "binning": "", 
-                    "logflag": "", 
-                    "additionalinfo": ""
-                },
-                (mehr sites)
-            ]
-        }
-}
-```
-* **siteid**: Site für die das Ergebnis gilt
-* **deviceid**: Bauteil Nummer
-* **binning**: Bin Ergebnis
-* **logflag**:  LOG FLAG
-* **additionalinfo**: Informationen die Zwischen meherere Tester ausgetauscht werden , TODO -> Wie damit verfahren?
-
 
 #### end lot
 Der Endlotbefehl weist die Masterapplikation ihre Testapplikation zu beenden. Bei Erfolg wechselt der Master in den Zustand XXX

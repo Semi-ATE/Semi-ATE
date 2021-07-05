@@ -171,7 +171,7 @@ class Geringer(HandlerBase):
                               'partid': str(data[start_index]),
                               'binning': int(data[start_index + 1]),
                               'logflag': int(data[start_index + 2]),
-                              'additionalinfo': int(data[start_index + 3])})
+                              'additionalinfo': data[start_index + 3]})
 
             start_index += 5
             is_site_enabled_index += 5

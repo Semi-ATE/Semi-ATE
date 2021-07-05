@@ -12,13 +12,13 @@ class InterfaceSCT(ABC):
         pass
 
     @abstractmethod
-    def test_in_progress(site_id: int):
+    def test_in_progress(self, site_id: int):
         pass
 
     @abstractmethod
-    def test_done(site_id: int, timeout: int):
+    def test_done(self, site_id: int, timeout: int):
         pass
 
     @abstractmethod
-    def do_init_state(site_id: int):
+    def do_init_state(self, site_id: int):
         pass

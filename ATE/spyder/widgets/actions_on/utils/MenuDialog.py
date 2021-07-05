@@ -99,8 +99,8 @@ class NewGroupDialog(MenuDialog):
     def __init__(self, path: str, action: str, parent, project_info: ProjectNavigation, group_parent: str):
         super().__init__(RENAME_DIALOG, action, parent)
         self.path = path
-        from ATE.spyder.widgets.validation import valid_test_name_regex
-        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_test_name_regex), self)
+        from ATE.spyder.widgets.validation import valid_name_regex
+        name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
         self.fileName.setValidator(name_validator)
         self.fileName.setText(os.path.basename(self.path))
         self.fileName.textChanged.connect(self.validate)

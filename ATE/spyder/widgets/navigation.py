@@ -3,6 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+from pathlib import Path
 from ATE.spyder.widgets.actions_on.program.Utils import Sequencer
 import json
 import os
@@ -807,47 +808,50 @@ class ProjectNavigation(QObject):
         self._remove_file(self._generate_program_path(program_name))
         self._remove_file(self._generate_bin_table_path(program_name))
         self._remove_file(self._generate_auto_script_path(program_name))
+        self._remove_file(self._generate_strategy_file_path(program_name))
+
+        self._remove_testprogram_form_group_list(program_name, owner_name)
+
         if emit_event:
-            self._update_test_program_sequence(program_name, program_order, owner_name)
+            self._update_test_program_sequence(program_order, owner_name)
             self.parent.database_changed.emit(TableId.Flow())
 
         self.parent.database_changed.emit(TableId.Test())
+
+    def _remove_testprogram_form_group_list(self, prog_name: str, owner_name: str):
+        # group name is contained in owner_name
+        group = owner_name.split('_')[-1]
+        Group.remove_tesprogram_from_group(self.get_file_operator(), group, prog_name)
 
     @staticmethod
     def _remove_file(file_name):
         os.remove(file_name)
 
     def _generate_program_path(self, program_name):
-        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '.py')
+        return self._generate_path_for_program_with_suffix(program_name, '.py')
 
     def _generate_bin_table_path(self, program_name):
-        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '_binning.json')
+        return self._generate_path_for_program_with_suffix(program_name, '_binning.json')
 
     def _generate_auto_script_path(self, program_name):
-        return os.path.join(self.project_directory, 'src', self.active_hardware, self.active_base, program_name + '_auto_script.py')
+        return self._generate_path_for_program_with_suffix(program_name, '_auto_script.py')
 
-    def _update_test_program_sequence(self, program_name, program_order, owner_name):
+    def _generate_strategy_file_path(self, program_name):
+        return self._generate_path_for_program_with_suffix(program_name, '_execution_strategy.json')
+
+    def _generate_path_for_program_with_suffix(self, program_name, suffix: str) -> Path:
+        return Path(self.project_directory).joinpath('src', self.active_hardware, self.active_base, program_name + suffix)
+
+    def _update_test_program_sequence(self, program_order, owner_name):
+        # program order starts counting by one but program_order is basically the order
+        # defined in the tree view so we add one (which starts with zero)
         for index in range(program_order + 1, self.get_program_owner_element_count(owner_name) + 1):
-            # TODO: we do not have update the name of test program but only the order
-            new_name = self._generate_program_name(program_name, index)
-            program = Program.get_by_order_and_owner(index, owner_name)
-
-            Program.update_program_order_and_name(self.get_file_operator(), new_name, index - 1, owner_name, index)
-
-            name = self._generate_program_name(program_name, index + 1)
-            Sequence.update_progname(self.get_file_operator(), name, new_name)
-
-            TestTarget.update_program_name(self.get_file_operator(), name, new_name)
-
-            self._rename_file(self._generate_program_path(name), self._generate_program_path(program_name))
-            self._rename_file(self._generate_bin_table_path(name), self._generate_bin_table_path(program_name))
-            self._rename_file(self._generate_auto_script_path(name), self._generate_auto_script_path(program_name))
-
-            _ = self.run_build_tool('generate', 'sequence', self.project_directory, new_name)
+            session = self.get_file_operator()
+            Program.update_program_order(session, index, owner_name, index + 1)
 
     @staticmethod
-    def _rename_file(file_name: str, new_name: str):
-        os.rename(file_name, new_name)
+    def _rename_file(file_name: Path, new_name: Path):
+        os.rename(str(file_name), str(new_name))
 
     def _remove_test_targets_for_test_program(self, prog_name):
         tests = set([seq.test for seq in Sequence.get_for_program(self.get_file_operator(), prog_name)])

@@ -25,8 +25,8 @@ from ATE.spyder.widgets.validation import valid_default_float_regex
 from ATE.spyder.widgets.validation import valid_fmt_regex
 from ATE.spyder.widgets.validation import valid_max_float_regex
 from ATE.spyder.widgets.validation import valid_min_float_regex
-from ATE.spyder.widgets.validation import valid_test_name_regex
-from ATE.spyder.widgets.validation import valid_test_parameter_name_regex
+from ATE.spyder.widgets.validation import valid_name_regex
+from ATE.spyder.widgets.validation import valid_name_regex
 from ATE.utils.DT import DT
 
 minimal_docstring_length = 80
@@ -68,7 +68,7 @@ class CloneWizard(QtWidgets.QDialog):
     # From
 
     # To
-        TestName_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_test_name_regex), self)
+        TestName_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
         self.TestName.setText("")
         self.TestName.setValidator(TestName_validator)
         self.TestName.textChanged.connect(self.verify)
@@ -123,7 +123,7 @@ class CloneWizard(QtWidgets.QDialog):
         self.description.blockSignals(False)
 
     # Delegators
-        self.nameDelegator = Delegator(valid_test_parameter_name_regex, self)
+        self.nameDelegator = Delegator(valid_name_regex, self)
 
         self.fmtDelegator = Delegator(valid_fmt_regex, self)
 

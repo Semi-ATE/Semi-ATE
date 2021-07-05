@@ -160,7 +160,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.loaded_lot_number = ""
         self.error_message = ''
 
-        self.prev_state = ''
+        self.last_published_state = ''
         self.summary_counter = 0
         self.tsr_messages = []
 
@@ -172,7 +172,6 @@ class MasterApplication(MultiSiteTestingModel):
         self.dummy_partid = 1
         self._first_part_tested = False
         self._stdf_aggregator = None
-
         self.testing_sites = []
         self.test_num = 0
         tester = self.get_tester(configuration['tester_type'])
@@ -180,6 +179,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.testing_strategy: IExecutionStrategy = self.get_execution_strategy(strategy_type, tester)
 
         self.testing_event = asyncio.Event()
+        self.layout = None
 
     @staticmethod
     def get_strategy_type(tester):
@@ -338,15 +338,14 @@ class MasterApplication(MultiSiteTestingModel):
         # In this case we want to move to error as well
         self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_IDLE], self.configuredSites, lambda: None,
                                                            lambda site, state: self.on_error(f"Bad statetransition of control {site} during sync to {state}"))
-
         self.error_message = ''
         self.disarm_timeout()
 
     def publish_state(self, site_id=None, param_data=None):
-        if self.prev_state == self.state:
+        if self.last_published_state == self.external_state:
             return
 
-        self.prev_state = self.state
+        self.last_published_state = self.external_state
         self.log.log_message(LogLevel.Info(), f'Master state is {self.state}')
         self.connectionHandler.publish_state(self.external_state)
 
@@ -363,7 +362,13 @@ class MasterApplication(MultiSiteTestingModel):
                                                  parser,
                                                  self.log)
 
-        self.set_test_data(source)
+        test_program_data = self.set_test_data(source)
+        if not test_program_data:
+            self.load_error()
+            return
+
+        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_lot_number, self.sites)
+        self._stdf_aggregator.set_test_program_data(test_program_data)
 
         self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
         self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_LOADING, CONTROL_STATE_BUSY], self.configuredSites, lambda: None,
@@ -372,34 +377,35 @@ class MasterApplication(MultiSiteTestingModel):
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during load to {state}"))
         self.error_message = ''
 
-        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(self._test_program_data))
+        self.connectionHandler.send_load_test_to_all_sites(self.get_test_parameters(test_program_data))
         self._store_user_settings(UserSettings.get_defaults())
 
         self.command_queue.put_nowait(GetBinTable(lambda: self._generate_bin_table_message()))
 
     def set_test_data(self, source: object):
+        test_program_data = {}
         if self.configuration.get('skip_jobdata_verification', False):
-            self._test_program_data = {"DEBUG_OPTION": "no content because skip_jobdata_verification enabled"}
+            return None
         else:
             param_data = source.retrieve_data()
             if param_data is None:
                 self.error_message = "Failed to execute load command"
-                self.load_error()
-                return
+                return None
 
             if not source.verify_data(param_data):
                 self.error_message = "Malformed jobfile"
-                self.load_error()
-                return
+                return None
 
-            self._test_program_data = source.get_test_information(param_data)
-            bin_table = source.get_bin_table(self._test_program_data)
+            test_program_data = source.get_test_information(param_data)
+            bin_table = source.get_bin_table(test_program_data)
             self._result_info_handler.set_bin_settings(bin_table)
 
             # used to reduce the size of data to be transferred to the TP
-            self._test_program_data['BINTABLE'] = source.get_binning_tuple(bin_table)
+            test_program_data['BINTABLE'] = source.get_binning_tuple(bin_table)
 
-            self.log.log_message(LogLevel.Debug(), f'testprogram information: {self._test_program_data}')
+            self.log.log_message(LogLevel.Debug(), f'testprogram information: {test_program_data}')
+
+        return test_program_data
 
     @staticmethod
     def get_test_parameters(data):
@@ -417,16 +423,16 @@ class MasterApplication(MultiSiteTestingModel):
         self.error_message = ''
         self.disarm_timeout()
 
-        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_lot_number, self.sites)
-        self._stdf_aggregator.set_test_program_data(self._test_program_data)
         self._send_set_log_level()
-
         self._send_get_execution_strategy()
 
     def _send_get_execution_strategy(self):
-        # TODO: layout should be received from handler or. prober
-        self._layout = self.configuration['layout']
-        self.connectionHandler.send_get_execution_strategy_command(self._layout)
+        # if handler is not connected, the tester layout should be stored
+        # in the master configuration file
+        if self.layout is None:
+            self._set_layout(self.configuration['site_layout'])
+
+        self.connectionHandler.send_get_execution_strategy_command(self.layout)
 
     def _send_set_log_level(self):
         try:
@@ -474,7 +480,6 @@ class MasterApplication(MultiSiteTestingModel):
         if not set(self.testing_sites).issubset(set(self.sites)):
             self.on_error(f'not all testing sites "{self.testing_sites}" are in the configured site list "{self.sites}"')
 
-        # TODO: clean up extracting sites information
         settings.update(self._extract_sites_information(param_data))
         self.connectionHandler.send_next_to_all_sites(settings)
 
@@ -530,7 +535,7 @@ class MasterApplication(MultiSiteTestingModel):
         self.pendingTransitionsTest = None
         self.connectionHandler.send_reset_to_all_sites()
 
-        # set a virtual control state to make sure that any responce from control would be caught and handeled
+        # set a virtual control state to make sure that any response from control would be caught and handled
         for site in self.configuredSites:
             self.siteStates[site] = 'resetting'
 
@@ -627,8 +632,8 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_testapp_testresult_changed(self, siteid: str, status_msg: dict):
         if self.is_testing(allow_substates=True):
-            self.handle_testresult(siteid, status_msg)
             self.on_site_test_result_received(siteid, status_msg)
+            self.handle_testresult(siteid, status_msg)
         else:
             self.on_error(f"Received unexpected testresult from site {siteid}")
 
@@ -698,15 +703,19 @@ class MasterApplication(MultiSiteTestingModel):
                 'reset': lambda param_data: self.reset(param_data),
                 'identify': lambda param_data: self._send_tester_identification(param_data),
                 'get-state': lambda param_data: self._send_tester_state(param_data),
-                'site-layout': lambda param_data: self._set_layout(param_data),
+                'site-layout': lambda param_data: self._set_layout(param_data['sites']),
             }[cmd](payload)
         except KeyError:
             self.log.log_message(LogLevel.Error(), f'Failed to execute command: {cmd}')
         except MachineError:
             self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
 
-    def _set_layout(self, param_data):
-        self.layout = param_data['sites']
+    def _set_layout(self, layout: list):
+        if len(self.sites) < len(layout):
+            self.on_error('number of sites use to be configured is less that configured,'
+                          + f' handler interface provides "{len(layout)}" sites layout'
+                          + f' but master is only configured to support "{len(self.sites)}" sites')
+        self.layout = layout
 
     def _send_tester_identification(self, _):
         self.connectionHandler.send_identification()
