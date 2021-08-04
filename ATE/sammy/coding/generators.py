@@ -190,7 +190,7 @@ def _generate_version_file(definition_path):
     from pathlib import Path
     path = os.path.join(definition_path, "version", "version.json")
     with open(os.fspath(Path(path)), 'w') as f:
-        json.dump({"version": __version__}, f, indent=4)
+        json.dump([{"version": __version__}], f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):

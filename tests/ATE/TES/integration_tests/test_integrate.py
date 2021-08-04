@@ -1109,6 +1109,31 @@ async def test_handler_send_command_getstate_to_master(sites, handler, process_m
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("sites", [['0', '1']])
+async def test_send_command_get_host_to_master(sites, process_manager):
+    topic = [(f'ate/{DEVICE_ID}/Master/status', 2),
+             (f'ate/{DEVICE_ID}/Master/response', 2)]
+
+    async with mqtt_connection(BROKER_HOST, BROKER_PORT, topic) as mqtt:
+        buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
+        _ = create_master(process_manager, sites)
+        await read_messages_until_master_state(buffer, 'connecting', 5.0, ['connecting'])
+
+        _ = create_controls(process_manager, sites)
+        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+
+        mqtt.publish(f'ate/{DEVICE_ID}/Master/cmd', {'type': 'get-host', 'payload': {}})
+
+        async with timeout(5, 'waiting for "identify" response message'):
+            async for msg in buffer.read():
+                message = json.loads(msg.payload)
+                assert message['type'] == 'get-host'
+                assert message['payload'].get('host') is not None
+                assert message['payload'].get('port') is not None
+                break
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
 async def test_master_states_during_load_and_unload(sites, process_manager, ws_connection):
     topic = [(f'ate/{DEVICE_ID}/Master/status', 2),

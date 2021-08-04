@@ -50,14 +50,6 @@ jobs:
       with:
         node-version: '14'
 
-    - name: build Web-UI dependencies
-      run: |
-        cd ATE/Tester/TES/ui/angular/mini-sct-gui
-        npm i -g @angular/cli
-        npm install
-        ng build
-        cd ../../../../../..
-
     - name: Run manifest checks
       shell: bash -l {0}
       run: check-manifest

@@ -35,9 +35,6 @@ recursive-include ATE *.xml
 
 recursive-exclude tests *.*
 recursive-exclude Plugins *.*
-recursive-exclude ATE/Tester/TES/ui/angular/mini-sct-gui *.*
-recursive-include ATE/Tester/TES/ui/angular/mini-sct-gui/dist *.*
-include ATE/Tester/TES/ui/angular/mini-sct-gui/browserslist
 
 include *.md
 include *.rst

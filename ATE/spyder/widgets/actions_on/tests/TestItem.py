@@ -1,3 +1,4 @@
+from pathlib import Path
 from ATE.spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ATE.spyder.widgets.actions_on.tests.NewStandardTestWizard import new_standard_test_dialog
@@ -5,12 +6,15 @@ from ATE.spyder.widgets.actions_on.tests.TestWizard import new_test_dialog
 from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 from ATE.spyder.widgets.actions_on.tests.TestsObserver import TestsObserver
 from ATE.spyder.widgets.actions_on.tests.TestItems.TestItemChild import TestItemChild
+from ATE.spyder.widgets.actions_on.tests.TestItems.utils import import_content
 from ATE.spyder.widgets.constants import TEST_SECTION, QUALIFICATION
 
 from ATE.spyder.widgets.actions_on.utils.MenuDialog import new_group
 from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
                                                                   ExceptionTypes)
 import os
+
+FILE_FILTER = '*.ate'
 
 
 class TestContainerBase(BaseItem):
@@ -81,9 +85,17 @@ class TestItem(TestContainerBase):
                           lambda: new_test_dialog(self.project_info),
                           ExceptionTypes.Test())
 
-    # TODO: implement me !
     def import_item(self):
-        pass
+        selected_file = self.file_system_operator.get_file(FILE_FILTER)
+
+        if not selected_file:
+            return
+
+        self._import_test(selected_file)
+
+    def _import_test(self, path: str):
+        current_version = self.project_info.get_version()
+        import_content(Path(path), self.project_info, self.parent.parent, current_version)
 
     def update(self):
         active_hardware = self.project_info.active_hardware
@@ -123,7 +135,7 @@ class TestItem(TestContainerBase):
 
     @staticmethod
     def is_valid_functionality(functionality):
-        if functionality in (MenuActionTypes.AddStandardTest(), MenuActionTypes.Import()):
+        if functionality in (MenuActionTypes.AddStandardTest()):
             return False
 
         return True

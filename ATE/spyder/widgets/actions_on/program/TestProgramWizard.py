@@ -813,7 +813,7 @@ class TestProgramWizard(BaseDialog):
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
     def _double_click_handler_input_param(self, item):
         test_instance = self.selectedTests.item(self.selectedTests.currentRow(), 1).text()
-        param_name = self.parametersInput.item(item.row(), InputFieldsPosition.name()).text()
+        param_name = self.parametersInput.item(item.row(), InputFieldsPosition.Name()).text()
         param = self._custom_parameter_handler.edit_input_parameter(test_instance, param_name, item.column(), lambda: self.edit_param_complete(param))
 
     @QtCore.pyqtSlot(QtWidgets.QTableWidgetItem)
@@ -1193,7 +1193,7 @@ class TestProgramWizard(BaseDialog):
 
     def _get_input_parameter_types(self) -> dict:
         item = self.selectedTests.selectedItems()[0]
-        if item.row() == 0:
+        if item.row() == 0 or self._is_parameter_shmooable(item):
             return {ResolverTypes.Static(): self._static_selected}
 
         menu_entries = {ResolverTypes.Static(): self._static_selected, ResolverTypes.Local(): self._local_selected}
@@ -1204,14 +1204,23 @@ class TestProgramWizard(BaseDialog):
 
         return menu_entries
 
+    def _is_parameter_shmooable(self, item: QTableWidgetItem):
+        test_name = item.text()
+        input_name = self._get_selected_input_parameter_name()
+        parameter = self._standard_parameter_handler.get_input_parameter(test_name, input_name)
+        return parameter.is_shmooable()
+
     def _set_out_params(self):
         action = self.sender()
         parent = action.parent()
-        item = self.parametersInput.currentItem()
-        input_name = self.parametersInput.item(item.row(), 0).text()
+        input_name = self._get_selected_input_parameter_name()
         parameter = self._custom_parameter_handler.get_input_parameter(self._selected_test_instance(), input_name)
         parameter.set_value(f'{parent.title()}.{action.text()}')
         self._display_active_test()
+
+    def _get_selected_input_parameter_name(self):
+        item = self.parametersInput.currentItem()
+        return self.parametersInput.item(item.row(), 0).text()
 
     def _selected_test_instance(self):
         row = self.selectedTests.selectedItems()[0].row()

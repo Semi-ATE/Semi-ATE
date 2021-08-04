@@ -76,7 +76,8 @@ class TestParameters:
                 'Unit': parameter_content['unit'],
                 '10ᵡ': parameter_content['exponent'],
                 'Default': parameter_content['default'],
-                'content': parameter_content['value']
+                'content': parameter_content['value'],
+                'Shmoo': parameter_content['shmoo']
             }
         return struct
 

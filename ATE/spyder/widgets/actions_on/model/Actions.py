@@ -30,4 +30,5 @@ ACTIONS = {MenuActionTypes.Edit(): (qta.icon('mdi.lead-pencil', color='orange'),
            MenuActionTypes.UseDefaultImplementation(): (qta.icon('mdi.file-replace', color='orange'), "Use Default Implementation"),
            MenuActionTypes.Select(): (qta.icon('mdi.check', color='orange'), "Select Target"),
            MenuActionTypes.CopyPath(): (qta.icon('mdi.content-copy', color='orange'), "Copy Absolute Path"),
-           MenuActionTypes.AddGroup(): (qta.icon('mdi.folder-plus', color='orange'), "Add New Group")}
+           MenuActionTypes.AddGroup(): (qta.icon('mdi.folder-plus', color='orange'), "Add New Group"),
+           MenuActionTypes.Export(): (qta.icon('mdi.application-export', color='orange'), "Export")}

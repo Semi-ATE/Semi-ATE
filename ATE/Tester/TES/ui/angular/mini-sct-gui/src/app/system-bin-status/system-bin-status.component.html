@@ -1,6 +1,0 @@
-<h3 class="caption">Latest Part Results</h3>
-<div class="displayStyle">
-  <div class="columnViewForbinInformation" *ngFor="let site of (status$ | async).sites; let idx = index">
-    <app-site-bin-information [siteNumber]=idx [siteName]=site></app-site-bin-information>
-  </div>
-</div>

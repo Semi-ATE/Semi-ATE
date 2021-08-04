@@ -1,3 +1,4 @@
+from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.TestParameters import InputParameter
 import pytest
 
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
@@ -26,10 +27,16 @@ class dummy_harness(Harness):
     def __init__(self):
         self.status_sequence = []
 
-    def send_status(self, status):
-        self.status_sequence.append(status)
+    def send_summary(self, summary: dict):
+        pass
 
-    def send_testresult(self, stdfdata):
+    def send_testresult(self, stdf_data: dict):
+        pass
+
+    def next(self):
+        pass
+
+    def collect(self, stdf_data: dict):
         pass
 
 
@@ -54,6 +61,21 @@ class dummy_test_case(DutTestCaseBase):
 
     def do(self):
         pass
+
+
+class test(dummy_test_case):
+    class IP:
+        def __init__(self, input_param: InputParameter) -> None:
+            self.input_param = input_param
+
+    def __init__(self, shmoo):
+        super().__init__()
+        self.instance_name = 'test'
+        self.instance_number = 0
+        self.ip = test.IP(InputParameter('input_param', shmoo, 1.1, 1, 5, 0))
+
+    def get_input_parameter(self, parameter_name):
+        return getattr(self.ip, parameter_name)
 
 
 class dummy_cache():
@@ -82,6 +104,7 @@ def sequencer():
     ret_val.set_logger(LoggerStub())
     ret_val.set_auto_script(AutoScript())
     ret_val.set_tester_instance(DummyTester())
+    ret_val.set_harness(dummy_harness())
     return ret_val
 
 
@@ -344,3 +367,46 @@ def test_sequencer_will_throw_if_caching_was_enabled_and_no_cache_instance_was_s
     sequencer.set_caching_policy("store")
     with pytest.raises(ValueError):
         sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+
+
+def test_set_input_parameter(sequencer: SequencerBase):
+    set_parameter_message = [{'parametername': 'test.input_param', 'value': 1.4}]
+    sequencer.test_cases.append(test(True))
+    sequencer.set_input_parameter(set_parameter_message)
+    assert sequencer.test_cases[0].ip.input_param() == 1.4
+
+
+def test_set_input_parameter_shmoo_not_set(sequencer: SequencerBase):
+    set_parameter_message = [{'parametername': 'test.input_param', 'value': 1.4}]
+    sequencer.test_cases.append(test(False))
+    with pytest.raises(Exception):
+        sequencer.set_input_parameter(set_parameter_message)
+
+
+def test_set_input_parameter_out_of_range(sequencer: SequencerBase):
+    set_parameter_message = [{'parametername': 'test.input_param', 'value': 14}]
+    sequencer.test_cases.append(test(True))
+    with pytest.raises(Exception):
+        sequencer.set_input_parameter(set_parameter_message)
+
+
+def test_set_input_parameter_test_instance_does_not_exist(sequencer: SequencerBase):
+    set_parameter_message = [{'parametername': 'tt.input_param', 'value': 1.4}]
+    sequencer.test_cases.append(test(True))
+    with pytest.raises(Exception):
+        sequencer.set_input_parameter(set_parameter_message)
+
+
+def test_sequencer_get_wrong_test_sequence(sequencer: SequencerBase):
+    t2 = test(True)
+    sequencer.register_test(t2)
+    SITE_INFO.update({'test_sequence': ['test', 'hello']})
+    with pytest.raises(Exception):
+        sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)
+
+
+def test_sequencer_get_test_sequence(sequencer):
+    t2 = test(True)
+    sequencer.register_test(t2)
+    SITE_INFO.update({'test_sequence': ['test']})
+    sequencer.run(SingleShotExecutionPolicy(), SITE_INFO)

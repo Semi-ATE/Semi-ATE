@@ -103,9 +103,12 @@ __example__:
                     "additionalinfo": 0
                   }
                   ]
-  }
+  },
+  "test_sequence": []
 }
 ```
+
+* **tests**(optinal): Liste von test-instances Namen, die ausgeführt werden sollen
 
 #### Terminate
 
@@ -141,3 +144,24 @@ Der setting Befehl weist die Testapplikation an, dass sie die angeforderten sett
 
 Beispiel: name == "binsettings"
 
+
+#### SetParameter 
+Mit Hilfe dieses Befehls kann man Input Parameter setzten bzw. updaten. Dies wird benötigt, wenn man shmoo tests ausführen möchte.
+
+
+```json
+{
+    "type": "cmd",
+    "command": "setparameter",
+    "parameters":
+    [
+        {
+            "parametername": "<name>",
+            "value": "<value>", 
+        },
+    ]
+}
+```
+
+* **parametername**: ist eine Kombination von test instance Name und Inputparamter Name (wie im test definiert ist) (<test_instance_name>.<parameter_name>)
+* **value**: der neue Wert, der das Inputparameter einnehmen soll

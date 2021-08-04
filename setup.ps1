@@ -74,23 +74,6 @@ catch
     Set-Location -Path $root_location
 }
 
-$confirmation = Read-Host "do you want to build web-UI disctribution [y/n]"
-if (($confirmation -eq $confirm) -or (!$confirmation))
-{
-    Write-Host "install angular cli dependencies"
-    Invoke-Expression "npm i -g @angular/cli"
-
-    Set-Location -Path $root_location
-    Write-Host "install web-UI dependencies"
-    Invoke-Expression "cd $webui_location"
-    Invoke-Expression "npm install"
-    Invoke-Expression "npm audit fix"
-
-    Write-Host "generate web-UI distribution"
-    Invoke-Expression "ng build"
-    Set-Location -Path $root_location
-}
-
 Write-Host "new configuration file for master and control Apps will be generated"
 $confirmation = Read-Host "are you sure you want proceed and create new configuration files [y/n]"
 if (($confirmation -eq $confirm) -or (!$confirmation))

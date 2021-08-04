@@ -15,11 +15,22 @@ def fsoperator():
 
 
 @fixture
-def tst():
+def test():
     return Test()
 
 
-def test_can_create_test(fsoperator, tst: Test):
-    tst.add(fsoperator, "testname", "hw0", "PR", "sometype", {}, True)
-    pkg = tst.get(fsoperator, "testname", "hw0", "PR")
+def test_can_create_test(fsoperator, test: Test):
+    test.add(fsoperator, "testname", "hw0", "PR", "sometype", {}, True)
+    pkg = test.get(fsoperator, "testname", "hw0", "PR")
     assert(pkg.type == "sometype")
+
+
+NEW = {"name": "testname", "hardware": "hw0", "base": 'PR', "type": 'somethingelse', "definition": {'test': 'hello'}, "is_enabled": True}
+
+
+def test_replace_test(fsoperator, test: Test):
+    test.add(fsoperator, "testname", "hw0", "PR", "sometype", {}, True)
+    assert len(test.get(fsoperator, 'testname', 'hw0', 'PR').definition) == 0
+    test.replace(fsoperator, NEW)
+    assert len(test.get(fsoperator, 'testname', 'hw0', 'PR').definition) != 0
+    assert test.get(fsoperator, 'testname', 'hw0', 'PR').definition['type'] == 'somethingelse'

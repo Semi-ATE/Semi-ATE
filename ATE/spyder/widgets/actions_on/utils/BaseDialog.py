@@ -4,7 +4,7 @@ from PyQt5 import uic
 
 
 class BaseDialog(QtWidgets.QDialog):
-    def __init__(self, ui_file, parent):
+    def __init__(self, ui_file: str, parent: object):
         super().__init__(parent)
         self.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, on=False)
         self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, on=False)

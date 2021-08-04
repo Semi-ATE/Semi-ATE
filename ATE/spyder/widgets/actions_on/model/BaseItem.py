@@ -1,10 +1,11 @@
+from ATE.spyder.widgets.navigation import ProjectNavigation
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
 class BaseItem(QtGui.QStandardItem):
-    def __init__(self, project_info, name, parent=None):
+    def __init__(self, project_info: ProjectNavigation, name, parent=None):
         super().__init__(name)
         self.parent = parent
         self.project_info = project_info
@@ -86,6 +87,9 @@ class BaseItem(QtGui.QStandardItem):
         pass
 
     def add_testprogram(self):
+        pass
+
+    def export_item(self):
         pass
 
     def _get_tooltip(self):

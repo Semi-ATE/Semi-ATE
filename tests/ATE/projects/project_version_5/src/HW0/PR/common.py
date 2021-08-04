@@ -11,7 +11,7 @@ import os
 import sys
 import pathlib
 import traceback
-from ATE.Tester.TES.apps.testApp.sequencers.SequencerHarness import SequencerHarness
+from ATE.Tester.TES.apps.testApp.sequencers.Sequencer import Sequencer
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.auto_script.AutoScriptBase import AutoScriptBase
 from ATE.Tester.TES.apps.testApp.stages_sequence_generator.stages_sequence_generator import StagesSequenceGenerator
@@ -21,7 +21,7 @@ from ATE.common.logger import Logger, LogLevel
 
 class Context:
     def __init__(self, source: str, params: dict, sequencer: SequencerBase, auto_script: AutoScriptBase, execution_strategy: StagesSequenceGenerator):
-        self.harness = SequencerHarness(sequencer, params, execution_strategy)
+        self.harness = Sequencer(sequencer, params, execution_strategy)
         self.logger = Logger(source, self.harness)
 
         # Logging is available @ Info Level during startup of the

@@ -48,8 +48,8 @@ class {{ definition['name']}}_IP:
         self.{{ input_parameter['name'] }} = None
         {% endfor %}
 
-    def set_parameter(self, name: str, type: str, value: float, min_value: float, max_value: float, power: int, context: str):
-        setattr(self, f'{name}', create_parameter_resolver(type, f'{name}', '', value, min_value, max_value, power, context))
+    def set_parameter(self, name: str, type: str, value: float, min_value: float, max_value: float, power: int, context: str, shmoo: bool):
+        setattr(self, f'{name}', create_parameter_resolver(type, f'{name}', shmoo, value, min_value, max_value, power, context))
 
 
 class {{ definition['name'] }}_BC(DutTestCaseBase):
@@ -94,3 +94,6 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
 
     def get_test_nums(self) -> int:
         return self.op.get_output_nums()
+
+    def get_input_parameter(self, parameter_name: str):
+        return getattr(self.ip, parameter_name)

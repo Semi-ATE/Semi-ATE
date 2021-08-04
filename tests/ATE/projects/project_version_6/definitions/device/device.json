@@ -1,8 +1,8 @@
 [
   {
-    "name": "dsds",
+    "name": "dev",
     "hardware": "HW0",
-    "package": "ads",
+    "package": "de",
     "definition": {
       "dies_in_package": [
         "adf_1"

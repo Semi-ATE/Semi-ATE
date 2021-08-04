@@ -19,7 +19,7 @@ if __name__ == '__main__':
     execution_strategy_path = os.path.join(os.path.dirname(__file__), execution_strategy_name)
 
     execution_strategy = StagesSequenceGenerator(execution_strategy_path)
-    bin_strategy = create_bin_strategy(params.binstrategytype, bin_table_path, test_program_name)
+    bin_strategy = create_bin_strategy(params.strategytype, bin_table_path, test_program_name)
 
     program_name = os.path.basename(__file__).replace(".py", "")
     sequencer = SequencerBase(program_name, bin_strategy)

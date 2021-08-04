@@ -32,7 +32,7 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         add_dir.show()
 
     def import_file(self):
-        selected, _ = self.getOpenFileName(self, "Import File", self.path, "", options=self.options())
+        selected, _ = self.getOpenFileName(self, "Import File", self.path, '', options=self.options())
         if not selected:
             return
 
@@ -45,6 +45,13 @@ class FileSystemOperator(QtWidgets.QFileDialog):
             exception = ExceptionFoundDialog(selected, "File not found", self.parent, "file exists already: ")
             exception.show()
 
+    def get_file(self, file_filter: str = ''):
+        selected, _ = self.getOpenFileName(self, "Select File", self.path, file_filter, options=self.options())
+        if not selected:
+            return
+
+        return selected
+
     def import_dir(self):
         selected = self.getExistingDirectory(self, "Select directory", self.path, options=self.options())
         if not selected:
@@ -55,6 +62,13 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         except Exception:
             exception = ExceptionFoundDialog(selected, "Import Exception", self.parent, f"cannot copy directory {selected}")
             exception.show()
+
+    def export_file(self, name: str = ''):
+        file_path, _ = self.getSaveFileName(self, "Save File", name)
+        if not file_path:
+            return None
+
+        return file_path
 
     def move(self):
         selected = self.getExistingDirectory(self, "Select directory", self.path, options=self.options())

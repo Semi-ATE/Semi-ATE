@@ -8,6 +8,13 @@ from ATE.Tester.TES.apps.testApp.sequencers.DutTesting.Result import Result
 
 from ATE.Tester.TES.apps.testApp.sequencers.constants import Trigger_Out_Pulse_Width
 
+from pydantic import BaseModel
+
+
+class InputParameterSetMessage(BaseModel):
+    parametername: str
+    value: float
+
 
 class SequencerBase:
     def __init__(self, program_name: str, bin_strategy: BinStrategyExternal):
@@ -27,6 +34,7 @@ class SequencerBase:
         self.cache_instance = None
         self.cache_policy = "disable"
         self.program_name = program_name
+        self.test_sequence = []
 
     def set_caching_policy(self, policy: str):
         if policy not in ["disable", "store", "drop"]:
@@ -98,6 +106,7 @@ class SequencerBase:
     def run(self, execution_policy: ExecutionPolicyABC, test_settings: dict = {}):
         # TODO: raise an exception if test_settings is None !?
         if test_settings:
+            self.test_sequence = []
             self.test_settings = test_settings
             self._extract_test_information(test_settings)
 
@@ -123,6 +132,15 @@ class SequencerBase:
             self.binning = site['binning']
             break
 
+        if test_settings.get('test_sequence'):
+            test_sequence = set([test.instance_name for test in self.test_cases])
+            tests = set(test_settings['test_sequence'])
+
+            if not tests.issubset(test_sequence):
+                raise Exception(f"test sequence is not a subset of the defined test sequence: '{tests}' not in '{test_sequence}'")
+
+            self.test_sequence = test_settings['test_sequence']
+
     def pre_cycle_cb(self):
         self.stdf_data = []
         self.soft_bin = 1
@@ -147,13 +165,18 @@ class SequencerBase:
         result = test_result[2]
         self.stdf_data += result
         self.soft_bin = DutTestCaseBase._select_bin(self.soft_bin, test_result)
+        ftr_record = generate_FTR_dict(test_num=test_num, head_num=0, site_num=int(self.site_id), exception=exception)
+        self.stdf_data.append(ftr_record)
 
-        self.stdf_data.append(generate_FTR_dict(test_num=test_num, head_num=0, site_num=int(self.site_id), exception=exception))
+        self.harness.collect(result + [ftr_record])
 
         if self.__is_stop_on_fail_enabled() and failed:
             return False
 
         return True
+
+    def set_harness(self, harness):
+        self.harness = harness
 
     def __is_trigger_on_fail_enabled(self):
         if "trigger_on_fail" in self.test_settings:
@@ -232,3 +255,23 @@ class SequencerBase:
 
     def set_new_hbin_for_sbin(self, sbin: int, hbin: int):
         self.bin_strategy.set_new_hbin(sbin, hbin)
+
+    def set_input_parameter(self, parameters: list):
+        for parameter in parameters:
+            input_param = InputParameterSetMessage(**parameter)
+            try:
+                test_instance_name, parameter_name = tuple(input_param.parametername.split('.'))
+                test_instance = self._get_test_instance(test_instance_name)
+                param = test_instance.get_input_parameter(parameter_name)
+                param.set_parameter_value(input_param.value)
+            except AttributeError:
+                raise Exception(f"attribute '{input_param.parametername}' could not be found")
+
+    def _get_test_instance(self, test_instance_name: str):
+        for test in self.test_cases:
+            if test.instance_name != test_instance_name:
+                continue
+
+            return test
+
+        raise Exception(f"test instance name '{test_instance_name}' could not be found")

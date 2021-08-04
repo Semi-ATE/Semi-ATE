@@ -43,3 +43,4 @@ hypothesis==5.5.2
 pyserial==3.4
 tqdm
 Semi-ATE-STDF
+pydantic==1.8.2

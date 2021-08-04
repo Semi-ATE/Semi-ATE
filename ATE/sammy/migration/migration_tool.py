@@ -7,11 +7,12 @@ from ATE.sammy.migration.migration_scripts.migration_version_2 import MigrationV
 from ATE.sammy.migration.migration_scripts.migration_version_3 import MigrationVersion3
 from ATE.sammy.migration.migration_scripts.migration_version_4 import MigrationVersion4
 from ATE.sammy.migration.migration_scripts.migration_version_5 import MigrationVersion5
+from ATE.sammy.migration.migration_scripts.migration_version_6 import MigrationVersion6
 
 from ATE.sammy.migration.utils import (generate_path, write_version_to_file, VERSION, VERSION_FILE_NAME)
 
 DEFINITIONS = 'definitions'
-MIGRATORS = [MigrationVersion1(), MigrationVersion2(), MigrationVersion3(), MigrationVersion4(), MigrationVersion5()]
+MIGRATORS = [MigrationVersion1(), MigrationVersion2(), MigrationVersion3(), MigrationVersion4(), MigrationVersion5(), MigrationVersion6()]
 
 
 class MigrationTool:
@@ -48,6 +49,7 @@ class MigrationTool:
             2: lambda: MigrationVersion3(),
             3: lambda: MigrationVersion4(),
             4: lambda: MigrationVersion5(),
+            5: lambda: MigrationVersion6(),
         }[version_num]()
 
     @staticmethod

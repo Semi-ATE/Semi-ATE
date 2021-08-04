@@ -1,4 +1,7 @@
-class Harness:
+from abc import ABC, abstractclassmethod
+
+
+class Harness(ABC):
     '''
         The testharness is the interface used by
         the sequencer to interact with the remaining
@@ -8,11 +11,21 @@ class Harness:
         the MQTT connection logic
     '''
 
-    def send_status(self, status):
+    def __init__(self):
         pass
 
-    def send_testresult(self, stdfdata):
+    @abstractclassmethod
+    def next(self):
         pass
 
-    def send_summary(self, summary):
+    @abstractclassmethod
+    def collect(self, stdf_data: dict):
+        pass
+
+    @abstractclassmethod
+    def send_testresult(self, stdf_data: dict):
+        pass
+
+    @abstractclassmethod
+    def send_summary(self, summary: dict):
         pass

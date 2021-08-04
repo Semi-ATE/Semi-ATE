@@ -11,6 +11,12 @@ class Test:
                       .one()
 
     @staticmethod
+    def get_one_or_none(session: FileOperator, name: str, hardware: str, base: str) -> DBObject:
+        return session.query(Types.Test())\
+                      .filter(lambda Test: (Test.name == name and Test.hardware == hardware and Test.base == base))\
+                      .one_or_none()
+
+    @staticmethod
     def get_for_hw_base_test_typ(session: FileOperator, hardware: str, base: str, test_type: str) -> list:
         if test_type != 'all':
             return session.query(Types.Test())\
@@ -31,6 +37,21 @@ class Test:
         session.query(Types.Test())\
                .filter(lambda Test: Test.name == name and Test.hardware == hardware and Test.base == base)\
                .delete()
+        session.commit()
+
+    @staticmethod
+    def replace(session: FileOperator, database):
+        name = database['name']
+        hardware = database['hardware']
+        base = database['base']
+        test_type = database['type']
+        session.query(Types.Test())\
+               .filter(lambda Test: Test.name == name and Test.hardware == hardware and Test.base == base)\
+               .delete()
+
+        test = {"name": name, "hardware": hardware, "base": base, "type": test_type, "definition": database, "is_enabled": True}
+        session.query(Types.Test()).add(test)
+
         session.commit()
 
     @staticmethod

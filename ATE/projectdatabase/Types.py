@@ -15,6 +15,7 @@ class Types(Enum):
     Testtarget = 'testtarget'
     Group = 'group'
     Settings = 'settings'
+    Version = 'version'
 
     def __call__(self):
         return self.value

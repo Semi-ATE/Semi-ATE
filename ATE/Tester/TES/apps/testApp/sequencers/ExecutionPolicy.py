@@ -44,6 +44,9 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
             sequencer_instance.pre_cycle_cb()       # ToDo: This will kill all records generated up to now, which is probably not what we want if num_cycles > 1
             test_result = Result.Inconclusive()
             for test_case in sequencer_instance.test_cases:
+                if sequencer_instance.test_sequence and (test_case.instance_name not in sequencer_instance.test_sequence):
+                    continue
+
                 if not sequencer_instance.tester_instance.do_request(int(sequencer_instance.site_id), TIMEOUT):
                     raise Exception('no response')
 
