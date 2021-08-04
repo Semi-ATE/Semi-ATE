@@ -80,6 +80,10 @@ class MasterConnectionHandler:
         topic = f'ate/{self.device_id}/Master/response'
         self.mqtt.publish(topic, json.dumps(self._generate_identification_message()))
 
+    def send_host_info(self, host: str, port: int):
+        topic = f'ate/{self.device_id}/Master/response'
+        self.mqtt.publish(topic, json.dumps(self._generate_host_message(host, port)))
+
     def send_state(self, state, message):
         topic = f'ate/{self.device_id}/Master/response'
         self.mqtt.publish(topic, json.dumps(self._generate_state_message(state, message)))
@@ -132,6 +136,9 @@ class MasterConnectionHandler:
 
     def _generate_identification_message(self):
         return self._generate_message('identify', {'name': self.device_id})
+
+    def _generate_host_message(self, host: str, port: int):
+        return self._generate_message('get-host', {'host': host, 'port': port})
 
     def _generate_state_message(self, state, message):
         return self._generate_message('get-state', {'state': state, 'message': message})

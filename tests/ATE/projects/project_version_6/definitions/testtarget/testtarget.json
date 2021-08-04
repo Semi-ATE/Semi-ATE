@@ -1,10 +1,20 @@
 [
   {
-    "name": "adf_checker_abvf",
-    "prog_name": "project_version_6_HW0_PR_adf_checker_abvf",
+    "name": "adf_checker_tesrt",
+    "prog_name": "project_version_6_HW0_PR_adf_checker_tesrt",
     "hardware": "HW0",
     "base": "PR",
-    "test": "contact",
+    "test": "rt",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "dev_maintenance_tree",
+    "prog_name": "project_version_6_HW0_FT_dev_maintenance_tree",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "adff",
     "is_default": true,
     "is_enabled": false,
     "is_changed": false

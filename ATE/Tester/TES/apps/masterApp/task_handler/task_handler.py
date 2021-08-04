@@ -53,7 +53,7 @@ class TaskHandler:
     def run(self):
         root_path_to_ui = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
         import pathlib
-        webui_static_path = os.path.join(root_path_to_ui, 'ui/angular/mini-sct-gui/dist/mini-sct-gui')
+        webui_static_path = os.path.join(root_path_to_ui, 'ui/angular/mini-sct-gui/')
         webui_static_path = pathlib.Path(webui_static_path)
 
         webservice_setup_app(self.app, str(webui_static_path))

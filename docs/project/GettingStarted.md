@@ -107,47 +107,6 @@ cd spyder
 python bootstrap.py
 ```
 
-## Compiling the Web-Resources
-
-The web application is based on Angular. All dependencies can be resolved by using nodejs's package manager that is part of nodejs:
-
-- **Node**
-  - [nodejs Download](https://nodejs.org/en/)
-  - Version: > v12.16.1
-
-### Installation of Agular CLI
-
-Angular's **c**ommand **l**ine **i**nterface (cli) has to be installed globally. To do so execute the following command:
-
-```Console
-npm install -g @angular/cli
-```
-
-The above command has to be executed as normal user. After intsalltion of the cli the command **ng** should be added to the PATH variable.
-
-### Compiling the mini-sct-gui project
-
-1. Open a cmd window
-2. Navigate to the mini-sct-gui folder containing the project's source files
-
-   ```Console
-   cd ATE\Tester\TES\ui\angular\mini-sct-gui
-   ```
-
-3. Install additional dependencies, i.e. some node packages
-
-   ```Console
-   npm install
-   ```
-
-4. Generate the Distribution of Web Application
-
-   ```Console
-   ng build
-   ```
-
-   This will generate the folder **ATE\Tester\TES\ui\angular\mini-sct-gui\dist\mini-sct-gui** that has to be provided for the key **webui_static_path** in the JSON based master configuration file located in folder **ATE\Tester\TES\apps**. This step will be explained later in this document.
-
 ## TES: Test Executive Software
 
 In this step we will configure the software components as if they were run on a Mini SCT device.

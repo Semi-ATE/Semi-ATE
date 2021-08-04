@@ -1,7 +1,7 @@
 {
     "settings": {
         "hardware": "HW0",
-        "base": "PR",
-        "target": "adf"
+        "base": "FT",
+        "target": "dev"
     }
 }

@@ -25,16 +25,25 @@ def new_proj_dir(base_path):
 def old_proj_dir(base_path):
     """return the path to the last versionised Project version in "../projects"
     """
-
     project_dirs = base_path.joinpath(ALL_PROJECTS_REL_PATH).glob('*')
     versions_projects = {}
     for cur_proj_path in project_dirs:
         version_file = cur_proj_path.joinpath(DEFINTIONS, VERSION, VERSION_FILE_NAME)
         if version_file.exists():
-            with open(version_file, 'r') as file:
-                version_num = json.load(file)['version']
-                versions_projects[version_num] = cur_proj_path
+            version = get_version(version_file)
+            versions_projects[version] = cur_proj_path
     return versions_projects[max(versions_projects.keys())]
+
+
+def get_version(version_file: Path):
+    with open(version_file, 'r') as file:
+        data = json.load(file)
+
+        try:
+            # this supports the integration of the project version into the database
+            return data[0][VERSION]
+        except KeyError:
+            return data[VERSION]
 
 
 def get_section_file_path(project_path: Path, section: str) -> str:

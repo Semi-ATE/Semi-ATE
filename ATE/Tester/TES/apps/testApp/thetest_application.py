@@ -236,7 +236,7 @@ class TheTestAppMqttClient:
         self._topic_factory = topic_factory
         self._client = self._create_mqtt_client(topic_factory)
         self._client.connect_async(broker_host, int(broker_port), 60)
-        self._submit_callback = submit_callback
+        self.submit_callback = submit_callback
 
         # mqtt callbacks, excecuted in executor
         self.on_connect = None        # on_connect()        (only called when succcesfully (re-)connected)
@@ -324,7 +324,7 @@ class TheTestAppMqttClient:
             (self._topic_factory.master_resource_topic(resource_id=None), 2)
         ])
 
-        self._submit_callback(self.on_connect)
+        self.submit_callback(self.on_connect)
 
     def _on_disconnect_callback(self, client, userdata, rc):
         if rc != 0:
@@ -333,12 +333,12 @@ class TheTestAppMqttClient:
 
         logger.info("mqtt disconnected")
 
-        self._submit_callback(self.on_disconnect)
+        self.submit_callback(self.on_disconnect)
 
     def _on_message_callback(self, client, userdata, message: mqtt.MQTTMessage):
         logger.info(f'mqtt message for topic {message.topic}')
 
-        self._submit_callback(self.on_message, message)
+        self.submit_callback(self.on_message, message)
 
     def _on_message_cmd_callback(self, client, userdata, message: mqtt.MQTTMessage):
         logger.info(f'mqtt message for topic {message.topic}')
@@ -354,7 +354,7 @@ class TheTestAppMqttClient:
             logger.warning(f'ignoring TestApp cmd for other sites {sites} (current site_id is {self._topic_factory.site_id})')
             return
 
-        self._submit_callback(self.on_command, cmd, data)
+        self.submit_callback(self.on_command, cmd, data)
 
     def _on_message_resource_callback(self, client, userdata, message: mqtt.MQTTMessage):
         logger.info(f'mqtt message for topic {message.topic}')

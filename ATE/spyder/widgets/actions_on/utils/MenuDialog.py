@@ -1,3 +1,4 @@
+from enum import IntEnum
 import os
 import shutil
 
@@ -5,13 +6,16 @@ import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from pathlib import Path
 
 from ATE.spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ATE.spyder.widgets.navigation import ProjectNavigation
 
 
+STANDARD_DIALOG = 'Standard.ui'
 DELETE_DIALOG = 'Delete.ui'
 RENAME_DIALOG = 'Rename.ui'
+ORANGE_LABEL = 'color: orange'
 
 
 class MenuDialog(BaseDialog):
@@ -156,3 +160,50 @@ class ExceptionFoundDialog(DeleteFileDialog):
 
     def _accept(self):
         self.accept()
+
+
+class Action(IntEnum):
+    Rename = 0
+    Overwrite = 1
+
+
+class ImportDialog(BaseDialog):
+    def __init__(self, parent):
+        ui_file = Path(__file__).parent.joinpath('ImportDialog.ui')
+        super().__init__(str(ui_file), parent)
+        self._connect_action_handler()
+
+    def _connect_action_handler(self):
+        from ATE.spyder.widgets.validation import valid_name_regex
+        test_name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
+        self.fileName.setValidator(test_name_validator)
+        self.rename.clicked.connect(self._rename)
+        self.overwrite.clicked.connect(self._overwrite)
+        self.cancel.clicked.connect(self._cancel)
+        self.feedback.setText('')
+        self.feedback.setStyleSheet(ORANGE_LABEL)
+
+    def _cancel(self):
+        self.reject()
+
+    def _rename(self):
+        name = self.fileName.text()
+        if not name:
+            self.feedback.setText('make sure to insert a name')
+            return
+
+        self.action = {'type': Action.Rename, 'data': {'name': name}}
+        self.accept()
+
+    def _overwrite(self):
+        self.action = {'type': Action.Overwrite, 'data': {}}
+        self.accept()
+
+
+class StandardDialog(MenuDialog):
+    def __init__(self, parent, message):
+        super().__init__(STANDARD_DIALOG, 'Version Mismatch', parent)
+        self.label.setText(f"{message}")
+        self.icon_label.setPixmap(qta.icon('mdi.alert-outline', color='orange').pixmap(50, 50))
+        self.ok_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)
+        self.cancel_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)

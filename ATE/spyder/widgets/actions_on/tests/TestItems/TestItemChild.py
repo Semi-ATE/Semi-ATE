@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from qtpy import QtCore
 from ATE.spyder.widgets.actions_on.tests.TestItems.TestBaseItem import TestBaseItem
 from ATE.spyder.widgets.actions_on.model.Constants import MenuActionTypes
@@ -6,6 +7,7 @@ from ATE.spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOpe
 from ATE.spyder.widgets.actions_on.tests.TestWizard import edit_test_dialog
 from ATE.spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
                                                                   ExceptionTypes)
+from ATE.spyder.widgets.actions_on.tests.TestItems.utils import export_content
 from ATE.spyder.widgets.constants import TEST_SECTION
 
 
@@ -27,10 +29,13 @@ class TestItemChild(TestBaseItem):
 
     def edit_item(self):
         self.model().edit_test_params.emit(self.path)
-        test_content = self.project_info.get_test_table_content(self.text(), self.project_info.active_hardware, self.project_info.active_base)
+        test_content = self._get_test_content()
         handle_excpetions(self.project_info.parent,
                           lambda: edit_test_dialog(self.project_info, test_content),
                           ExceptionTypes.Maskset())
+
+    def _get_test_content(self):
+        return self.project_info.get_test_table_content(self.text(), self.project_info.active_hardware, self.project_info.active_base)
 
     def open_file_item(self):
         path = os.path.dirname(self.path)
@@ -49,12 +54,23 @@ class TestItemChild(TestBaseItem):
 
         import shutil
         shutil.rmtree(os.path.dirname(self.path))
-        self.project_info.remove_test(self.text(), self.project_info.active_hardware, self.project_info.active_base)
+        self.project_info.remove_test(self.text(), self.project_info.active_hardware, self.project_info.active_base, self.parent.text())
 
         self._remove_item()
 
     def _remove_item(self):
         self.parent.removeRow(self.row())
+
+    def export_item(self):
+        selected_dir = self.file_system_operator.export_file(f'{self.text()}.ate')
+
+        if not selected_dir:
+            return
+
+        self._export_data(selected_dir)
+
+    def _export_data(self, path: str):
+        export_content(Path(path), self._get_test_content(), Path(self.path), self.project_info, self.text())
 
     @property
     def dependency_list(self):
@@ -79,7 +95,8 @@ class TestItemChild(TestBaseItem):
     def _enabled_item_menu(self):
         menu = [MenuActionTypes.OpenFile(),
                 MenuActionTypes.Edit(),
-                MenuActionTypes.Trace()]
+                MenuActionTypes.Trace(),
+                MenuActionTypes.Export()]
 
         delete_menu_option = [None,
                               MenuActionTypes.Delete()]

@@ -8,7 +8,6 @@ variables:
 cache:
   paths:
     - .cache/pip
-    #- ./ATE/TES/ui/angular/mini-sct-gui/node_modules
 
 stages:
     - generate_build_dependencies
@@ -64,15 +63,6 @@ before_script:
         python -m pip install -e .
         cd ..\..\..
     }
-  - >       
-    function Install-AngularRequirementsAndBuild {
-        param($VenvPath)
-
-        cd .\ATE\Tester\TES\ui\angular\mini-sct-gui
-        npm i @angular/cli --prefix ./cli
-        npm i tslint-eslint-rules
-        ./cli/ng build
-    }
   - >
     function Remove-Venv {
         param($VenvPath)
@@ -110,17 +100,6 @@ build_venv:
 
   tags:
     - pyt
-
-
-angular_tests:
-  stage: generate_build_dependencies
-  script:
-    - Install-AngularRequirementsAndBuild $venvPath
-    - ./cli/ng lint
-    - ./cli/ng test --watch false --browsers ChromeHeadless
-  tags:
-    - pyt
-
 
 unittests:
   stage: test

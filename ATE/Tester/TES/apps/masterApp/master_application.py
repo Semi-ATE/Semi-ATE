@@ -19,7 +19,7 @@ from ATE.Tester.TES.apps.masterApp.utils.command_executor import (GetLogFileComm
                                                                   GetYields, GetBinTable)
 from ATE.Tester.TES.apps.masterApp.task_handler.task_handler import TaskHandler
 
-from ATE.Tester.TES.apps.masterApp.resulthandling.stdf_aggregator import StdfTestResultAggregator
+from ATE.Tester.TES.apps.common.stdf_aggregator import StdfTestResultAggregator
 from ATE.Tester.TES.apps.masterApp.resulthandling.result_collection_handler import ResultsCollector
 from ATE.Tester.TES.apps.masterApp.utils.result_Information_handler import ResultInformationHandler
 
@@ -704,11 +704,18 @@ class MasterApplication(MultiSiteTestingModel):
                 'identify': lambda param_data: self._send_tester_identification(param_data),
                 'get-state': lambda param_data: self._send_tester_state(param_data),
                 'site-layout': lambda param_data: self._set_layout(param_data['sites']),
+                'get-host': lambda _: self._send_host_link()
             }[cmd](payload)
         except KeyError:
             self.log.log_message(LogLevel.Error(), f'Failed to execute command: {cmd}')
         except MachineError:
             self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
+
+    def _send_host_link(self):
+        port = self.configuration['webui_port']
+        host = self.configuration['webui_host']
+
+        self.connectionHandler.send_host_info(host, port)
 
     def _set_layout(self, layout: list):
         if len(self.sites) < len(layout):

@@ -15,6 +15,15 @@ class InputParameter:
         self._max = max_value
         self._exponent = exponent
 
+    def set_parameter_value(self, value: float):
+        if self._shmoo is False:
+            raise Exception(f"Input-parameter '{self._name}' is not shmooable")
+
+        if value < self._min or value > self._max:
+            raise Exception(f"Input-parameter '{self._name}' could not be set, value out of range '{value}'")
+
+        self._value = value
+
     def __call__(self):
         return self._value
 

@@ -37,9 +37,31 @@
             ]
           }
         ],
-        "FT": []
+        "FT": [
+          {
+            "next_ping_pong_id": 1,
+            "name": "FT1A",
+            "sites": [
+              [
+                0,
+                0
+              ]
+            ],
+            "configs": [
+              {
+                "id": 0,
+                "name": "All Parallel",
+                "stages": [
+                  [
+                    "0"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
       },
-      "tester": "DummyTester.MiniSCT",
+      "tester": "TDKMicronas.MiniSCT",
       "Actuator": {
         "PR": [
           "Temperature",

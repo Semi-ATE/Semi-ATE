@@ -3,14 +3,14 @@ import json
 
 
 class CommandLineParser:
-    __slots__ = ["broker_host", "broker_port", "device_id", "site_id", "binstrategytype"]
+    __slots__ = ["broker_host", "broker_port", "device_id", "site_id", "strategytype"]
 
     def __init__(self, argv=None):
         self.broker_host = "127.0.0.1"
         self.broker_port = 1883
         self.device_id = "SCT-81-1F"
         self.site_id = "0"
-        self.binstrategytype = "file"
+        self.strategytype = "file"
         self.init_from_command_line(argv)
 
     def to_json(self):

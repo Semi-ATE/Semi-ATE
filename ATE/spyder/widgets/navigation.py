@@ -32,6 +32,7 @@ from ATE.projectdatabase.FileOperator import FileOperator
 from ATE.projectdatabase.Group import Group
 from ATE.projectdatabase.Types import Types
 from ATE.projectdatabase.Settings import Settings
+from ATE.projectdatabase.Version import Version
 
 
 definitions = {Types.Maskset(): Maskset}
@@ -684,9 +685,12 @@ class ProjectNavigation(QObject):
 
         return Test.get_for_hw_base_test_typ(self.get_file_operator(), hardware, base, test_type)
 
-    def remove_test(self, name: str, hardware: str, base: str):
+    def remove_test(self, name: str, hardware: str, base: str, group: str):
         Test.remove(self.get_file_operator(), name, hardware, base)
-        Sequence.remove_test_from_sequence(self.get_file_operator(), name)
+        Group.remove_test_from_group(self.get_file_operator(), group, name, do_commit=False)
+
+    def replace_test(self, database):
+        Test.replace(self.get_file_operator(), database)
 
     def get_data_for_qualification_flow(self, quali_flow_type, product):
         return QualificationFlowDatum.get_data_for_flow(self.get_file_operator(), quali_flow_type, product)
@@ -821,7 +825,7 @@ class ProjectNavigation(QObject):
     def _remove_testprogram_form_group_list(self, prog_name: str, owner_name: str):
         # group name is contained in owner_name
         group = owner_name.split('_')[-1]
-        Group.remove_tesprogram_from_group(self.get_file_operator(), group, prog_name)
+        Group.remove_testprogram_from_group(self.get_file_operator(), group, prog_name)
 
     @staticmethod
     def _remove_file(file_name):
@@ -1239,3 +1243,15 @@ class ProjectNavigation(QObject):
                 return settings['hardware'], settings['base'], settings['target']
             except Exception:
                 return '', '', ''
+
+    def get_version(self) -> str:
+        return Version.get(self.get_file_operator()).version
+
+    def get_test_groups(self, test_name: str) -> list:
+        return [group.name for group in self.get_groups_for_test(test_name)]
+
+    def does_test_exist(self, name, hardware, base) -> bool:
+        return Test.get_one_or_none(self.get_file_operator(), name, hardware, base) is not None
+
+    def get_test_path(self, name, hardware, base):
+        return Path(self.project_directory).joinpath('src', hardware, base, name, name)

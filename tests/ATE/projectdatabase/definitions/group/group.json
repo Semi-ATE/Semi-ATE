@@ -1,0 +1,20 @@
+[
+  {
+    "name": "test",
+    "is_selected": true,
+    "is_standard": false,
+    "programs": [],
+    "tests": [
+      "test_1"
+    ]
+  },
+  {
+    "name": "group",
+    "is_selected": true,
+    "is_standard": false,
+    "programs": [],
+    "tests": [
+      "test_1"
+    ]
+  }
+]

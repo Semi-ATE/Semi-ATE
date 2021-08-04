@@ -28,13 +28,15 @@ class InputParameter(ParameterBase):
         self.default = ParameterField(self.format_value(input_params['Default']), editable=editable)
         self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(self._get_value(input_params))
         self.valid = True
+        self.shmoo = ParameterField(input_params['Shmoo'])
 
         self._select_editability_for_resolvertype(editable)
 
-    def update_parameters(self, param):
+    def update_parameters(self, param: 'InputParameter'):
         self.exponent.set_value(param.exponent.get_value())
         self.unit.set_value(param.unit.get_value())
         self.format.set_value(param.format.get_value())
+        self.shmoo.set_value(param.shmoo.get_value())
 
     def _select_editability_for_resolvertype(self, editable):
         if editable is not ParameterEditability.NotEditable():
@@ -146,7 +148,8 @@ class InputParameter(ParameterBase):
     def get_parameters_content(self):
         return {'name': self.name.get_value(), 'min': self.min.get_value(), 'value': self.value.get_value(),
                 'max': self.max.get_value(), 'format': self.format.get_value(), 'unit': self.unit.get_value(),
-                'type': self.type.get_value(), 'exponent': self.exponent.get_value(), 'default': self.default.get_value()}
+                'type': self.type.get_value(), 'exponent': self.exponent.get_value(), 'default': self.default.get_value(),
+                'shmoo': self.shmoo.get_value()}
 
     def is_valid(self):
         return self.valid
@@ -213,3 +216,6 @@ class InputParameter(ParameterBase):
             self.value.set_value(float_val)
         except ValueError:
             self.value.set_value(new_text)
+
+    def is_shmooable(self):
+        return self.shmoo.get_value()

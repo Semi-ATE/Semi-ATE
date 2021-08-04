@@ -26,7 +26,7 @@ class {{ definition['name'] }}({{ definition['name'] }}_BC):
     '''
 
     def do(self):
-        """Default implementation for the '{{ definition['name'] }}' test."""
+        """Default implementation for test."""
 
         # sleep used only for test puposes (CI build), without provoking sleep the test-app's state change from ready to testing could not be detected 
         # must be removed when start implementing the test !!

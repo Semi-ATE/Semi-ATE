@@ -190,7 +190,7 @@ Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge vo
                     "partid": "", 
                     "binning": "", 
                     "logflag": "", 
-                    "additionalinfo": ""
+                    "additionalinfo": "",
                 },
                 (mehr sites)
             ]
@@ -273,6 +273,30 @@ Antwort durch den Master
 * HAVE_LOT
 * UN_ERR = unrecorverable error
 
+
+#### get-host
+Der get-host Befehl weist die Masterapplikation seinen host information zu schicken. Diese werden verwendet, um auf dem Master WebUI zugreifen zu können.
+Der Master published daraufhin die information in seinem response topic.
+
+```json
+{
+    "type": "get-state",
+    "payload": {}
+}
+```
+
+Antwort durch den Master
+
+```json
+{
+    "type": "get-state",
+    "payload":
+    {
+        "host": "",
+        "port": /<port-num/>
+    }
+ }
+```
 
 ## Daten die vom Master konsumiert werden
 

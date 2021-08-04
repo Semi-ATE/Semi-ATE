@@ -11,17 +11,28 @@ import os
 import sys
 import pathlib
 import traceback
-from ATE.Tester.TES.apps.testApp.sequencers.SequencerHarness import SequencerHarness
+from ATE.Tester.TES.apps.testApp.sequencers.Sequencer import Sequencer
+from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.sequencers.SequencerBase import SequencerBase
 from ATE.Tester.TES.apps.testApp.auto_script.AutoScriptBase import AutoScriptBase
+from ATE.Tester.TES.apps.testApp.sequencers import Harness
 from ATE.Tester.TES.apps.testApp.stages_sequence_generator.stages_sequence_generator import StagesSequenceGenerator
+from ATE.Tester.TES.apps.testApp.sequencers.mqtt.MqttConnection import MqttConnection
 from ATE.semiateplugins.pluginmanager import get_plugin_manager
 from ATE.common.logger import Logger, LogLevel
 
 
 class Context:
-    def __init__(self, source: str, params: dict, sequencer: SequencerBase, auto_script: AutoScriptBase, execution_strategy: StagesSequenceGenerator):
-        self.harness = SequencerHarness(sequencer, params, execution_strategy)
+    def __init__(
+        self,
+        source: str,
+        params: dict,
+        sequencer: SequencerBase,
+        auto_script: AutoScriptBase,
+        execution_strategy: StagesSequenceGenerator,
+        mqtt: MqttConnection,
+        harness_strategy: Harness):
+        self.harness = Sequencer(sequencer, params, execution_strategy, mqtt, harness_strategy)
         self.logger = Logger(source, self.harness)
 
         # Logging is available @ Info Level during startup of the
@@ -38,9 +49,9 @@ class Context:
             sequencer.set_auto_script(self.auto_script)
 
             # Tester
-            testers = get_plugin_manager().hook.get_tester(tester_name="DummyTester.MiniSCT")
-            assert len(testers) < 2, "The testertype DummyTester.MiniSCT maps to multiple testers. Check installed plugins."
-            assert len(testers) == 1, "The testertype DummyTester.MiniSCT is not available or installed on this machine."
+            testers = get_plugin_manager().hook.get_tester(tester_name="TDKMicronas.MiniSCT")
+            assert len(testers) < 2, "The testertype TDKMicronas.MiniSCT maps to multiple testers. Check installed plugins."
+            assert len(testers) == 1, "The testertype TDKMicronas.MiniSCT is not available or installed on this machine."
             self.tester_instance = testers[0]
             sequencer.set_tester_instance(self.tester_instance)
 
@@ -99,5 +110,13 @@ def apply_configuration(feature_dict):
                 instance.apply_configuration(json.loads(reader.read()))
 
 
-def make_context(source: str, params: dict, sequencer: SequencerBase, auto_script: AutoScriptBase, execution_strategy: StagesSequenceGenerator) -> Context:
-    return Context(source, params, sequencer, auto_script, execution_strategy)
+def make_context(
+    source: str,
+    params: dict,
+    sequencer: SequencerBase,
+    auto_script: AutoScriptBase,
+    execution_strategy: StagesSequenceGenerator,
+    mqtt: MqttConnection,
+    harness_strategy: Harness
+    ) -> Context:
+    return Context(source, params, sequencer, auto_script, execution_strategy, mqtt, harness_strategy)

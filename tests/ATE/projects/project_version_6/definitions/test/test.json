@@ -1,11 +1,11 @@
 [
   {
-    "name": "contact",
+    "name": "rt",
     "hardware": "HW0",
     "base": "PR",
     "type": "custom",
     "definition": {
-      "name": "contact",
+      "name": "rt",
       "type": "custom",
       "hardware": "HW0",
       "base": "PR",
@@ -25,6 +25,69 @@
       },
       "output_parameters": {
         "new_parameter1": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        }
+      },
+      "dependencies": {}
+    },
+    "is_enabled": true
+  },
+  {
+    "name": "adff",
+    "hardware": "HW0",
+    "base": "FT",
+    "type": "custom",
+    "definition": {
+      "name": "adff",
+      "type": "custom",
+      "hardware": "HW0",
+      "base": "FT",
+      "groups": [
+        "maintenance"
+      ],
+      "docstring": [
+        ""
+      ],
+      "input_parameters": {
+        "Temperature": {
+          "Shmoo": true,
+          "Min": -40.0,
+          "Default": 25.0,
+          "Max": 170.0,
+          "10\u1d61": 0,
+          "Unit": "\u00b0C",
+          "fmt": ".0f"
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        },
+        "new_parameter2": {
+          "LSL": -Infinity,
+          "LTL": NaN,
+          "Nom": 0.0,
+          "UTL": NaN,
+          "USL": Infinity,
+          "10\u1d61": 0,
+          "Unit": "\u02fd",
+          "fmt": ".3f"
+        },
+        "new_parameter3": {
           "LSL": -Infinity,
           "LTL": NaN,
           "Nom": 0.0,

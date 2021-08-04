@@ -6,7 +6,7 @@ class Group:
     @staticmethod
     def get(session: FileOperator, name: str) -> DBObject:
         return session.query(Types.Group())\
-                      .filter(lambda: Group.name == name)\
+                      .filter(lambda Group: Group.name == name)\
                       .one()
 
     @staticmethod
@@ -44,9 +44,15 @@ class Group:
         session.commit()
 
     @staticmethod
-    def remove_tesprogram_from_group(session: FileOperator, group: str, prog_name: str):
+    def remove_testprogram_from_group(session: FileOperator, group: str, prog_name: str):
         group = session.query(Types.Group()).filter(lambda Group: Group.name == group).one()
         group.programs.pop(group.programs.index(prog_name))
+        session.commit()
+
+    @staticmethod
+    def remove_test_from_group(session: FileOperator, group: str, test: str):
+        group = session.query(Types.Group()).filter(lambda Group: Group.name == group).one()
+        group.tests.pop(group.tests.index(test))
         session.commit()
 
     @staticmethod

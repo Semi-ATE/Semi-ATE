@@ -17,11 +17,11 @@ class MqttClient():
     _topic_factory: TopicFactory
     _resource_msg_queue: queue.Queue
 
-    def __init__(self, broker_host: str, broker_port: str, topic_factory: TopicFactory, submit_callback: callable):
+    def __init__(self, broker_host: str, broker_port: str, topic_factory: TopicFactory):
         self._topic_factory = topic_factory
         self._client = self._create_mqtt_client(topic_factory)
         self._client.connect_async(broker_host, int(broker_port), 60)
-        self._submit_callback = submit_callback
+        self.submit_callback = None
         self._router = MqttRouter()
 
         # mqtt callbacks, excecuted in executor
@@ -112,7 +112,7 @@ class MqttClient():
             (self._topic_factory.generic_resource_response(), 2)
         ])
 
-        self._submit_callback(self.on_connect)
+        self.submit_callback(self.on_connect)
 
     def _on_disconnect_callback(self, client, userdata, rc):
         if rc != 0:
@@ -121,12 +121,12 @@ class MqttClient():
 
         logger.info("mqtt disconnected")
 
-        self._submit_callback(self.on_disconnect)
+        self.submit_callback(self.on_disconnect)
 
     def _on_message_callback(self, client, userdata, message: mqtt.MQTTMessage):
         logger.info(f'mqtt message for topic {message.topic}')
 
-        self._submit_callback(self.on_message, message)
+        self.submit_callback(self.on_message, message)
 
     def _on_message_cmd_callback(self, client, userdata, message: mqtt.MQTTMessage):
         logger.info(f'mqtt message for topic {message.topic}')
@@ -142,7 +142,7 @@ class MqttClient():
             logger.warning(f'ignoring TestApp cmd for other sites {sites} (current site_id is {self._topic_factory.site_id})')
             return
 
-        self._submit_callback(self.on_command, cmd, data)
+        self.submit_callback(self.on_command, cmd, data)
 
     def _on_message_resource_callback(self, client, userdata, message: mqtt.MQTTMessage):
         data = json.loads(message.payload.decode('utf-8'))

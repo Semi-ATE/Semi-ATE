@@ -62,7 +62,7 @@ class ControlAppMachine:
                     '--broker_host', self._conhandler.broker_host,
                     '--broker_port', str(self._conhandler.broker_port),
                     '--parent-pid', str(os.getpid()),  # TODO: this should be configurable in future: it will make the testapp kill itself if this parent process dies
-                    '--binstrategytype', 'external',
+                    '--strategytype', 'external',
                     # '--ptvsd-enable-attach',  # uncomment this to enable attaching the remote debugger
                     # '--ptvsd-wait-for-attach',  # uncomment this to enable attaching the remote debugger AND waiting for an remote debugger to be attached before initialization
                     *testapp_params.get('testapp_script_args', [])]
