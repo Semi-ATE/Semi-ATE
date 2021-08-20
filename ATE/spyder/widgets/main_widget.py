@@ -84,7 +84,7 @@ class ATEWidget(PluginMainWidget):
     def get_focus_widget(self):
         return self.tree
 
-    def setup(self, options):
+    def setup(self):
         return
 
     def on_option_update(self, option, value):

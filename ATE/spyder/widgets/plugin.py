@@ -44,6 +44,6 @@ class ATE(SpyderDockablePlugin):
     def get_icon(self):
         return QIcon()
 
-    def on_initialized(self):
+    def on_initialize(self):
         widget = self.get_widget()
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
