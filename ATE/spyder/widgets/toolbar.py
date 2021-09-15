@@ -11,6 +11,17 @@ from PyQt5 import QtWidgets
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
+class ToolbarItems:
+    HardwareLabel = 'hardware_labeñ'
+    HardwareCombo = 'hardware_combo'
+    BaseLabel = 'base_label'
+    BaseCombo = 'base_combo'
+    TargetLabel = 'target_label'
+    TargetCombo = 'target_combo'
+    GroupLabel = 'group_label'
+    GroupCombo = 'group_combo'
+
+
 class ToolBar(ApplicationToolbar):
     ID = 'ate_toolbar'
 
@@ -71,8 +82,10 @@ class ToolBar(ApplicationToolbar):
 
     def _setup_hardware(self):
         self.hardware_label = QtWidgets.QLabel("Hardware:")
+        self.hardware_label.ID = ToolbarItems.HardwareLabel
         self.hardware_label.setStyleSheet("background-color: transparent;")
         self.hardware_combo = QtWidgets.QComboBox()
+        self.hardware_combo.ID = ToolbarItems.HardwareCombo
         self.hardware_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.hardware_combo.setCurrentText(self.active_hardware)
 
@@ -88,16 +101,20 @@ class ToolBar(ApplicationToolbar):
     def _setup_base(self):
         self.base_label = QtWidgets.QLabel("Base:")
         self.base_label.setStyleSheet("background-color: transparent;")
+        self.base_label.ID = ToolbarItems.BaseLabel
 
         self.base_combo = QtWidgets.QComboBox()
+        self.base_combo.ID = ToolbarItems.BaseCombo
         self.base_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.base_combo.addItems(['', 'PR', 'FT'])
 
     def _setup_target(self):
         self.target_label = QtWidgets.QLabel("Target:")
         self.target_label.setStyleSheet("background-color: transparent;")
+        self.target_label.ID = ToolbarItems.TargetLabel
 
         self.target_combo = QtWidgets.QComboBox()
+        self.target_combo.ID = ToolbarItems.TargetCombo
         self.target_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.target_combo.addItems([''])
         self.target_combo.setCurrentText(self.active_target)
@@ -105,8 +122,10 @@ class ToolBar(ApplicationToolbar):
     def _setup_group(self):
         self.group_label = QtWidgets.QLabel("Groups:")
         self.group_label.setStyleSheet("background-color: transparent;")
+        self.group_label.ID = ToolbarItems.GroupLabel
 
         self.group_combo = QtWidgets.QComboBox()
+        self.group_combo.ID = ToolbarItems.GroupCombo
         self.group_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
     def _init__group(self):
