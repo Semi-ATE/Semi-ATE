@@ -67,11 +67,11 @@ class ATE(SpyderDockablePlugin):
         projects = self.get_plugin(Plugins.Projects)
         projects.register_project_type(self, ATEProject)
         projects.register_project_type(self, ATEPluginProject)
+        projects.sig_project_loaded.connect(self.open_project)
         projects.sig_project_closed.connect(self.close_project)
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
-        print("///////////////////////////////// editoooooo")
         widget = self.get_widget()
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
