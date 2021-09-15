@@ -34,6 +34,8 @@ class ToolBar(ApplicationToolbar):
         self.active_base = ''
         self.active_target = ''
         self.project_info = project_info
+        print("FIXME: Set width for toolbar")
+        self.setFixedWidth(600)
 
         self._setup()
         self.init_toolbar_items()
