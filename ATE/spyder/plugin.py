@@ -78,6 +78,12 @@ class ATE(SpyderDockablePlugin):
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
 
+    def on_mainwindow_visible(self):
+        # Hide by default the first time the plugin is loaded.
+        if self.get_conf('first_time_shown', True):
+            self.get_widget().toggle_view(False)
+            self.set_conf('first_time_shown', False)
+
     # --- ATE Plugin API
     # ------------------------------------------------------------------------
     def create_project(self, project_root):
