@@ -169,7 +169,7 @@ class TestWizard(BaseDialog):
         self.inputParameterUnselect.setIcon(qta.icon('mdi.select-off', color='orange'))
         self.inputParameterUnselect.setToolTip('Clear selection')
 
-        self.inputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+        self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
         self.inputParameterFormat.setToolTip('Show parameter formats')
         self.inputParameterFormatVisible = False
 
@@ -212,7 +212,7 @@ class TestWizard(BaseDialog):
         self.outputParameterUnselect.setIcon(qta.icon('mdi.select-off', color='orange'))
         self.outputParameterUnselect.setToolTip('Clear selection')
 
-        self.outputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+        self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
         self.outputParameterFormat.setToolTip('Show parameter formats')
         self.outputParameterFormatVisible = False
 
@@ -1008,12 +1008,12 @@ class TestWizard(BaseDialog):
 
     def toggleInputParameterFormatVisible(self):
         if self.inputParameterFormatVisible:
-            self.inputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+            self.inputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
             self.inputParameterFormatVisible = False
             self.inputParameterFormat.setToolTip('Show parameter formats')
             self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, True)
         else:
-            self.inputParameterFormat.setIcon(qta.icon('mdi.settings-outline', color='orange'))
+            self.inputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
             self.inputParameterFormatVisible = True
             self.inputParameterFormat.setToolTip('Hide parameter formats')
             self.inputParameterView.setColumnHidden(INPUT_FMT_COLUMN_INDEX, False)
@@ -1519,12 +1519,12 @@ class TestWizard(BaseDialog):
 
     def toggleOutputParameterFormatVisible(self):
         if self.outputParameterFormatVisible:
-            self.outputParameterFormat.setIcon(qta.icon('mdi.settings', color='orange'))
+            self.outputParameterFormat.setIcon(qta.icon('mdi.cog', color='orange'))
             self.outputParameterFormatVisible = False
             self.outputParameterFormat.setToolTip('Show parameter formats')
             self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, True)
         else:
-            self.outputParameterFormat.setIcon(qta.icon('mdi.settings-outline', color='orange'))
+            self.outputParameterFormat.setIcon(qta.icon('mdi.cog-outline', color='orange'))
             self.outputParameterFormatVisible = True
             self.outputParameterFormat.setToolTip('Hide parameter formats')
             self.outputParameterView.setColumnHidden(OUTPUT_FMT_COLUMN_INDEX, False)

@@ -10,4 +10,3 @@ aiomqtt
 pyserial
 tqdm
 pydantic
-watchdog
