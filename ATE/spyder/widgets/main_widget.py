@@ -9,7 +9,7 @@ from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QTreeView
 from qtpy.QtWidgets import QVBoxLayout
 from spyder.api.translations import get_translation
-from spyder.api.widgets import PluginMainWidget
+from spyder.api.widgets.main_widget import PluginMainWidget
 
 from ATE.spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ATE.spyder.widgets.navigation import ProjectNavigation
@@ -53,9 +53,8 @@ class ATEWidget(PluginMainWidget):
     group_removed = Signal(str)
     groups_update = Signal(str, list)
 
-    def __init__(self, name=None, plugin=None, parent=None,
-                 options=DEFAULT_OPTIONS):
-        super().__init__(name, plugin, parent=parent, options=options)
+    def __init__(self, name=None, plugin=None, parent=None):
+        super().__init__(name, plugin, parent=parent)
 
         # Widgets
         self.model = None
@@ -85,7 +84,7 @@ class ATEWidget(PluginMainWidget):
     def get_focus_widget(self):
         return self.tree
 
-    def setup(self, options):
+    def setup(self):
         return
 
     def on_option_update(self, option, value):

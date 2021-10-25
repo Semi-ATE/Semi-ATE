@@ -98,7 +98,10 @@ class ObserverBase:
         self.observer.schedule(self.event_handler, self.path, recursive=self.go_recursively)
 
     def start_observer(self):
-        self.observer.start()
+        try:
+            self.observer.start()
+        except OSError:
+            print("Observer error")
 
     def stop_observer(self):
         if self.observer.is_alive():

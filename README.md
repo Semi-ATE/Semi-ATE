@@ -3,19 +3,21 @@
 **Semi**conductor **A**utomated **T**est **E**quipment
 
 [![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/main/LICENSE)
-[![Conda](https://img.shields.io/conda/pn/conda-forge/Semi-ATE?color=black)](https://anaconda.org/conda-forge/Semi-ATE)
-![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)
+[![Conda](https://img.shields.io/conda/pn/conda-forge/starz?color=black)](https://www.lifewire.com/what-is-noarch-package-2193808)
+[![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.7-black)](https://www.python.org/downloads/)
 
-[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=main)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/Semi-ATE/Semi-ATE/branch/main/graph/badge.svg?token=BAP0H9OMED)](https://codecov.io/gh/Semi-ATE/Semi-ATE)
+[![CI](https://github.com/Semi-ATE/Semi-ATE/workflows/CI/badge.svg?branch=master)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACI)
 [![CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions?query=workflow%3ACD)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
+[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/Semi-ATE/Semi-ATE/latest)](https://github.com/Semi-ATE/Semi-ATE)
 [![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
-![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)
+[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate)
+[![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-feedstock)
 
 [![GitHub issues](https://img.shields.io/github/issues/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/pulls)
+![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/semi-ate.svg?color=brightgreen)
 
 `Semi-ATE` is a tester- and instruments **AGNOSTIC** framework for **Semi**conductor **ATE** ASIC testing projects.
 

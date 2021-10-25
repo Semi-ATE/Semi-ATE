@@ -31,7 +31,7 @@ class ATE(SpyderDockablePlugin):
     CONF_SECTION = NAME
 
     # --- Signals
-    # ------------------------------------------------------------------------
+    # ------------------------------------------------------------------------:
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -44,10 +44,6 @@ class ATE(SpyderDockablePlugin):
     def get_icon(self):
         return QIcon()
 
-    def register(self):
+    def on_initialize(self):
         widget = self.get_widget()
-
-        # Add toolbar
         self.add_application_toolbar('ate_toolbar', widget.toolbar)
-
-        # Register a new project type

@@ -9,6 +9,7 @@ from qtpy.QtGui import QIcon
 from spyder.api.plugins import Plugins
 from spyder.api.plugins import SpyderDockablePlugin
 from spyder.api.translations import get_translation
+from spyder.api.plugin_registration.decorators import on_plugin_available
 
 from ATE.spyder.project import ATEPluginProject
 from ATE.spyder.project import ATEProject
@@ -27,7 +28,7 @@ class ATE(SpyderDockablePlugin):
     Breakpoint list Plugin.
     """
     NAME = 'ate'
-    REQUIRES = [Plugins.Toolbar]   # TODO: fix crash  (Plugins.Editor)
+    REQUIRES = [Plugins.Toolbar, Plugins.Projects, Plugins.Editor]   # TODO: fix crash  (Plugins.Editor)
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
@@ -48,45 +49,40 @@ class ATE(SpyderDockablePlugin):
     def get_icon(self):
         return QIcon()
 
-    def register(self):
-        toolbar = self.get_plugin(Plugins.Toolbar)
+    def on_initialize(self):
         widget = self.get_widget()
-
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
         widget.sig_close_file.connect(self.sig_close_file)
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
 
-        # Add toolbar
+    @on_plugin_available(plugin=Plugins.Toolbar)
+    def on_toolbar_available(self):
+        widget = self.get_widget()
+        toolbar = self.get_plugin(Plugins.Toolbar)
         toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.hide()
 
-        # Register a new project type
-        # TODO: Temporal fix
-        projects = self._main._PLUGINS["project_explorer"]
+    @on_plugin_available(plugin=Plugins.Projects)
+    def on_projects_available(self):
+        projects = self.get_plugin(Plugins.Projects)
         projects.register_project_type(self, ATEProject)
         projects.register_project_type(self, ATEPluginProject)
+        projects.sig_project_loaded.connect(self.open_project)
+        projects.sig_project_closed.connect(self.close_project)
 
-        editor = self._main._PLUGINS["editor"]
+    @on_plugin_available(plugin=Plugins.Editor)
+    def on_editor_available(self):
+        widget = self.get_widget()
+        editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
 
-        # Register a new action to create consoles on the IPythonConsole
-        # TODO: Temporal fix
-        # zconf_action = self.create_action(
-        #     name="show_zconf_dialog",
-        #     text="Select kernel from Zero Conf",
-        #     tip="",
-        #     icon=self.create_icon("run"),
-        #     triggered=self.show_zero_conf_dialog,
-        # )
-        ipython = self._main._PLUGINS["ipython_console"]
-        # menu = ipython.get_main_menu()
-        # self.add_item_to_menu(
-        #     zconf_action,
-        #     menu,
-        #     "top",
-        # )
+    def on_mainwindow_visible(self):
+        # Hide by default the first time the plugin is loaded.
+        if self.get_conf('first_time_shown', True):
+            self.get_widget().toggle_view(False)
+            self.set_conf('first_time_shown', False)
 
     # --- ATE Plugin API
     # ------------------------------------------------------------------------
