@@ -1,0 +1,36 @@
+#!/usr/bin/env conda run -n ATE python
+# -*- coding: utf-8 -*-
+"""
+{% for line in module_doc_string %}
+{{ line }}
+{% endfor %}
+"""
+from {{ definition['base_class'] }}.{{ definition['base_class'] }} import {{ definition['base_class'] }}
+
+
+class {{ definition['name'] }}({{ definition['base_class'] }}):
+    '''
+{{ do_not_touch_section }}
+    '''
+
+    def do(self):
+        """Default implementation for the '{{ definition['name'] }}' test."""
+        super().do()
+
+
+if __name__ == '__main__':
+    import os
+    tester = os.environ.get('TESTER')
+    tester_mode = os.environ.get('TESTERMODE')
+    if tester_mode == 'DIRECT':
+        pass  # TODO: implement
+    else:  # 'INTERACTIVE'
+        from PyQt5 import QtWidgets
+        import sys
+        import qdarkstyle
+        app = QtWidgets.QApplication(sys.argv)
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        from ate_spyder.widgets.actions_on.tests.TestRunner import TestRunner
+        testRunner = TestRunner(__file__, None)
+        testRunner.show()
+        sys.exit(app.exec_())

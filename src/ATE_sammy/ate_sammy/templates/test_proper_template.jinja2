@@ -1,0 +1,56 @@
+#!/usr/bin/env conda run -n ATE python
+# -*- coding: utf-8 -*-
+"""
+{% for line in module_doc_string %}
+{{ line }}
+{% endfor %}
+"""
+if __name__ == '__main__':
+    from {{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+else:
+    from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+
+
+class {{ definition['name'] }}({{ definition['name'] }}_BC):
+
+    '''
+    for debug puposes, a logger is available to log infomration and porpagate them to the UI.
+    logging can be used as described below:
+    self.log_info(<message>)
+    self.log_debug(<message>)
+    self.log_warning(<message>)
+    self.log_error(<message>)
+    self.log_measure(<message>)
+
+{{ do_not_touch_section }}
+    '''
+
+    def do(self):
+        """Default implementation for test."""
+
+        # sleep used only for test puposes (CI build), without provoking sleep the test-app's state change from ready to testing could not be detected 
+        # must be removed when start implementing the test !!
+        import time
+        time.sleep(2)
+
+        {% for output_parameter in definition['output_parameters'] %}
+        self.op.{{ output_parameter }}.default()
+        {% endfor %}
+
+
+if __name__ == '__main__':
+    import os
+    tester = os.environ.get('TESTER')
+    tester_mode = os.environ.get('TESTERMODE')
+    if tester_mode == 'DIRECT':
+        pass  # TODO: implement
+    else:  # 'INTERACTIVE'
+        from PyQt5 import QtWidgets
+        import sys
+        import qdarkstyle
+        app = QtWidgets.QApplication(sys.argv)
+        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        from ate_spyder.widgets.actions_on.tests.TestRunner import TestRunner
+        testRunner = TestRunner(__file__, None)
+        testRunner.show()
+        sys.exit(app.exec_())

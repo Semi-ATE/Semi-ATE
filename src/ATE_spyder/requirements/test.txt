@@ -1,0 +1,2 @@
+hypothesis==5.5.2
+PyQt5==5.14.1

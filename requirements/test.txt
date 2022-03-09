@@ -11,5 +11,4 @@ pytest-mock
 pytest-asyncio==0.14.0
 coverage
 check-manifest
-pre-commit
 twine

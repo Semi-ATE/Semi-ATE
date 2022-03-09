@@ -1,0 +1,9 @@
+[
+  {
+    "name": "foo",
+    "hardware": "hw0",
+    "package": "somepack",
+    "definition": {},
+    "is_enabled": false
+  }
+]

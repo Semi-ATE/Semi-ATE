@@ -1,0 +1,57 @@
+[
+  {
+    "name": "checker",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "maintenance",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "production",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_4_HW0_PR_c_production_proc_1",
+      "project_version_4_HW0_FT_aaa_production_proc_2"
+    ],
+    "tests": [
+      "abcdef",
+      "abcedefg"
+    ]
+  },
+  {
+    "name": "engineering",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "validation",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "quality",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "qualification",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  }
+]

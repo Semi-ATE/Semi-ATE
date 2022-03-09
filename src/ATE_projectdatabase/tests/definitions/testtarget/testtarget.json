@@ -1,0 +1,12 @@
+[
+  {
+    "name": "targetname",
+    "prog_name": "aprog",
+    "hardware": "hw57",
+    "base": "mybase",
+    "test": "test",
+    "is_default": true,
+    "is_enabled": true,
+    "is_changed": false
+  }
+]

@@ -1,0 +1,6 @@
+ate-common
+ate-apps-common
+semi-ate-plugins
+aiohttp==3.6.2
+xmltodict==0.12.0
+transitions==0.7.2

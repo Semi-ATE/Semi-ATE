@@ -128,10 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+src/Apps/master_app/**/mini-sct-gui
+
 .DS_Store
 *~
-tests/ATE/spyder/widgets/CI/qt/smoketest/smoke_test/
-tests/ATE/TES/apps/le306426001.xml
+src/ATE_spyder/tests/qt/smoketest/smoke_test/
+src/Apps/master_app/tests/le306426001.xml
 tests/ATE/spyder/FilesysBasedConfig/definitions/adddelete/adddelete.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/device/device.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/die/die.json
@@ -149,7 +151,7 @@ tests/ATE/spyder/FilesysBasedConfig/definitions/test/test.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/testtarget/testtarget.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/updateitem/updateitem.json
 tests/ATE/spyder/FilesysBasedConfig/definitions/qualification/qualification.json
-smoketest/
+
 tests/ATE/projectdatabase/definitions/adddelete/adddelete.json
 tests/ATE/projectdatabase/definitions/device/device.json
 tests/ATE/projectdatabase/definitions/die/die.json
@@ -167,3 +169,8 @@ tests/ATE/projectdatabase/definitions/test/test.json
 tests/ATE/projectdatabase/definitions/testtarget/testtarget.json
 tests/ATE/projectdatabase/definitions/updateitem/updateitem.json
 tests/ATE/projectdatabase/definitions/settings/settings.json
+src/ATE_spyder/tests/bingenerator/test.json
+src/Apps/master_app/master_user_settings.json
+src/integration_tests/le306426001.xml
+src/Apps/master_app/temp_final_stdf_file_on_unload.stdf
+src/integration_tests/master_user_settings.json

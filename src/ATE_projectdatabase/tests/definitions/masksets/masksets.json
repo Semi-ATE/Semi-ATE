@@ -1,0 +1,8 @@
+[
+  {
+    "name": "foo",
+    "customer": "acme inc",
+    "definition": {},
+    "is_enabled": false
+  }
+]

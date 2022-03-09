@@ -1,0 +1,19 @@
+[
+  {
+    "name": "testname",
+    "hardware": "hw0",
+    "base": "PR",
+    "type": "somethingelse",
+    "definition": {
+      "name": "testname",
+      "hardware": "hw0",
+      "base": "PR",
+      "type": "somethingelse",
+      "definition": {
+        "test": "hello"
+      },
+      "is_enabled": true
+    },
+    "is_enabled": true
+  }
+]
