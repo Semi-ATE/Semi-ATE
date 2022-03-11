@@ -33,10 +33,14 @@ def main() -> int:
         parser.print_help()
         return 0
 
+    cwd = os.getcwd()
+    run(allargs, cwd)
+
+
+def run(args: argparse.Namespace, project_dir: str) -> int:
     print("-- sammy --")
     print(f"    for projectversion {__version__}")
-    cwd = os.getcwd()
-    print(f"    running in {cwd}")
+    print(f"    running in {project_dir}")
 
     # To make things run either as standalone exe or script,
     # we need to detect the basedirectory correctly, either,
@@ -52,21 +56,21 @@ def main() -> int:
         "generate": Generate(template_base_path),
     }
 
-    if allargs.verb not in supported_verbs:
-        print(f"    {allargs.verb} is an unknown verb.")
+    if args.verb not in supported_verbs:
+        print(f"    {args.verb} is an unknown verb.")
         return -1
 
     # ensure CWD is a project directory, nouns that don't
     # need a projectdirectory such as "new" will have to
     # execute before this check.
-    if allargs.verb == 'migrate':
-        if not os.path.exists(os.path.join(cwd, ".lastsettings")):
+    if args.verb == 'migrate':
+        if not os.path.exists(os.path.join(project_dir, ".lastsettings")):
             print("    This is not a semi-ate.org project.")
             print("    In order to migrate some project you have to execute this command inside some project folder.")
             return -1
 
 
-    supported_verbs[allargs.verb].run(cwd, allargs)
+    supported_verbs[args.verb].run(project_dir, args)
 
     return 0
 

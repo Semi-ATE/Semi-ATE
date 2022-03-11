@@ -52,7 +52,7 @@ class HandlerConnectionHandler:
         self._log.log_message(LogLevel.Info(), f'Handler state: {state}')
         self.publish(self._generate_handler_status_topic(),
                      self._generate_status_message(state, message),
-                     qos=1,
+                     qos=2,
                      retain=False)
 
     def _on_connect(self, client, userdata, flags, rc) -> None:

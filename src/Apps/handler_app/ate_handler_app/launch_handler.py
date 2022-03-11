@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import serial
 
 
+
 def parse_config_dict_from_command_line():
     parser = ArgumentParser(description='Handler arguments')
     parser.add_argument('port', type=str,

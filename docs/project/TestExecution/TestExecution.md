@@ -57,9 +57,9 @@ Tester Plugin should implement the following functions:
     * in case of MaxiSCT, each of the outputs connected to a MiniSCT should be read and evaluated
     * in case of MiniSCT, this function could be ignored
 
-
 ### TestProgram Tester Interface
-Test Program should after each test execution signalize, that it is ready to carry on with the next test, then wait til the master application sends a response to continue the execution.
+
+Test Program should after each test execution signalize, that it is ready to carry on with the next test, then wait till the master application sends a response to continue the execution.
 
 Tester Plugin should implement the following function:
 

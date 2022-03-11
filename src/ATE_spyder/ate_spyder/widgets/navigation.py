@@ -3,6 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+from argparse import Namespace
 from pathlib import Path
 from ate_common.program_utils import Sequencer
 import json
@@ -165,30 +166,12 @@ class ProjectNavigation(QObject):
         '''
         this method creates a new project `self.project_directroy` *MUST* exist
         '''
-        # _ = self.run_build_tool('generate', 'new', os.path.dirname(self.project_directory), self.project_directory)
-        from ate_sammy.generator import generate_new
-        generate_new(self.project_directory)
+        _ = self.run_build_tool('generate', 'new', os.path.dirname(self.project_directory), self.project_directory)
 
-    def run_build_tool(self, verb, noun, cwd, *params):
-        from subprocess import Popen, PIPE
-        from pathlib import Path
-        import sys
-        from os.path import join, dirname
-
-        sammy_path = join(dirname(dirname(dirname(__file__))), 'sammy', 'sammy.py')
-        sammy_path = 'C:\\work\\TDK\\SemiATE\\Git\\semi-ate-tdk\\src\\ATE_sammy\\ate_sammy\\sammy.py'
-        print(f'verb {verb}')
-        print(f'noun {noun}')
-        print(f'cwd {cwd}')
-        print(f'params {params}')
-
-        process = Popen([str(sys.executable), os.fspath(Path(sammy_path)), verb, noun, *params], stdout=PIPE, stderr=PIPE, cwd=cwd)
-        stdout, stderr = process.communicate()
-        if process.returncode != 0:
-            print(stderr.decode('UTF-8'))
-        else:
-            print(stdout.decode('UTF-8'))
-        return process.returncode
+    def run_build_tool(self, verb, noun, cwd, *params) -> int:
+        from ate_sammy.sammy import run
+        args = Namespace(verb=verb, noun=noun, params=params)
+        return run(args, cwd)
 
     def add_hardware(self, new_hardware, definition, is_enabled=True):
         Hardware.add(self.get_file_operator(), new_hardware, definition, is_enabled)

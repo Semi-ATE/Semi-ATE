@@ -8,7 +8,7 @@ class DummyMqtt:
     def __init__(self):
         self.sent_data = []
 
-    def publish(self, topic, payload=None, qos=0, retain=False):
+    def publish(self, topic, payload=None, qos=2, retain=False):
         tup = (topic, payload)
         self.sent_data.append(tup)
 

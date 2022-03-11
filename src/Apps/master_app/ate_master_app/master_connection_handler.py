@@ -45,7 +45,7 @@ class MasterConnectionHandler:
     def publish_state(self, state, statedict=None):
         self.mqtt.publish(self._generate_base_topic_status(),
                           self.mqtt.create_message(self._generate_status_message(state, statedict)),
-                          qos=0,
+                          qos=2,
                           retain=False)
 
     def send_load_test_to_all_sites(self, testapp_params):

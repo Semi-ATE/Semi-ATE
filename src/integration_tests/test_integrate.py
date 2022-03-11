@@ -4,13 +4,13 @@ import multiprocessing as mp
 from ate_master_app.launch_master import launch_master
 from ate_control_app.launch_control import launch_control
 from ate_handler_app.handler_runner import HandlerRunner
-from .DummySerial import DummySerialGeringer
+from DummySerial import DummySerialGeringer
 
 import time
 import asyncio
 import aiohttp
 import json
-from .util_timeout_ex import timeout_ex as timeout
+from util_timeout_ex import timeout_ex as timeout
 import concurrent
 from typing import Optional, List, Callable, Tuple, Union
 import logging
@@ -97,7 +97,8 @@ def create_xml_file(device_id):
 #       currently we can still end up with both, green and red, test results because of zombie processes still active in mqtt
 
 
-@pytest_asyncio.fixture(scope='function')
+@pytest.mark.asyncio
+@pytest.fixture(scope='function')
 async def handler_runner():
     configuration = {
         "handler_type": 'geringer',
@@ -371,7 +372,8 @@ def test_create_and_kill_sites(sites, process_manager):
     assert not master.is_process_active()
 
 
-@pytest_asyncio.fixture
+@pytest.mark.asyncio
+@pytest.fixture
 async def with_websocket_retry():
     async with aiohttp.ClientSession() as session:
         for _ in range(3):
@@ -384,7 +386,8 @@ async def with_websocket_retry():
         yield None
 
 
-@pytest_asyncio.fixture
+@pytest.mark.asyncio
+@pytest.fixture
 async def ws_connection():
     async with aiohttp.ClientSession() as session:
         def _ws_connect():
@@ -997,15 +1000,15 @@ async def test_handler_send_commands_to_load_next_and_unload(sites, handler, pro
 
         _ = create_master(process_manager, sites[0])
         _ = create_controls(process_manager, sites[0])
-        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        await read_messages_until_master_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.start()
-        await asyncio.sleep(3.0)
-        await read_messages_until_handler_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        # await asyncio.sleep(3.0)
+        await read_messages_until_handler_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.comm.put('load')
-        await asyncio.sleep(3.0)
-        await read_messages_until_master_state(buffer, 'ready', 5.0, ['loading', 'ready'])
+        # await asyncio.sleep(3.0)
+        await read_messages_until_master_state(buffer, 'ready', 10.0, ['loading', 'ready'])
 
         try:
             for _ in range(5):
@@ -1036,14 +1039,14 @@ async def test_handler_send_temperature(sites, handler, process_manager, handler
 
         _ = create_master(process_manager, sites[0])
         _ = create_controls(process_manager, sites[0])
-        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        await read_messages_until_master_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.start()
-        await asyncio.sleep(3.0)
+        # await asyncio.sleep(3.0)
         await read_messages_until_handler_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.comm.put('temperature')
-        await asyncio.sleep(3.0)
+        # await asyncio.sleep(3.0)
         async with timeout(10, 'waiting for "temperature" response message'):
             async for msg in buffer.read():
                 message = json.loads(msg.payload)
@@ -1067,10 +1070,10 @@ async def test_handler_send_command_identify_to_master(sites, handler, process_m
 
         _ = create_master(process_manager, sites[0])
         _ = create_controls(process_manager, sites[0])
-        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        await read_messages_until_master_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.start()
-        await asyncio.sleep(3.0)
+        # await asyncio.sleep(3.0)
         await read_messages_until_handler_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.comm.put('identify')
@@ -1098,13 +1101,13 @@ async def test_handler_send_command_getstate_to_master(sites, handler, process_m
 
         _ = create_master(process_manager, sites)
         _ = create_controls(process_manager, sites)
-        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
+        await read_messages_until_master_state(buffer, 'initialized', 10.0, ['connecting', 'initialized'])
 
         handler_runner.start()
-        await asyncio.sleep(3.0)
+        # await asyncio.sleep(3.0)
         handler_runner.comm.put('get-state')
 
-        await read_messages_until_master_state(buffer, 'initialized', 5.0, ['initialized'])
+        await read_messages_until_master_state(buffer, 'initialized', 10.0, ['initialized'])
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,4 @@
+ate-common
+ate-apps-common
+pyserial==3.5
+transitions==0.7.2
