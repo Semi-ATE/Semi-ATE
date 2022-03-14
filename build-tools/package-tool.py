@@ -140,9 +140,10 @@ def _profile_from_string(value: str) -> Profile:
 def _collect_test_requirements(include_cicd: bool) -> list[Path]:
     distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.Path)
     distribution_packages_paths.append(integration_tests_path)
+    path_list = list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
     if include_cicd == True:
-        distribution_packages_paths.append(git_root_folder)
-    return list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
+        path_list.append(Path(git_root_folder, 'requirements/cicd.txt'))
+    return path_list
 
 def _collect_packages_from_paths(paths: list[Path])-> list[str]:
     packages = set()

@@ -44,28 +44,11 @@ jobs:
       - name: Setup environment
         shell: bash -l {0}
         run: |
-          python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
+          mamba install spyder -y -q
           cd build-tools
           python package-tool.py --change-env cicd
           cd ..
 
-#      - name: Install package
-#        shell: bash -l {0}
-#        run: |
-#          pip install -e .
-#
-#      - uses: actions/setup-node@v2
-#        with:
-#          node-version: '14'
-#
-#      - name: Run manifest checks
-#        shell: bash -l {0}
-#        run: check-manifest
-#
-#      - name: Run style checks
-#        shell: bash -l {0}
-#        run: |
-#          pre-commit run -a
       - name: Run ATE_projectdatabase tests
         shell: bash -l {0}
         run: |
@@ -80,11 +63,38 @@ jobs:
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
           cd ../../
 
-      - name: Run tests
+      - name: Run Apps/common tests
         shell: bash -l {0}
         run: |
-          cd src/
-          xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
-          xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
-          xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
-          cd ../
+          cd src/Apps/common
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_apps_common
+          cd ../../../
+
+      - name: Run Apps/master_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/master_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
+          cd ../../../
+
+      - name: Run Apps/handler_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/handler_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_handler_app
+          cd ../../../
+
+      - name: Run Apps/test_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/test_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
+          cd ../../../
+
+      - name: Run integration_tests/migrate_check
+        shell: bash -l {0}
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
+          cd ../../
+
