@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 from subprocess import Popen
 from enum import Enum
+from typing import List
 
 class SetupCommand(Enum):
     Install = 'install'
@@ -103,7 +104,8 @@ def change_environment(profile: Profile):
     process = Popen(process_args)
     process.wait()
 
-def _compute_package_list(package_type: Package, type: PackageType) -> list[str]:
+
+def _compute_package_list(package_type: Package, type: PackageType) -> List[str]:
     if package_type == Package.Distribution:
         packages = distribution_packages
     elif package_type == Package.All:
@@ -137,7 +139,7 @@ def _profile_from_string(value: str) -> Profile:
     else:
         return Profile.Clean     
 
-def _collect_test_requirements(include_cicd: bool) -> list[Path]:
+def _collect_test_requirements(include_cicd: bool) -> List[Path]:
     distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.Path)
     distribution_packages_paths.append(integration_tests_path)
     path_list = list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
@@ -145,7 +147,7 @@ def _collect_test_requirements(include_cicd: bool) -> list[Path]:
         path_list.append(Path(git_root_folder, 'requirements/cicd.txt'))
     return path_list
 
-def _collect_packages_from_paths(paths: list[Path])-> list[str]:
+def _collect_packages_from_paths(paths: List[Path])-> List[str]:
     packages = set()
     for p in paths:
         if p.exists() == True:
