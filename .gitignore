@@ -174,3 +174,6 @@ src/Apps/master_app/master_user_settings.json
 src/integration_tests/le306426001.xml
 src/Apps/master_app/temp_final_stdf_file_on_unload.stdf
 src/integration_tests/master_user_settings.json
+src/Apps/development/master_user_settings.json
+src/ATE_projectdatabase/tests/definitions/adddelete/adddelete.json
+.gitignore

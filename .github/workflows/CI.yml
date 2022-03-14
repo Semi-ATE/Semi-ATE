@@ -41,38 +41,50 @@ jobs:
           mamba-version: "*"
           show-channel-urls: true 
 
-      - name: Install project dependencies
+      - name: Setup environment
         shell: bash -l {0}
         run: |
-          mamba install --file requirements/run.txt -y -q
-          mamba install --file requirements/test.txt -y -q
-          mamba install Semi-ATE-STDF -y -q
           python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
-          cd Plugins/TDKMicronas
-          python setup.py develop
-          cd ../..
+          cd build-tools
+          python package-tool.py --change-env cicd
+          cd ..
 
-      - name: Install package
-        shell: bash -l {0}
-        run: |
-          pip install -e .
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Run manifest checks
-        shell: bash -l {0}
-        run: check-manifest
-
+#      - name: Install package
+#        shell: bash -l {0}
+#        run: |
+#          pip install -e .
+#
+#      - uses: actions/setup-node@v2
+#        with:
+#          node-version: '14'
+#
+#      - name: Run manifest checks
+#        shell: bash -l {0}
+#        run: check-manifest
+#
 #      - name: Run style checks
 #        shell: bash -l {0}
 #        run: |
 #          pre-commit run -a
+      - name: Run ATE_projectdatabase tests
+        shell: bash -l {0}
+        run: |
+          cd src/ATE_projectdatabase
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
+          cd ../../
+
+      - name: Run ATE_spyder tests
+        shell: bash -l {0}
+        run: |
+          cd src/ATE_spyder
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          cd ../../
 
       - name: Run tests
         shell: bash -l {0}
         run: |
+          cd src/
           xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
           xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
           xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
+          cd ../

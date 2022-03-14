@@ -10,7 +10,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-integration-test-common',
+    name='integration-test-common',
     version=version,
     description='',
     long_description='',

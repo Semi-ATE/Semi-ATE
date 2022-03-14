@@ -34,32 +34,34 @@ class Profile(Enum):
     def __call__(self):
         return self.value
 
+git_root_folder = Path(Path(__file__).parents[0], '../')
+
 distribution_packages = [
-    ['ate-common', '../src/ATE_common'],
-    ['ate-project-database', '../src/ATE_projectdatabase'],
-    ['ate-sammy', '../src/ATE_sammy'],
-    ['semi-ate-plugins', '../src/ATE_semiateplugins'],
-    ['ate-spyder', '../src/ATE_spyder'],
-    ['tdk-micronas', '../src/Plugins/TDKMicronas'],
-    ['ate-apps-common', '../src/Apps/common'],
-    ['ate-control-app', '../src/Apps/control_app'],
-    ['ate-master-app', '../src/Apps/master_app'],
-    ['ate-test-app', '../src/Apps/test_app'],
-    ['ate-handler-app', '../src/Apps/handler_app'],
+    ['ate-common', Path(git_root_folder, 'src/ATE_common')],
+    ['ate-project-database', Path(git_root_folder, 'src/ATE_projectdatabase')],
+    ['ate-sammy', Path(git_root_folder, 'src/ATE_sammy')],
+    ['semi-ate-plugins', Path(git_root_folder, 'src/ATE_semiateplugins')],
+    ['ate-spyder', Path(git_root_folder, 'src/ATE_spyder')],
+    ['tdk-micronas', Path(git_root_folder, 'src/Plugins/TDKMicronas')],
+    ['ate-apps-common', Path(git_root_folder, 'src/Apps/common')],
+    ['ate-control-app', Path(git_root_folder, 'src/Apps/control_app')],
+    ['ate-master-app', Path(git_root_folder, 'src/Apps/master_app')],
+    ['ate-test-app', Path(git_root_folder, 'src/Apps/test_app')],
+    ['ate-handler-app', Path(git_root_folder, 'src/Apps/handler_app')],
 ]
 
 integration_test_packages = [
-    ['ate-integration-test-common', '../src/integration_tests/Plugins/Common'],
-    ['dummy-plugin', '../src/integration_tests/Plugins/DummyTester'],
+    ['integration-test-common', Path(git_root_folder, 'src/integration_tests/Plugins/Common')],
+    ['dummy-plugin', Path(git_root_folder, 'src/integration_tests/Plugins/DummyTester')],
 ]
 
-integration_tests_path = '../src/integration_tests'
+integration_tests_path = Path(git_root_folder, 'src/integration_tests')
 
 def uninstall(packages: Package):
     package_list = _compute_package_list(packages, PackageType.Name)
     for p in package_list:
         print(f'Uninstalling: "{p}"')
-        process = Popen(['pip', 'uninstall', '-y', '-q', p])
+        process = Popen(['python', '-m', 'pip', 'uninstall', '-y', '-q', p])
         process.wait()
 
 def setup(packages: Package, setup_command: SetupCommand):
@@ -73,11 +75,11 @@ def setup(packages: Package, setup_command: SetupCommand):
                 process.wait()
             elif setup_command == SetupCommand.Install:
                 print(f'Installing folder {path}')
-                process = Popen(['pip', 'install', '-q', '.'], cwd=str(path))
+                process = Popen(['python', '-m', 'pip', 'install', '-q', '.'], cwd=str(path))
                 process.wait()
             else:
                 print(f'Installing folder {path} in editable mode')
-                process = Popen(['pip', 'install', '-q', '-e', '.'], cwd=str(path))
+                process = Popen(['python', '-m', 'pip', 'install', '-q', '-e', '.'], cwd=str(path))
                 process.wait()
         else:
             print(f'ERROR: Path "{path}" could not be found!')
@@ -92,7 +94,7 @@ def change_environment(profile: Profile):
     packages = _collect_packages_from_paths(paths)
     package_manager_action = 'uninstall' if profile == Profile.Clean else 'install'
     print_message = 'Uninstalling:' if profile == Profile.Clean else 'Innstalling:'
-    process_args = ['pip', package_manager_action, *packages, '-q']
+    process_args = ['python', '-m', 'pip', package_manager_action, *packages, '-q']
 
     if profile == Profile.Clean:
         process_args.append('-y')
@@ -139,7 +141,7 @@ def _collect_test_requirements(include_cicd: bool) -> list[Path]:
     distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.Path)
     distribution_packages_paths.append(integration_tests_path)
     if include_cicd == True:
-        distribution_packages_paths.append('../')
+        distribution_packages_paths.append(git_root_folder)
     return list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
 
 def _collect_packages_from_paths(paths: list[Path])-> list[str]:
