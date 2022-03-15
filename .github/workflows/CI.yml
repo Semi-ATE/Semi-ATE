@@ -91,3 +91,15 @@ jobs:
           xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
           cd ../../
 
+      - name: Start Mosquitto
+        uses: namoshek/mosquitto-github-action@v1
+        with:
+          version: '1.6'
+          ports: '1883:1883 8883:8883'
+        
+      - name: Run test_integrate
+        shell: bash -l {0}
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest test_integrate.py
+          cd ../../

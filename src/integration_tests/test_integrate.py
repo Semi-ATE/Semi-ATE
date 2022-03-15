@@ -26,7 +26,7 @@ import os
 from hashlib import blake2b
 from abc import ABC, abstractmethod
 import xml.etree.ElementTree as tree
-import pytest_asyncio
+from pathlib import Path
 
 # pytestmark = pytest.mark.skip(reason='integration tests temporaroöy disabled for ci run')
 
@@ -36,9 +36,10 @@ LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
 
 
-XML_PATH = '../Apps/master_app/tests/le306426001_template.xml'
-XML_PATH_NEW = './le306426001.xml'
-TEST_PROGRAM = '../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_TheTest.py'
+CURRENT_DIR = Path(__file__).parent
+XML_PATH = str(Path(CURRENT_DIR, '../Apps/master_app/tests/le306426001_template.xml'))
+XML_PATH_NEW = str(Path(CURRENT_DIR, './le306426001.xml'))
+TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_TheTest.py'))
 
 def generate_default_device_id():
     # goal: we don't want something fully random for debugging purposes,
@@ -141,7 +142,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
     else:
         config['site_layout'] = [[0, 0]]
 
-    launch_master(config_file_path='../Apps/development/master_config_file_template.json',
+    launch_master(config_file_path=str(Path(CURRENT_DIR, '../Apps/development/master_config_file_template.json')),
                   user_config_dict=config)
 
 
@@ -153,7 +154,7 @@ def run_control(device_id, site_id, broker_host, broker_port):
         'device_id': device_id,
         'site_id': site_id
     }
-    launch_control(config_file_path='../Apps/development/control_config_file_template.json',
+    launch_control(config_file_path=str(Path(CURRENT_DIR, '../Apps/development/control_config_file_template.json')),
                    user_config_dict=config)
 
 
