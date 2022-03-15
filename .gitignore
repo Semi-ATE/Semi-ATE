@@ -128,8 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-src/Apps/master_app/**/mini-sct-gui
-
 .DS_Store
 *~
 src/ATE_spyder/tests/qt/smoketest/smoke_test/
