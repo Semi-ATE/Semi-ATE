@@ -1,1 +1,1 @@
-ate-common
+semi-ate-common

@@ -1,2 +1,2 @@
-ate-common
+semi-ate-common
 semi-ate-plugins
