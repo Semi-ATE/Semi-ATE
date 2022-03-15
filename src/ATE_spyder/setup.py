@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-spyder',
+    name='semi-ate-spyder',
     version=version,
     requires=['spyder'],
     description='Spyder ate plugin for working with ATE projects',

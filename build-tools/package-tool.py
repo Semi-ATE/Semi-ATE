@@ -38,17 +38,17 @@ class Profile(Enum):
 git_root_folder = Path(Path(__file__).parents[0], '../')
 
 distribution_packages = [
-    ['ate-common', Path(git_root_folder, 'src/ATE_common')],
-    ['ate-project-database', Path(git_root_folder, 'src/ATE_projectdatabase')],
-    ['ate-sammy', Path(git_root_folder, 'src/ATE_sammy')],
+    ['semi-ate-common', Path(git_root_folder, 'src/ATE_common')],
+    ['semi-ate-project-database', Path(git_root_folder, 'src/ATE_projectdatabase')],
+    ['semi-ate-sammy', Path(git_root_folder, 'src/ATE_sammy')],
     ['semi-ate-plugins', Path(git_root_folder, 'src/ATE_semiateplugins')],
-    ['ate-spyder', Path(git_root_folder, 'src/ATE_spyder')],
+    ['semi-ate-spyder', Path(git_root_folder, 'src/ATE_spyder')],
+    ['semi-ate-apps-common', Path(git_root_folder, 'src/Apps/common')],
+    ['semi-ate-control-app', Path(git_root_folder, 'src/Apps/control_app')],
+    ['semi-ate-master-app', Path(git_root_folder, 'src/Apps/master_app')],
+    ['semi-ate-test-app', Path(git_root_folder, 'src/Apps/test_app')],
+    ['semi-ate-handler-app', Path(git_root_folder, 'src/Apps/handler_app')],
     ['tdk-micronas', Path(git_root_folder, 'src/Plugins/TDKMicronas')],
-    ['ate-apps-common', Path(git_root_folder, 'src/Apps/common')],
-    ['ate-control-app', Path(git_root_folder, 'src/Apps/control_app')],
-    ['ate-master-app', Path(git_root_folder, 'src/Apps/master_app')],
-    ['ate-test-app', Path(git_root_folder, 'src/Apps/test_app')],
-    ['ate-handler-app', Path(git_root_folder, 'src/Apps/handler_app')],
 ]
 
 integration_test_packages = [

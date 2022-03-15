@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-sammy',
+    name='semi-ate-sammy',
     version=version,
     description='Sammy is a CLI for generating test programs in python',
     long_description='',

@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-project-database',
+    name='semi-ate-project-database',
     version=version,
     description='Project database of ATE test projects',
     long_description='',

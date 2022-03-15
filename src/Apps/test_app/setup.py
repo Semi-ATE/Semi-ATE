@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-test-app',
+    name='semi-ate-test-app',
     version=version,
     description='Application/Environment that executes a specific test program',
     long_description='',

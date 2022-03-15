@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-apps-common',
+    name='semi-ate-apps-common',
     version=version,
     description='Shared helpers used by the different ate-apps, i.e. master-app, control-app, etc.)',
     long_description='',

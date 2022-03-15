@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-common',
+    name='semi-ate-common',
     version=version,
     description='Common package of ATE Projects',
     long_description='',

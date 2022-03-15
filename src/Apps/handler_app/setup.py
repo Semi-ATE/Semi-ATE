@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 setup(
-    name='ate-handler-app',
+    name='semi-ate-handler-app',
     version=version,
     description='Handler application that controls some DUT handler',
     long_description='',

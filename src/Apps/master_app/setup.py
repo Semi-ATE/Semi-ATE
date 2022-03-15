@@ -12,7 +12,7 @@ with requirements_path.open('r') as f:
 
 
 setup(
-    name='ate-master-app',
+    name='semi-ate-master-app',
     version=version,
     description='Master application used for steering the control applications in an ATE test environment.',
     long_description='',

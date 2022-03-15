@@ -139,3 +139,7 @@ src/Apps/master_app/temp_final_stdf_file_on_unload.stdf
 src/integration_tests/master_user_settings.json
 src/Apps/development/master_user_settings.json
 src/ATE_projectdatabase/tests/definitions/**/*.json
+
+# ignore auto generated files
+temp_final_stdf_file_on_unload.stdf
+master_user_settings.json
