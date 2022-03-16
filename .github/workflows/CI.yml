@@ -101,6 +101,7 @@ jobs:
       - name: Run test_integrate
         shell: bash -l {0}
         run: |
+          ls -al /home/runner/work/Semi-ATE/Semi-ATE/src/integration_tests/../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR
           cd src/integration_tests/
           xvfb-run --auto-servernum pytest test_integrate.py -k test_load_run_unload -s
           cd ../../
