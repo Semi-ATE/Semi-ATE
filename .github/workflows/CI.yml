@@ -42,54 +42,55 @@ jobs:
           python package-tool.py --change-env cicd
           cd ..
 
-      - name: Run ATE_projectdatabase tests
-        shell: bash -l {0}
-        run: |
-          cd src/ATE_projectdatabase
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
-          cd ../../
-
+#      - name: Run ATE_projectdatabase tests
+#        shell: bash -l {0}
+#        run: |
+#          cd src/ATE_projectdatabase
+#          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
+#          cd ../../
+#
       - name: Run ATE_spyder tests
         shell: bash -l {0}
         run: |
           cd src/ATE_spyder
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          ls -al /home/runner/work/Semi-ATE/Semi-ATE/src/integration_tests/../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR
           cd ../../
-
-      - name: Run Apps/common tests
-        shell: bash -l {0}
-        run: |
-          cd src/Apps/common
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_apps_common
-          cd ../../../
-
-      - name: Run Apps/master_app tests
-        shell: bash -l {0}
-        run: |
-          cd src/Apps/master_app
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
-          cd ../../../
-
-      - name: Run Apps/handler_app tests
-        shell: bash -l {0}
-        run: |
-          cd src/Apps/handler_app
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_handler_app
-          cd ../../../
-
-      - name: Run Apps/test_app tests
-        shell: bash -l {0}
-        run: |
-          cd src/Apps/test_app
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
-          cd ../../../
-
-      - name: Run integration_tests/migrate_check
-        shell: bash -l {0}
-        run: |
-          cd src/integration_tests/
-          xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
-          cd ../../
+#
+#      - name: Run Apps/common tests
+#        shell: bash -l {0}
+#        run: |
+#          cd src/Apps/common
+#          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_apps_common
+#          cd ../../../
+#
+#      - name: Run Apps/master_app tests
+#        shell: bash -l {0}
+#        run: |
+#          cd src/Apps/master_app
+#          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
+#          cd ../../../
+#
+#      - name: Run Apps/handler_app tests
+#        shell: bash -l {0}
+#        run: |
+#          cd src/Apps/handler_app
+#          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_handler_app
+#          cd ../../../
+#
+#      - name: Run Apps/test_app tests
+#        shell: bash -l {0}
+#        run: |
+#          cd src/Apps/test_app
+#          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
+#          cd ../../../
+#
+#      - name: Run integration_tests/migrate_check
+#        shell: bash -l {0}
+#        run: |
+#          cd src/integration_tests/
+#          xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
+#          cd ../../
 
       - name: Start Mosquitto
         uses: namoshek/mosquitto-github-action@v1
@@ -101,5 +102,5 @@ jobs:
         shell: bash -l {0}
         run: |
           cd src/integration_tests/
-          xvfb-run --auto-servernum pytest test_integrate.py
+          xvfb-run --auto-servernum pytest test_integrate.py -k test_load_run_unload -s
           cd ../../
