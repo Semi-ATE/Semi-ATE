@@ -39,7 +39,7 @@ jobs:
         run: |
           mamba install spyder -y -q
           cd build-tools
-          python package-tool.py --change-env cicd
+          python package_tool.py --change-env cicd
           cd ..
 
       - name: Run ATE_projectdatabase tests
