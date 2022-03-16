@@ -90,7 +90,7 @@ test_configruation = {'name': definitions['test'],
                       'type': 'custom',
                       'base': 'PR',
                       'owner': 'Production_PR',
-                      'prog_name': 'smoke_test_HW0_PR_Die1_Production_PR_1',
+                      'prog_name': 'smoke_test_HW0_PR_Die1_production_PR_1',
                       'input_parameters': {'T': {'name': 'foo', 'Min': -40, 'Max': 170, 'Default': 25, 'Unit': '°C', 'fmt': '.3f', '10ᵡ': '1', 'Shmoo': 'False'}},
                       'output_parameters': {'parameter2_name': {'name': 'foo', 'LSL': 100, 'USL': -100, 'LTL': 0, 'UTL': 0, 'Nom': 2.5, 'Unit': 'mV', 'fmt': '.3f', '10ᵡ': '1'}},
                       'docstring': 'test DBC'
@@ -531,6 +531,6 @@ def edit_test_program(qtbot, project_navigation):
     project_navigation.active_base = 'PR'
     project_navigation.active_target = definitions['device']
     project_navigation.user_name = definitions['usertext']
-    dialog = EditTestProgramWizard(test_configruation['prog_name'], project_navigation, "HW0_PR_Die1_Production_PR")
+    dialog = EditTestProgramWizard(test_configruation['prog_name'], project_navigation, "HW0_PR_Die1_production_PR")
     qtbot.addWidget(dialog)
     return dialog
