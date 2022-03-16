@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = Path(__file__).parent
 XML_PATH = str(Path(CURRENT_DIR, '../Apps/master_app/tests/le306426001_template.xml'))
 XML_PATH_NEW = str(Path(CURRENT_DIR, './le306426001.xml'))
-TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_Production_TheTest.py'))
+TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_production_TheTest.py'))
 
 def generate_default_device_id():
     # goal: we don't want something fully random for debugging purposes,
@@ -1195,7 +1195,7 @@ async def test_standalone_testapp_start_and_terminate(process_manager):
     #       not exactly the same.
 
     # simulate the control app, as it store the bin mapping in an environment variable
-    os.environ['smoke_test_HW0_PR_Die1_Production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
+    os.environ['smoke_test_HW0_PR_Die1_production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, subscriptions) as mqtt:
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
@@ -1281,7 +1281,7 @@ async def test_standalone_testapp_test_process(process_manager):
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
         (f'ate/{DEVICE_ID}/TestApp/testresult/+', 2)]
     site_id = '0'
-    os.environ['smoke_test_HW0_PR_Die1_Production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
+    os.environ['smoke_test_HW0_PR_Die1_production_PR_1'] = "{'1': ['1'], '12': ['12', '13', '11'], '13': ['20'], '42': ['22'], '0': ['60000', '60001']}"
     async with mqtt_connection(BROKER_HOST, BROKER_PORT, subscriptions) as mqtt:
         buffer = FilteredMqttMessageBuffer(mqtt.message_queue, skip_retained=True)
 
