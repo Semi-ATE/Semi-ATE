@@ -2,6 +2,7 @@ from pathlib import Path
 
 git_root_folder = Path(Path(__file__).parent, '../')
 
+# IMPORTANT: The order of the packages matters because of dependencies
 distribution_packages = [
     {
         'name': 'semi-ate-common',
@@ -18,14 +19,14 @@ distribution_packages = [
         'dir': Path(git_root_folder, 'src/ATE_sammy'),
         'namespace': 'ate_sammy'},
     {
-        'name': 'semi-ate-plugins',
-        'dir': Path(git_root_folder, 'src/ATE_semiateplugins'),
-        'namespace': 'ate_semiateplugins'
-    },
-    {
         'name': 'semi-ate-spyder',
         'dir': Path(git_root_folder, 'src/ATE_spyder'),
         'namespace': 'ate_spyder'
+    },
+    {
+        'name': 'semi-ate-plugins',
+        'dir': Path(git_root_folder, 'src/ATE_semiateplugins'),
+        'namespace': 'ate_semiateplugins'
     },
     {
         'name': 'semi-ate-apps-common',
