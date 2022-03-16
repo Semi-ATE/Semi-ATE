@@ -1,8 +1,8 @@
 from setuptools import find_packages, setup
-from os import getenv
 from pathlib import Path
+from ate_test_app import __version__
 
-version = '0.0.0' if getenv('SEMI_ATE_VERSION') == None else getenv('SEMI_ATE_VERSION')
+version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
 def add_version(name: str) -> str:
     return f'{name.rstrip()}=={version}' if 'ate' in name else name.rstrip()

@@ -134,3 +134,4 @@ class Plugin:
     def get_configuration_options(object_name):
         if "DummyTester." in object_name:
             return BusinessObjectStandin()
+__version__ = '0.0.0'

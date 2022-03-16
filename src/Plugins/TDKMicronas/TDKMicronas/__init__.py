@@ -147,3 +147,4 @@ class Plugin:
 
         if object_name == "TDKMicronas.DummyInstrument":
             return ["ip", "port"]
+__version__ = '0.0.0'

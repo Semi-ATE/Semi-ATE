@@ -57,3 +57,4 @@ class ATE_plugin(object):
 
 if __name__ == '__main__':
     pass
+__version__ = '0.0.0'
