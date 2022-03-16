@@ -1,1 +1,2 @@
+include requirements/run.txt
 recursive-include ./ate_master_app/mini-sct-gui
