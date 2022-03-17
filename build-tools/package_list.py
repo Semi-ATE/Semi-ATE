@@ -17,16 +17,17 @@ distribution_packages = [
     {
         'name': 'semi-ate-sammy',
         'dir': Path(git_root_folder, 'src/ATE_sammy'),
-        'namespace': 'ate_sammy'},
-    {
-        'name': 'semi-ate-spyder',
-        'dir': Path(git_root_folder, 'src/ATE_spyder'),
-        'namespace': 'ate_spyder'
+        'namespace': 'ate_sammy'
     },
     {
         'name': 'semi-ate-plugins',
         'dir': Path(git_root_folder, 'src/ATE_semiateplugins'),
         'namespace': 'ate_semiateplugins'
+    },
+    {
+        'name': 'semi-ate-spyder',
+        'dir': Path(git_root_folder, 'src/ATE_spyder'),
+        'namespace': 'ate_spyder'
     },
     {
         'name': 'semi-ate-apps-common',
