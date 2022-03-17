@@ -1,6 +1,7 @@
 qtawesome==1.0.3
 pydantic==1.8.2
 numpy==1.21.3
+spyder>=5.2
 semi-ate-common
 semi-ate-plugins
 semi-ate-project-database

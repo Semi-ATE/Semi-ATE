@@ -103,3 +103,19 @@ jobs:
           cd src/integration_tests/
           xvfb-run --auto-servernum pytest test_integrate.py -k test_load_run_unload -s
           cd ../../
+
+      - name: Generate distribution sdists
+        shell: bash -l {0}
+        run: |
+          cd build-tools
+          python package_tool.py --setup-cmd sdist --packages distribution
+          cd ..
+          mkdir output
+          find . -iname '*.tar.gz' -exec cp '{}' output \;
+
+      - name: Upload Release Assets
+        uses: alexellis/upload-assets@0.3.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./output/*"]'  
