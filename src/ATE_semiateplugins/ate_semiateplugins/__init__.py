@@ -18,10 +18,6 @@ References :
 """
 import abc
 
-import pluggy
-
-from ate_spyder.widgets.validation import valid_maskset_name_regex
-
 masksetStructure = {
     'Name' : '', # string identifying the maskset
     'Customer' : '', # a string, '' for 'ASSP', for 'ASIC' the customer name
