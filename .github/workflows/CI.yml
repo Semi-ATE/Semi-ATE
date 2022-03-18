@@ -46,6 +46,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd src/ATE_projectdatabase
+          check-manifest
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
           cd ../../
 
@@ -103,6 +104,53 @@ jobs:
           cd src/integration_tests/
           xvfb-run --auto-servernum pytest test_integrate.py -k test_load_run_unload -s
           cd ../../
+
+      - name: Run Manifest Check
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/common
+          echo 'Check manifest of semi-ate-apps-common'
+          check-manifest
+
+          cd ../control_app
+          echo 'Check manifest of semi-ate-control-app'
+          check-manifest
+
+          cd ../master_app
+          echo 'Check manifest of semi-ate-master-app'
+          check-manifest
+
+          cd ../test_app
+          echo 'Check manifest of semi-ate-test-app'
+          check-manifest
+
+          cd ../handler_app
+          echo 'Check manifest of semi-ate-handler-app'
+          check-manifest
+
+          cd ../../ATE_common
+          echo 'Check manifest of semi-ate-common'
+          check-manifest
+
+          cd ../ATE_projectdatabase
+          echo 'Check manifest of semi-ate-project-database'
+          check-manifest
+
+          cd ../ATE_sammy
+          echo 'Check manifest of semi-ate-sammy'
+          check-manifest
+
+          cd ../ATE_semiateplugins
+          echo 'Check manifest of semi-ate-plugins'
+          check-manifest
+
+          cd ../ATE_spyder
+          echo 'Check manifest of semi-ate-spyder'
+          check-manifest
+
+          cd ../Plugins/TDKMicronas
+          echo 'Check manifest of tdk-micronas'
+          check-manifest  
 
       - name: Generate distribution sdists
         shell: bash -l {0}
