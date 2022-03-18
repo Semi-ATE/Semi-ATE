@@ -45,7 +45,6 @@ jobs:
         shell: bash -l {0}
         run: |
           cd src/ATE_projectdatabase
-          check-manifest
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
           cd ../../
 
