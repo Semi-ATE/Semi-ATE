@@ -113,9 +113,8 @@ jobs:
           mkdir output
           find . -iname '*.tar.gz' -exec cp '{}' output \;
 
-      - name: Upload Release Assets
-        uses: alexellis/upload-assets@0.3.0
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
         with:
-          asset_paths: '["./output/*"]'  
+          name: artifacts
+          path: ./output 
