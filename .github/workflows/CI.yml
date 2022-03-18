@@ -38,7 +38,7 @@ jobs:
         shell: bash -l {0}
         run: |
           mamba install spyder -y -q
-          cd build-tools
+          cd scripts
           python package_tool.py --change-env cicd
           cd ..
 
@@ -150,16 +150,23 @@ jobs:
 
           cd ../Plugins/TDKMicronas
           echo 'Check manifest of tdk-micronas'
-          check-manifest  
+          check-manifest
 
-      - name: Generate distribution sdists
+          cd ../../../../
+
+      - name: Generate distribution sdist files
         shell: bash -l {0}
         run: |
-          cd build-tools
+          cd scripts
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
           mkdir output
           find . -iname '*.tar.gz' -exec cp '{}' output \;
+
+      - name: Check distribution files
+        shell: bash -l {0}
+        run: |
+          twine check output/*
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v2

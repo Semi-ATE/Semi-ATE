@@ -10,9 +10,18 @@ def add_version(name: str) -> str:
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
+readme_path = Path(Path(__file__).parent, 'TDKMicronas/README.md')
+with readme_path.open('r') as f:
+    long_description = f.read()
+
 setup( 
     name="TDK.Micronas",
     version=version,
+    description='TDKMicrionas is an example implementation of a plugin that can be consumed by the semi-ate-spyder plugin',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author="The Semi-ATE Project Contributors",
+    author_email="ate.organization@gmail.com",
     packages=find_packages(),
     install_requires=install_requires,
     include_package_data=True,

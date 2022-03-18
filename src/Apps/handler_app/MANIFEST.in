@@ -1,3 +1,4 @@
 include requirements/run.txt
+include ate_handler_app/README.md
 exclude requirements/test.txt
 recursive-exclude tests *

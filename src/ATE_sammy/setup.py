@@ -3,14 +3,15 @@ from pathlib import Path
 from ate_sammy import __version__
 
 version = __version__
-requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
+requirements_path = Path(Path(__file__).parent, 'requirements/run.txt')
 def add_version(name: str) -> str:
     return f'{name.rstrip()}=={version}' if 'ate' in name else name.rstrip()
        
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
-with requirements_path.open('r') as f:
+readme_path = Path(Path(__file__).parent, 'ate_sammy/README.md')
+with readme_path.open('r') as f:
     long_description = f.read()
 
 setup(

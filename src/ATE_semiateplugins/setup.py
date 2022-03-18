@@ -10,12 +10,16 @@ def add_version(name: str) -> str:
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
+readme_path = Path(Path(__file__).parent, 'ate_semiateplugins/README.md')
+with readme_path.open('r') as f:
+    long_description = f.read()
+
 setup(
     name='semi-ate-plugins',
     version=version,
     description='SemiATE plugin for Projectdatabase of ATE Test Projects',
-    long_description='',
-    long_description_content_type='',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author="The Semi-ATE Project Contributors",
     author_email="ate.organization@gmail.com",
     license="GPL2",
