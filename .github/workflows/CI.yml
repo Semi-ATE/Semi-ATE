@@ -37,7 +37,6 @@ jobs:
       - name: Setup environment
         shell: bash -l {0}
         run: |
-          mamba install spyder -y -q
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
