@@ -2,8 +2,8 @@ from threading import Event
 import asyncio
 
 from ate_common.logger import Logger
-from utils import GPIOState
-from ConnectionHandler import ConnectionHandler
+from Common.utils import GPIOState
+from Common.ConnectionHandler import ConnectionHandler
 
 
 class TesterConnectionHandler(ConnectionHandler):

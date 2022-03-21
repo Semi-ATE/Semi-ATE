@@ -4,9 +4,9 @@ import time
 from typing import List
 import random
 
-from TopicFactory import TopicFactory
-from TesterConnectionHandler import TesterConnectionHandler
-from utils import GPIOState
+from Common.TopicFactory import TopicFactory
+from Common.TesterConnectionHandler import TesterConnectionHandler
+from Common.utils import GPIOState
 
 from DummyTester.Testers.InterfaceSCT import InterfaceSCT
 from ate_common.logger import Logger

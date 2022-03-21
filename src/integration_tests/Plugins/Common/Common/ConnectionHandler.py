@@ -4,7 +4,7 @@ import json
 
 from ate_common.logger import LogLevel, Logger
 from ate_apps_common.mqtt_connection import MqttConnection
-from utils import GPIOState
+from Common.utils import GPIOState
 
 
 class ConnectionHandler:

@@ -3,7 +3,7 @@ import asyncio
 import json
 
 from ate_common.logger import Logger
-from ConnectionHandler import ConnectionHandler
+from Common.ConnectionHandler import ConnectionHandler
 
 
 class TesterConnectionHandler(ConnectionHandler):

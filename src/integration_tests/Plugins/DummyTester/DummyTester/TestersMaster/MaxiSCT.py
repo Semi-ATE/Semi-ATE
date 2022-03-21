@@ -4,8 +4,8 @@ from typing import List
 import random
 
 from ate_common.logger import Logger
-from TopicFactory import TopicFactory
-from TesterMasterConnectionHandler import TesterConnectionHandler
+from Common.TopicFactory import TopicFactory
+from Common.TesterMasterConnectionHandler import TesterConnectionHandler
 
 from DummyTester.TestersMaster.InterfaceSCT import InterfaceSCT
 

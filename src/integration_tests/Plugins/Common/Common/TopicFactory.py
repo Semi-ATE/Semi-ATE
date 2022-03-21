@@ -1,4 +1,4 @@
-from utils import GPIOState
+from Common.utils import GPIOState
 
 
 class TopicFactory:
