@@ -100,7 +100,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd src/integration_tests/
-          xvfb-run --auto-servernum pytest test_integrate.py -k test_load_run_unload -s
+          xvfb-run --auto-servernum pytest test_integrate.py
           cd ../../
 
       - name: Run Manifest Check
