@@ -6,6 +6,7 @@ from enum import Enum
 import sys
 from typing import List, Union
 from package_list import distribution_packages, integration_test_packages
+import re
 
 class SetupCommand(Enum):
     Install = 'install'
@@ -168,7 +169,9 @@ def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
         if p.exists() == True:
             with p.open('r') as f:
                 for line in f:
-                    packages.add(line.strip())
+                    line_without_comment = re.sub(r'#.*$', '', line).strip()
+                    if line_without_comment != '':
+                        packages.add(line.strip())
     return list(packages)
 
 
