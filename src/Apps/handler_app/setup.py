@@ -49,4 +49,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Quality Assurance',
     ],
+    entry_points={
+        'console_scripts': ['launch_handler=ate_handler_app.launch_handler:main']
+    }
 )

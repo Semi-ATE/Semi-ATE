@@ -8,89 +8,182 @@ jobs:
   make-release:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout 
-      uses: actions/checkout@v2
+      - name: Checkout 
+        uses: actions/checkout@v2
 
-    - name: Install test dependencies
-      shell: bash
-      run: |
-        sudo apt-get update --fix-missing
-        sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
-    - name: Setup miniconda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        miniconda-version: "latest" 
-        python-version: '3.8'
-        channel-priority: "strict"
-        channels: "conda-forge"  
-        mamba-version: "*"
-        show-channel-urls: true 
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: "3.9"
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
 
-    - name: Install project dependencies
-      shell: bash -l {0}
-      run: |
-        mamba install --file requirements/run.txt -y -q
-        mamba install --file requirements/test.txt -y -q
-        mamba install Semi-ATE-STDF -y -q
-        python -m pip install git+https://github.com/goanpeca/spyder.git@fix/internal-plugs-for-ext-tests
-        cd Plugins/TDKMicronas
-        python setup.py develop
-        cd ../..
+      - name: Tag version
+        shell: bash -l {0}
+        run: |
+          cd scripts
+          python package_tool.py --tag-version ${GITHUB_REF#refs/*/}
+          cd ..
 
-    - name: tag to version
-      run: echo "__version__='${GITHUB_REF#refs/*/}'" >> ATE/__init__.py
+      - name: Setup environment
+        shell: bash -l {0}
+        run: |
+          cd scripts
+          ${GITHUB_REF#refs/*/}
+          python package_tool.py --change-env cicd
+          cd ..
 
-    - name: Install project
-      shell: bash -l {0}
-      run: pip install -e .
-      # shouldn't this be someting like `python setup.py install` ?
+      - name: Run ATE_projectdatabase tests
+        shell: bash -l {0}
+        run: |
+          cd src/ATE_projectdatabase
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
+          cd ../../
 
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Run ATE_spyder tests
+        shell: bash -l {0}
+        run: |
+          cd src/ATE_spyder
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          cd ../../
 
-    - name: Run manifest checks
-      shell: bash -l {0}
-      run: check-manifest
+      - name: Run Apps/common tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/common
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_apps_common
+          cd ../../../
 
-    - name: Run tests
-      shell: bash -l {0}
-      run: |
-        xvfb-run --auto-servernum pytest tests/ATE/TCC --cov=ATE
-        xvfb-run --auto-servernum pytest tests/ATE/spyder --cov=ATE
-        xvfb-run --auto-servernum pytest tests/ATE/TES/apps --cov=ATE
+      - name: Run Apps/master_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/master_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
+          cd ../../../
 
-    - name: Create project package
-      run: python setup.py sdist
+      - name: Run Apps/handler_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/handler_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_handler_app
+          cd ../../../
 
-    - name: Check package
-      shell: bash -l {0}
-      run:  twine check dist/*
+      - name: Run Apps/test_app tests
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/test_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
+          cd ../../../
+
+      - name: Run integration_tests/migrate_check
+        shell: bash -l {0}
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
+          cd ../../
+
+      - name: Start Mosquitto
+        uses: namoshek/mosquitto-github-action@v1
+        with:
+          version: '1.6'
+          ports: '1883:1883 8883:8883'
+        
+      - name: Run test_integrate
+        shell: bash -l {0}
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest test_integrate.py
+          cd ../../
+
+      - name: Run Manifest Check
+        shell: bash -l {0}
+        run: |
+          cd src/Apps/common
+          echo 'Check manifest of semi-ate-apps-common'
+          check-manifest
+
+          cd ../control_app
+          echo 'Check manifest of semi-ate-control-app'
+          check-manifest
+
+          cd ../master_app
+          echo 'Check manifest of semi-ate-master-app'
+          check-manifest
+
+          cd ../test_app
+          echo 'Check manifest of semi-ate-test-app'
+          check-manifest
+
+          cd ../handler_app
+          echo 'Check manifest of semi-ate-handler-app'
+          check-manifest
+
+          cd ../../ATE_common
+          echo 'Check manifest of semi-ate-common'
+          check-manifest
+
+          cd ../ATE_projectdatabase
+          echo 'Check manifest of semi-ate-project-database'
+          check-manifest
+
+          cd ../ATE_sammy
+          echo 'Check manifest of semi-ate-sammy'
+          check-manifest
+
+          cd ../ATE_semiateplugins
+          echo 'Check manifest of semi-ate-plugins'
+          check-manifest
+
+          cd ../ATE_spyder
+          echo 'Check manifest of semi-ate-spyder'
+          check-manifest
+
+          cd ../Plugins/TDKMicronas
+          echo 'Check manifest of tdk-micronas'
+          check-manifest
+
+          cd ../../../../
+
+      - name: Generate distribution sdist files
+        shell: bash -l {0}
+        run: |
+          cd scripts
+          python package_tool.py --setup-cmd sdist --packages distribution
+          cd ..
+          mkdir output
+          find . -iname '*.tar.gz' -exec cp '{}' output \;
+
+      - name: Check distribution files
+        shell: bash -l {0}
+        run: |
+          twine check output/*
+
+      - name: Upload Release Assets
+        uses: alexellis/upload-assets@0.3.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./output/*"]'  
       
-    - name: Upload release assets
-      uses: alexellis/upload-assets@0.2.3
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        asset_paths: '["dist/Semi-ATE-*.tar.gz"]'      
-      
-#     - name: Upload maxiconda to Github artifact
-#       uses: actions/upload-artifact@v2
+#     - name: Upload to PyPi
+#       uses: pypa/gh-action-pypi-publish@v1.4.2
 #       with:
-#         path: dist/*
-#         name: pypi
-
-    - name: Upload to PyPi
-      uses: pypa/gh-action-pypi-publish@v1.4.2
-      with:
-        password: ${{ secrets.PYPI_TOKEN }}
-        verbose: 1
-
-    - name: Upload coverage to Codecov  
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+#         password: ${{ secrets.PYPI_TOKEN }}
+#         verbose: 1
+# 
+#     - name: Upload coverage to Codecov  
+#       uses: codecov/codecov-action@v1
+#       with:
+#         token: ${{ secrets.CODECOV_TOKEN }}
 
 
 
