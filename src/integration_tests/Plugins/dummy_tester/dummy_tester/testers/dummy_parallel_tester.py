@@ -8,8 +8,9 @@ from Common.TopicFactory import TopicFactory
 from Common.TesterConnectionHandler import TesterConnectionHandler
 from Common.utils import GPIOState
 
-from DummyTester.Testers.InterfaceSCT import InterfaceSCT
 from ate_common.logger import Logger
+
+from dummy_tester.testers.tester_interface import TesterInterface
 
 
 def get_broker_address():
@@ -19,7 +20,7 @@ def get_broker_address():
 PORT = 1883
 
 
-class MaxiSCT(InterfaceSCT):
+class ParallelTester(TesterInterface):
     def __init__(self):
         self.name = f'tester_{str(time.time())}_{random.randint(1, 10000000)}'
         self._log = Logger('tester')

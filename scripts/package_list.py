@@ -55,9 +55,9 @@ distribution_packages = [
         'namespace': 'ate_handler_app'
     },
     {
-        'name': 'tdk-micronas',
-        'dir': Path(git_root_folder, 'src/Plugins/TDKMicronas'),
-        'namespace': 'TDKMicronas'
+        'name': 'semi-ate-testers',
+        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_tester'),
+        'namespace': 'semi_ate_testers'
     },
 ]
 

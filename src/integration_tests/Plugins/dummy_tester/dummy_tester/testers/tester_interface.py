@@ -2,10 +2,10 @@
 from abc import ABC, abstractmethod
 
 
-class InterfaceSCT(ABC):
+class TesterInterface(ABC):
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
-        print(f"MiniSCT: Pulse Trigger Out")
+        print(f"Tester: Pulse Trigger Out")
 
     @abstractmethod
     def get_sites_count(self):

@@ -7,7 +7,7 @@ from ate_common.logger import Logger
 from Common.TopicFactory import TopicFactory
 from Common.TesterMasterConnectionHandler import TesterConnectionHandler
 
-from DummyTester.TestersMaster.InterfaceSCT import InterfaceSCT
+from dummy_tester.master_testers.master_tester_interface import MasterTesterInterface
 
 
 PORT = 1883
@@ -18,7 +18,7 @@ def get_broker_address():
     return os.getenv('ATE_INTEGRATION_TESTENV_BROKER_HOST', '127.0.0.1')
 
 
-class MaxiSCT(InterfaceSCT):
+class ParallelTester(MasterTesterInterface):
     def __init__(self):
         self.name = f'master_{random.randint(0, 10000)}'
         self._log = Logger('tester')

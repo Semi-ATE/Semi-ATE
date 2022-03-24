@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 from pathlib import Path
-from TDKMicronas import __version__
+from semi_ate_testers import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
@@ -10,14 +10,14 @@ def add_version(name: str) -> str:
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
-readme_path = Path(Path(__file__).parent, 'TDKMicronas/README.md')
+readme_path = Path(Path(__file__).parent, 'semi_ate_testers/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
 
 setup( 
-    name="TDK.Micronas",
+    name="semi-ate-testers",
     version=version,
-    description='TDKMicrionas is an example implementation of a plugin that can be consumed by the semi-ate-spyder plugin',
+    description='semi-ate-testers is an example implementation of a plugin that can be consumed by the semi-ate-spyder plugin and the master application.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author="The Semi-ATE Project Contributors",
@@ -25,6 +25,6 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     include_package_data=True,
-    entry_points={"ate.org": ["plug = TDKMicronas:Plugin"]},
-    py_modules=["TDKMicronas"],
+    entry_points={"ate.org": ["plug = semi_ate_testers:Plugin"]},
+    py_modules=["semi_ate_testers"],
 )

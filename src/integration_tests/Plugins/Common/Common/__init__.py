@@ -1,6 +1,6 @@
 from ate_common.logger import Logger
 from ate_semiateplugins.hookspec import hookimpl
-from TDKMicronas.Testers import MiniSCT, MaxiSCT
+from semi_ate_testers.testers import SingleTester, ParallelTester
 
 
 class BusinessObjectStandin:
@@ -121,9 +121,9 @@ class Plugin:
     @hookimpl
     def get_tester(tester_name):
         if tester_name == "DummyTester.MiniSCT":
-            return MiniSCT.MiniSCT()
+            return SingleTester.MiniSCT()
         elif tester_name == "DummyTester.MaxiSCT":
-            return MaxiSCT.MaxiSCT()
+            return ParallelTester.MaxiSCT()
 
     @hookimpl
     def get_general_purpose_function(func_name: str, logger: Logger):

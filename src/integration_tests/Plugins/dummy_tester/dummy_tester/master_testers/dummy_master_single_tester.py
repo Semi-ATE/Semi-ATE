@@ -1,8 +1,8 @@
 import asyncio
-from DummyTester.TestersMaster.InterfaceSCT import InterfaceSCT
+from dummy_tester.master_testers.master_tester_interface import MasterTesterInterface
 
 
-class MiniSCT(InterfaceSCT):
+class MiniSCT(MasterTesterInterface):
     def get_sites_count(self):
         return 1
 
