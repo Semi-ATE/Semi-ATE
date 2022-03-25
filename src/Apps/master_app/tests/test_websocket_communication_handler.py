@@ -13,7 +13,7 @@ class TestWebsocketCommunicationHandler:
                   "broker_port": "4000",
                   "environment": "SCT_1",
                   "Handler": "abc",
-                  "tester_type": "DummyTester.MaxiSCT",
+                  "tester_type": "Semi-ATE Master Parallel Tester",
                   "enable_timeouts": True}
         mocker.patch.object(MasterApplication, "get_strategy_type", return_value='default')
         mocker.patch.object(MasterApplication, "get_tester", return_value=None)

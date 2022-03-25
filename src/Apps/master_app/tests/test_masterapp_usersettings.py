@@ -16,7 +16,7 @@ class TestApplication:
                 'jobformat': 'xml.semi-ate',
                 'enable_timeouts': True,
                 'Handler': "abc",
-                'tester_type': 'DummyTester.MaxiSCT',
+                'tester_type': 'Semi-ATE Master Parallel Tester',
                 'environment': "abs"}
 
     def default_configuration_with_persistent_user_settings(self):

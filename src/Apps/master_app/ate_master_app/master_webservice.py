@@ -221,7 +221,7 @@ async def webservice_init(app):
     # add_static only when developing things
     # normally static content should be processed by
     # webservers like (nginx or apache)
-    # In the case of MiniSCT it is okay to use add_static
+    # In the case of Single Tester it is okay to use add_static
     app.router.add_static('/', path=static_file_path, name='static')
     app['ws_comm_handler'] = ws_comm_handler
 

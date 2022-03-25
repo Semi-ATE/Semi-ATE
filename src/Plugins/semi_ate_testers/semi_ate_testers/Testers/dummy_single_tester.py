@@ -3,7 +3,7 @@ from semi_ate_testers.testers.tester_interface import TesterInterface
 class DummySingleTester(TesterInterface):
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
-        print(f"MiniSCT: Pulse Trigger Out")
+        print(f"Single Tester: Pulse Trigger Out")
 
     def get_sites_count(self):
         return 1

@@ -50,8 +50,8 @@ class Context:
 
             # Tester
             testers = get_plugin_manager().hook.get_tester(tester_name="DummySingleTester")
-            assert len(testers) < 2, "The testertype DummyTester.MiniSCT maps to multiple testers. Check installed plugins."
-            assert len(testers) == 1, "The testertype DummyTester.MiniSCT is not available or installed on this machine."
+            assert len(testers) < 2, "The testertype DummySingleTester maps to multiple testers. Check installed plugins."
+            assert len(testers) == 1, "The testertype DummySingleTester is not available or installed on this machine."
             self.tester_instance = testers[0]
             sequencer.set_tester_instance(self.tester_instance)
 

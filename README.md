@@ -82,4 +82,4 @@ copied from Spyder-IDE directly. (the information should be adapted inside the '
 5) after all steps 1) to 4) are done
 start a browser your choice and past the following url: http://localhost:8081/
 
-you will be able to see the MiniSCT UI
+you will be able to see the UI

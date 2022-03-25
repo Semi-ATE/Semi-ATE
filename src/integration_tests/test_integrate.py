@@ -1275,7 +1275,7 @@ async def test_standalone_testapp_run_duttests(num_dut_tests_to_run, _, process_
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="no way of currently testing this, tester type is set to be a MaxiSCT which execution must be synchronized using a master")
+@pytest.mark.skip(reason="no way of currently testing this, tester type is set to be a Parallel Tester which execution must be synchronized using a master")
 async def test_standalone_testapp_test_process(process_manager):
     subscriptions = [
         (f'ate/{DEVICE_ID}/TestApp/status/+', 2),
