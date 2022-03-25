@@ -133,7 +133,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json",
         "site_layout": [[1, 0], [0, 1]],
-        "tester_type": "DummyTesterMaster.ParallelTester",
+        "tester_type": "DummyMasterParallelTester",
         "loglevel": 10
     }
 

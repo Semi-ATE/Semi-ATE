@@ -79,7 +79,7 @@ jobs:
       - name: Run integration_tests/handler_app tests
         shell: bash -l {0}
         run: |
-          cd integration_tests/handler_app
+          cd src/integration_tests/handler_app
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=dummy_handler_app
           cd ../../../
 
