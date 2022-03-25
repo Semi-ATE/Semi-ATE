@@ -147,7 +147,7 @@
                </size>
               </property>
               <property name="text">
-               <string>tom.hoeren@micronas.com</string>
+               <string>unknown@semi-ate.com</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -222,7 +222,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Micronas</string>
+               <string>Semi-ATE</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -282,7 +282,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Semi-ATE plugin for Micronas</string>
+               <string>Semi-ATE plugin</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -348,7 +348,7 @@
                </size>
               </property>
               <property name="text">
-               <string>TDK.Micronas</string>
+               <string>Semi-ATE</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -1126,7 +1126,7 @@
             <item>
              <widget class="QLineEdit" name="lineEdit_3">
               <property name="text">
-               <string>Micronas</string>
+               <string>Semi-ATE</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -1258,7 +1258,7 @@
             <item>
              <widget class="QLineEdit" name="lineEdit_29">
               <property name="text">
-               <string>https://1.2.3.4:8080/Micronas</string>
+               <string>https://1.2.3.4:8080/Semi-ATE</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -1306,7 +1306,7 @@
             <item>
              <widget class="QLineEdit" name="lineEdit_26">
               <property name="text">
-               <string>TDK</string>
+               <string>Semi-ATE</string>
               </property>
               <property name="placeholderText">
                <string/>
@@ -1453,7 +1453,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_23">
                       <property name="text">
-                       <string>Micronas-maskset</string>
+                       <string>Semi-ATE-maskset</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -1501,7 +1501,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_25">
                       <property name="text">
-                       <string>Micronas</string>
+                       <string>Semi-ATE</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -1635,7 +1635,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_27">
                       <property name="text">
-                       <string>Micronas-maskset</string>
+                       <string>Semi-ATE-maskset</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -1683,7 +1683,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_28">
                       <property name="text">
-                       <string>Micronas</string>
+                       <string>Semi-ATE</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -1837,7 +1837,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_30">
                       <property name="text">
-                       <string>Micronas-erp</string>
+                       <string>Semi-ATE-erp</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -1885,7 +1885,7 @@
                     <item>
                      <widget class="QLineEdit" name="lineEdit_31">
                       <property name="text">
-                       <string>Micronas</string>
+                       <string>Semi-ATE</string>
                       </property>
                       <property name="placeholderText">
                        <string/>
@@ -2266,7 +2266,7 @@
              <item>
               <widget class="QLineEdit" name="lineEdit_18">
                <property name="text">
-                <string>Micronas</string>
+                <string>Semi-ATE</string>
                </property>
                <property name="placeholderText">
                 <string/>

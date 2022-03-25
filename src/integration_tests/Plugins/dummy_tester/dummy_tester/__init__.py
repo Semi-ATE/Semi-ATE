@@ -1,7 +1,9 @@
 from ate_common.logger import Logger
 from ate_semiateplugins.hookspec import hookimpl
-from dummy_tester.testers import dummy_parallel_tester as ParallelTester, dummy_single_tester as SingleTester
-from dummy_tester.master_testers import dummy_master_parallel_tester as MasterParallelTester, dummy_master_single_tester as MasterSingleTester
+from dummy_tester.testers.dummy_single_tester import DummySingleTester
+from dummy_tester.testers.dummy_parallel_tester import DummyParallelTester
+from dummy_tester.master_testers.dummy_master_single_tester import DummyMasterSingleTester
+from dummy_tester.master_testers.dummy_master_parallel_tester import DummyMasterParallelTester
 
 
 class BusinessObjectStandin:
@@ -72,21 +74,21 @@ class Plugin:
     @hookimpl
     def get_tester_names():
         return [
-            {"display_name": "Dummy Mini SCT",
+            {"display_name": "Dummy Single Tester",
              "version": "0.0",
-             "manufacturer": "Dummy Micronas",
-             "name": "DummyTester.MiniSCT"},
-            {"display_name": "Dummy Maxi SCT",
+             "manufacturer": "Dummy Company",
+             "name": "DummySingleTester"},
+            {"display_name": "Dummy Parallel Tester",
              "version": "0.0",
-             "manufacturer": "Dummy Micronas",
-             "name": "DummyTester.MaxiSCT"}]
+             "manufacturer": "Dummy Company",
+             "name": "DummyParallelTester"}]
 
     @hookimpl
     def get_general_purpose_function_names():
         return [
             {"display_name": "Flatcache [Catflache]",
              "version": "0.0",
-             "manufacturer": "Dummy Micronas",
+             "manufacturer": "Dummy Company",
              "name": "DummyTester.Flatcache"}]
 
     @hookimpl
@@ -121,18 +123,17 @@ class Plugin:
 
     @hookimpl
     def get_tester(tester_name: str):
-        if tester_name == "DummyTester.MiniSCT":
-            return TesterMiniSCT.MiniSCT()
-        elif tester_name == "DummyTester.MaxiSCT":
-            return TesterMaxiSCT.MaxiSCT()
+        if tester_name == "DummySingleTester":
+            return DummySingleTester()
+        elif tester_name == "DummyParallelTester":
+            return DummyParallelTester()
 
     @hookimpl
     def get_tester_master(tester_name: str):
-        if tester_name == "DummyTesterMaster.SingleTester":
-            return MasterParallelTester.MaxiSCT
-            #TesterMasterMiniSCT.MiniSCT()
-        elif tester_name == "DummyTesterMaster.ParallelTester":
-            return TesterMasterMaxiSCT.MaxiSCT()
+        if tester_name == "DummyMasterSingleTester":
+            return DummyMasterSingleTester()
+        elif tester_name == "DummyMasterParallelTester":
+            return DummyMasterParallelTester()
 
     @hookimpl
     def get_general_purpose_function(func_name: str, logger: Logger):

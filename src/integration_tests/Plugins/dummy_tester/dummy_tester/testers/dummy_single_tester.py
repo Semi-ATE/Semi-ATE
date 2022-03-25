@@ -1,7 +1,7 @@
 from dummy_tester.testers.tester_interface import TesterInterface
 
 
-class SingleTester(TesterInterface):
+class DummySingleTester(TesterInterface):
     def get_sites_count(self):
         return 1
 

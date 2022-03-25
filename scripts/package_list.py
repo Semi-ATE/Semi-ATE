@@ -56,7 +56,7 @@ distribution_packages = [
     },
     {
         'name': 'semi-ate-testers',
-        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_tester'),
+        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_testers'),
         'namespace': 'semi_ate_testers'
     },
 ]
@@ -69,7 +69,7 @@ integration_test_packages = [
     },
     {
         'name': 'dummy-plugin',
-        'dir': Path(git_root_folder, 'src/integration_tests/Plugins/DummyTester'),
-        'namespace': 'DummyTester'
+        'dir': Path(git_root_folder, 'src/integration_tests/Plugins/dummy_tester'),
+        'namespace': 'dummy_tester'
     },
 ]

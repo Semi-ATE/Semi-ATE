@@ -18,7 +18,7 @@ def get_broker_address():
     return os.getenv('ATE_INTEGRATION_TESTENV_BROKER_HOST', '127.0.0.1')
 
 
-class ParallelTester(MasterTesterInterface):
+class DummyMasterParallelTester(MasterTesterInterface):
     def __init__(self):
         self.name = f'master_{random.randint(0, 10000)}'
         self._log = Logger('tester')

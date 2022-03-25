@@ -23,7 +23,7 @@ class Context:
         self.logger = Logger(source, self.mqtt)
 
         # Tester
-        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="TDKMicronas.MiniSCT")[0]
+        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="DummySingleTester")[0]
 
         from ate_test_app.actuators.Temperature.Temperature import TemperatureProxy
         self.Temperature_instance = TemperatureProxy()

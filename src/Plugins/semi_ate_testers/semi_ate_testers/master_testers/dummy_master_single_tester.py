@@ -1,9 +1,8 @@
 import asyncio
+from semi_ate_testers.master_testers.tester_master_interface import MasterTesterInterface
 
-from TDKMicronas.TestersMaster.InterfaceSCT import InterfaceSCT
 
-
-class MiniSCT(InterfaceSCT):
+class DummyMasterSingleTester(MasterTesterInterface):
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
         print(f"MiniSCT: Pulse Trigger Out")

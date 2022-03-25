@@ -1,9 +1,8 @@
 import asyncio
+from semi_ate_testers.master_testers.tester_master_interface import MasterTesterInterface
 
-from TDKMicronas.TestersMaster.InterfaceSCT import InterfaceSCT
 
-
-class MaxiSCT(InterfaceSCT):
+class DummyMasterParallelTester(MasterTesterInterface):
     def get_sites_count(self):
         # TODO: temporary value for 16
         return 16

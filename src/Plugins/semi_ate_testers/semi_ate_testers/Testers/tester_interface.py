@@ -1,8 +1,6 @@
-
 from abc import ABC, abstractmethod
 
-
-class InterfaceSCT(ABC):
+class TesterInterface(ABC):
     @abstractmethod
     def get_sites_count(self):
         pass

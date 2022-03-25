@@ -48,7 +48,7 @@ class NewPackageWizard(BaseDialog):
         self.drawingGroup.setVisible(False)
         self.drawingLabel.setText("N/A")
         self.findOnFilesystem.clicked.connect(self.FindOnFileSystem)
-        companies = ['', 'Micronas', 'InvenSense', 'IC-Sense', '...']
+        companies = ['', 'Semi-ATE', 'InvenSense', 'IC-Sense', '...']
         self.importFor.clear()
         self.importFor.addItems(companies)
         self.importFor.setCurrentIndex(0)  # empty string

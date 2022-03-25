@@ -13,7 +13,7 @@ class TestApplication:
                 'sites': ["0", "1"],
                 'device_id': 'd',
                 'jobsource': 'static',
-                'jobformat': 'xml.micronas',
+                'jobformat': 'xml.semi-ate',
                 'enable_timeouts': True,
                 'Handler': "abc",
                 'tester_type': 'DummyTester.MaxiSCT',

@@ -318,7 +318,7 @@ class DCS6K:
 
     def set_user_value(self, value, dry):
         # Note: RefMan lists slewrate, type and contr as additional parameters
-        # but TDK reference implementation uses internal defaul values of the
+        # but Semi-ATE reference implementation uses internal defaul values of the
         # source here by not sending the values
         return self.make_set_value(value).execute(dry)
 

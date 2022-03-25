@@ -1,8 +1,10 @@
 from ate_common.logger import Logger
 from ate_semiateplugins.hookspec import hookimpl
-from semi_ate_testers.Testers import MiniSCT, MaxiSCT
-from TDKMicronas.TestersMaster import MiniSCT as MasterMiniSCT, MaxiSCT as MasterMaxiSCT
-from TDKMicronas.Flatcache import Flatcache
+from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
+from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
+from semi_ate_testers.master_testers.dummy_master_single_tester import DummyMasterSingleTester
+from semi_ate_testers.master_testers.dummy_master_parallel_tester import DummyMasterParallelTester
+from semi_ate_testers.Flatcache import Flatcache
 
 
 class BusinessObjectStandin:
@@ -30,10 +32,14 @@ class BusinessObjectStandin:
 
 class Plugin:
 
+    @staticmethod
+    def prefix():
+        return 'Semi-ATE'
+
     @hookimpl
     def get_plugin_identification():
         return {
-            "Name": "TDK.Micronas Reference Plugin",
+            "Name": f"{Plugin.prefix()} Tester Reference Plugin",
             "Version": "0.01"
         }
 
@@ -44,107 +50,113 @@ class Plugin:
     @hookimpl
     def get_exporter_names():
         return [
-            {"display_name": "Dummy Exporter",
+            {"display_name": f"{Plugin.prefix()} Dummy Exporter",
              "version": "0.0",
-             "name": "TDKMicronas.DummyExporter"}]
+             "name": f"{Plugin.prefix()} Dummy Exporter"}]
 
     @hookimpl
     def get_equipment_names():
         return [
-            {"display_name": "Dummy Equipment",
+            {"display_name": f"{Plugin.prefix()} Dummy Equipment",
              "version": "0.0",
-             "name": "TDKMicronas.DummyEquipment"}]
+             "name": f"{Plugin.prefix()} Dummy Equipment"}]
 
     @hookimpl
     def get_devicepin_importer_names():
         return [
-            {"display_name": "Dummy Pinimport",
+            {"display_name": f"{Plugin.prefix()} Dummy Pinimport",
              "version": "0.0",
-             "name": "TDKMicronas.DummyPinimport"}]
+             "name": f"{Plugin.prefix()} Dummy Pinimport"}]
 
     @hookimpl
     def get_instrument_names():
         return [
-            {"display_name": "Dummy Instrument",
+            {"display_name": f"{Plugin.prefix()} Dummy Instrument",
              "version": "0.0",
              "manufacturer": "ACME International",
-             "name": "TDKMicronas.DummyInstrument"}]
+             "name": f"{Plugin.prefix()} Dummy Instrument"}]
 
     @hookimpl
     def get_tester_names():
         return [
-            {"display_name": "Mini SCT",
-             "version": "0.0",
-             "manufacturer": "TDK Micronas",
-             "name": "TDKMicronas.MiniSCT"},
-            {"display_name": "Maxi SCT",
-             "version": "0.0",
-             "manufacturer": "TDK Micronas",
-             "name": "TDKMicronas.MaxiSCT"}]
+            {
+                "display_name": f"{Plugin.prefix()} Single Tester",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Single Tester"
+            },
+            {  
+                "display_name": f"{Plugin.prefix()} Parallel Tester",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Parallel Tester"
+            }
+        ]
 
     @hookimpl
     def get_general_purpose_function_names():
         return [
-            {"display_name": "Flatcache [Catflache]",
+            {"display_name": f"{Plugin.prefix()} Flatcache [Catflache]",
              "version": "0.0",
-             "manufacturer": "TDK Micronas",
-             "name": "TDKMicronas.Flatcache"}]
+             "manufacturer": "Semi-ATE",
+             "name": f"{Plugin.prefix()} Flatcache"}]
 
     @hookimpl
     def get_importer(importer_name):
-        if "TDKMicronas." in importer_name:
+        if Plugin.prefix() in importer_name:
             return BusinessObjectStandin()
 
     @hookimpl
     def get_exporter(exporter_name):
-        if "TDKMicronas." in exporter_name:
+        if Plugin.prefix() in exporter_name:
             return BusinessObjectStandin()
 
     @hookimpl
     def get_equipment(equipment_name):
-        if "TDKMicronas." in equipment_name:
+        if Plugin.prefix() in equipment_name:
             return BusinessObjectStandin()
 
     @hookimpl
     def get_devicepin_importer(importer_name):
-        if "TDKMicronas." in importer_name:
+        if Plugin.prefix() in importer_name:
             return BusinessObjectStandin()
 
     @hookimpl
     def get_instrument(instrument_name: str, logger: Logger):
-        if "TDKMicronas." in instrument_name:
+        if Plugin.prefix() in instrument_name:
             return BusinessObjectStandin(logger)
 
     @hookimpl
     def get_instrument_proxy(instrument_name):
-        if "TDKMicronas." in instrument_name:
+        if Plugin.prefix() in instrument_name:
             return BusinessObjectStandin()
 
     @hookimpl
     def get_tester(tester_name: str):
-        if tester_name == "TDKMicronas.MiniSCT":
-            return MiniSCT.MiniSCT()
-        elif tester_name == "TDKMicronas.MaxiSCT":
-            return MaxiSCT.MaxiSCT()
+        if tester_name == f"{Plugin.prefix()} Single Tester":
+            return DummySingleTester()
+        elif tester_name == f"{Plugin.prefix()} Parallel Tester":
+            return DummyParallelTester()
 
     @hookimpl
     def get_tester_master(tester_name: str):
-        if tester_name == "TDKMicronas.MasterMiniSCT":
-            return MasterMiniSCT.MiniSCT()
-        elif tester_name == "TDKMicronas.MasterMaxiSCT":
-            return MasterMaxiSCT.MaxiSCT()
+        if tester_name == f"{Plugin.prefix()} Master Single Tester":
+            return DummyMasterSingleTester()
+        elif tester_name == f"{Plugin.prefix()} Master Parallel Tester":
+            return DummyMasterParallelTester()
 
     @hookimpl
     def get_general_purpose_function(func_name: str, logger: Logger):
         print(f"Get General Purpose Function: {func_name}")
-        if func_name == "TDKMicronas.Flatcache":
+        if func_name == f"{Plugin.prefix()} Flatcache":
             return Flatcache.Flatcache()
 
     @hookimpl
     def get_configuration_options(object_name):
-        if object_name == "TDKMicronas.Flatcache":
+        if object_name == f"{Plugin.prefix()} Flatcache":
             return ["ip", "port"]
 
-        if object_name == "TDKMicronas.DummyInstrument":
+        if object_name == f"{Plugin.prefix()} Dummy Instrument":
             return ["ip", "port"]
+
 __version__ = '0.0.0'

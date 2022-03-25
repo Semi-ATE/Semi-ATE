@@ -1,2 +1,2 @@
 include requirements/run.txt
-include TDKMicronas/README.md
+include semi_ate_testers/README.md

@@ -61,7 +61,7 @@
           }
         ]
       },
-      "tester": "TDKMicronas.MiniSCT",
+      "tester": "DummySingleTester",
       "Actuator": {
         "PR": [
           "Temperature",

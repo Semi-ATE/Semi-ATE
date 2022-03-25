@@ -14,7 +14,7 @@
         "MaxParallelism": 1
       },
       "Parallelism": {},
-      "tester": "TDKMicronas.MiniSCT",
+      "tester": "DummySingleTester",
       "Actuator": {
         "PR": [
           "Temperature",

@@ -23,14 +23,14 @@ Configuration of the master application is done by writing a JSON file called **
     "webui_host": "127.0.0.1",
     "webui_port": "8081",
     "jobsource": "filesystem",
-    "jobformat": "xml.micronas",
+    "jobformat": "xml.semi-ate",
     "skip_jobdata_verification": false,
     "filesystemdatasource.path": ".",
     "filesystemdatasource.jobpattern": "le#jobname#.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
     "site_layout": { "0": [0, 0]},
-    "tester_type": "TDKMicronas.MasterMiniSCT",
+    "tester_type": "Semi-ATE Master Single Tester",
     "loglevel": 10
 }
 ```

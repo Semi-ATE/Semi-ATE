@@ -38,9 +38,9 @@ class Context:
             sequencer.set_auto_script(self.auto_script)
 
             # Tester
-            testers = get_plugin_manager().hook.get_tester(tester_name="TDKMicronas.MaxiSCT")
-            assert len(testers) < 2, "The testertype TDKMicronas.MaxiSCT maps to multiple testers. Check installed plugins."
-            assert len(testers) == 1, "The testertype TDKMicronas.MaxiSCT is not available or installed on this machine."
+            testers = get_plugin_manager().hook.get_tester(tester_name="Semi-ATE Parallel Tester")
+            assert len(testers) < 2, "The testertype Semi-ATE Parallel Tester maps to multiple testers. Check installed plugins."
+            assert len(testers) == 1, "The testertype Semi-ATE Parallel Tester is not available or installed on this machine."
             self.tester_instance = testers[0]
             sequencer.set_tester_instance(self.tester_instance)
 
@@ -74,20 +74,20 @@ class Context:
 
     def setup_plugins(self, logger: Logger):
         instrument_dict = {}
-        instruments = get_plugin_manager().hook.get_instrument(instrument_name="TDKMicronas.DummyInstrument", logger=logger)
-        assert len(instruments) < 2, "The instrumenttype TDKMicronas.DummyInstrument maps to multiple instruments. Check installed plugins."
-        assert len(instruments) == 1, "The instrumenttype TDKMicronas.DummyInstrument is not available or installed on this machine."
-        self.TDKMicronas_DummyInstrument_instance = instruments[0]
-        instrument_dict['TDKMicronas.DummyInstrument'] = self.TDKMicronas_DummyInstrument_instance
+        instruments = get_plugin_manager().hook.get_instrument(instrument_name="DummyTester.DummyInstrument", logger=logger)
+        assert len(instruments) < 2, "The instrumenttype DummyTester.DummyInstrument maps to multiple instruments. Check installed plugins."
+        assert len(instruments) == 1, "The instrumenttype DummyTester.DummyInstrument is not available or installed on this machine."
+        self.DummyTester_DummyInstrument_instance = instruments[0]
+        instrument_dict['DummyTester.DummyInstrument'] = self.DummyTester_DummyInstrument_instance
 
         apply_configuration(instrument_dict)
 
         self.gp_dict = {}
-        gpfuncs = get_plugin_manager().hook.get_general_purpose_function(func_name="TDKMicronas.Flatcache", logger=logger)
-        assert len(gpfuncs) < 2, "The functiontype TDKMicronas.Flatcache maps to multiple functions. Check installed plugins."
-        assert len(gpfuncs) == 1, "The functiontype TDKMicronas.Flatcache is not available or installed on this machine."
-        self.TDKMicronas_Flatcache_instance = gpfuncs[0]
-        self.gp_dict['TDKMicronas.Flatcache'] = self.TDKMicronas_Flatcache_instance
+        gpfuncs = get_plugin_manager().hook.get_general_purpose_function(func_name="DummyTester.Flatcache", logger=logger)
+        assert len(gpfuncs) < 2, "The functiontype DummyTester.Flatcache maps to multiple functions. Check installed plugins."
+        assert len(gpfuncs) == 1, "The functiontype DummyTester.Flatcache is not available or installed on this machine."
+        self.DummyTester_Flatcache_instance = gpfuncs[0]
+        self.gp_dict['DummyTester.Flatcache'] = self.DummyTester_Flatcache_instance
 
         apply_configuration(self.gp_dict)
 

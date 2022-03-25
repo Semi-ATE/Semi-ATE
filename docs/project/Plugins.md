@@ -36,9 +36,9 @@ Where:
 * display_name denotes the string, that is used to display the the object in the ATE.org UI.
 * Version denotes the Version of the code, that is used for the respective object
 * Name: Denotes the actual internal name by which the object is identified within the plugin. The plugin must be able to return an instance of the object when the get_x hook is called with the string name as x_name parameter. Note that the object name must be unqique across all plugins. Therefore it is advisable to prefix the objectname with the pluginname. E.g:
-* Plugin: TDK.Micronas
+* Plugin: Semi-ATE
 * Object: CSVFileImporter
-* Name: TDK.Micronas.CSVFileImporter
+* Name: Semi-ATE.CSVFileImporter
 
 
 

@@ -17,11 +17,11 @@ unique parameter name of the OP providing the name:
 <ProgramName>.<TestInstanceName>.<ParameterName>
 coupled with a resolver. A resolver can be any general purpose function provided by an installed plugin, e.g.
 assuming, that we have two GP functions installed from two different plugins:
-* TDK.Micronas, Function METIS
+* Semi-ATE, Function METIS
 * Someplug, Function FancyResolver
 
 Thus, to resolve the Parameter Testprog1.TestA1.Output1 we using Metis we use the identifier 
-```"Testprog1.TestA1.Output1@TDK.Micronas.METIS"```
+```"Testprog1.TestA1.Output1@Semi-ATE.METIS"```
 To resolve using the FancyResolver we use
 ```"Testprog1.TestA1.Output1@Someplug.FancyResolver"```
 To resolve using a local outputparameter we use 
@@ -43,7 +43,7 @@ The ISC integration shall support the following kinds of value resolvers
 
 ## Performance & Latency Considerations
 Since resolving parameters will introduce latency into the testprogram execution it should be avoided to dynamically resolve too many parameters each time a DUT is tested. Given that some parameters will probably be tester specific but never change at runtime (e.g. calibration data) a method to mark parameters that need to be dynamically resolved, but only once, should exist. This way the parameters can be resolved once at the start of the testprogram (or during the test of the first DUT for that matter) and never be resolved again. Proposal: Any non-static parameter shall have a modifier, that instructs the runtime to resolve the parameter only once. From a UI perspective this could be done either with a flag on the Parameter, or by augmenting the resolverstring with the modifier, e.g.:
-```"Testprog1.TestA1.Output1@TDK.Micronas.METIS,once"```
+```"Testprog1.TestA1.Output1@Semi-ATE.METIS,once"```
 The ```once``` modifier triggers could trigger the required behavior, the structure of the string would allow for further extension with other modifiers, if required.
 
 

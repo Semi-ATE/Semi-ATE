@@ -146,8 +146,8 @@ jobs:
           echo 'Check manifest of semi-ate-spyder'
           check-manifest
 
-          cd ../Plugins/TDKMicronas
-          echo 'Check manifest of tdk-micronas'
+          cd ../Plugins/semi_ate_testers
+          echo 'Check manifest of semi-ate-testers'
           check-manifest
 
           cd ../../../../

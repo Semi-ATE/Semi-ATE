@@ -26,7 +26,7 @@ class Context:
         self.mqtt.set_after_terminate_callback(lambda: self.auto_script.after_terminate_teardown())
 
         # Tester
-        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="TDKMicronas.MiniSCT")[0]
+        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="DummySingleTester")[0]
 
         from ate_test_app.actuators.Temperature.Temperature import TemperatureProxy
         self.Temperature_instance = TemperatureProxy()

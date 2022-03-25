@@ -34,7 +34,7 @@ def default_configuration():
             'sites': ["0", "1"],
             'device_id': DEVICE_ID,
             'jobsource': 'filesystem',
-            'jobformat': 'xml.micronas',
+            'jobformat': 'xml.semi-ate',
             "filesystemdatasource.path": FILE_PATH,
             "filesystemdatasource.jobpattern": "le306426001.xml",
             'enable_timeouts': True,

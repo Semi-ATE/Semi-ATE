@@ -11,7 +11,7 @@
     "owner_name": "HW0_FT_Devie01_production",
     "prog_order": 1,
     "is_valid": true,
-    "cache_type": "TDKMicronas.Flatcache",
+    "cache_type": "DummyTester.Flatcache",
     "caching_policy": "disable",
     "test_ranges": [
       100
@@ -38,7 +38,7 @@
     "owner_name": "HW0_PR_Die01_production",
     "prog_order": 1,
     "is_valid": true,
-    "cache_type": "TDKMicronas.Flatcache",
+    "cache_type": "DummyTester.Flatcache",
     "caching_policy": "disable",
     "test_ranges": [
       100,

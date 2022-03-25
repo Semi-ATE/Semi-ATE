@@ -5,7 +5,7 @@ from ate_master_app.parameter_parser.static_data_source import StaticDataSource
 
 
 def CreateParser(jobformat: str):
-    if(jobformat == 'xml.micronas'):
+    if(jobformat == 'xml.semi-ate'):
         return XmlParameterParser()
 
     return None

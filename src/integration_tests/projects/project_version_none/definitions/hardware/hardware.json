@@ -14,7 +14,7 @@
         "MaxParallelism": 1
       },
       "Parallelism": {},
-      "tester": "TDKMicronas.MiniSCT",
+      "tester": "DummySingleTester",
       "Actuator": {
         "PR": [
           "Temperature",
@@ -34,16 +34,16 @@
         ]
       },
       "Instruments": [
-        "TDKMicronas.DummyInstrument"
+        "DummyTester.DummyInstrument"
       ],
       "GPFunctions": [
-        "TDKMicronas.Metis"
+        "DummyTester.Metis"
       ],
       "InstrumentNames": {
-        "TDKMicronas.DummyInstrument": "TDKMicronas_DummyInstrument"
+        "DummyTester.DummyInstrument": "DummyTester_DummyInstrument"
       },
       "GPFunctionNames": {
-        "TDKMicronas.Metis": "TDKMicronas_Metis"
+        "DummyTester.Metis": "DummyTester_Metis"
       }
     },
     "is_enabled": true

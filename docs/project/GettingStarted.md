@@ -73,7 +73,7 @@ python setup.py develop
 ## Install Reference Plugin
 
 ```Console
-cd Plugins/TDKMicronas
+cd Plugins/semi-ate-testers
 python setup.py install
 ```
 

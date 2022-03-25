@@ -23,7 +23,7 @@ class Context:
         self.logger = Logger(source, self.mqtt)
 
         # Tester
-        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="TDKMicronas.MiniSCT")[0]
+        self.tester_instance = get_plugin_manager().hook.get_tester(tester_name="DummySingleTester")[0]
 
         from ate_test_app.actuators.Temperature.Temperature import TemperatureProxy
         self.Temperature_instance = TemperatureProxy()
@@ -48,14 +48,14 @@ class Context:
 
     def setup_plugins(self, logger: Logger):
         instrument_dict = {}
-        self.TDKMicronas_DummyInstrument_instance = get_plugin_manager().hook.get_instrument(instrument_name="TDKMicronas.DummyInstrument", logger=logger)[0]
-        instrument_dict['TDKMicronas.DummyInstrument'] = self.TDKMicronas_DummyInstrument_instance
+        self.DummyTester_DummyInstrument_instance = get_plugin_manager().hook.get_instrument(instrument_name="DummyTester.DummyInstrument", logger=logger)[0]
+        instrument_dict['DummyTester.DummyInstrument'] = self.DummyTester_DummyInstrument_instance
 
         apply_configuration(instrument_dict)
 
         self.gp_dict = {}
-        self.TDKMicronas_Metis_instance = get_plugin_manager().hook.get_general_purpose_function(func_name="TDKMicronas.Metis", logger=logger)[0]
-        self.gp_dict['TDKMicronas.Metis'] = self.TDKMicronas_Metis_instance
+        self.DummyTester_Metis_instance = get_plugin_manager().hook.get_general_purpose_function(func_name="DummyTester.Metis", logger=logger)[0]
+        self.gp_dict['DummyTester.Metis'] = self.DummyTester_Metis_instance
 
         apply_configuration(self.gp_dict)
 

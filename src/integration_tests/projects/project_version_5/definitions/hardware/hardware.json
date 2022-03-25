@@ -339,7 +339,7 @@
           }
         ]
       },
-      "tester": "TDKMicronas.MaxiSCT",
+      "tester": "Semi-ATE Parallel Tester",
       "Actuator": {
         "PR": [
           "Temperature",
@@ -359,10 +359,10 @@
         ]
       },
       "Instruments": [
-        "TDKMicronas.DummyInstrument"
+        "DummyTester.DummyInstrument"
       ],
       "GPFunctions": [
-        "TDKMicronas.Flatcache"
+        "DummyTester.Flatcache"
       ]
     },
     "is_enabled": true

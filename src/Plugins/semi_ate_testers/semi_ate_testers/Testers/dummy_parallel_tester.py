@@ -1,8 +1,6 @@
+from semi_ate_testers.testers.tester_interface import TesterInterface
 
-from TDKMicronas.Testers.InterfaceSCT import InterfaceSCT
-
-
-class MaxiSCT(InterfaceSCT):
+class DummyParallelTester(TesterInterface):
     def get_sites_count(self):
         # TODO: temporary value for 16
         return 16
