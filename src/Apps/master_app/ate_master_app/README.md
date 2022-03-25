@@ -31,7 +31,8 @@ Configuration of the master application is done by writing a JSON file called **
     "user_settings_filepath": "master_user_settings.json",
     "site_layout": { "0": [0, 0]},
     "tester_type": "Semi-ATE Master Single Tester",
-    "loglevel": 10
+    "loglevel": 10,
+    "web_root_folder": "./"
 }
 ```
 
@@ -54,6 +55,7 @@ Configuration of the master application is done by writing a JSON file called **
 * `site_layout` defines for each site the layout. The layout is the start coordinate of some site
 * `tester_type` defines the type of he tester. This provided by the tester plugin.
 * `loglevel` defines the log-level of the control application
+* `web_root_folder` defines the URI of the web-resources. You can download [MSCT-webui](https://github.com/Semi-ATE/MSCT-WebUI/releases/download/v1.0.0/msct-webui-v1.0.0.zip) 
 
 ## Starting the Master Application
 
