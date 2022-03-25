@@ -123,10 +123,6 @@ jobs:
           echo 'Check manifest of semi-ate-test-app'
           check-manifest
 
-          cd ../handler_app
-          echo 'Check manifest of semi-ate-handler-app'
-          check-manifest
-
           cd ../../ATE_common
           echo 'Check manifest of semi-ate-common'
           check-manifest
