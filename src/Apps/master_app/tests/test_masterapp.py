@@ -41,7 +41,7 @@ def default_configuration():
             'skip_jobdata_verification': False,
             'environment': "abs",
             'Handler': "HTO92-20F",
-            'tester_type': 'DummyTester.MaxiSCT',
+            'tester_type': 'Semi-ATE Master Parallel Tester',
             "site_layout": {"0": [0, 1], "1": [1, 2]},
             "user_settings_filepath": "master_user_settings.json"}
 
