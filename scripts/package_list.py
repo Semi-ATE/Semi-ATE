@@ -50,11 +50,6 @@ distribution_packages = [
         'namespace': 'ate_test_app'
     },
     {
-        'name': 'semi-ate-handler-app',
-        'dir': Path(git_root_folder, 'src/Apps/handler_app'),
-        'namespace': 'ate_handler_app'
-    },
-    {
         'name': 'semi-ate-testers',
         'dir': Path(git_root_folder, 'src/Plugins/semi_ate_testers'),
         'namespace': 'semi_ate_testers'
@@ -62,6 +57,11 @@ distribution_packages = [
 ]
 
 integration_test_packages = [
+    {
+        'name': 'dummy-handler-app',
+        'dir': Path(git_root_folder, 'src/integration_tests/handler_app'),
+        'namespace': 'dummy_handler_app'
+    },
     {
         'name': 'integration-test-common',
         'dir': Path(git_root_folder, 'src/integration_tests/Plugins/Common'),

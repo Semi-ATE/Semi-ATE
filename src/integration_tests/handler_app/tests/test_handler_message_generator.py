@@ -1,6 +1,6 @@
 import pytest
 import json
-from ate_handler_app.handler_message_generator import MessageGenerator
+from dummy_handler_app.handler_message_generator import MessageGenerator
 from ate_common.logger import Logger
 
 LOAD_PARAMETERS = {"lotnumber": "010101", "sublotnumber": "000", "devicetype": "cca", "measurementtemperature": "11"}

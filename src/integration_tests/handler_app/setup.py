@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 from pathlib import Path
-from ate_handler_app import __version__
+from dummy_handler_app import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
@@ -10,14 +10,14 @@ def add_version(name: str) -> str:
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
-readme_path = Path(Path(__file__).parent, 'ate_handler_app/README.md')
+readme_path = Path(Path(__file__).parent, 'dummy_handler_app/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
 
 setup(
-    name='semi-ate-handler-app',
+    name='dummy-handler-app',
     version=version,
-    description='Handler application that controls some DUT handler',
+    description='Handler application that that steers the master application',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author="The Semi-ATE Project Contributors",
@@ -50,6 +50,6 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
     ],
     entry_points={
-        'console_scripts': ['launch_handler=ate_handler_app.launch_handler:main']
+        'console_scripts': ['launch_handler=dummy_handler_app.launch_handler:main']
     }
 )

@@ -1,7 +1,7 @@
 import asyncio
 from asyncio.queues import QueueEmpty, QueueFull
 from asyncio import Queue
-from ate_handler_app.handlers.geringer_PTO92UT import Geringer
+from dummy_handler_app.handlers.geringer_PTO92UT import Geringer
 from ate_common.logger import LogLevel
 
 

@@ -70,18 +70,18 @@ jobs:
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
           cd ../../../
 
-      - name: Run Apps/handler_app tests
-        shell: bash -l {0}
-        run: |
-          cd src/Apps/handler_app
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_handler_app
-          cd ../../../
-
       - name: Run Apps/test_app tests
         shell: bash -l {0}
         run: |
           cd src/Apps/test_app
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
+          cd ../../../
+
+      - name: Run integration_tests/handler_app tests
+        shell: bash -l {0}
+        run: |
+          cd integration_tests/handler_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=dummy_handler_app
           cd ../../../
 
       - name: Run integration_tests/migrate_check

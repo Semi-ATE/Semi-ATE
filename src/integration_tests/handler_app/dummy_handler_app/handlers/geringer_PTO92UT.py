@@ -1,7 +1,7 @@
 import asyncio
 from enum import Enum
 from ate_common.logger import LogLevel
-from ate_handler_app.handler_base import HandlerBase
+from dummy_handler_app.handler_base import HandlerBase
 
 
 MAX_ERROR_COUNT = 3

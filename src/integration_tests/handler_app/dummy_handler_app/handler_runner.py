@@ -1,8 +1,8 @@
 import asyncio
-from ate_handler_app.handler_application import HandlerApplication
-from ate_handler_app.handler_connection_handler import HandlerConnectionHandler
-from ate_handler_app.handler_serial_com_handler import SerialCommunicationHandler
-from ate_handler_app.statemachine.handler_statemachine import HandlerStateMachine
+from dummy_handler_app.handler_application import HandlerApplication
+from dummy_handler_app.handler_connection_handler import HandlerConnectionHandler
+from dummy_handler_app.handler_serial_com_handler import SerialCommunicationHandler
+from dummy_handler_app.statemachine.handler_statemachine import HandlerStateMachine
 from ate_common.logger import (Logger, LogLevel)
 
 

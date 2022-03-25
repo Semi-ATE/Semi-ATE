@@ -1,4 +1,4 @@
-from ate_handler_app.handler_runner import HandlerRunner
+from dummy_handler_app.handler_runner import HandlerRunner
 from ate_apps_common.configuration_reader import ConfigReader
 from argparse import ArgumentParser
 import serial

@@ -3,7 +3,7 @@ import multiprocessing as mp
 
 from ate_master_app.launch_master import launch_master
 from ate_control_app.launch_control import launch_control
-from ate_handler_app.handler_runner import HandlerRunner
+from dummy_handler_app.handler_runner import HandlerRunner
 from DummySerial import DummySerialGeringer
 
 import time

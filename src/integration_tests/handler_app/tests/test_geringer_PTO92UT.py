@@ -1,6 +1,6 @@
 import pytest
 import mock
-from ate_handler_app.handlers.geringer_PTO92UT import Geringer
+from dummy_handler_app.handlers.geringer_PTO92UT import Geringer
 from ate_common.logger import Logger
 
 # COMMMAND
