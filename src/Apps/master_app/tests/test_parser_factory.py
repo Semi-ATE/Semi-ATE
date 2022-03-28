@@ -20,7 +20,7 @@ def get_logger():
 
 
 class TestParserFactory:
-    def test_create_parser_yields_xml_parser_for_xmlmicronas(self):
+    def test_create_parser_yields_xml_parser_for_xml_semi_ate(self):
         jobformat = 'xml.semi-ate'
         parser = parser_factory.CreateParser(jobformat)
 
