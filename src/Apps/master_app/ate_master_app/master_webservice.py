@@ -1,5 +1,6 @@
 from ate_common.logger import LogLevel
 from aiohttp import web, WSMsgType, WSCloseCode
+from pathlib import Path
 import json
 import time
 import os
@@ -210,6 +211,15 @@ async def index_handler(request):
 async def webservice_init(app):
     static_file_path = app['static_file_path']
     ws_comm_handler = WebsocketCommunicationHandler(app)
+    if Path(static_file_path, 'index.html').exists() == False:
+        async def index(request: web.Request) -> web.Response:
+            text = '''
+            Please configure the JSON-key "webui_root_path" in file "master_config_file.json" in such a way
+            that it points to a web-root folder, i.e. a folder containing some index.html and restart the
+            master application.        
+            '''
+            return web.Response(text=text)
+        index_handler = index
     app.add_routes([web.get('/', index_handler),
                     web.get('/information', index_handler),
                     web.get('/control', index_handler),
@@ -233,9 +243,10 @@ async def webservice_cleanup(app):
         app['ws_comm_handler'] = None
 
 
-def webservice_setup_app(app, static_file_path):
+def webservice_setup_app(app: web.Application, static_file_path: str):
     if not os.path.isdir(static_file_path):
         raise ValueError(f'static_file_path is not an existing directory: {static_file_path}')
+    
     app['static_file_path'] = static_file_path
     app.on_startup.append(webservice_init)
     app.on_cleanup.append(webservice_cleanup)

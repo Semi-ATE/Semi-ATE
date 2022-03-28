@@ -45,6 +45,7 @@ Configuration of the master application is done by writing a JSON file called **
 * `environment` defines the test environment (F1, F2, F3, P1, P2, P3)
 * `webui_host` defines the ip of the web interface for controlling he master application manually
 * `webui_port` defines the port number of the web interface
+* `webui_root_path` defines the URI of the web-resources, i.e. the folder containing the index.html of some web application.
 * `jobsource` defines the location where to find test job definitions
 * `jobformat` defines the format of the job definitions
 * `skip_jobdata_verification` defines whether the job definition has to be verified
@@ -55,7 +56,6 @@ Configuration of the master application is done by writing a JSON file called **
 * `site_layout` defines for each site the layout. The layout is the start coordinate of some site
 * `tester_type` defines the type of he tester. This provided by the tester plugin.
 * `loglevel` defines the log-level of the control application
-* `web_root_folder` defines the URI of the web-resources. You can download [MSCT-webui](https://github.com/Semi-ATE/MSCT-WebUI/releases/download/v1.0.0/msct-webui-v1.0.0.zip) 
 
 ## Starting the Master Application
 

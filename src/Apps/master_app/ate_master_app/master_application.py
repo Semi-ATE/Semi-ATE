@@ -904,10 +904,8 @@ class MasterApplication(MultiSiteTestingModel):
 
     def run(self):
         try:
-            web_root_path=str(Path(Path(__file__).parents[0], 'mini-sct-gui'))
             task_handler = TaskHandler(self,
                                        self.configuration,
-                                       web_root_path,
                                        self.connectionHandler,
                                        lambda app: self._master_request_task(app),
                                        lambda app: self._master_background_task(app))
