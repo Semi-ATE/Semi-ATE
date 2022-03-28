@@ -1,4 +1,4 @@
-from semi_ate_testers.testers.tester_interface import TesterInterface
+from semi_ate_testers.hw_testers.tester_interface import TesterInterface
 
 class DummySingleTester(TesterInterface):
     def pulse_trigger_out(self, pulse_width_ms):
