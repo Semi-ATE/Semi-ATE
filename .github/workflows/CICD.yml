@@ -1,14 +1,24 @@
-name: CD
+name: CI-CD
 
 on:
+  push:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
-  make-release:
+  ci_job:
+    name: Py${{ matrix.PYTHON_VERSION }}
     runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+      OS: 'linux'
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+    strategy:
+      fail-fast: false 
+      matrix:
+        PYTHON_VERSION: ['3.8', '3.9']
     steps:
-      - name: Checkout 
+      - name: Checkout Pull Requests
         uses: actions/checkout@v2
 
       - name: Install test dependencies
@@ -21,24 +31,31 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest" 
-          python-version: "3.9"
+          python-version: ${{ matrix.PYTHON_VERSION }}
           channel-priority: "strict"
           channels: "conda-forge"  
           mamba-version: "*"
           show-channel-urls: true 
 
-      - name: Tag version
-        shell: bash -l {0}
+      - name: Generate Version
+        shell: bash
         run: |
+          echo ${{ github.event.release.tag_name }}
+          version = '0.0.0'
+          if [[ ${{ github.event.release.tag_name }} != '' ]]
+          then
+            $version = $(echo $GITHUB_REF | cut -d / -f 3)
+          fi
+
+          echo "Current version is $version"
           cd scripts
-          python package_tool.py --tag-version ${GITHUB_REF#refs/*/}
+          python package_tool.py --tag-version $version
           cd ..
 
       - name: Setup environment
         shell: bash -l {0}
         run: |
           cd scripts
-          ${GITHUB_REF#refs/*/}
           python package_tool.py --change-env cicd
           cd ..
 
@@ -163,23 +180,34 @@ jobs:
         run: |
           twine check output/*
 
-      - name: Upload Release Assets
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: output
+          path: ./output 
+
+  cd_job:
+    needs: ci_job
+    runs-on: ubuntu-latest
+    if: ${{ github.event.release.tag_name != '' }}
+   
+    steps:
+      - name: Get artifacts from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: output
+          path: |
+            output
+
+      - name: Extend Release Assets
         uses: alexellis/upload-assets@0.3.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          asset_paths: '["./output/*"]'  
-      
-#     - name: Upload to PyPi
+          asset_paths: '["output/*"]'
+
+#      - name: Upload to PyPi
 #       uses: pypa/gh-action-pypi-publish@v1.4.2
 #       with:
 #         password: ${{ secrets.PYPI_TOKEN }}
 #         verbose: 1
-# 
-#     - name: Upload coverage to Codecov  
-#       uses: codecov/codecov-action@v1
-#       with:
-#         token: ${{ secrets.CODECOV_TOKEN }}
-
-
-
