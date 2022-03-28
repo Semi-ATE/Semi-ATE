@@ -39,6 +39,7 @@ jobs:
           fi
 
       - name: Apply version
+        run: |
           echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
           python package_tool.py --tag-version ${{ steps.computed_version.outputs.VERSION }}
