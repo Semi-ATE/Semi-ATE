@@ -27,17 +27,21 @@ jobs:
           sudo apt-get update --fix-missing
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
-      - name: Generate Version
+      - name: Compute Version
+        id: version_id
         shell: bash
-#        if: ${{ github.event.release.tag_name != '' }}
         run: |
-          echo ${{ github.event }}
-          echo ${{ github.event.release }}
-          echo ${{ github.event.release.tag_name }}
-          version = $(echo $GITHUB_REF | cut -d / -f 3)
-          echo "Current version is $version"
+          if [ -n ${{ github.event.release.tag_name }} ]
+          then
+            echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+          else
+            echo ::set-output name=VERSION::$(echo "0.0.0")
+          fi
+
+      - name: Apply version
+          echo Version is ${{ steps.get_version_from_tag.outputs.VERSION }}
           cd scripts
-          python package_tool.py --tag-version $version
+          python package_tool.py --tag-version ${{ steps.get_version_from_tag.outputs.VERSION }}
           cd ..
 
       - name: Setup environment
