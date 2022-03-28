@@ -31,7 +31,7 @@ jobs:
         id: computed_version
         shell: bash
         run: |
-          if [[ -z ${{ github.event.release.tag_name }} ]]
+          if [[ ${{ github.event.release.tag_name != '' }} ]]
           then
             echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
           else
