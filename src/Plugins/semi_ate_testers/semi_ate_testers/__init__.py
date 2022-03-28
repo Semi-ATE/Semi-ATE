@@ -4,8 +4,8 @@ from ate_semiateplugins.hookspec import hookimpl
 from semi_ate_testers.master_testers.dummy_master_single_tester import DummyMasterSingleTester
 from semi_ate_testers.master_testers.dummy_master_parallel_tester import DummyMasterParallelTester
 from semi_ate_testers.Flatcache import Flatcache
-from semi_ate_testers.hw_testers.dummy_single_tester import DummySingleTester
-from semi_ate_testers.hw_testers.dummy_parallel_tester import DummyParallelTester
+from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
+from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
 class BusinessObjectStandin:
     def __init__(self, logger: Logger = None):
         self.logger = logger
