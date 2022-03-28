@@ -29,7 +29,7 @@ jobs:
 
       - name: Generate Version
         shell: bash
-        if: ${{ github.event.release.tag_name != '' }}
+#        if: ${{ github.event.release.tag_name != '' }}
         run: |
           version = "echo $GITHUB_REF | cut -d / -f 3"
           echo "Current version is $version"
