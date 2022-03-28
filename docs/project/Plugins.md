@@ -93,7 +93,7 @@ The complete layout of the results of this function is:
 ```
 
 ### Tester
-The following function returns all installed testers use to be run beyond the MiniSCT, which will be used by the testprogram to synchronize the test execution
+The following function returns all installed testers use to be run beyond the Single Tester, which will be used by the testprogram to synchronize the test execution
 ```
 get_tester_names() -> []
 ```
