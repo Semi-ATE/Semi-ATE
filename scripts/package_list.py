@@ -65,7 +65,7 @@ integration_test_packages = [
     {
         'name': 'integration-test-common',
         'dir': Path(git_root_folder, 'src/integration_tests/Plugins/Common'),
-        'namespace': ''
+        'namespace': 'Common'
     },
     {
         'name': 'dummy-plugin',

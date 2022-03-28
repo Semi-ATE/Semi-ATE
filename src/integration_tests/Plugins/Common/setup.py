@@ -1,8 +1,9 @@
 from setuptools import find_packages, setup
 from pathlib import Path
+from Common import __version__
 
-version='0.0.0'
-requirements_path = Path(Path(__file__).parents[0], '../../requirements/test.txt')
+version = __version__
+requirements_path = Path(Path(__file__).parents[0], '../../../requirements/test.txt')
 def add_version(name: str) -> str:
     return f'{name.rstrip()}=={version}' if 'ate' in name else name.rstrip()
        

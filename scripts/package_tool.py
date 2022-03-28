@@ -1,9 +1,7 @@
 import argparse
-import fileinput
 from pathlib import Path
 from subprocess import Popen
 from enum import Enum
-import sys
 from typing import List, Union
 from package_list import distribution_packages, integration_test_packages
 import re
