@@ -219,6 +219,7 @@ async def webservice_init(app):
             master application.        
             '''
             return web.Response(text=text)
+        global index_handler
         index_handler = index
     app.add_routes([web.get('/', index_handler),
                     web.get('/information', index_handler),
