@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
       - name: Compute Version
-        id: version_id
+        id: computed_version
         shell: bash
         run: |
           if [ -n ${{ github.event.release.tag_name }} ]
@@ -39,9 +39,9 @@ jobs:
           fi
 
       - name: Apply version
-          echo Version is ${{ steps.get_version_from_tag.outputs.VERSION }}
+          echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
-          python package_tool.py --tag-version ${{ steps.get_version_from_tag.outputs.VERSION }}
+          python package_tool.py --tag-version ${{ steps.computed_version.outputs.VERSION }}
           cd ..
 
       - name: Setup environment
