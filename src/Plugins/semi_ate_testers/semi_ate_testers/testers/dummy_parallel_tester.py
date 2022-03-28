@@ -1,4 +1,4 @@
-from semi_ate_testers.hw_testers.tester_interface import TesterInterface
+from semi_ate_testers.testers.tester_interface import TesterInterface
 
 class DummyParallelTester(TesterInterface):
     def get_sites_count(self):
