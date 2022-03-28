@@ -199,8 +199,7 @@ jobs:
         with:
           asset_paths: '["output/*"]'
 
-#      - name: Upload to PyPi
-#       uses: pypa/gh-action-pypi-publish@v1.4.2
-#       with:
-#         password: ${{ secrets.PYPI_TOKEN }}
-#         verbose: 1
+      - name: Upload to PyPi using twine
+        shell: bash -l {0}
+        run: |
+          for i in `find output/ -type f`; do twine upload -u __token__ -p  ${{ secrets.PYPI_TOKEN }} $i; done
