@@ -31,7 +31,7 @@ jobs:
         shell: bash
         if: ${{ github.event.release.tag_name != '' }}
         run: |
-          version = $(echo $GITHUB_REF | cut -d / -f 3)
+          version = "echo $GITHUB_REF | cut -d / -f 3"
           echo "Current version is $version"
           cd scripts
           python package_tool.py --tag-version $version
