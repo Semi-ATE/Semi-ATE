@@ -111,6 +111,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Pull Requests
+        uses: actions/checkout@v2
+
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -121,8 +124,12 @@ jobs:
           mamba-version: "*"
           show-channel-urls: true
 
-      - name: Checkout Pull Requests
-        uses: actions/checkout@v2
+      - name: Setup environment
+        shell: bash -l {0}
+        run: |
+          cd scripts
+          python package_tool.py --change-env cicd
+          cd ..
 
       - name: Compute Version
         id: computed_version
