@@ -27,6 +27,16 @@ jobs:
           sudo apt-get update --fix-missing
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
 
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
+
       - name: Setup environment
         shell: bash -l {0}
         run: |
@@ -101,13 +111,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: '3.9'
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true
+
       - name: Checkout Pull Requests
         uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
 
       - name: Compute Version
         id: computed_version
@@ -205,10 +220,15 @@ jobs:
     if: ${{ github.event.release.tag_name != '' }}
    
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
+          miniconda-version: "latest" 
           python-version: '3.9'
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
 
       - name: Install
         run: |
