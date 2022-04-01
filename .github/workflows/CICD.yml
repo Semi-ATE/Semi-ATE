@@ -25,7 +25,13 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update --fix-missing
+          sudo apt-get install python3-testresources
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
+          python -m pip install mccabe==0.6.1
+          python -m pip install pygments
+          python -m pip install click
+
+
 
 #      - name: Setup miniconda
 #        uses: conda-incubator/setup-miniconda@v2
