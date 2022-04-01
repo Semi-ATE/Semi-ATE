@@ -31,6 +31,11 @@ jobs:
           mamba-version: "*"
           show-channel-urls: true 
 
+      - name: Activate environment
+        shell: bash
+        run: |
+          mamba activate test
+
       - name: Setup environment
         shell: bash -l {0}
         run: |
