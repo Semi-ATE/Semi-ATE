@@ -15,11 +15,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Environment Dependencies
-        shell: bash
-        run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install python3-testresources
+#      - name: Install Environment Dependencies
+#        shell: bash
+#        run: |
+#          sudo apt-get update --fix-missing
+#          sudo apt-get install python3-testresources
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -30,24 +30,13 @@ jobs:
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
-        - name: do all
-          run: |
-            cd scripts
-            python package_tool.py --change-env cicd
-            python package_tool.py --setup-cmd sdist
 
-      - name: Setup environment
+      - name: Setup and Generate sdist files
         shell: bash -l {0}
         run: |
           cd scripts
           python package_tool.py --change-env cicd
-          cd ..
-
-      - name: Generate distribution sdist files
-        shell: bash
-        run: |
-          cd scripts
-          python package_tool.py --setup-cmd sdist --packages distribution
+          python package_tool.py --setup-cmd sdist
           cd ..
           mkdir output
           find . -iname '*.tar.gz' -exec cp '{}' output \;
