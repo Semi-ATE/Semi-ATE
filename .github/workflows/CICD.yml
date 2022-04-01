@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update --fix-missing
-          sudo apt install python3-testresources
+          sudo apt-get install python3-testresources
 
       - name: Setup environment
         shell: bash -l {0}

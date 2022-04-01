@@ -50,7 +50,10 @@ def uninstall(packages: Package):
     for p in package_list:
         print(f'Uninstalling: "{p}"')
         process = Popen(['python', '-m', 'pip', 'uninstall', '-y', '-q', p])
-        process.wait()
+        exit_code = process.wait()
+        if exit_code != 0:
+            exit(exit_code)
+
 
 
 def setup(packages: Package, setup_command: SetupCommand):
@@ -61,15 +64,21 @@ def setup(packages: Package, setup_command: SetupCommand):
             if setup_command == SetupCommand.Sdist:
                 print(f'Generating sdist for folder {path}')
                 process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
-                process.wait()
+                exit_code = process.wait()
+                if exit_code != 0:
+                    exit(exit_code)
             elif setup_command == SetupCommand.Install:
                 print(f'Installing folder {path}')
                 process = Popen(['python', '-m', 'pip', 'install', '-q', '.'], cwd=str(path))
-                process.wait()
+                exit_code = process.wait()
+                if exit_code != 0:
+                    exit(exit_code)
             else:
                 print(f'Installing folder {path} in editable mode')
                 process = Popen(['python', '-m', 'pip', 'install', '-q', '-e', '.'], cwd=str(path))
-                process.wait()
+                exit_code = process.wait()
+                if exit_code != 0:
+                    exit(exit_code)
         else:
             print(f'ERROR: Path "{path}" could not be found!')
 
@@ -91,7 +100,9 @@ def change_environment(profile: Profile):
 
     print(f'{print_message} {packages}')
     process = Popen(process_args)
-    process.wait()
+    exit_code = process.wait()
+    if exit_code != 0:
+        exit(exit_code)
 
 
 def tag_version(packages: Package, version: str):
