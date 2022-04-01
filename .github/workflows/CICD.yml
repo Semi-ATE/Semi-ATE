@@ -29,12 +29,12 @@ jobs:
           channel-priority: "strict"
           channels: "conda-forge"
           mamba-version: "*"
-          show-channel-urls: true 
-
-      - name: Activate environment
-        shell: bash
-        run: |
-          mamba activate test
+          show-channel-urls: true
+        - name: do all
+          run: |
+            cd scripts
+            python package_tool.py --change-env cicd
+            python package_tool.py --setup-cmd sdist
 
       - name: Setup environment
         shell: bash -l {0}
