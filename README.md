@@ -70,6 +70,3 @@ python -m pip install semi-ate-common semi-ate-project-database semi-ate-sammy s
 ### Installation via Conda
 
 To be defined
-
-
-
