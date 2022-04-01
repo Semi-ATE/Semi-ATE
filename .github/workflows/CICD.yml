@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Environment Dependencies
+        shell: bash
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt install python3-testresources
+
       - name: Setup environment
         shell: bash -l {0}
         run: |
