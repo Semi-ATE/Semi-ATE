@@ -11,7 +11,7 @@ with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
 
-readme_path = Path(Path(__file__).parent, 'ate_control_app/README.md')
+readme_path = Path(Path(__file__).parent, '../../../README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
 
