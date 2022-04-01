@@ -30,6 +30,11 @@ distribution_packages = [
         'namespace': 'ate_spyder'
     },
     {
+        'name': 'semi-ate-testers',
+        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_testers'),
+        'namespace': 'semi_ate_testers'
+    },
+    {
         'name': 'semi-ate-apps-common',
         'dir': Path(git_root_folder, 'src/Apps/common'),
         'namespace': 'ate_apps_common'
@@ -48,11 +53,6 @@ distribution_packages = [
         'name': 'semi-ate-test-app',
         'dir': Path(git_root_folder, 'src/Apps/test_app'),
         'namespace': 'ate_test_app'
-    },
-    {
-        'name': 'semi-ate-testers',
-        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_testers'),
-        'namespace': 'semi_ate_testers'
     },
 ]
 
