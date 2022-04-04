@@ -27,11 +27,17 @@ jobs:
       - name: Install Environment Dependencies
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install python3-testresources
           sudo apt-get install libxcb-randr0-dev libxcb-xtest0-dev libxcb-xinerama0-dev libxcb-shape0-dev libxcb-xkb-dev libegl1-mesa libxkbcommon-x11-0 xterm --fix-missing
-          python -m pip install mccabe==0.6.1
-          python -m pip install pygments==2.11.2
-          python -m pip install click==8.1.2
+
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
 
       - name: Setup environment
         run: |
@@ -108,10 +114,16 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install python3-testresources
-          python -m pip install mccabe==0.6.1
-          python -m pip install pygments==2.11.2
-          python -m pip install click==8.1.2
+
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
 
       - name: Compute Version
         id: computed_version
