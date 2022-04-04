@@ -44,6 +44,7 @@ jobs:
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
+          conda list
 
       - name: Run ATE_projectdatabase tests
         run: |
