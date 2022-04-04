@@ -52,6 +52,7 @@ jobs:
           cd ../../
 
       - name: Run ATE_spyder tests
+        shell: bash -l {0}
         run: |
           cd src/ATE_spyder
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
