@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import shutil
 from subprocess import Popen
 from enum import Enum
 from typing import List, Union
@@ -63,6 +64,7 @@ def setup(packages: Package, setup_command: SetupCommand):
         if path.exists() == True:
             if setup_command == SetupCommand.Sdist:
                 print(f'Generating sdist for folder {path}')
+                _extend_distribution_package_readmes()
                 process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
                 exit_code = process.wait()
                 if exit_code != 0:
@@ -183,6 +185,25 @@ def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
                         packages.add(line.strip())
     return list(packages)
 
+def _extend_distribution_package_readmes() -> None:
+    init_dir_paths = _compute_package_list(Package.Distribution, PackageType.InitDirPath)
+    global_readme_path = Path(git_root_folder, 'README.md')
+    local_readme_paths = [ Path(path, 'README.md') for path in init_dir_paths ]
+    temp_local_readme_paths = [ Path(path, 'README.md.tmp') for path in init_dir_paths ]
+
+
+    for readme_path in zip(local_readme_paths, temp_local_readme_paths):
+        local_readme_path = readme_path[0]
+        temp_local_readme_path = readme_path[1]
+        shutil.move(local_readme_path, temp_local_readme_path)
+        shutil.copy(global_readme_path, local_readme_path)
+
+        with local_readme_path.open('a') as readme:
+            with temp_local_readme_path.open('r') as temp_readme:
+                for line in temp_readme:
+                    readme.write(line)
+        
+        temp_local_readme_path.unlink()
 
 def main():
     parser = argparse.ArgumentParser()

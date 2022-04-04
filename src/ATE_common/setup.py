@@ -10,7 +10,7 @@ def add_version(name: str) -> str:
 with requirements_path.open('r') as f:
     install_requires = list(map(add_version, f))
 
-readme_path = Path(Path(__file__).parent, '../../README.md')
+readme_path = Path(Path(__file__).parent, './ate_common/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
 

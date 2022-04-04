@@ -1,4 +1,4 @@
-# The semi-ate-master-app package
+## The semi-ate-master-app package
 
 This package provides a command line tool (`launch_master`). In order to use this application you have to configure it first. This tool should be run on host that either runs the control application from the `semi-ate-control-app` package or that is connected via ethernet to further hosts running the control application.
 The master application controls the so-called control applications, i.e. test nodes. To do so the master sends commands to the different test nodes using MQTT messages. Among others these commands
@@ -6,7 +6,7 @@ include commands for loading and unloading test programs and starting the test e
 
 The muster application can be controlled using a web interface or it is controlled by some handler application.
 
-## Configuration
+### Configuration
 
 Configuration of the master application is done by writing a JSON file called **master_config_file.json**. The following key-value-pairs have to be defined:
 
@@ -57,7 +57,7 @@ Configuration of the master application is done by writing a JSON file called **
 * `tester_type` defines the type of he tester. This provided by the tester plugin.
 * `loglevel` defines the log-level of the control application
 
-## Starting the Master Application
+### Starting the Master Application
 
 We assume that the semi-ate-master-app package has been installed in the current python environment. Further the configuration file **master_config_file.json** is located in the current folder.
 

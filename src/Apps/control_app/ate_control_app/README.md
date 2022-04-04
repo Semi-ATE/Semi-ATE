@@ -1,8 +1,8 @@
-# The semi-ate-control-app package
+## The semi-ate-control-app package
 
 This package provides some a command line tool (`launch_control`). In order to use this application you have to configure it first. This tool should be run on some test node, i.e. some host controlling measurement instruments. It communicates with the master application from the `semi-ate-master-app` package by MQTT. The master application sends mqtt-messages to steer the control application. The control application itself is responsible for loading/unloading and executing some test-program. Test results, i.e. STDF records, are send back to the master application.
 
-## Configuration
+### Configuration
 
 Configuration of the control application is done by writing a JSON file called **control_config_file.json**. The following key-value-pairs have to be defined:
 
@@ -24,7 +24,7 @@ Configuration of the control application is done by writing a JSON file called *
 
 The _device_id_ and _site_id_ is used to build unique mqtt-message-topics automatically. The idea is that no test-system influences some other test system.
 
-## Starting the Control Application
+### Starting the Control Application
 
 We assume that the semi-ate-control-app has been installed in the current python environment. Further configuration **control_config_file.json** file is located in the current folder.
 
