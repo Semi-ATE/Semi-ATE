@@ -1,4 +1,5 @@
 import argparse
+from lib2to3.pytree import Node
 from pathlib import Path
 import shutil
 from subprocess import Popen
@@ -58,15 +59,40 @@ def uninstall(packages: Package):
 
 
 def setup(packages: Package, setup_command: SetupCommand):
-    package_list = _compute_package_list(packages, PackageType.SetupDirPath)
-    for p in package_list:
-        path = Path(Path(__file__).parents[0], p)
+    setup_path_list = _compute_package_list(packages, PackageType.SetupDirPath)
+    init_path_list = _compute_package_list(packages, PackageType.InitDirPath)
+
+    for p in zip(setup_path_list, init_path_list):
+        path = Path(Path(__file__).parents[0], p[0])
         if path.exists() == True:
             if setup_command == SetupCommand.Sdist:
                 print(f'Generating sdist for folder {path}')
-                _extend_distribution_package_readmes()
+
+                # create backup
+                package_readme_path = Path(p[1], 'README.md')
+                backup_readme_path = Path(p[1], 'README.md.bak')
+
+                if package_readme_path.exists():
+                    shutil.move(package_readme_path, backup_readme_path)
+
+                    # replace readme by readme from the project root directory
+                    global_readme_path = Path(git_root_folder, 'README.md')
+                    shutil.copy(global_readme_path, package_readme_path)
+
+                    # Extend readme
+                    with package_readme_path.open('a') as readme:
+                        with backup_readme_path.open('r') as temp_readme:
+                            for line in temp_readme:
+                                readme.write(line)
+        
+                # Generate SDIST
                 process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
                 exit_code = process.wait()
+
+                # Revert readme changes
+                if package_readme_path.exists():
+                    shutil.move(backup_readme_path, package_readme_path)
+
                 if exit_code != 0:
                     exit(exit_code)
             elif setup_command == SetupCommand.Install:
@@ -184,26 +210,6 @@ def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
                     if line_without_comment != '':
                         packages.add(line.strip())
     return list(packages)
-
-def _extend_distribution_package_readmes() -> None:
-    init_dir_paths = _compute_package_list(Package.Distribution, PackageType.InitDirPath)
-    global_readme_path = Path(git_root_folder, 'README.md')
-    local_readme_paths = [ Path(path, 'README.md') for path in init_dir_paths ]
-    temp_local_readme_paths = [ Path(path, 'README.md.tmp') for path in init_dir_paths ]
-
-
-    for readme_path in zip(local_readme_paths, temp_local_readme_paths):
-        local_readme_path = readme_path[0]
-        temp_local_readme_path = readme_path[1]
-        shutil.move(local_readme_path, temp_local_readme_path)
-        shutil.copy(global_readme_path, local_readme_path)
-
-        with local_readme_path.open('a') as readme:
-            with temp_local_readme_path.open('r') as temp_readme:
-                for line in temp_readme:
-                    readme.write(line)
-        
-        temp_local_readme_path.unlink()
 
 def main():
     parser = argparse.ArgumentParser()
