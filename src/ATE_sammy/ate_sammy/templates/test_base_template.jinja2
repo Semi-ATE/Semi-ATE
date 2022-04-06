@@ -1,0 +1,99 @@
+# -*- coding: utf-8 -*-
+"""
+{% for line in module_doc_string %}
+{{ line }}
+{% endfor %}
+
+Do **NOT** change anything in this module, as it is automatically generated thus your changes **WILL** be lost in time!
+
+If you have the need to add things, add it to '{{ definition['name'] }}.py' or 'common.py'
+
+BTW : YOU SHOULD **NOT** BE READING THIS !!!
+"""
+
+from math import inf, nan
+from ate_test_app.sequencers.DutTesting.TestParameters import OutputParameter
+from ate_test_app.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
+from ate_test_app.sequencers.DutTesting.Result import Result
+from ate_test_app.parameters.ResolverFactory import create_parameter_resolver
+from ate_common.logger import (LogLevel, Logger)
+
+
+class {{ definition['name'] }}_OP:
+    """Class definition for the output parameters of {{ definition['name'] }}."""
+
+    def __init__(self):
+        self.num_outputs = 0
+        {% for output_parameter in output_params %}
+        self.{{ output_parameter['name'] }} = OutputParameter('{{ output_parameter['name'] }}', {{ output_parameter['LSL'] }}, {{ output_parameter['LTL'] }}, {{ output_parameter['Nom'] }}, {{ output_parameter['UTL'] }}, {{ output_parameter['USL'] }}, {{ output_parameter['10ᵡ'] }})
+        self.{{ output_parameter['name'] }}.set_format('{{ output_parameter['fmt'] }}')
+        self.{{ output_parameter['name'] }}.set_unit('{{ output_parameter['Unit'] }}')
+        {% endfor %}
+
+    def set_parameter(self, name: str, id: int, ltl: float, utl: float, bin: int, bin_result: int, test_desc: str):
+        output = getattr(self, f'{name}')
+        output.set_limits(id, ltl, utl)
+        output.set_bin(bin, bin_result)
+        output.set_test_description(test_desc)
+        self.num_outputs += 1
+
+    def get_output_nums(self) -> int:
+        return self.num_outputs
+
+class {{ definition['name']}}_IP:
+    """Class definition for the input parameters of {{ definition['name'] }}."""
+
+    def __init__(self):
+        {% for input_parameter in input_params %}
+        self.{{ input_parameter['name'] }} = None
+        {% endfor %}
+
+    def set_parameter(self, name: str, type: str, value: float, min_value: float, max_value: float, power: int, context: str, shmoo: bool):
+        setattr(self, f'{name}', create_parameter_resolver(type, f'{name}', shmoo, value, min_value, max_value, power, context))
+
+
+class {{ definition['name'] }}_BC(DutTestCaseBase):
+    '''Base class definition for {{ definition['name'] }}'''
+
+    hardware = '{{ definition['hardware'] }}'
+    base = '{{ definition['base'] }}'
+    Type = '{{ definition['type'] }}'
+
+    def __init__(self, instance_name: str, sbin, test_num, context):
+        super().__init__(None, None, instance_name, sbin, test_num, context)
+        self.ip = {{ definition['name'] }}_IP()
+        self.op = {{ definition['name'] }}_OP()
+
+    def aggregate_test_result(self, site_num: int, exception: bool):
+        stdf_data = []
+        test_result = Result.Inconclusive()
+        test_bin = -1
+        if not exception:
+        {% for output_parameter in output_params %}
+            current_result = self.op.{{ output_parameter['name'] }}.get_testresult()
+            test_result = self._select_testresult(test_result, current_result)
+            test_bin = self._select_bin(test_bin, current_result)
+            stdf_data.append(self.op.{{ output_parameter['name'] }}.generate_ptr_record(current_result[0], site_num))
+        {% endfor %}
+        else:
+        {% for output_parameter in output_params %}
+            test_result = Result.Fail()
+            test_bin = self.get_sbin()
+            stdf_data.append(self.op.{{ output_parameter['name'] }}.generate_ptr_record(test_result, site_num))
+        {% endfor %}
+
+        return (test_result, test_bin, stdf_data)
+
+    def aggregate_tests_summary(self, head_num: int, site_num: int):
+        stdf_data = []
+        {% for output_parameter in output_params %}
+        stdf_data.append(self.op.{{ output_parameter['name'] }}.generate_tsr_record(head_num, site_num, self.get_average_test_execution_time()))
+        {% endfor %}
+
+        return stdf_data
+
+    def get_test_nums(self) -> int:
+        return self.op.get_output_nums()
+
+    def get_input_parameter(self, parameter_name: str):
+        return getattr(self.ip, parameter_name)

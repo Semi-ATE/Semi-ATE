@@ -1,0 +1,244 @@
+name: CI-CD
+
+on:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    name: Py${{ matrix.PYTHON_VERSION }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      CI: 'true'
+      OS: 'linux'
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+    strategy:
+      fail-fast: false 
+      matrix:
+        PYTHON_VERSION: ['3.8', '3.9']
+    steps:
+      - name: Checkout Pull Requests
+        uses: actions/checkout@v2
+
+      - name: Install Environment Dependencies
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
+
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
+
+      - name: Setup environment
+        run: |
+          cd scripts
+          python package_tool.py --change-env cicd
+          cd ..
+          conda list
+
+      - name: Run ATE_projectdatabase tests
+        run: |
+          cd src/ATE_projectdatabase
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_projectdatabase
+          cd ../../
+
+      - name: Run ATE_spyder tests
+        shell: bash -l {0}
+        run: |
+          cd src/ATE_spyder
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          cd ../../
+
+      - name: Run Apps/common tests
+        run: |
+          cd src/Apps/common
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_apps_common
+          cd ../../../
+
+      - name: Run Apps/master_app tests
+        run: |
+          cd src/Apps/master_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_master_app
+          cd ../../../
+
+      - name: Run Apps/test_app tests
+        run: |
+          cd src/Apps/test_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_test_app
+          cd ../../../
+
+      - name: Run integration_tests/handler_app tests
+        run: |
+          cd src/integration_tests/handler_app
+          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=dummy_handler_app
+          cd ../../../
+
+      - name: Run integration_tests/migrate_check
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
+          cd ../../
+
+      - name: Start Mosquitto
+        uses: namoshek/mosquitto-github-action@v1
+        with:
+          version: '1.6'
+          ports: '1883:1883 8883:8883'
+        
+      - name: Run test_integrate
+        run: |
+          cd src/integration_tests/
+          xvfb-run --auto-servernum pytest test_integrate.py
+          cd ../../
+
+  generate_artifacts:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: Checkout Pull Requests
+        uses: actions/checkout@v2
+
+      - name: Install Environment Dependencies
+        shell: bash
+        run: |
+          sudo apt-get update --fix-missing
+
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest" 
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          channel-priority: "strict"
+          channels: "conda-forge"  
+          mamba-version: "*"
+          show-channel-urls: true 
+
+      - name: Compute Version
+        id: computed_version
+        run: |
+          if [[ ${{ github.event.release.tag_name != '' }} != false ]]
+          then
+            echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+          else
+            echo ::set-output name=VERSION::$(echo "0.0.0")
+          fi
+
+      - name: Apply version
+        run: |
+          echo Version is ${{ steps.computed_version.outputs.VERSION }}
+          cd scripts
+          python package_tool.py --tag-version ${{ steps.computed_version.outputs.VERSION }}
+          cd ..
+
+      - name: Setup environment
+        run: |
+          cd scripts
+          python package_tool.py --change-env cicd
+          cd ..
+
+      - name: Run Manifest Check
+        run: |
+          cd src/Apps/common
+          echo 'Check manifest of semi-ate-apps-common'
+          check-manifest
+
+          cd ../control_app
+          echo 'Check manifest of semi-ate-control-app'
+          check-manifest
+
+          cd ../master_app
+          echo 'Check manifest of semi-ate-master-app'
+          check-manifest
+
+          cd ../test_app
+          echo 'Check manifest of semi-ate-test-app'
+          check-manifest
+
+          cd ../../ATE_common
+          echo 'Check manifest of semi-ate-common'
+          check-manifest
+
+          cd ../ATE_projectdatabase
+          echo 'Check manifest of semi-ate-project-database'
+          check-manifest
+
+          cd ../ATE_sammy
+          echo 'Check manifest of semi-ate-sammy'
+          check-manifest
+
+          cd ../ATE_semiateplugins
+          echo 'Check manifest of semi-ate-plugins'
+          check-manifest
+
+          cd ../ATE_spyder
+          echo 'Check manifest of semi-ate-spyder'
+          check-manifest
+
+          cd ../Plugins/semi_ate_testers
+          echo 'Check manifest of semi-ate-testers'
+          check-manifest
+
+          cd ../../../../
+
+      - name: Generate distribution sdist files
+        run: |
+          cd scripts
+          python package_tool.py --setup-cmd sdist --packages distribution
+          cd ..
+          mkdir output
+          find . -iname '*.tar.gz' -exec cp '{}' output \;
+
+      - name: Check distribution files
+        run: |
+          twine check output/*
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: output
+          path: ./output 
+
+  publish:
+    if: ${{ github.event.release.tag_name != '' }}
+    needs: generate_artifacts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+   
+    steps:
+      - name: Install
+        run: |
+          python -m pip install twine
+
+      - name: Get artifacts from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: output
+          path: |
+            output
+
+      - name: Extend Release Assets
+        uses: alexellis/upload-assets@0.3.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["output/*"]'
+
+      - name: Upload to PyPi using twine
+        run: |
+          for i in `find output/ -type f`; do twine upload -u __token__ -p  ${{ secrets.PYPI_TOKEN }} $i; done

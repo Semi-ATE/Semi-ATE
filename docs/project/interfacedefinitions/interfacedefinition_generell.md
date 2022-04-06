@@ -1,4 +1,4 @@
-# Interfacedefinitionen Micronas ATE
+# Interfacedefinitionen Semi-ATE
 
 ## Grundsätzliches
 

@@ -1,0 +1,3 @@
+aiomqtt
+Semi-ATE-STDF==0.1.26
+semi-ate-common

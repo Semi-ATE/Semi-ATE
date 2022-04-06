@@ -1,0 +1,6 @@
+paho-mqtt
+transitions
+pydantic
+numpy
+semi-ate-common
+semi-ate-apps-common

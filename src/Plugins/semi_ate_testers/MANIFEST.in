@@ -1,0 +1,2 @@
+include requirements/run.txt
+include semi_ate_testers/README.md

@@ -1,0 +1,23 @@
+{
+    "broker_host": "127.0.0.1",
+    "broker_port": 1883,
+    "device_id": "SCT-82-1F",
+    "sites": [
+        "0"
+    ],
+    "Handler": "HTO92-20F",
+    "environment": "F1",
+    "webui_host": "127.0.0.1",
+    "webui_port": "8081",
+    "webui_root_path": "./",
+    "jobsource": "filesystem",
+    "jobformat": "xml.semi-ate",
+    "skip_jobdata_verification": false,
+    "filesystemdatasource.path": ".",
+    "filesystemdatasource.jobpattern": "le123456000.xml",
+    "enable_timeouts": true,
+    "user_settings_filepath": "master_user_settings.json",
+    "site_layout": {"0": [0, 0]},
+    "tester_type": "Semi-ATE Master Parallel Tester",
+    "loglevel": 10
+}

@@ -1,0 +1,8 @@
+qtawesome
+pydantic
+numpy
+spyder>=5.2  # spyder requires qtawsome and all the qt stuff
+semi-ate-common
+semi-ate-plugins
+semi-ate-project-database
+semi-ate-sammy

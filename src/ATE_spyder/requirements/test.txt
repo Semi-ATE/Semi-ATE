@@ -1,0 +1,5 @@
+hypothesis==5.5.2
+mock==4.0.3
+pytest==6.1.1
+pytest-qt==4.0.2
+pytest-mock==3.7.0

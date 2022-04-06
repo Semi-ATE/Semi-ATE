@@ -1,0 +1,10 @@
+include requirements/run.txt
+include ate_spyder/README.md
+recursive-include ate_spyder/widgets *.ui
+recursive-include ate_spyder/widgets *.png
+recursive-exclude tests *
+exclude ate_spyder/widgets/actions_on/hardwaresetup/README.md     
+exclude ate_spyder/widgets/actions_on/maskset/NewMasksetWizard.xcf
+exclude ate_spyder/widgets/actions_on/program/README.md
+exclude ate_spyder/widgets/plugins/README.md
+exclude requirements/test.txt

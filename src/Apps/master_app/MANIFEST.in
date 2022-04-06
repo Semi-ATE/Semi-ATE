@@ -1,0 +1,4 @@
+include requirements/run.txt
+include ate_master_app/README.md
+exclude requirements/test.txt
+recursive-exclude tests *

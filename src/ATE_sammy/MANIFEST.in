@@ -1,0 +1,7 @@
+include requirements/run.txt
+recursive-include ate_sammy/templates *.jinja2
+recursive-include ate_sammy/templates/doc *.pdf
+include ate_sammy/coding/standard_tests/UID/UID.ui
+include ate_sammy/README.md
+include ate_sammy/templates/doc/standards/AEC/README.md
+exclude requirements/test.txt

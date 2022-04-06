@@ -1,0 +1,4 @@
+semi-ate-common
+semi-ate-apps-common
+pyserial
+transitions

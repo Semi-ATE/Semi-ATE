@@ -10,7 +10,7 @@ The sequencer is visible to two parts of the ATE Runtime: Control and Master.
 Control will launch the testprogram (and with that the sequencer) using the following commandline options:
 
 * '--device_id', containing the device ID of the device on which the programm is started
-* '--site_id', containing the site_id for the site (in case of a standalone MiniSCT this is always 0)
+* '--site_id', containing the site_id for the site (in case of a standalone Single Tester this is always 0)
 * '--broker_host', containing the IP address of the associated MQTT broker
 * '--broker_port', containing the port of the MQTT broker
 * '--parent-pid', containing the process ID of the MQTT broker

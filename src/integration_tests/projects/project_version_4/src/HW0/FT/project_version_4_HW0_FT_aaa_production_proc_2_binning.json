@@ -1,0 +1,25 @@
+{
+    "bin-table": [
+        {
+            "SBIN": "11",
+            "GROUP": "Contact Fail",
+            "DESCRIPTION": "",
+            "HBIN": "0",
+            "SBINNAME": "Bin_11"
+        },
+        {
+            "SBIN": "60000",
+            "GROUP": "Alarm",
+            "DESCRIPTION": "",
+            "HBIN": "0",
+            "SBINNAME": "abcedefg_1_ALARM"
+        },
+        {
+            "SBIN": "1",
+            "GROUP": "Good1",
+            "DESCRIPTION": "",
+            "HBIN": "1",
+            "SBINNAME": "Good_1"
+        }
+    ]
+}
