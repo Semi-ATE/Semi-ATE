@@ -1,5 +1,4 @@
 import argparse
-from lib2to3.pytree import Node
 from pathlib import Path
 import shutil
 from subprocess import Popen
@@ -7,6 +6,8 @@ from enum import Enum
 from typing import List, Union
 from package_list import distribution_packages, integration_test_packages
 import re
+from os.path import basename
+from os import unlink
 
 class SetupCommand(Enum):
     Install = 'install'
@@ -56,8 +57,6 @@ def uninstall(packages: Package):
         if exit_code != 0:
             exit(exit_code)
 
-
-
 def setup(packages: Package, setup_command: SetupCommand):
     setup_path_list = _compute_package_list(packages, PackageType.SetupDirPath)
     init_path_list = _compute_package_list(packages, PackageType.InitDirPath)
@@ -67,6 +66,8 @@ def setup(packages: Package, setup_command: SetupCommand):
         if path.exists() == True:
             if setup_command == SetupCommand.Sdist:
                 print(f'Generating sdist for folder {path}')
+
+                _add_license_file(p[0], p[1])
 
                 # create backup
                 package_readme_path = Path(p[1], 'README.md')
@@ -92,6 +93,8 @@ def setup(packages: Package, setup_command: SetupCommand):
                 # Revert readme changes
                 if package_readme_path.exists():
                     shutil.move(backup_readme_path, package_readme_path)
+
+                _remove_license_file(p[0], p[1])
 
                 if exit_code != 0:
                     exit(exit_code)
@@ -210,6 +213,34 @@ def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
                     if line_without_comment != '':
                         packages.add(line.strip())
     return list(packages)
+
+def _add_license_file(manifest_folder: Path, package_folder: Path) -> None:
+    # add license file to package_folder
+    global_license_path = Path(git_root_folder, 'LICENSE.txt')
+    shutil.copy(global_license_path, Path(package_folder, 'LICENSE.txt'))
+
+    # extend MANIFEST.in
+    manifest_path = Path(manifest_folder, 'MANIFEST.in')
+    with manifest_path.open('a') as manifest:
+        manifest.write('\n')
+        manifest.write(f'include {basename(package_folder)}/LICENSE.txt')
+        manifest.write('\n')
+
+def _remove_license_file(manifest_folder: Path, package_folder: Path) -> None:
+    # remove file if exists
+    license_file_path = Path(package_folder, 'LICENSE.txt')
+    if license_file_path.exists():
+        unlink(license_file_path)
+
+    # remove from MANIFEST.in
+    unwanted_line = f'include {basename(package_folder)}/LICENSE.txt'
+    manifest_path = Path(manifest_folder, 'MANIFEST.in')
+    with manifest_path.open('r') as manifest:
+        manifest_lines = manifest.readlines()
+    with manifest_path.open('w') as manifest:
+        for line in manifest_lines:
+            if line.strip('\n') != unwanted_line and line != '\n':
+                manifest.write(line)
 
 def main():
     parser = argparse.ArgumentParser()
