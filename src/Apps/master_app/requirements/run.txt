@@ -4,4 +4,3 @@ semi-ate-plugins
 aiohttp==3.7.4
 xmltodict
 transitions
-python>=3.8

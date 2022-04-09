@@ -1,3 +1,2 @@
 semi-ate-common
 semi-ate-plugins
-python>=3.8

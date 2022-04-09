@@ -2,4 +2,3 @@ semi-ate-common
 semi-ate-apps-common
 pyserial
 transitions
-python>=3.8
