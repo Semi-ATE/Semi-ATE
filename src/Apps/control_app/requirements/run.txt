@@ -1,3 +1,4 @@
 transitions
 semi-ate-common
 semi-ate-apps-common
+python>=3.8

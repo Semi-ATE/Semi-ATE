@@ -1,3 +1,4 @@
 aiomqtt
 Semi-ATE-STDF==0.1.26
 semi-ate-common
+python>=3.8

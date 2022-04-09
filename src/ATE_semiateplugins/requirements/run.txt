@@ -1,1 +1,2 @@
 semi-ate-common
+python>=3.8
