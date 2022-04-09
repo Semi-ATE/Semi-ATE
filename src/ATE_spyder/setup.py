@@ -23,7 +23,7 @@ setup(
     long_description_content_type='text/markdown',
     author="The Semi-ATE Project Contributors",
     author_email="ate.organization@gmail.com",
-    license="GPL2",
+    license="GPL-2.0-only",
     keywords="Semiconductor ATE Automatic Test Equipment Spyder Plugin",
     platforms=["Windows", "Linux", "Mac OS-X"],
     packages=find_packages(),
