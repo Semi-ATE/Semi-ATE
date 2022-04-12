@@ -677,7 +677,7 @@ class ProjectNavigation(QObject):
 
     def remove_test(self, name: str, hardware: str, base: str, group: str):
         Test.remove(self.get_file_operator(), name, hardware, base)
-        Group.remove_test_from_group(self.get_file_operator(), group, name, do_commit=False)
+        Group.remove_test_from_group(self.get_file_operator(), group, name)
 
     def replace_test(self, database):
         Test.replace(self.get_file_operator(), database)
