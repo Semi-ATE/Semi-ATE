@@ -1,4 +1,4 @@
-from Semi_ATE.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR)
+from Semi_ATE.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR, MPR)
 
 ENDIAN = '<'
 
@@ -277,4 +277,73 @@ def generate_SDR(head_num: int, site_grp: int, site_cnt: int, site_nums: list) -
     rec.set_value('SITE_GRP', site_grp)
     rec.set_value('SITE_CNT', site_cnt)
     rec.set_value('SITE_NUM', [int(site_num) for site_num in site_nums])
+    return rec
+
+def generate_MPR_dict(test_num, head_num, site_num,
+                      is_pass, param_flag, measurements,
+                      test_txt, alarm_id, l_limit, u_limit,
+                      fmt, exponent, unit, ls_limit, us_limit,
+                      opt_flag=2):
+    record = {'type': 'MPR'}
+    mpr_record = generate_MPR(test_num, head_num, site_num,
+                              is_pass, param_flag, measurements,
+                              test_txt, alarm_id, l_limit, u_limit,
+                              unit, fmt, exponent, ls_limit, us_limit,
+                              opt_flag).to_dict()
+    mpr_record['TEST_FLG'] = flag_array_to_int(mpr_record['TEST_FLG'], ENDIAN)
+    mpr_record['PARM_FLG'] = flag_array_to_int(mpr_record['PARM_FLG'], ENDIAN)
+    mpr_record['OPT_FLAG'] = flag_array_to_int(mpr_record['OPT_FLAG'], ENDIAN)
+    record.update(mpr_record)
+    return record
+
+def generate_MPR(
+    test_num, head_num, site_num,
+    is_pass, param_flag, measurements: list[float],
+    test_txt, alarm_id, l_limit, u_limit,
+    unit, fmt, exponent, ls_limit, us_limit, opt_flag=2) -> MPR:
+
+    rec = MPR('V4', ENDIAN)
+
+    format = f'%7{fmt}' if '%7' not in fmt else fmt
+
+    rec.set_value('TEST_NUM', test_num)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b10000000)
+    rec.set_value('PARM_FLG', param_flag)
+
+    # We set RTN_ICNT to 0. This implies that the stat and index arrays (RTN_STAT, RTN_INDX) are both empty,
+    # i.e. we do not have to set RTN_STAT, RTN_INDX fields here!!!
+    # This is done as we do not have a Pin Map Record (PMR). For details refer to STDF-V4-spec.pdf.
+    rec.set_value('RTN_ICNT', 0 )
+
+    # Here we always write the scale exponent and also the limits (test- and spec limits).
+    # This implies that bit 0, 2, 3,  4, 5, 6, and 7 of 'OPT_FLAG' are set to 0, i.e. they are NOT MISSING
+    rec.set_value('RES_SCAL', exponent)
+    rec.set_value('LLM_SCAL', exponent)
+    rec.set_value('HLM_SCAL', exponent)
+
+    rec.set_value('LO_LIMIT', l_limit)
+    rec.set_value('HI_LIMIT', u_limit)
+
+    rec.set_value('C_RESFMT', format)
+    rec.set_value('C_LLMFMT', format)
+    rec.set_value('C_HLMFMT', format)
+
+    rec.set_value('LO_SPEC', ls_limit)
+    rec.set_value('HI_SPEC', us_limit)
+
+    rec.set_value('UNITS', ' ' if '˽' == unit else unit)
+    rec.set_value('RSLT_CNT', len(measurements))
+    rec.set_value('RTN_RSLT', measurements)
+    rec.set_value('TEST_TXT', test_txt)
+    rec.set_value('ALARM_ID', alarm_id)
+
+    # Referring to the specification of the 'OPT_FLAG' of a Multiple-Result Parametric Record (MPR)
+    # from the document STDF-V4-spec.pdf we always set this flag to 2, i.e. we set bit 1 of this
+    # byte flag to 1. The reason is that we do not support to log shmoo data in a MPR. All other bits
+    # are set to 0 as we always set scaling-exponent and all limits (test- and specification-limits)
+    # For details refer to the specification STDF-V4-spec.pdf
+    rec.set_value('OPT_FLAG', 2)
+
     return rec

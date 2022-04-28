@@ -6,8 +6,8 @@ from ate_projectdatabase.Types import Types
 from ate_sammy.migration.utils import VERSION_FILE_NAME, VERSION
 
 
-ALL_PROJECTS_REL_PATH = '../projects/'
-NEW_PROJECT_REL_PATH = '../../ATE_spyder/tests/qt/smoketest/smoke_test'
+ALL_PROJECTS_REL_PATH = f'{Path(Path(__file__).parent, "../projects/")}'
+NEW_PROJECT_REL_PATH = f'{Path(Path(__file__).parent, "../../ATE_spyder/tests/qt/smoketest/smoke_test")}'
 DEFINTIONS = 'definitions'
 
 

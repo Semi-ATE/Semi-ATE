@@ -5,6 +5,7 @@ from jinja2 import Environment
 from jinja2 import FileSystemLoader
 
 from ate_sammy.coding.generator_utils import prepare_module_docstring
+from ate_common.parameter import OutputColumnKey
 
 
 def prepare_input_parameters_ppd(ip):
@@ -103,7 +104,7 @@ class test_base_generator(BaseTestGenerator):
         paramlist = []
         for op in self.definition[parameter_type]:
             the_param = {}
-            the_param['name'] = op
+            the_param[OutputColumnKey.NAME()] = op
             the_param.update(self.definition[parameter_type][op])
             paramlist.append(the_param)
         return paramlist
@@ -125,4 +126,5 @@ class test_base_generator(BaseTestGenerator):
                                ipppd=render_data['ipppd'],
                                opppd=render_data['opppd'],
                                output_params=render_data['output_params'],
-                               input_params=render_data['input_params'])
+                               input_params=render_data['input_params'],
+                               OutputColumnKey=OutputColumnKey)

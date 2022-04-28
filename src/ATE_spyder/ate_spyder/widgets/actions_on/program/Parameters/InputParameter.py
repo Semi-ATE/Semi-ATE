@@ -1,6 +1,7 @@
 import copy
 
 from ate_common.program_utils import ParameterState, ParameterEditability, ResolverTypes, ValidatorTypes, Range, InputFieldsPosition
+from ate_common.parameter import InputColumnKey
 from ate_spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 from ate_spyder.widgets.actions_on.program.Parameters.ParameterBase import ParameterBase
 from ate_spyder.widgets.actions_on.program.Parameters.Utils import PARAM_PREFIX
@@ -19,16 +20,16 @@ class InputParameter(ParameterBase):
             editable = ParameterEditability.NotEditable()
 
         self.name = ParameterField(name)
-        self.min = ParameterField(input_params['Min'])
-        self.max = ParameterField(input_params['Max'])
-        self.format = ParameterField(input_params['fmt'])
-        self.unit = ParameterField(input_params['Unit'])
-        self.exponent = ParameterField(input_params['10ᵡ'])
+        self.min = ParameterField(input_params[InputColumnKey.MIN()])
+        self.max = ParameterField(input_params[InputColumnKey.MAX()])
+        self.format = ParameterField(input_params[InputColumnKey.FMT()])
+        self.unit = ParameterField(input_params[InputColumnKey.UNIT()])
+        self.exponent = ParameterField(input_params[InputColumnKey.POWER()])
         self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=editable)
-        self.default = ParameterField(self.format_value(input_params['Default']), editable=editable)
+        self.default = ParameterField(self.format_value(input_params[InputColumnKey.DEFAULT()]), editable=editable)
         self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(self._get_value(input_params))
         self.valid = True
-        self.shmoo = ParameterField(input_params['Shmoo'])
+        self.shmoo = ParameterField(input_params[InputColumnKey.SHMOO()])
 
         self._select_editability_for_resolvertype(editable)
 
@@ -146,10 +147,17 @@ class InputParameter(ParameterBase):
         return [self.name, self.min, self.value, self.max, self.unit, self.format, self.type, self.exponent]
 
     def get_parameters_content(self):
-        return {'name': self.name.get_value(), 'min': self.min.get_value(), 'value': self.value.get_value(),
-                'max': self.max.get_value(), 'format': self.format.get_value(), 'unit': self.unit.get_value(),
-                'type': self.type.get_value(), 'exponent': self.exponent.get_value(), 'default': self.default.get_value(),
-                'shmoo': self.shmoo.get_value()}
+        return {
+            InputColumnKey.NAME(): self.name.get_value(),
+            InputColumnKey.MIN(): self.min.get_value(),
+            'value': self.value.get_value(),
+            InputColumnKey.MAX(): self.max.get_value(),
+            InputColumnKey.FMT(): self.format.get_value(),
+            InputColumnKey.UNIT(): self.unit.get_value(),
+            'type': self.type.get_value(),
+            InputColumnKey.POWER(): self.exponent.get_value(),
+            'default': self.default.get_value(),
+            InputColumnKey.SHMOO(): self.shmoo.get_value()}
 
     def is_valid(self):
         return self.valid

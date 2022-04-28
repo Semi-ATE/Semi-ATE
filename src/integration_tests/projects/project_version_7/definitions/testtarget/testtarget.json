@@ -1,0 +1,22 @@
+[
+  {
+    "name": "die7_maintenance_main",
+    "prog_name": "project_version_7_HW0_PR_die7_maintenance_main",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "t7_1",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  },
+  {
+    "name": "device7_checker_checker_7",
+    "prog_name": "project_version_7_HW0_FT_device7_checker_checker_7",
+    "hardware": "HW0",
+    "base": "FT",
+    "test": "t7_2",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

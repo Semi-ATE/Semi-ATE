@@ -1,0 +1,13 @@
+[
+  {
+    "name": "die7",
+    "hardware": "HW0",
+    "maskset": "maskset7",
+    "quality": "",
+    "grade": "A",
+    "grade_reference": "",
+    "type": "ASSP",
+    "customer": "",
+    "is_enabled": true
+  }
+]

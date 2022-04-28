@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from ate_common.program_utils import (ParameterEditability, ParameterState, OutputFieldsPosition, ValidatorTypes)
+from ate_common.parameter import OutputColumnKey
 from ate_spyder.widgets.actions_on.program.Parameters.ParameterField import ParameterField
 from ate_spyder.widgets.actions_on.program.Parameters.ParameterBase import ParameterBase
 from ate_spyder.widgets.actions_on.program.Parameters.OutputValidator import OutputValidator
+
 
 MAX_SBIN_NUM = 65535
 
@@ -19,13 +21,13 @@ class Bininfo:
 class OutputParameter(ParameterBase):
     def __init__(self, name: str, parameter: dict, output_validator: OutputValidator):
         self.name = ParameterField(name)
-        self.lsl = ParameterField(parameter['LSL'])
-        self.ltl = ParameterField(parameter['LTL'], editable=ParameterEditability.Editable())
-        self.utl = ParameterField(parameter['UTL'], editable=ParameterEditability.Editable())
-        self.usl = ParameterField(parameter['USL'])
-        self.exponent = ParameterField(parameter['10ᵡ'])
-        self.unit = ParameterField(parameter['Unit'])
-        self.format = ParameterField(parameter['fmt'])
+        self.lsl = ParameterField(parameter[OutputColumnKey.LSL()])
+        self.ltl = ParameterField(parameter[OutputColumnKey.LTL()], editable=ParameterEditability.Editable())
+        self.utl = ParameterField(parameter[OutputColumnKey.UTL()], editable=ParameterEditability.Editable())
+        self.usl = ParameterField(parameter[OutputColumnKey.USL()])
+        self.exponent = ParameterField(parameter[OutputColumnKey.POWER()])
+        self.unit = ParameterField(parameter[OutputColumnKey.UNIT()])
+        self.format = ParameterField(parameter[OutputColumnKey.FMT()])
         self.bin_parameter = None
         self.test_number = ParameterField(parameter['test_num'], editable=ParameterEditability.Editable()) if parameter.get('test_num') else ParameterField('', editable=ParameterEditability.Editable())
         self._update_binning_parameters(parameter)
@@ -119,21 +121,6 @@ class OutputParameter(ParameterBase):
         field.set_validity(ParameterState.Valid())
         field.set_value(str(self.format_value(value)))
 
-    def _get_output_field(self, filed_col):
-        try:
-            output_filed = {OutputFieldsPosition.Name(): self.name,
-                            OutputFieldsPosition.Lsl(): self.lsl,
-                            OutputFieldsPosition.Ltl(): self.ltl,
-                            OutputFieldsPosition.Utl(): self.utl,
-                            OutputFieldsPosition.Usl(): self.usl,
-                            OutputFieldsPosition.Unit(): self.unit,
-                            OutputFieldsPosition.Format(): self.format,
-                            OutputFieldsPosition.No(): self.test_number}[filed_col]
-
-            return output_filed
-        except KeyError:
-            return None
-
     def _is_in_range(self, value):
         return self.lsl < float(value) < self.usl
 
@@ -150,10 +137,18 @@ class OutputParameter(ParameterBase):
         return [self.name, self.lsl, self.ltl, self.utl, self.usl, self.unit, self.format, self.test_number]
 
     def get_parameters_content(self):
-        return {'name': self.name.get_value(), 'lsl': self.lsl.get_value(), 'ltl': self.ltl.get_value(),
-                'usl': self.usl.get_value(), 'utl': self.utl.get_value(), 'unit': self.unit.get_value(),
-                'format': self.format.get_value(), 'binning': self.bin_parameter,
-                'exponent': self.exponent.get_value(), 'test_num': self.test_number.get_value()}
+        return {
+            OutputColumnKey.NAME(): self.name.get_value(),
+            OutputColumnKey.LSL(): self.lsl.get_value(),
+            OutputColumnKey.LTL(): self.ltl.get_value(),
+            OutputColumnKey.USL(): self.usl.get_value(),
+            OutputColumnKey.UTL(): self.utl.get_value(),
+            OutputColumnKey.UNIT(): self.unit.get_value(),
+            OutputColumnKey.FMT(): self.format.get_value(),
+            'binning': self.bin_parameter,
+            OutputColumnKey.POWER(): self.exponent.get_value(),
+            'test_num': self.test_number.get_value()
+        }
 
     def get_field_state(self):
         return self.name.get_state()

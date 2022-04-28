@@ -19,7 +19,7 @@ class SetupCommand(Enum):
 
 
 class Package(Enum):
-    All = 'all',
+    All = 'all'
     Distribution = 'distribution'
     Test = 'test'
 
@@ -248,7 +248,7 @@ def main():
     parser.add_argument('--packages', choices=[Package.Distribution(), Package.Test(), Package.All()], help='packages that should be processed')
     parser.add_argument('--uninstall', action='store_true', help='uninstall the selected packages from environment using "pip"')
     parser.add_argument('--change-env', choices=[Profile.Develop(), Profile.Cicd(), Profile.Clean()], help='Setup/Installs all packages to the current environment to be ready for developing or running CI/CD scripts. To do so this option relies on "pip".')
-    parser.add_argument('--tag-version', type=str, help='Version to write into "__init__.py" package files')
+    parser.add_argument('--tag-version', type=str, help='Version to write into "__init__.py" package files. This option is used during CICD-build')
 
     args = parser.parse_args()
     setup_command = SetupCommand.Develop if args.setup_cmd == None else _command_from_string(args.setup_cmd)

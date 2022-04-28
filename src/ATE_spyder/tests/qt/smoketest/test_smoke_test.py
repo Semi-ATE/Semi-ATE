@@ -12,6 +12,7 @@ from ate_spyder.widgets.actions_on.tests.TestWizard import TestWizard
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 from ate_spyder.widgets.actions_on.program.EditTestProgramWizard import EditTestProgramWizard
 from ate_projectdatabase.FileOperator import FileOperator
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow
@@ -91,9 +92,33 @@ test_configruation = {'name': definitions['test'],
                       'base': 'PR',
                       'owner': 'Production_PR',
                       'prog_name': 'smoke_test_HW0_PR_Die1_production_PR_1',
-                      'input_parameters': {'T': {'name': 'foo', 'Min': -40, 'Max': 170, 'Default': 25, 'Unit': '°C', 'fmt': '.3f', '10ᵡ': '1', 'Shmoo': 'False'}},
-                      'output_parameters': {'parameter2_name': {'name': 'foo', 'LSL': 100, 'USL': -100, 'LTL': 0, 'UTL': 0, 'Nom': 2.5, 'Unit': 'mV', 'fmt': '.3f', '10ᵡ': '1'}},
-                      'docstring': 'test DBC'
+                      'input_parameters': {
+                        'T': {
+                            InputColumnKey.NAME(): 'foo',
+                            InputColumnKey.MIN(): -40,
+                            InputColumnKey.MAX(): 170,
+                            InputColumnKey.DEFAULT(): 25,
+                            InputColumnKey.UNIT(): '°C',
+                            InputColumnKey.FMT(): '.3f',
+                            InputColumnKey.POWER(): '1',
+                            InputColumnKey.SHMOO(): 'False'
+                        }
+                      },
+                      'output_parameters': {
+                        'parameter2_name': {
+                            OutputColumnKey.NAME(): 'foo',
+                            OutputColumnKey.LSL(): 100,
+                            OutputColumnKey.USL(): -100,
+                            OutputColumnKey.LTL(): 0,
+                            OutputColumnKey.UTL(): 0,
+                            OutputColumnKey.NOM(): 2.5,
+                            OutputColumnKey.UNIT(): 'mV',
+                            OutputColumnKey.FMT(): '.3f',
+                            OutputColumnKey.POWER(): '1',
+                            OutputColumnKey.MPR(): True
+                          }
+                        },
+                        'docstring': 'test DBC'
                       }
 
 

@@ -8,6 +8,7 @@ Created on Mon Dec  2 18:56:05 2019
 import getpass
 import os
 import re
+from ate_spyder.widgets.actions_on.tests.TestWizard import INPUT_PARAMETER_COLUMN_MAP
 
 import numpy as np
 import qtawesome as qta
@@ -160,7 +161,11 @@ class CloneWizard(QtWidgets.QDialog):
         self.inputParameterDelete.setToolTip('Delete selected parameter')
         self.inputParameterDelete.clicked.connect(self.deleteInputParameter)
 
-        inputParameterHeaderLabels = ['Name', 'Min', 'Default', 'Max', '10ᵡ', 'Unit', 'fmt']
+        inputParameterHeaderLabels =  list(
+            map(lambda parameter: parameter['label'],
+                list(sorted(INPUT_PARAMETER_COLUMN_MAP, key=lambda parameter: parameter['type']())))
+        )
+
         self.inputParameterModel = QtGui.QStandardItemModel()
         self.inputParameterModel.setObjectName('inputParameters')
         self.inputParameterModel.setHorizontalHeaderLabels(inputParameterHeaderLabels)
@@ -211,7 +216,11 @@ class CloneWizard(QtWidgets.QDialog):
         self.outputParameterDelete.setToolTip('Delete selected parameter')
         self.outputParameterDelete.clicked.connect(self.deleteOutputParameter)
 
-        outputParameterHeaderLabels = ['Name', 'LSL', '(LTL)', 'Nom', '(UTL)', 'USL', '10ᵡ', 'Unit', 'fmt']
+        outputParameterHeaderLabels =  list(
+            map(lambda parameter: parameter['label'],
+                list(sorted(OUTPUT_PARAMETER_COLUMN_MAP, key=lambda parameter: parameter['type']())))
+        )
+
         self.outputParameterModel = QtGui.QStandardItemModel()
         self.outputParameterModel.setObjectName('outputParameters')
         self.outputParameterModel.setHorizontalHeaderLabels(outputParameterHeaderLabels)

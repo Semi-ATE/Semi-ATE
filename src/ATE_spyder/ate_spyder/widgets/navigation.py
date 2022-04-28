@@ -12,6 +12,7 @@ import platform
 from typing import Dict, List
 
 from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
+from ate_common.parameter import InputColumnKey
 
 from qtpy.QtCore import QObject
 from ate_spyder.widgets.constants import TableIds as TableId
@@ -559,10 +560,10 @@ class ProjectNavigation(QObject):
                     'new_parameter1': {'Shmoo': False, 'Min': -np.inf, 'Default': 0.0, 'Max': np.inf, '10ᵡ': 'μ', 'Unit':  'V', 'fmt': '.3f'},
                     'new_parameter2': {'Shmoo': False, 'Min': -np.inf, 'Default':  0.123456789, 'Max': np.inf, '10ᵡ':  '', 'Unit':  'dB', 'fmt': '.6f'}},
                 'output_parameters' : {
-                    'new_parameter1': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
-                    'new_parameter2': {'LSL': -np.inf, 'LTL': -5000.0, 'Nom': 10.0, 'UTL':   15.0, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.1f'},
-                    'new_parameter3': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.6f'},
-                    'new_parameter4': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}},
+                    'new_parameter1': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f', 'MPR': False},
+                    'new_parameter2': {'LSL': -np.inf, 'LTL': -5000.0, 'Nom': 10.0, 'UTL':   15.0, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.1f', 'MPR': True},
+                    'new_parameter3': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.6f', 'MPR': False},
+                    'new_parameter4': {'LSL': -np.inf, 'LTL':  np.nan, 'Nom':  0.0, 'UTL': np.nan, 'USL': np.inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f', 'MPR': True}},
                 'dependencies' : {}}
         '''
 
@@ -657,7 +658,7 @@ class ProjectNavigation(QObject):
     def get_test_temp_limits(self, test, hardware, base):
         test = self.get_test_table_content(test, hardware, base)
         temp = test['input_parameters']['Temperature']
-        return int(temp['Min']), int(temp['Max'])
+        return int(temp[InputColumnKey.MIN()]), int(temp[InputColumnKey.MAX()])
 
     def get_tests_from_db(self, hardware, base, test_type='all'):
         '''
