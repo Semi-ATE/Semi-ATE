@@ -173,7 +173,7 @@ class OutputParameter:
         else:
             return self._get_mpr_test_result()
 
-    def _get_ptr_test_result(self) -> Tuple[Result, int]:
+    def _get_ptr_test_result(self):
         ll, ul = self._get_limits()
         if self._measurement is None:
             raise Exception(f'no measured value is available for test parameter "{self._get_output_parameter_name()}"')
@@ -195,7 +195,7 @@ class OutputParameter:
             self._test_failures += 1
             return (Result.Fail(), fail_result)
 
-    def _get_mpr_test_result(self) -> Tuple[Result, int]:
+    def _get_mpr_test_result(self):
         ll, ul = self._get_limits()
         if self._measurement is None:
             raise Exception(f'no measured value is available for test parameter "{self._get_output_parameter_name()}"')

@@ -127,7 +127,7 @@ class StdfTestResultAggregator:
             site_num = ptr_record['SITE_NUM'],
             is_pass = ptr_record['TEST_FLG'] == 0,
             param_flag = ptr_record['PARM_FLG'],
-            result = ptr_record['RESULT'],
+            measurement = ptr_record['RESULT'],
             test_txt = ptr_record['TEST_TXT'],
             alarm_id = ptr_record['ALARM_ID'],
             l_limit = ptr_record['LO_LIMIT'],
