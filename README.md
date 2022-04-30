@@ -29,7 +29,7 @@ The `Semi-ATE` package is written purely in Python (noarch) and provides besides
 
 The Semi-ATE project consists of several packages. When writing this document the following packages are maintained by the Semi-ATE project:
 
-* semi-ate-common https://img.shields.io/github/issues-pr/Semi-ATE/semi-ate-common-feedstock?label=feedstock) https://github.com/conda-forge/semi-ate-common-feedstock
+* semi-ate-common [https://img.shields.io/github/issues-pr/Semi-ATE/semi-ate-common-feedstock?label=feedstock] [https://github.com/conda-forge/semi-ate-common-feedstock]
 * semi-ate-project-database
 * semi-ate-sammy
 * semi-ate-plugins
