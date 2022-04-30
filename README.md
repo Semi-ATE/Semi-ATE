@@ -10,9 +10,7 @@
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
 [![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/Semi-ATE/Semi-ATE/latest)](https://github.com/Semi-ATE/Semi-ATE)
-[![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
-[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate)
-[![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-feedstock)
+
 
 [![GitHub issues](https://img.shields.io/github/issues/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/pulls)
@@ -29,7 +27,17 @@ The `Semi-ATE` package is written purely in Python (noarch) and provides besides
 
 The Semi-ATE project consists of several packages. When writing this document the following packages are maintained by the Semi-ATE project:
 
-* semi-ate-common [https://img.shields.io/github/issues-pr/conda-forge/semi-ate-common-feedstock?label=feedstock] [https://github.com/conda-forge/semi-ate-common-feedstock]
+[![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
+[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate)
+[![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-feedstock)
+
+ - semi-ate-common [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-Common?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
+[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-Common?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-common)
+[![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-Common-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-Common-feedstock) 
+* 
+* 
+* 
+* [https://img.shields.io/github/issues-pr/conda-forge/semi-ate-common-feedstock?label=feedstock] [https://github.com/conda-forge/semi-ate-common-feedstock]
 * semi-ate-project-database
 * semi-ate-sammy
 * semi-ate-plugins
