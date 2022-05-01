@@ -21,7 +21,7 @@ The `Semi-ATE` package is written purely in Python (noarch) and provides besides
 
 ## Packages
 
-The Semi-ATE project is maintained in this single repository, however it is released as a set of packages to accomodate the different use-cases.
+The Semi-ATE project is maintained in this single repository, however it is released as a set of packages (all with the same version number) to accomodate the different use-cases.
 
 | Package Name              | PyPI Version | conda Version | feedstock |
 |:------------------------- |:----:|:-----------:|:---------:|
