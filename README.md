@@ -5,18 +5,12 @@
 [![GitHub](https://img.shields.io/github/license/Semi-ATE/Semi-ATE?color=black)](https://github.com/Semi-ATE/Semi-ATE/blob/master/LICENSE.txt)
 [![Conda](https://img.shields.io/conda/pn/conda-forge/starz?color=black)](https://www.lifewire.com/what-is-noarch-package-2193808)
 [![Supported Python versions](https://img.shields.io/badge/python-%3E%3D3.8-black)](https://www.python.org/downloads/)
-
 [![CI-CD](https://github.com/Semi-ATE/Semi-ATE/workflows/CI-CD/badge.svg)](https://github.com/Semi-ATE/Semi-ATE/actions/workflows/CICD.yml?query=workflow%3ACD)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/Semi-ATE/Semi-ATE?color=blue&label=GitHub&sort=semver)](https://github.com/Semi-ATE/Semi-ATE/releases/latest)
 [![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/Semi-ATE/Semi-ATE/latest)](https://github.com/Semi-ATE/Semi-ATE)
-[![PyPI](https://img.shields.io/pypi/v/Semi-ATE?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/)
-[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate)
-[![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-feedstock)
-
 [![GitHub issues](https://img.shields.io/github/issues/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Semi-ATE/Semi-ATE)](https://github.com/Semi-ATE/Semi-ATE/pulls)
-![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/semi-ate.svg?color=brightgreen)
 
 `Semi-ATE` is a tester- and instruments **AGNOSTIC** framework for **Semi**conductor **ATE** ASIC testing projects.
 
@@ -27,18 +21,20 @@ The `Semi-ATE` package is written purely in Python (noarch) and provides besides
 
 ## Packages
 
-The Semi-ATE project consists of several packages. When writing this document the following packages are maintained by the Semi-ATE project:
+The Semi-ATE project is maintained in this single repository, however it is released as a set of packages (all with the same version number) to accomodate the different use-cases.
 
-* semi-ate-common
-* semi-ate-project-database
-* semi-ate-sammy
-* semi-ate-plugins
-* semi-ate-testers
-* semi-ate-spyder
-* semi-ate-apps-common
-* semi-ate-control-app
-* semi-ate-master-app
-* semi-ate-test-app
+| Package Name              | PyPI Version | conda Version | feedstock |
+|:------------------------- |:----:|:-----------:|:---------:|
+| [Semi-ATE-common](https://github.com/conda-forge/staged-recipes/pull/18605) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-Common?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-Common?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-common) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-Common-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-Common-feedstock) | 
+| [Semi-ATE-project-database](https://github.com/conda-forge/staged-recipes/pull/18801) |[![PyPI](https://img.shields.io/pypi/v/Semi-ATE-project-database?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-project-database/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-project-database?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-project-database) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-project-database-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-project-database-feedstock) |
+| [Semi-ATE-sammy](https://github.com/conda-forge/staged-recipes/pull/18814) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-sammy?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-sammy/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-sammy?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-sammy) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-sammy-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-sammy-feedstock) |
+| [Semi-ATE-plugins](https://github.com/conda-forge/staged-recipes/pull/18815) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-plugins?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-plugins/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-plugins?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-plugins) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-plugins?label=feedstock)](https://github.com/conda-forge/Semi-ATE-project-plugins-feedstock) |
+| Semi-ATE-testers          | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-testers?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-testers/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-testers?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-testers) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-testers?label=feedstock)](https://github.com/conda-forge/Semi-ATE-testers-feedstock) |
+| Semi-ATE-spyder           | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-spyder?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-spyder/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-spyder?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-spyder) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-spyder?label=feedstock)](https://github.com/conda-forge/Semi-ATE-spyder-feedstock) |
+| [Semi-ATE-apps-common](https://github.com/conda-forge/staged-recipes/pull/18816) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-apps-common?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-apps-common/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-apps-common?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-apps-common) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-apps-common?label=feedstock)](https://github.com/conda-forge/Semi-ATE-apps-common-feedstock) |
+| Semi-ATE-control-app      | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-control-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-control-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-control-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-control-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-control-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-control-app-feedstock) |
+| Semi-ATE-master-app       | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-master-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-master-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-master-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-master-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-master-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-master-app-feedstock) |
+| Semi-ATE-test-app         | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-test-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-test-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-test-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-test-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-test-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-test-app-feedstock) |
 
 ## Installation
 
