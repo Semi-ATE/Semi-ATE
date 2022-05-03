@@ -1,5 +1,6 @@
 # # -*- coding: utf-8 -*-
 
+from typing import Dict
 from ate_apps_common.stdf_utils import (generate_MPR_dict, generate_PTR_dict, generate_TSR_dict)
 from ate_test_app.sequencers.DutTesting.Result import Result
 
@@ -63,7 +64,7 @@ class OutputParameter:
     def set_test_description(self, test_description: str):
         self._test_description = test_description
 
-    def generate_stdf_result_record(self, is_pass: bool, site_num: int) -> dict[str, str]:
+    def generate_stdf_result_record(self, is_pass: bool, site_num: int) -> Dict[str, str]:
         if self._mpr is True:
             return self._generate_mpr_record(is_pass, site_num)
         else:
@@ -118,7 +119,7 @@ class OutputParameter:
         self.bin = bin
         self.bin_result = bin_result
 
-    def _generate_ptr_record(self, is_pass: bool, site_num: int) -> dict[str, str]: 
+    def _generate_ptr_record(self, is_pass: bool, site_num: int) -> Dict[str, str]: 
         l_limit, u_limit = self._get_limits()
         l_limit = l_limit * (10**self._exponent)
         u_limit = u_limit * (10**self._exponent)
@@ -142,7 +143,7 @@ class OutputParameter:
             ls_limit=lsl,
             us_limit=usl)
 
-    def _generate_mpr_record(self, is_pass: bool, site_num: int) -> dict[str, str]:
+    def _generate_mpr_record(self, is_pass: bool, site_num: int) -> Dict[str, str]:
         l_limit, u_limit = self._get_limits()
         l_limit = l_limit * (10**self._exponent)
         u_limit = u_limit * (10**self._exponent)
