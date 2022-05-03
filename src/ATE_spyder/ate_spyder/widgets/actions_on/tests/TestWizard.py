@@ -1103,7 +1103,7 @@ class TestWizard(BaseDialog):
         multiplierSetter = self.setOutputParameterMultiplier
         unitSetter = self.setOutputParameterUnit
 
-        if col == 0 or col == 8:  # Name or format
+        if col in [OutputColumnIndex.NAME(), OutputColumnIndex.FMT()]:
             menu = QtWidgets.QMenu(self)
             parameter_formats = [
                 ("6 decimal places float", lambda: formatSetter('.6f')),
@@ -1117,7 +1117,7 @@ class TestWizard(BaseDialog):
                 item.triggered.connect(format_option[1])
             menu.exec_(QtGui.QCursor.pos())
 
-        elif index.column() >= 1 and index.column() <= 5:  # LSL, (LTL), Nom, (UTL), USL
+        elif index.column() in [OutputColumnIndex.LSL(), OutputColumnIndex.LTL(), OutputColumnIndex.NOM(), OutputColumnIndex.UTL(), OutputColumnIndex.USL()]:
             menu = QtWidgets.QMenu(self)
             special_values = [
                 ('+∞', lambda: valueSetter(np.inf)),
@@ -1191,8 +1191,8 @@ class TestWizard(BaseDialog):
         index_selection = self.outputParameterView.selectedIndexes()
 
         for index in index_selection:
-            if index.column() == 0 or index.column() == 8:
-                fmt_item = self.outputParameterModel.item(index.row(), 8)
+            if index.column() in [OutputColumnIndex.NAME(), OutputColumnIndex.FMT()]:
+                fmt_item = self.outputParameterModel.item(index.row(), OutputColumnIndex.FMT())
                 fmt_item.setData(Format, QtCore.Qt.DisplayRole)
         self.outputParameterView.clearSelection()
 
