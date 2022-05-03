@@ -1,3 +1,4 @@
+from typing import List
 from Semi_ATE.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR, SDR, MPR)
 
 ENDIAN = '<'
@@ -298,7 +299,7 @@ def generate_MPR_dict(test_num, head_num, site_num,
 
 def generate_MPR(
     test_num, head_num, site_num,
-    is_pass, param_flag, measurements: list[float],
+    is_pass, param_flag, measurements: List[float],
     test_txt, alarm_id, l_limit, u_limit,
     unit, fmt, exponent, ls_limit, us_limit, opt_flag=2) -> MPR:
 
