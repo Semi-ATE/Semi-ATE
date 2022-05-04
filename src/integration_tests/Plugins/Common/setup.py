@@ -4,11 +4,9 @@ from Common import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], '../../requirements/test.txt')
-def add_version(name: str) -> str:
-    return f'{name.rstrip()}=={version}' if 'semi-ate-' in name else name.rstrip()
        
 with requirements_path.open('r') as f:
-    install_requires = list(map(add_version, f))
+    install_requires = list(f)
 
 setup(
     name='integration-test-common',
