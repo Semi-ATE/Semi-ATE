@@ -35,6 +35,10 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 | Semi-ATE-control-app      | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-control-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-control-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-control-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-control-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-control-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-control-app-feedstock) |
 | Semi-ATE-master-app       | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-master-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-master-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-master-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-master-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-master-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-master-app-feedstock) |
 | Semi-ATE-test-app         | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-test-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-test-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-test-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-test-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-test-app?label=feedstock)](https://github.com/conda-forge/Semi-ATE-test-app-feedstock) |
+| Semi-ATE-Installer |
+Meta packeten OR an installer package (installer guide, graphical) --> correct packages installing
+
+
 
 ## Installation
 
