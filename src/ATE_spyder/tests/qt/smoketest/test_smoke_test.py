@@ -12,6 +12,7 @@ from ate_spyder.widgets.actions_on.tests.TestWizard import TestWizard
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 from ate_spyder.widgets.actions_on.program.EditTestProgramWizard import EditTestProgramWizard
 from ate_projectdatabase.FileOperator import FileOperator
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow
@@ -91,9 +92,33 @@ test_configruation = {'name': definitions['test'],
                       'base': 'PR',
                       'owner': 'Production_PR',
                       'prog_name': 'smoke_test_HW0_PR_Die1_production_PR_1',
-                      'input_parameters': {'T': {'name': 'foo', 'Min': -40, 'Max': 170, 'Default': 25, 'Unit': '°C', 'fmt': '.3f', '10ᵡ': '1', 'Shmoo': 'False'}},
-                      'output_parameters': {'parameter2_name': {'name': 'foo', 'LSL': 100, 'USL': -100, 'LTL': 0, 'UTL': 0, 'Nom': 2.5, 'Unit': 'mV', 'fmt': '.3f', '10ᵡ': '1'}},
-                      'docstring': 'test DBC'
+                      'input_parameters': {
+                        'T': {
+                            InputColumnKey.NAME(): 'foo',
+                            InputColumnKey.MIN(): -40,
+                            InputColumnKey.MAX(): 170,
+                            InputColumnKey.DEFAULT(): 25,
+                            InputColumnKey.UNIT(): '°C',
+                            InputColumnKey.FMT(): '.3f',
+                            InputColumnKey.POWER(): '1',
+                            InputColumnKey.SHMOO(): 'False'
+                        }
+                      },
+                      'output_parameters': {
+                        'parameter2_name': {
+                            OutputColumnKey.NAME(): 'foo',
+                            OutputColumnKey.LSL(): 100,
+                            OutputColumnKey.USL(): -100,
+                            OutputColumnKey.LTL(): 0,
+                            OutputColumnKey.UTL(): 0,
+                            OutputColumnKey.NOM(): 2.5,
+                            OutputColumnKey.UNIT(): 'mV',
+                            OutputColumnKey.FMT(): '.3f',
+                            OutputColumnKey.POWER(): '1',
+                            OutputColumnKey.MPR(): True
+                          }
+                        },
+                        'docstring': 'test DBC'
                       }
 
 
@@ -106,7 +131,7 @@ def debug_message(message):
 # just for localy debuging purposes
 def debug_visual(window, qtbot):
     window.show()
-    qtbot.stopForInteraction()
+    qtbot.stop()
 
 
 main = None
@@ -444,6 +469,43 @@ def test_create_and_edit_test(project_navigation, qtbot):
     assert(2 == len(the_test.definition["input_parameters"]))
     assert(2 == len(the_test.definition["output_parameters"]))
 
+
+def test_mpr_checkbox_of_output_parameter(project_navigation, qtbot):
+
+    # Navigate to test2
+    project_navigation.active_hardware = definitions['hardware']
+    project_navigation.active_base = 'PR'
+    new_test = TestWizard(project_navigation)
+    qtbot.addWidget(new_test)
+    new_test.group_combo.model().item(0, 0).setCheckState(QtCore.Qt.Checked)
+    with qtbot.waitSignal(new_test.TestName.textChanged, timeout=500):
+        qtbot.keyClicks(new_test.TestName, definitions['test2'])
+
+    # Make outputParametersTab active, cannot be achieved using qtbot mouse clicks
+    output_parameter_tab: QtWidgets.QWidget = new_test.findChild(QtWidgets.QWidget, 'outputParametersTab')
+    new_test.testTabs.setCurrentWidget(output_parameter_tab)
+
+    # Analyse the first (0-th) row of the output parameter table, i.e. mpr should be initially unchecked
+    output_parameter_table_view: QtWidgets.QTableView = new_test.findChild(QtWidgets.QTableView, 'outputParameterView')
+    MPR_item = output_parameter_table_view.model().item(0, 8)
+    check_state = MPR_item.data(QtCore.Qt.CheckStateRole)
+    assert( check_state == QtCore.Qt.Unchecked)
+
+    # Click MPR checkbox by 1st selecting the table cell via mouse-click, and 2nd by
+    # sending space-key to the table
+    x_pos_mpr = output_parameter_table_view.columnViewportPosition(8);
+    y_pos_mpr = output_parameter_table_view.rowViewportPosition(0);
+    qtbot.mouseClick(output_parameter_table_view.viewport(), QtCore.Qt.LeftButton, pos=QtCore.QPoint(x_pos_mpr, y_pos_mpr))
+    qtbot.keyClick( output_parameter_table_view.viewport(), QtCore.Qt.Key_Space );
+    
+    # now mpr should be checked
+    check_state = MPR_item.data(QtCore.Qt.CheckStateRole)
+    assert( check_state == QtCore.Qt.Checked)
+
+    qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
+
+    output_parameters = new_test.getOutputParameters()
+    assert( output_parameters['new_parameter1']['mpr'] == True )
 
 def test_does_test_exist(project_navigation):
     assert project_navigation.get_test(definitions['test'], definitions['hardware'], 'PR')

@@ -30,7 +30,7 @@ from jinja2 import FileSystemLoader
 from ate_sammy.coding.BaseGenerator import BaseGenerator
 from ate_sammy.coding.ProperGenerator import test_proper_generator
 from ate_sammy.coding.BaseTestGenerator import test_base_generator, BaseTestGenerator
-from ate_projectdatabase import __version__
+from ate_projectdatabase import latest_semi_ate_project_db_version
 
 
 def project_generator(template_path, project_path):
@@ -190,7 +190,7 @@ def _generate_version_file(definition_path):
     from pathlib import Path
     path = os.path.join(definition_path, "version", "version.json")
     with open(os.fspath(Path(path)), 'w') as f:
-        json.dump([{"version": __version__}], f, indent=4)
+        json.dump({"version": latest_semi_ate_project_db_version}, f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):

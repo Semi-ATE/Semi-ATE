@@ -148,4 +148,5 @@ master_user_settings.json
 output/*
 master_config_file.json
 control_config_file.json
+**/msct-webui/**
 

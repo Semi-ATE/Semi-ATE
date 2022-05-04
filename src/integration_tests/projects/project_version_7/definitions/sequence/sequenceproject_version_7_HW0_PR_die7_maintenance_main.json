@@ -1,0 +1,77 @@
+[
+  {
+    "owner_name": "HW0_PR_die7_maintenance",
+    "prog_name": "project_version_7_HW0_PR_die7_maintenance_main",
+    "test": "t7_1",
+    "test_order": 0,
+    "definition": {
+      "is_selected": true,
+      "input_parameters": {
+        "Temperature": {
+          "value": "25",
+          "type": "static",
+          "content": "25",
+          "min": -40.0,
+          "max": 170.0,
+          "fmt": ".0f",
+          "unit": "\u00b0C",
+          "exp10": 0,
+          "default": "25",
+          "shmoo": true
+        },
+        "in_1": {
+          "value": 10.0,
+          "type": "static",
+          "content": 10.0,
+          "min": 10.0,
+          "max": 100.0,
+          "fmt": ".3f",
+          "unit": "A",
+          "exp10": -3,
+          "default": "10.000",
+          "shmoo": false
+        }
+      },
+      "output_parameters": {
+        "out_1": {
+          "utl": 50.0,
+          "ltl": -50.0,
+          "lsl": -Infinity,
+          "usl": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "unit": "V",
+          "exp10": -3,
+          "test_num": 101
+        },
+        "out_2": {
+          "utl": 0.0,
+          "ltl": -100.0,
+          "lsl": -Infinity,
+          "usl": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "unit": "A",
+          "exp10": 0,
+          "test_num": 102
+        }
+      },
+      "description": "t7_1_1",
+      "name": "t7_1",
+      "sbin": "60000",
+      "test_num": 100
+    }
+  }
+]

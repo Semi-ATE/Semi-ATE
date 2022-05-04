@@ -129,7 +129,7 @@ def run_master(device_id, sites, broker_host, broker_port, webui_port):
         'sites': sites,
         'webui_port': webui_port,
         "skip_jobdata_verification": False,
-        "filesystemdatasource.path": ".",
+        "filesystemdatasource.path": f"{CURRENT_DIR}",
         "filesystemdatasource.jobpattern": "le306426001.xml",
         "user_settings_filepath": "master_user_settings.json",
         "site_layout": [[1, 0], [0, 1]],

@@ -1,0 +1,59 @@
+[
+  {
+    "name": "checker",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_7_HW0_FT_device7_checker_checker_7"
+    ],
+    "tests": [
+      "t7_2"
+    ]
+  },
+  {
+    "name": "maintenance",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_7_HW0_PR_die7_maintenance_main"
+    ],
+    "tests": [
+      "t7_1"
+    ]
+  },
+  {
+    "name": "production",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "engineering",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "validation",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "quality",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  },
+  {
+    "name": "qualification",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  }
+]

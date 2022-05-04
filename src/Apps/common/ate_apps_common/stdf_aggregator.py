@@ -9,7 +9,7 @@ from ate_apps_common.stdf_utils import (generate_FTR, generate_PIR,
                                         generate_TSR, generate_HBR,
                                         generate_SBR, generate_MRR,
                                         generate_MIR, generate_PCR,
-                                        generate_FAR)
+                                        generate_FAR, generate_MPR)
 
 
 class StdfPartTestContext:
@@ -102,6 +102,7 @@ class StdfTestResultAggregator:
                 'PTR': lambda test_result: self._generate_PTR(test_result),
                 'PRR': lambda test_result: self._generate_PRR(test_result),
                 'FTR': lambda test_result: self._generate_FTR(test_result),
+                'MPR': lambda test_result: self._generate_MPR(test_result),
             }[test_result['type']](test_result)
 
             self.write_records_to_file([rec])
@@ -120,17 +121,49 @@ class StdfTestResultAggregator:
 
     @staticmethod
     def _generate_PTR(ptr_record: dict) -> dict:
-        return generate_PTR(ptr_record['TEST_NUM'], ptr_record['HEAD_NUM'], ptr_record['SITE_NUM'],
-                            False, ptr_record['PARM_FLG'], ptr_record['RESULT'], ptr_record['TEST_TXT'],
-                            ptr_record['ALARM_ID'], ptr_record['LO_LIMIT'], ptr_record['HI_LIMIT'],
-                            ptr_record['UNITS'], ptr_record['C_RESFMT'], ptr_record['RES_SCAL'],
-                            ptr_record['LO_SPEC'], ptr_record['HI_SPEC'], ptr_record['OPT_FLAG'])
+        return generate_PTR(
+            test_num = ptr_record['TEST_NUM'],
+            head_num = ptr_record['HEAD_NUM'],
+            site_num = ptr_record['SITE_NUM'],
+            is_pass = ptr_record['TEST_FLG'] == 0,
+            param_flag = ptr_record['PARM_FLG'],
+            measurement = ptr_record['RESULT'],
+            test_txt = ptr_record['TEST_TXT'],
+            alarm_id = ptr_record['ALARM_ID'],
+            l_limit = ptr_record['LO_LIMIT'],
+            u_limit = ptr_record['HI_LIMIT'],
+            unit = ptr_record['UNITS'],
+            fmt = ptr_record['C_RESFMT'],
+            exponent = ptr_record['RES_SCAL'],
+            ls_limit = ptr_record['LO_SPEC'],
+            us_limit = ptr_record['HI_SPEC'],
+            opt_flag = ptr_record['OPT_FLAG'])
 
     @staticmethod
     def _generate_FTR(ftr_record: dict) -> dict:
         rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], False)
         rec.set_value('TEST_FLG', ftr_record['TEST_FLG'])
         return rec
+
+    @staticmethod
+    def _generate_MPR(mpr_record: dict) -> dict:
+        return generate_MPR(
+            test_num = mpr_record['TEST_NUM'],
+            head_num = mpr_record['HEAD_NUM'],
+            site_num = mpr_record['SITE_NUM'],
+            is_pass = mpr_record['TEST_FLG'] == 0,
+            param_flag = mpr_record['PARM_FLG'],
+            measurements = mpr_record['RTN_RSLT'],
+            test_txt = mpr_record['TEST_TXT'],
+            alarm_id = mpr_record['ALARM_ID'],
+            l_limit = mpr_record['LO_LIMIT'],
+            u_limit = mpr_record['HI_LIMIT'],
+            unit = mpr_record['UNITS'],
+            fmt = mpr_record['C_RESFMT'],
+            exponent = mpr_record['RES_SCAL'],
+            ls_limit = mpr_record['LO_SPEC'],
+            us_limit = mpr_record['HI_SPEC'],
+            opt_flag = mpr_record['OPT_FLAG'])
 
     @staticmethod
     def _generate_PIR(pir_record: dict) -> dict:

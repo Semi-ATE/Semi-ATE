@@ -1,0 +1,77 @@
+[
+  {
+    "owner_name": "HW0_FT_device7_checker",
+    "prog_name": "project_version_7_HW0_FT_device7_checker_checker_7",
+    "test": "t7_2",
+    "test_order": 0,
+    "definition": {
+      "is_selected": false,
+      "input_parameters": {
+        "Temperature": {
+          "value": "25",
+          "type": "static",
+          "content": "25",
+          "min": -40.0,
+          "max": 170.0,
+          "fmt": ".0f",
+          "unit": "\u00b0C",
+          "exp10": 0,
+          "default": "25",
+          "shmoo": true
+        },
+        "in_1": {
+          "value": "0.000",
+          "type": "static",
+          "content": "0.000",
+          "min": -60.0,
+          "max": 10.0,
+          "fmt": ".3f",
+          "unit": "A",
+          "exp10": -3,
+          "default": "0.000",
+          "shmoo": false
+        }
+      },
+      "output_parameters": {
+        "out_1": {
+          "utl": 50.0,
+          "ltl": 0.0,
+          "lsl": -Infinity,
+          "usl": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "unit": "K",
+          "exp10": -3,
+          "test_num": 101
+        },
+        "out_2": {
+          "utl": "0.700",
+          "ltl": "0.500",
+          "lsl": -Infinity,
+          "usl": Infinity,
+          "Binning": {
+            "bin": "11",
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "unit": "A",
+          "exp10": -9,
+          "test_num": 102
+        }
+      },
+      "description": "t7_2_1",
+      "name": "t7_2",
+      "sbin": "60000",
+      "test_num": 100
+    }
+  }
+]

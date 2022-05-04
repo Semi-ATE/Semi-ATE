@@ -1,4 +1,5 @@
 import os
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ate_sammy.coding.generators import BaseGenerator
@@ -38,7 +39,12 @@ class test_program_generator(BaseGenerator):
 
         test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
-        output = template.render(test_list=test_list, test_imports=test_imports, program_configuration=program_configuration)
+        output = template.render(
+            test_list=test_list,
+            test_imports=test_imports,
+            program_configuration=program_configuration,
+            InputColumnKey=InputColumnKey,
+            OutputColumnKey=OutputColumnKey)
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)

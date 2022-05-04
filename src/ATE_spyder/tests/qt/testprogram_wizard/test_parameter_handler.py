@@ -2,6 +2,7 @@ from ate_test_app.sequencers.DutTesting.TestParameters import OutputParameter
 from pytest import fixture
 from ate_spyder.widgets.actions_on.program.Parameters.TestProgram import TestProgram
 from ate_common.program_utils import Action, ParameterState
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 from numpy import inf, nan
 
 TEST_NAME = 'Contact_1'
@@ -10,30 +11,116 @@ NEW_TEST_NAME = 'Contact_2'
 SECOND_TEST_NAME = 'Contact_3'
 TEST_BASE_NAME = 'Contact'
 
-INPUT_PARAMETER = {'Temperature':
-                   {'Shmoo': True, 'Min': -40.0, 'Default': 25.0, 'Max': 170.0, '10ᵡ': '', 'Unit': '°C', 'fmt': '.0f'},
-                   'new_parameter2':
-                   {'Shmoo': False, 'Min': -inf, 'Default': 0.0, 'Max': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+INPUT_PARAMETER = {
+    'Temperature': {
+        InputColumnKey.SHMOO(): True,
+        InputColumnKey.MIN(): -40.0,
+        InputColumnKey.DEFAULT(): 25.0,
+        InputColumnKey.MAX(): 170.0,
+        InputColumnKey.POWER(): '',
+        InputColumnKey.UNIT(): '°C',
+        InputColumnKey.FMT(): '.0f'
+    },
+    'new_parameter2': {
+        InputColumnKey.SHMOO(): False,
+        InputColumnKey.MIN(): -inf,
+        InputColumnKey.DEFAULT(): 0.0,
+        InputColumnKey.MAX(): inf,
+        InputColumnKey.POWER(): '',
+        InputColumnKey.UNIT(): '?',
+        InputColumnKey.FMT(): '.3f'
+    }
+}
 
-CHANGED_INPUT_PARAMETER = {'Temperature':
-                           {'Shmoo': True, 'Min': -40.0, 'Default': 25.0, 'Max': 170.0, '10ᵡ': '', 'Unit': '°C', 'fmt': '.0f'},
-                           'new_parameter3':
-                           {'Shmoo': False, 'Min': -inf, 'Default': 0.0, 'Max': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+CHANGED_INPUT_PARAMETER = {
+    'Temperature': {
+        InputColumnKey.SHMOO(): True,
+        InputColumnKey.MIN(): -40.0,
+        InputColumnKey.DEFAULT(): 25.0,
+        InputColumnKey.MAX(): 170.0,
+        InputColumnKey.POWER(): '',
+        InputColumnKey.UNIT(): '°C',
+        InputColumnKey.FMT(): '.0f'
+    },
+    'new_parameter3': {
+        InputColumnKey.SHMOO(): False,
+        InputColumnKey.MIN(): -inf,
+        InputColumnKey.DEFAULT(): 0.0,
+        InputColumnKey.MAX(): inf,
+        InputColumnKey.POWER(): '',
+        InputColumnKey.UNIT(): '?',
+        InputColumnKey.FMT(): '.3f'
+        }
+    }
 
-OUTPUT_PARAMETER = {'new_parameter1':
-                    {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
-                    'new_parameter2':
-                    {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+OUTPUT_PARAMETER = {
+    'new_parameter1': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): nan,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): nan,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    },
+    'new_parameter2': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): nan,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): nan,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    }
+}
 
-CHANGED_OUTPUT_PARAMETER = {'new_parameter3':
-                            {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
-                            'new_parameter2':
-                            {'LSL': -inf, 'LTL': nan, 'Nom': 0.0, 'UTL': nan, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+CHANGED_OUTPUT_PARAMETER = {
+    'new_parameter3': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): nan,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): nan,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    },
+    'new_parameter2': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): nan,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): nan,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    }
+}
 
-OUTPUT_PARAMETER1 = {'new_parameter1':
-                     {'LSL': -inf, 'LTL': 1, 'Nom': 0.0, 'UTL': 2, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'},
-                     'new_parameter2':
-                     {'LSL': -inf, 'LTL': 1, 'Nom': 0.0, 'UTL': 2, 'USL': inf, '10ᵡ': '', 'Unit': '?', 'fmt': '.3f'}}
+OUTPUT_PARAMETER1 = {
+    'new_parameter1': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): 1,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): 2,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    },
+    'new_parameter2': {
+        OutputColumnKey.LSL(): -inf,
+        OutputColumnKey.LTL(): 1,
+        OutputColumnKey.NOM(): 0.0,
+        OutputColumnKey.UTL(): 2,
+        OutputColumnKey.USL(): inf,
+        OutputColumnKey.POWER(): '',
+        OutputColumnKey.UNIT(): '?',
+        OutputColumnKey.FMT(): '.3f'
+    }
+}
 
 
 @fixture(scope='module')

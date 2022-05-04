@@ -23,6 +23,7 @@ from ate_spyder.widgets.actions_on.program.Parameters.InputParameter import Inpu
 from ate_spyder.widgets.actions_on.program.Parameters.OutputParameter import Bininfo, OutputParameter
 from ate_spyder.widgets.actions_on.program.Parameters.Utils import MAX_TEST_RANGE, PARAM_PREFIX
 from ate_common.program_utils import ParameterState, ResolverTypes
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 
 
 class TestParameters:
@@ -87,14 +88,14 @@ class TestParameters:
             struct[input] = {
                 'value': self._prepare_input_parameter(parameter_content['value'], parameter_content['type']),
                 'type': parameter_content['type'],
-                'Min': parameter_content['min'],
-                'Max': parameter_content['max'],
-                'fmt': parameter_content['format'],
-                'Unit': parameter_content['unit'],
-                '10ᵡ': parameter_content['exponent'],
-                'Default': parameter_content['default'],
                 'content': parameter_content['value'],
-                'Shmoo': parameter_content['shmoo']
+                InputColumnKey.MIN(): parameter_content[InputColumnKey.MIN()],
+                InputColumnKey.MAX(): parameter_content[InputColumnKey.MAX()],
+                InputColumnKey.FMT(): parameter_content[InputColumnKey.FMT()],
+                InputColumnKey.UNIT(): parameter_content[InputColumnKey.UNIT()],
+                InputColumnKey.POWER(): parameter_content[InputColumnKey.POWER()],
+                InputColumnKey.DEFAULT(): parameter_content[InputColumnKey.DEFAULT()],
+                InputColumnKey.SHMOO(): parameter_content[InputColumnKey.SHMOO()]
             }
         return struct
 
@@ -106,10 +107,10 @@ class TestParameters:
             parameter_content = value.get_parameters_content()
             bin_parameter: Bininfo = parameter_content['binning']
             struct[output] = {
-                'UTL': parameter_content['utl'],
-                'LTL': parameter_content['ltl'],
-                'LSL': parameter_content['lsl'],
-                'USL': parameter_content['usl'],
+                OutputColumnKey.UTL(): parameter_content[OutputColumnKey.UTL()],
+                OutputColumnKey.LTL(): parameter_content[OutputColumnKey.LTL()],
+                OutputColumnKey.LSL(): parameter_content[OutputColumnKey.LSL()],
+                OutputColumnKey.USL(): parameter_content[OutputColumnKey.USL()],
                 'Binning': {
                     'bin': bin_parameter.bin_number,
                     'result': Result.Fail() if int(bin_parameter.bin_number) not in range(1, 10) else Result.Pass(),
@@ -117,8 +118,10 @@ class TestParameters:
                     'group': bin_parameter.bin_group,
                     'description': bin_parameter.bin_description
                 },
-                'fmt': parameter_content['format'], 'Unit': parameter_content['unit'],
-                '10ᵡ': parameter_content['exponent'], 'test_num': int(parameter_content['test_num'])
+                OutputColumnKey.FMT(): parameter_content[OutputColumnKey.FMT()],
+                OutputColumnKey.UNIT(): parameter_content[OutputColumnKey.UNIT()],
+                OutputColumnKey.POWER(): parameter_content[OutputColumnKey.POWER()],
+                'test_num': int(parameter_content['test_num'])
             }
         return struct
 

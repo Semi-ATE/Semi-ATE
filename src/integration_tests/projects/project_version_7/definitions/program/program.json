@@ -1,0 +1,50 @@
+[
+  {
+    "id": "075058c1-c6fd-11ec-b6e8-cc483ac234a3",
+    "prog_name": "project_version_7_HW0_PR_die7_maintenance_main",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "die7",
+    "usertext": "main",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_die7_maintenance",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100
+    ],
+    "instance_count": 1,
+    "execution_sequence": {
+      "PR1A": [
+        0
+      ]
+    }
+  },
+  {
+    "id": "06f98a3d-c6fe-11ec-920e-cc483ac234a3",
+    "prog_name": "project_version_7_HW0_FT_device7_checker_checker_7",
+    "hardware": "HW0",
+    "base": "FT",
+    "target": "device7",
+    "usertext": "checker_7",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_FT_device7_checker",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100
+    ],
+    "instance_count": 1,
+    "execution_sequence": {
+      "FT1A": [
+        0
+      ]
+    }
+  }
+]
