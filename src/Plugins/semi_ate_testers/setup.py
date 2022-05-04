@@ -4,11 +4,9 @@ from semi_ate_testers import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
-def add_version(name: str) -> str:
-    return f'{name.rstrip()}=={version}' if 'semi-ate-' in name else name.rstrip()
        
 with requirements_path.open('r') as f:
-    install_requires = list(map(add_version, f))
+    install_requires = list(f)
 
 readme_path = Path(Path(__file__).parent, './semi_ate_testers/README.md')
 with readme_path.open('r') as f:
