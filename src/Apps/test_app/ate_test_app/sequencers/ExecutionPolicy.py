@@ -48,7 +48,11 @@ class LoopCycleExecutionPolicy(ExecutionPolicyABC):
                     continue
 
                 if not sequencer_instance.tester_instance.do_request(int(sequencer_instance.site_id), TIMEOUT):
-                    raise Exception('no response')
+                    raise Exception("""No response: This exception could be raised as the 'tester' used in the test program
+is not compatible with the tester handled by the master application. To verify this
+check that the set tester from the test program (file: 'definitions/hardware/hardware.json')
+is compatible to the tester_type of file 'master_config_file.json'.
+""")
 
                 sequencer_instance.tester_instance.test_in_progress(int(sequencer_instance.site_id))
 

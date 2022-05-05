@@ -30,7 +30,6 @@ class SequencerBase:
         self.binning = None
         self.logger = None
         self.bin_strategy = bin_strategy
-        self.tester_instance = None
         self.cache_instance = None
         self.cache_policy = "disable"
         self.program_name = program_name
