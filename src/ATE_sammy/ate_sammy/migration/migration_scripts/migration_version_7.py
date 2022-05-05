@@ -84,6 +84,9 @@ class MigrationVersion7(MigratorBase):
                 output.pop('fmt')
                 output[OutputColumnKey.FMT()] = value
 
+                # add the new introduced mpr attribute with default value equal to false
+                output[OutputColumnKey.MPR()] = False
+
 
         self.write_configuration(file_name, tests)
 
