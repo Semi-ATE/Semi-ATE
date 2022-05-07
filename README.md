@@ -38,7 +38,7 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 3rd party packages needed:
 
-[mosquitto](https://github.com/conda-forge/staged-recipes/pull/18387) : [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/mosquitto?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/mosquitto) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/mosquitto-feedstock?label=feedstock)](https://github.com/conda-forge/mosquitto-feedstock) 
+[mosquitto](https://github.com/conda-forge/staged-recipes/pull/18387) : [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/mosquitto?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/mosquitto)    [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/mosquitto-feedstock?label=feedstock)](https://github.com/conda-forge/mosquitto-feedstock) 
 
 
 
