@@ -36,6 +36,13 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 | [Semi-ATE-master-app](https://github.com/conda-forge/staged-recipes/pull/18864)       | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-master-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-master-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-master-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-master-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-master-app-feedsyock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-master-app-feedstock) |
 | [Semi-ATE-test-app](https://github.com/conda-forge/staged-recipes/pull/18865)         | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-test-app?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-test-app/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-test-app?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-test-app) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-test-app-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-test-app-feedstock) |
 
+3rd party packages needed:
+
+[mosquitto](https://github.com/conda-forge/staged-recipes/pull/18387) : [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/mosquitto?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/mosquitto) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/mosquitto-feedstock?label=feedstock)](https://github.com/conda-forge/mosquitto-feedstock) 
+
+
+
+
 ## Installation
 
 Installation of the packages can be achieved via `conda` or [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/#use-pip-for-installing).
