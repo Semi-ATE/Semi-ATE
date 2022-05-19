@@ -9,10 +9,10 @@ class Dummysct():
         return True
 
     def test_in_progress(self, site_id: int):
-        pass
+        print(f'Dummysct.test_in_progress({site_id})')
 
     def test_done(self, site_id: int, timeout: int):
-        pass
+        print(f'Dummysct.test_done({site_id})')
 
     def do_init_state(self, site_id: int):
-        pass
+        print(f'Dummysct.do_init_state({site_id})')
