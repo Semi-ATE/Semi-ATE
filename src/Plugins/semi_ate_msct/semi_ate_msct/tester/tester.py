@@ -22,5 +22,4 @@ class Tester(sct8):
 
     def do_init_state(self, site_id: int):
         print(f'Tester.do_init_state({site_id})')
-        self.init_hardware()
-        print('init sct8')
+
