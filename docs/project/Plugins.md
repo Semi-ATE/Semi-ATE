@@ -43,9 +43,9 @@ Where:
 
 
 #### Importers
-An importer is an object that is able to import a wafermap from a given (importer-specific) datasource and in a given format. E.g. ther might be an importer that imports data as .CSV value from a database.
+An importer is an object that is able to import a wafermap from a given (importer-specific) datasource and in a given format. E.g. there might be an importer that imports data as .CSV value from a database.
 
-```
+```Python
     get_importer_names() -> []
 ```
 

@@ -39,7 +39,7 @@ class ATEPlugin:
     def get_tester_names():
         pass
 
-    @hookimpl
+    @hookspec
     def get_tester_master_names():
         pass
 
