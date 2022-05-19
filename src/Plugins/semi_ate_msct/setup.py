@@ -13,7 +13,7 @@ with readme_path.open('r') as f:
     long_description = f.read()
 
 setup(
-    name="semi-ate-msct",
+    name="Semi-ATE-msct",
     version=version,
     description='semi_ate_msct is a plugin for semi-ate-spyder.',
     long_description=long_description,
