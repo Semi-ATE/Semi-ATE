@@ -1,11 +1,12 @@
 from ate_common.logger import Logger
+from ate_common.logger import LogLevel
 from ate_semiateplugins.hookspec import hookimpl
 
 from semi_ate_msct.tester.tester import Tester
 from semi_ate_msct.flatcache import flatcache
 
 
-__version__ = '0.0.0'
+__version__ = '0.0.1'
 
 
 class BusinessObjectStandin:
@@ -13,30 +14,29 @@ class BusinessObjectStandin:
         self.logger = logger
 
     def do_import(self):
-        print('do_import')
+        self.logger.log_message(LogLevel.Debug(),'BusinessObjectStandin semi-ate-msct do_import')
         return False
 
     def do_export(self):
-        print('do_export')
+        self.logger.log_message(LogLevel.Debug(),'BusinessObjectStandin semi-ate-msct do_export')
         return False
 
     def get_abort_reason(self):
         return "This is a standin object from MiniSCT without functionality"
 
     def set_mqtt_client(self, mqtt):
-        print('set_mqtt_client')
-        pass
+        self.logger.log_message(LogLevel.Debug(),'BusinessObjectStandin semi-ate-msct set_mqtt_client')
 
     def set_configuration_values(data):
         print('set_configuration_values')
-        pass
+
 
     def apply_configuration(self, data):
-        print("Configuration applied.")
+        Tester.init_hardware()
+        self.logger.log_message(LogLevel.Debug(), "BusinessObjectStandin semi-ate-msct Configuration applied.")
 
 
 class Plugin:
-    
 
     @staticmethod
     def prefix():
