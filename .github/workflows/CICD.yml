@@ -192,7 +192,7 @@ jobs:
           echo 'Check manifest of semi-ate-testers'
           check-manifest
 
-          cd ../Plugins/semi_ate_msct
+          cd ../semi_ate_msct
           echo 'Check manifest of semi-ate-msct'
           check-manifest
 
