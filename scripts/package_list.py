@@ -35,6 +35,11 @@ distribution_packages = [
         'namespace': 'semi_ate_testers'
     },
     {
+        'name': 'semi-ate-msct',
+        'dir': Path(git_root_folder, 'src/Plugins/semi_ate_msct'),
+        'namespace': 'semi_ate_msct'
+    },
+    {
         'name': 'semi-ate-apps-common',
         'dir': Path(git_root_folder, 'src/Apps/common'),
         'namespace': 'ate_apps_common'
