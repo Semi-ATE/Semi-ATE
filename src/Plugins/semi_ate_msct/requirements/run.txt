@@ -1,5 +1,0 @@
-semi-ate-common
-semi-ate-plugins
-# sct8-ml
-pluggy
-requests
