@@ -1,4 +1,0 @@
-semi-ate-common
-semi-ate-plugins
-pluggy
-requests
