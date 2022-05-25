@@ -127,4 +127,14 @@ The extension of spyder is achieved by the following packages:
 Next you can see the link between these packages in the context of extending spyder:
 <img src="./pictures/packages/spyder_ide.svg">
 
+### Single Tester
 
+There are two possibilities how to setup a _real_ tester. It depends whether the tester is used in a _production_ or _development_ context. The main difference is that in case of a development context the IDE _spyder_ and the _semi-ate-spyder_ packages need to be installed.
+
+<img src="./pictures/packages/single_tester.svg">
+
+### Parallel Tester
+
+This section shows the situation when several test sites are connected to a so-called _max controller_:
+
+<img src="./pictures/packages/parallel_tester.svg">
