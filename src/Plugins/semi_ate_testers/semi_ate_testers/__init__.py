@@ -6,6 +6,7 @@ from semi_ate_testers.master_testers.dummy_master_parallel_tester import DummyMa
 from semi_ate_testers.Flatcache import Flatcache
 from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
 from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
+
 class BusinessObjectStandin:
     def __init__(self, logger: Logger = None):
         self.logger = logger
@@ -84,11 +85,23 @@ class Plugin:
                 "manufacturer": "Semi-ATE",
                 "name": f"{Plugin.prefix()} Single Tester"
             },
-            {  
+            {
                 "display_name": f"{Plugin.prefix()} Parallel Tester",
                 "version": "0.0",
                 "manufacturer": "Semi-ATE",
                 "name": f"{Plugin.prefix()} Parallel Tester"
+            },
+            {
+                "display_name": f"{Plugin.prefix()} Mini-SCT ",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Mini-SCT"
+            },
+            {
+                "display_name": f"{Plugin.prefix()} Dummy Mini-SCT ",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Dummny Mini-SCT"
             }
         ]
 
@@ -136,6 +149,12 @@ class Plugin:
             return DummySingleTester()
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester()
+        elif tester_name == f"{Plugin.prefix()} Mini-SCT":
+            from semi_ate_testers.testers.minisct import MiniSCT
+            return MiniSCT()
+        elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
+            from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+            return DummyMiniSCT()
 
     @hookimpl
     def get_tester_master(tester_name: str):
