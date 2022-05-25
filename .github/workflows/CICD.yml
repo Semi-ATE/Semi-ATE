@@ -192,10 +192,6 @@ jobs:
           echo 'Check manifest of semi-ate-testers'
           check-manifest
 
-          cd ../semi_ate_msct
-          echo 'Check manifest of semi-ate-msct'
-          check-manifest
-
           cd ../../../../
 
       - name: Generate distribution sdist files
