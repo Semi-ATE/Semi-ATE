@@ -150,8 +150,14 @@ class Plugin:
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester()
         elif tester_name == f"{Plugin.prefix()} Mini-SCT":
-            from semi_ate_testers.testers.minisct import MiniSCT
-            return MiniSCT()
+            import platform
+            # Tester package for minisct hardware is not available on windows
+            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
+                from semi_ate_testers.testers.minisct import MiniSCT
+                return MiniSCT()
+            else:
+                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+                return DummyMiniSCT()
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
             return DummyMiniSCT()
