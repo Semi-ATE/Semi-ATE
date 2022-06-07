@@ -247,11 +247,9 @@ class TestProgram:
                 if out_param not in test_instance_name:
                     continue
 
-                pos = test_instance_name.find(out_param)
-                if pos == -1:
-                    continue
-
-                output_param_name = test_instance_name[pos: len(test_instance_name)]
+                # output parameter shall extracted as the last part of the test instance name
+                # (test instance name is constructed by the concatenation of the test name and the output parameter name)
+                output_param_name = test_instance_name[-len(out_param): len(test_instance_name)]
 
                 if output_param_name != out_param:
                     continue
