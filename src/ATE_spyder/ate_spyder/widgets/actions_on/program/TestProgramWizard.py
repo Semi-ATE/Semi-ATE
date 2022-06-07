@@ -645,7 +645,7 @@ class TestProgramWizard(BaseDialog):
             self.project_info.active_hardware,
             self.project_info.active_base
         )
-        if not self.temperature.text():
+        if not self._is_valid_temperature():
             return tests
 
         if self.sequencerType.currentText() == Sequencer.Static():
@@ -678,6 +678,9 @@ class TestProgramWizard(BaseDialog):
         self.sample_label.setVisible(is_visible)
         self.one_label.setVisible(is_visible)
 
+    def _is_valid_temperature(self):
+        return self.temperature.text() not in ['', '-']
+
     def _verify(self):
         success = True
         self.target_feedback.setText('')
@@ -701,7 +704,7 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.NoValidTestRange())
             success = False
 
-        if not self.temperature.text():
+        if not self._is_valid_temperature():
             self.temperature_feedback.setText(ErrorMessage.TemperatureNotValidated())
             success = False
 
