@@ -2,21 +2,25 @@
 ATE widget.
 """
 # Standard library imports
-import os
-
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QTreeView
 from qtpy.QtWidgets import QVBoxLayout
-from spyder.api.translations import get_translation
-from spyder.api.widgets.main_widget import PluginMainWidget
+from qtpy.QtWidgets import QDialog
 
+import os
+import shutil
+
+# Local imports
 from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
+
 # Third party imports
-# Local imports
+from spyder.api.translations import get_translation
+from spyder.api.widgets.main_widget import PluginMainWidget
+
 
 # Localization
 _ = get_translation('spyder')
@@ -154,13 +158,31 @@ class ATEWidget(PluginMainWidget):
 
     def create_project(self, project_path):
         print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
-        self.project_info(project_path)
-        new_project_dialog(self.project_info)
-        self.set_tree()
+        status = new_project_dialog(self.project_info, project_path)
 
-    def open_project(self, project_path):
+        # hack: as spyder automatically create an empty project even before semi-ate project validation done
+        # we need to clean up after canceling creating the project
+        if status == QDialog.DialogCode.Rejected:
+            shutil.rmtree(project_path)
+
+    def open_project(self, project_path, parent_instance):
         print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
-        self.project_info(project_path)
+        if not os.path.exists(project_path):
+            # hack: make sure to re-open with a valid project name
+            # while creating a new project spyder do not validate the project name the way semi-ate plugin is expecting it
+            # so we make spyder-ide load the project successfully created by semi-ate plugin
+            if not self.project_info.project_directory:
+                # spyder ide may recognize path changes done by semi-ate plugin
+                # so we clear up the interface by close the project for both the plugin and spyder
+                parent_instance.close_project()
+                self.close_project()
+                return
+
+            parent_instance.open_project(path=self.project_info.project_directory)
+        else:
+            # in case the project exist we only reload the project navigator with the new project path
+            self.project_info(project_path)
+
         self.toolbar(self.project_info)
         self.set_tree()
 
@@ -168,6 +190,7 @@ class ATEWidget(PluginMainWidget):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
         self.toolbar.clean_up()
         self.project_info.project_name = ''
+        self.project_info.project_directory = ''
         self.tree.setModel(None)
 
     def delete_test(self, path):
