@@ -15,15 +15,19 @@ from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpeti
 import os
 
 FILE_FILTER = '*.ate'
+TESTS_COLUMN = 0
 
 
 class TestContainerBase(BaseItem):
     def __init__(self, project_info, name, parent):
         super().__init__(project_info, name, parent=parent)
+        self.sortChildren(TESTS_COLUMN)
 
     def add_file_item(self, name, path):
         child = TestItemChild(os.path.splitext(name)[0], path, self, self.project_info)
         self.appendRow(child)
+        # reorder
+        self.sortChildren(TESTS_COLUMN)
 
     def _get_path(self):
         active_hardware = self.project_info.active_hardware
