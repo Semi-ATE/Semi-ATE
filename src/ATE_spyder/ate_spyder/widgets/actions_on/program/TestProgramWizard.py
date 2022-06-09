@@ -129,13 +129,17 @@ class TestProgramWizard(BaseDialog):
         self.availableTests.itemClicked.connect(self._available_test_selected)
         self.availableTests.itemSelectionChanged.connect(self._available_table_clicked)
 
-        self.parametersInput.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.parametersInput.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.parametersInput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.parametersInput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersInput.horizontalHeader().setStretchLastSection(True)
         self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
-        self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
         self.parametersInput.itemClicked.connect(self._input_param_table_clicked)
+
+        self.parametersOutput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersOutput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersOutput.horizontalHeader().setStretchLastSection(True)
+        self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
         self.parametersOutput.itemClicked.connect(self._output_param_table_clicked)
 
         self.testAdd.clicked.connect(lambda: self._move_test(Action.Right()))
@@ -494,14 +498,12 @@ class TestProgramWizard(BaseDialog):
             return
 
         row = selected[0].row()
-        if row == 0:
-            pass
-        else:
+        if row >= 1:
             test_name = self.selectedTests.item(row, 1).text()
             self._custom_parameter_handler.reorder_test(test_name, Action.Up())
-            self._switch_item_names(row, row - 1)
+            self._switch_row_content(row, row - 1)
+            self.selectedTests.selectRow(row - 1)
 
-        self.selectedTests.selectRow(row - 1)
         self.selectedTests.blockSignals(False)
 
     @QtCore.pyqtSlot()
@@ -514,23 +516,27 @@ class TestProgramWizard(BaseDialog):
         else:
             test_name = self.selectedTests.item(row, 1).text()
             self._custom_parameter_handler.reorder_test(test_name, Action.Down())
-            self._switch_item_names(row, row + 1)
+            self._switch_row_content(row, row + 1)
+            self.selectedTests.selectRow(row + 1)
 
         self.selectedTests.blockSignals(False)
-        self.selectedTests.selectRow(row + 1)
 
-    def _switch_item_names(self, row, next_row):
+    def _switch_row_content(self, row, next_row):
         item_base = self.selectedTests.takeItem(row, 0)
         item_instance = self.selectedTests.takeItem(row, 1)
+        item_selected_state = self.selectedTests.takeItem(row, 2)
 
         switch_item_base = self.selectedTests.takeItem(next_row, 0)
         switch_item_instance = self.selectedTests.takeItem(next_row, 1)
+        switch_item_selected_state = self.selectedTests.takeItem(next_row, 2)
 
         self.selectedTests.setItem(row, 0, switch_item_base)
         self.selectedTests.setItem(row, 1, switch_item_instance)
+        self.selectedTests.setItem(row, 2, switch_item_selected_state)
 
         self.selectedTests.setItem(next_row, 0, item_base)
         self.selectedTests.setItem(next_row, 1, item_instance)
+        self.selectedTests.setItem(next_row, 2, item_selected_state)
 
     @QtCore.pyqtSlot()
     def _remove_from_testprogram(self):
