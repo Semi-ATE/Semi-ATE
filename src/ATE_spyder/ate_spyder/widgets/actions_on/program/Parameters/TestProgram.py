@@ -105,7 +105,7 @@ class TestProgram:
 
     def remove_test(self, test_name: str):
         _, index = self.get_test(test_name)
-        if test is None:
+        if index is None:
             return {}
         self._tests.pop(index)
 

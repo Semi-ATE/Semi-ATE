@@ -1135,7 +1135,8 @@ class TestProgramWizard(BaseDialog):
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(test_instance_name)
             bin_items = self.binning_table.findItems(item.text(1), QtCore.Qt.MatchExactly)
             if not bin_items:
-                return
+                iterator += 1
+                continue
 
             row = bin_items[0].row()
             output.set_bin_infos(self.binning_table.item(row, 0).text(),

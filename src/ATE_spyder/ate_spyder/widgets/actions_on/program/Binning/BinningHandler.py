@@ -43,6 +43,7 @@ class BinningHandler:
             return
 
         elif item.column() == BinningColumns.SBin():
+            self.parent._update_feedback('')
             if self._bin_container.does_bin_num_exist(new_value):
                 self.parent._update_feedback('bin number is already occupied')
                 return
@@ -63,7 +64,7 @@ class BinningHandler:
                 self.parent._verify()
 
             except Exception:
-                self._update_feedback('soft bin must be of type integral')
+                self.parent._update_feedback('soft bin must be of type integral')
                 item.setText(old_value)
                 return
 

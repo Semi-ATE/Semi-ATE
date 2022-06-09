@@ -11,7 +11,7 @@ MAX_SBIN_NUM = 65535
 
 @dataclass
 class Bininfo:
-    bin_number: str = ''
+    bin_number: int = 0
     bin_name: str = ''
     bin_group: str = ''
     bin_description: str = ''
@@ -51,7 +51,7 @@ class OutputParameter(ParameterBase):
         self.format.set_value(param.format.get_value())
 
     def set_bin_infos(self, bin_name: str, bin_num: str, bin_group: str, bin_description: str):
-        self.bin_parameter.bin_number = bin_num
+        self.bin_parameter.bin_number = int(bin_num)
         self.bin_parameter.bin_name = bin_name
         self.bin_parameter.bin_group = bin_group
         self.bin_parameter.bin_description = bin_description
