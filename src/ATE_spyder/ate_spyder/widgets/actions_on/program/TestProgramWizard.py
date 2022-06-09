@@ -760,6 +760,9 @@ class TestProgramWizard(BaseDialog):
                 return False
 
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(item.text(0))
+            if output is None:
+                return True
+
             if not output.is_bin_parameter_valid():
                 return False
 
@@ -1124,8 +1127,11 @@ class TestProgramWizard(BaseDialog):
             item = iterator.value()
             test_instance_name = item.text(0)
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(test_instance_name)
-            bin_item = self.binning_table.findItems(item.text(1), QtCore.Qt.MatchExactly)[0]
-            row = bin_item.row()
+            bin_items = self.binning_table.findItems(item.text(1), QtCore.Qt.MatchExactly)
+            if not bin_items:
+                return
+
+            row = bin_items[0].row()
             output.set_bin_infos(self.binning_table.item(row, 0).text(),
                                  self.binning_table.item(row, 1).text(),
                                  self.binning_table.item(row, 2).text(),

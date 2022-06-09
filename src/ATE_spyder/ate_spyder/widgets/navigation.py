@@ -657,7 +657,9 @@ class ProjectNavigation(QObject):
 
     def get_test_temp_limits(self, test, hardware, base):
         test = self.get_test_table_content(test, hardware, base)
-        temp = test['input_parameters']['Temperature']
+        temp = test['input_parameters'].get('Temperature')
+        if temp is None:
+            return 0, 0
         return int(temp[InputColumnKey.MIN()]), int(temp[InputColumnKey.MAX()])
 
     def get_tests_from_db(self, hardware, base, test_type='all'):
