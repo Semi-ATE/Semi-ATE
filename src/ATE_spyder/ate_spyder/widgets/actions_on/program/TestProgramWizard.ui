@@ -1119,7 +1119,7 @@
                <widget class="QTableWidget" name="parametersOutput">
                 <property name="minimumSize">
                  <size>
-                  <width>600</width>
+                  <width>400</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1265,7 +1265,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>500</width>
+             <width>400</width>
              <height>0</height>
             </size>
            </property>

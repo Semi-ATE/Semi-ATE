@@ -85,7 +85,9 @@ class Context:
         instrument_dict['{{instrument}}'] = self.{{definition['InstrumentNames'][instrument]}}_instance
         {% endfor %}
 
+        {% if definition['Instruments'] %}
         apply_configuration(instrument_dict)
+        {% endif %}
 
         self.gp_dict = {}
         {% for gpfunction in definition['GPFunctions'] %}
@@ -96,7 +98,9 @@ class Context:
         self.gp_dict['{{gpfunction}}'] = self.{{definition['GPFunctionNames'][gpfunction]}}_instance
         {% endfor %}
 
+        {% if definition['GPFunctions'] %}
         apply_configuration(self.gp_dict)
+        {% endif %}
 
     def get_logger(self) -> Logger:
         return self.logger
