@@ -178,10 +178,10 @@ class ATEWidget(PluginMainWidget):
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
             # while creating a new project spyder do not validate the project name the way semi-ate plugin is expecting it
-            # so we make spyder-ide load the project successfully created by semi-ate plugin
+            # so we make spyder-ide load a project only if Semi-ATE Plugin approved it
             if not self.project_info.project_directory:
-                # spyder ide may recognize path changes done by semi-ate plugin
-                # so we clear up the interface by close the project for both the plugin and spyder
+                # spyder ide may not recognize path changes done by semi-ate plugin
+                # so we clear up the interface by closing the project for both the plugin and spyder
                 parent_instance.close_project()
                 self.close_project()
                 return False
@@ -190,7 +190,7 @@ class ATEWidget(PluginMainWidget):
             return True
         else:
             # in case the project exist we only reload the project navigator with the new project path
-            # but we still need to make sure that the project type is 'Semi-ATE'
+            # but we still need to make sure that the project type is 'Semi-ATE Project'
 
             # extract project type from workspace.ini inside .spydrproject folder
             default_spyder_project_configuration_file_relative_path = '.spyproject/config/workspace.ini'
@@ -215,6 +215,7 @@ class ATEWidget(PluginMainWidget):
                 # the 'project_type' key is valid in the current version of spyder(5.3.1)
                 # but any changes to the 'workspace.ini' file structure will break this check and
                 # we will never be able to open a Semi-ATE project!!
+                # (so maybe propagate this issue to spyder organization)
                 if 'project_type' in line and ATEProject.ID in line:
                     return True
         return False

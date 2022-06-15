@@ -275,8 +275,8 @@ class TestProgram:
                 if out_param not in test_instance_name:
                     continue
 
-                # output parameter shall extracted as the last part of the test instance name
-                # (test instance name is constructed by the concatenation of the test name and the output parameter name)
+                # output parameter shall be extracted from the last part of the test instance name
+                # (test instance name is constructed by concatenating the test name and the output parameter name)
                 output_param_name = test_instance_name[-len(out_param): len(test_instance_name)]
 
                 if output_param_name != out_param:

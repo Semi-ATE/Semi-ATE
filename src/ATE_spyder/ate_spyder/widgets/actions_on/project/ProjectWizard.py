@@ -54,7 +54,7 @@ class ProjectWizard(BaseDialog):
     def _validate_project_name(self):
         project_name = self.ProjectName.text()
         if not re.match(valid_name_regex, project_name):
-            self.Feedback.setText('project name in invalid')
+            self.Feedback.setText('project name is invalid')
             self.OKButton.setEnabled(False)
         else:
             self.Feedback.setText('')
