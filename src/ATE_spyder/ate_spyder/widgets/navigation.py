@@ -767,6 +767,9 @@ class ProjectNavigation(QObject):
     def get_program_names_for_group(self, group):
         return Group.get_programs_for_group(self.get_file_operator(), group)
 
+    def get_programs(self):
+        return Program.get_all(self.get_file_operator())
+
     def _get_tests_for_target(self, hardware, base, test_target):
         return [test.test for test in TestTarget.get_tests(self.get_file_operator(), hardware, base, test_target)]
 

@@ -12,7 +12,7 @@ from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
 class ToolbarItems:
-    HardwareLabel = 'hardware_labeñ'
+    HardwareLabel = 'hardware_label'
     HardwareCombo = 'hardware_combo'
     BaseLabel = 'base_label'
     BaseCombo = 'base_combo'
@@ -34,11 +34,11 @@ class ToolBar(ApplicationToolbar):
         self.active_base = ''
         self.active_target = ''
         self.project_info = project_info
-        print("FIXME: Set width for toolbar")
-        self.setFixedWidth(600)
+
+
+        self.extended_toolbar_items = []
 
         self._setup()
-        self.init_toolbar_items()
         self._connect_event_handler()
 
     def __call__(self, project_info):
@@ -57,24 +57,20 @@ class ToolBar(ApplicationToolbar):
         self.project_info.update_toolbar_elements(hardware, base, target)
         self.project_info.store_settings(hardware, base, target)
 
-    def init_toolbar_items(self):
-        run_action = self.parent.create_action(
-            name="rune",
-            text="RunE",
-            icon=self.parent.create_icon("run"),
-            triggered=self.parent.run_ate_project,
-        )
+    def add_external_toolbar_item(self, items: list):
+        self.extended_toolbar_items.extend(items)
 
-        # Add items to toolbar
-        for item in [run_action, self.hardware_label,
-                     self.hardware_combo, self.base_label, self.base_combo,
-                     self.target_label, self.target_combo, self.group_label,
-                     self.group_combo]:
-            self.parent.add_item_to_toolbar(
-                item,
-                self,
-                "run",
-            )
+    def get_standard_tooblar_items(self) -> list:
+        return [self.hardware_label, self.hardware_combo, self.base_label, self.base_combo,
+                self.target_label, self.target_combo, self.group_label, self.group_combo]
+
+    def toolbar_items(self):
+        self.extended_toolbar_items.extend(self.get_standard_tooblar_items())
+        return self.extended_toolbar_items
+
+    def build(self):
+        for item in self.toolbar_items():
+            self.parent.add_item_to_toolbar(item, self, "run")
 
     def _setup(self):
         self._setup_hardware()
@@ -95,8 +91,6 @@ class ToolBar(ApplicationToolbar):
         self.hardware_combo.clear()
         available_hardwares = self.project_info.get_active_hardware_names()
         self.hardware_combo.addItems(available_hardwares)
-        # for hw in available_hardwares:
-        #     self.hardware_combo.addItem(hw.name)
         self.active_hardware = '' if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
         self.hardware_combo.setCurrentIndex(0 if len(available_hardwares) == 0 else len(available_hardwares) - 1)
 
@@ -187,7 +181,6 @@ class ToolBar(ApplicationToolbar):
     @QtCore.pyqtSlot(str)
     def _target_selected(self, target):
         self.target_combo.setCurrentText(target)
-        # self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
 
     @QtCore.pyqtSlot(str, str, str)
     def _settings_update(self, hardware, base, target):
@@ -290,15 +283,6 @@ class ToolBar(ApplicationToolbar):
 
         self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
         self.target_combo.blockSignals(False)
-
-    def on_run(self):
-        print("run button pressed")
-
-    def info_pressed(self):
-        print("info button pressed")
-
-    def setting_pressed(self):
-        pass
 
     def _get_hardware(self):
         return self.hardware_combo.currentText()

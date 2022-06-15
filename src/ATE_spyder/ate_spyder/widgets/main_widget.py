@@ -56,6 +56,7 @@ class ATEWidget(PluginMainWidget):
     group_added = Signal(str)
     group_removed = Signal(str)
     groups_update = Signal(str, list)
+    init_done = Signal()
 
     def __init__(self, name=None, plugin=None, parent=None):
         super().__init__(name, plugin, parent=parent)
@@ -103,6 +104,8 @@ class ATEWidget(PluginMainWidget):
         """For now the run of an ATE project is not integrated in the global
         run button yet"""
         pass
+        # self.control(self.project_info)
+        # self.control.show()
 
     def context_menu_manager(self, point):
         # https://riverbankcomputing.com/pipermail/pyqt/2009-April/022668.html
@@ -185,6 +188,7 @@ class ATEWidget(PluginMainWidget):
 
         self.toolbar(self.project_info)
         self.set_tree()
+        self.init_done.emit()
 
     def close_project(self):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
