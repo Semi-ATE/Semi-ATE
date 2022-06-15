@@ -19,19 +19,21 @@ class TestProgram:
     def display_test(self, test_name: str, ip_box: QTableWidget, op_box: QTableWidget):
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return
         test.display(ip_box, op_box)
 
     def edit_input_parameter(self, test_name: str, ip_name: str, value_index: int, complete_cb: Callable):
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return None
+
         return test.edit_ip(ip_name, value_index, complete_cb)
 
     def edit_output_parameter(self, test_name: str, op_name: str, value_index: int, complete_cb: Callable):
         test, _index = self.get_test(test_name)
         if test is None:
-            return {}
+            return None
+
         return test.edit_op(op_name, value_index, complete_cb)
 
     def add_test(
@@ -100,13 +102,13 @@ class TestProgram:
     def update_test_name(self, test_name: str, new_name: str):
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return
         test.update_test_name(new_name)
 
     def remove_test(self, test_name: str):
         _, index = self.get_test(test_name)
         if index is None:
-            return {}
+            return
         self._tests.pop(index)
 
     def reorder_test(self, test_name: str, action: Action):
@@ -120,7 +122,7 @@ class TestProgram:
 
         _, index = self.get_test(test_name)
         if index is None:
-            return {}
+            return
         test = self._tests[index]
         self._tests.remove(test)
         self._tests.insert(index + reorder_index, test)
@@ -128,13 +130,14 @@ class TestProgram:
     def get_input_parameter(self, test_name: str, input_name: str) -> InputParameter:
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return None
         return test.get_input_parameter(input_name)
 
     def get_output_parameter(self, test_name: str, output_name: str) -> OutputParameter:
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return None
+
         return test.get_output_parameter(output_name)
 
     def get_test_inputs_parameters(self, test_name: str) -> dict:
@@ -148,6 +151,7 @@ class TestProgram:
         test, _ = self.get_test(test_name)
         if test is None:
             return {}
+
         return test.get_output_parameters()
 
     def get_tests_outputs_parameters(self) -> List:
@@ -190,6 +194,7 @@ class TestProgram:
         test, _ = self.get_test(test_name)
         if test is None:
             return {}
+
         return self._get_binning_structure(test)
 
     @staticmethod
@@ -260,8 +265,6 @@ class TestProgram:
 
     def is_valid_range(self, test, input_param, output_name):
         test, _ = self.get_test(test)
-        if test is None:
-            return {}
         return test.is_valid_range(input_param, output_name)
 
     def get_output_parameter_from_test_instance(self, test_instance_name: str) -> Optional[OutputParameter]:
@@ -297,7 +300,7 @@ class TestProgram:
     def update_test_selectability(self, test_name: str, selectable: bool):
         test, _ = self.get_test(test_name)
         if test is None:
-            return {}
+            return
         test.set_selectability(selectable)
 
     @property
