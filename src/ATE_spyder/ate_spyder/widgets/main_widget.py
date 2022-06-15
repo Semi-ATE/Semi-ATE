@@ -8,7 +8,9 @@ from qtpy.QtWidgets import QTreeView
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QDialog
 
+import json
 import os
+from pathlib import Path
 import shutil
 
 # Local imports
@@ -16,6 +18,7 @@ from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dial
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
+from ate_spyder.project import ATEProject
 
 # Third party imports
 from spyder.api.translations import get_translation
@@ -159,17 +162,19 @@ class ATEWidget(PluginMainWidget):
         # to make sure that any changes provoke new code generation do not override the own code
         self.sig_save_all.emit()
 
-    def create_project(self, project_path):
-        print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
+    def create_project(self, project_path) -> bool:
         status = new_project_dialog(self.project_info, project_path)
 
         # hack: as spyder automatically create an empty project even before semi-ate project validation done
         # we need to clean up after canceling creating the project
         if status == QDialog.DialogCode.Rejected:
             shutil.rmtree(project_path)
+            return False
 
-    def open_project(self, project_path, parent_instance):
-        print(f"main_widget : Opening ATE project '{os.path.basename(project_path)}'")
+        print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
+        return True
+
+    def open_project(self, project_path, parent_instance) -> bool:
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
             # while creating a new project spyder do not validate the project name the way semi-ate plugin is expecting it
@@ -179,16 +184,40 @@ class ATEWidget(PluginMainWidget):
                 # so we clear up the interface by close the project for both the plugin and spyder
                 parent_instance.close_project()
                 self.close_project()
-                return
+                return False
 
             parent_instance.open_project(path=self.project_info.project_directory)
+            return True
         else:
             # in case the project exist we only reload the project navigator with the new project path
-            self.project_info(project_path)
+            # but we still need to make sure that the project type is 'Semi-ATE'
 
-        self.toolbar(self.project_info)
-        self.set_tree()
-        self.init_done.emit()
+            # extract project type from workspace.ini inside .spydrproject folder
+            default_spyder_project_configuration_file_relative_path = '.spyproject/config/workspace.ini'
+            config_file_path = Path(project_path).joinpath(default_spyder_project_configuration_file_relative_path)
+            if not config_file_path.exists:
+                print("could not find configuration file 'workspace.init' ")
+                return False
+
+            if self._is_semi_ate_project(config_file_path):
+                self.project_info(project_path)
+
+                self.toolbar(self.project_info)
+                self.set_tree()
+                self.init_done.emit()
+                return True
+
+        return False
+
+    def _is_semi_ate_project(self, config_file_path: Path) -> bool:
+        with open(config_file_path, 'r') as file:
+            for line in file.readlines():
+                # the 'project_type' key is valid in the current version of spyder(5.3.1)
+                # but any changes to the 'workspace.ini' file structure will break this check and
+                # we will never be able to open a Semi-ATE project!!
+                if 'project_type' in line and ATEProject.ID in line:
+                    return True
+        return False
 
     def close_project(self):
         print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")

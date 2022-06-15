@@ -34,8 +34,6 @@ class ToolBar(ApplicationToolbar):
         self.active_base = ''
         self.active_target = ''
         self.project_info = project_info
-
-
         self.extended_toolbar_items = []
 
         self._setup()

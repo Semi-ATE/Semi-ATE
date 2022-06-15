@@ -98,15 +98,22 @@ class ATE(SpyderDockablePlugin):
     # --- ATE Plugin API
     # ------------------------------------------------------------------------
     def create_project(self, project_root):
-        print(f"Plugin : Creating ATE project '{os.path.basename(project_root)}'")
         self.project_root = project_root
-        self.get_widget().create_project(project_root)
+        if self.get_widget().create_project(project_root):
+            print(f"Plugin : Creating ATE project '{os.path.basename(project_root)}'")
 
     def open_project(self, project_root):
-        print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
         self.project_root = project_root
         projects = self.get_plugin(Plugins.Projects)
-        self.get_widget().open_project(project_root, projects)
+        # hide semi-ate toolbar if opening the project was not successful
+        if not self.get_widget().open_project(project_root, projects):
+            self.get_widget().hide()
+            self.get_widget().toolbar.hide()
+        else:
+            self.get_widget().show()
+            self.get_widget().toolbar.show()
+
+        print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
 
     def close_project(self):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
