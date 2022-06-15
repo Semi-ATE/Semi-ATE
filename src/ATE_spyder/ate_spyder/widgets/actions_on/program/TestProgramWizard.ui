@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1102</width>
-    <height>990</height>
+    <width>1266</width>
+    <height>878</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,12 @@
        </property>
        <item>
         <widget class="QLabel" name="label_5">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -43,6 +49,9 @@
          </property>
          <property name="text">
           <string>                  Name :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -543,7 +552,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>30</width>
+           <width>50</width>
            <height>22</height>
           </size>
          </property>
@@ -559,13 +568,13 @@
         <widget class="QLabel" name="temperature_feedback">
          <property name="minimumSize">
           <size>
-           <width>202</width>
+           <width>200</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>174</width>
+           <width>300</width>
            <height>16777215</height>
           </size>
          </property>
@@ -1426,6 +1435,12 @@
       <layout class="QHBoxLayout" name="buttonLayout">
        <item>
         <widget class="QPushButton" name="OKButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>OK</string>
          </property>
@@ -1449,6 +1464,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="CancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Cancel</string>
          </property>
