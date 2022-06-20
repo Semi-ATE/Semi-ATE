@@ -111,7 +111,7 @@ class ErrorMessage(Enum):
     ParameterNotValid = 'parameter are not valid'
     BinTableNotfilled = 'make sure to fill bin table'
     UserNameMissing = 'user naming is missing'
-    UserNameUsed = 'user name used already'
+    UserNameUsed = 'user defined name is already used'
 
     def __call__(self):
         return self.value

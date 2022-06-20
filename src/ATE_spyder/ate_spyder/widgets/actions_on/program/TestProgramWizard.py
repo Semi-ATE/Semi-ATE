@@ -729,7 +729,8 @@ class TestProgramWizard(BaseDialog):
         if self.enable_edit:
             group_names = [group.name for group in self.project_info.get_groups()]
             if self.owner_section_name in group_names:  # HACK: ignore qualification children, to be seen as groups
-                if self._generate_test_program_name(self._get_test_program_infos()[0]) in self.project_info.get_program_names_for_group(self.owner_section_name):
+                test_programs = [test_program_name.lower() for test_program_name in self.project_info.get_program_names_for_group(self.owner_section_name)]
+                if self._generate_test_program_name(self._get_test_program_infos()[0]).lower() in test_programs:
                     self._update_feedback(ErrorMessage.UserNameUsed())
                     success = False
 

@@ -1673,7 +1673,7 @@ class TestWizard(BaseDialog):
 
             # 7. Check if the test name already exists
             if not self.read_only and self._does_test_exist(test_name):
-                fb = "test name exists already"
+                fb = "test name already exists"
                 self.Feedback.setText(fb)
 
             if keyword.iskeyword(test_name):
@@ -1728,8 +1728,8 @@ class TestWizard(BaseDialog):
             self.Feedback.setText(f"attribute {attribute} in parameter {name} is invalid")
 
     def _does_test_exist(self, test_name):
-        tests = [test.name for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
-        if test_name in tests:
+        tests = [test.name.lower() for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
+        if test_name.lower() in tests:
             return True
 
         return False
