@@ -74,14 +74,14 @@ python -m pip install semi-ate-common semi-ate-project-database semi-ate-sammy s
 ### Installation via Conda
 
 ```Console
-conda -c conda-forge install semi-ate-common
-conda -c conda-forge install semi-ate-project-database
-conda -c conda-forge install semi-ate-sammy
-conda -c conda-forge install semi-ate-plugins
-conda -c conda-forge install semi-ate-testers
-conda -c conda-forge install semi-ate-spyder
-conda -c conda-forge install semi-ate-apps-common
-conda -c conda-forge install semi-ate-control-app
-conda -c conda-forge install semi-ate-master-app
-conda -c conda-forge install semi-ate-test-app
+conda install semi-ate-common
+conda install semi-ate-project-database
+conda install semi-ate-sammy
+conda install semi-ate-plugins
+conda install semi-ate-testers
+conda install semi-ate-spyder
+conda install semi-ate-apps-common
+conda install semi-ate-control-app
+conda install semi-ate-master-app
+conda install semi-ate-test-app
 ```
