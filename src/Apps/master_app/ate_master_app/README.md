@@ -32,7 +32,8 @@ Configuration of the master application is done by writing a JSON file called **
     "site_layout": { "0": [0, 0]},
     "tester_type": "Semi-ATE Master Single Tester",
     "loglevel": 10,
-    "web_root_folder": "./"
+    "web_root_folder": "./",
+    "develop_mode": false
 }
 ```
 
@@ -56,6 +57,7 @@ Configuration of the master application is done by writing a JSON file called **
 * `site_layout` defines for each site the layout. The layout is the start coordinate of some site
 * `tester_type` defines the type of he tester. This provided by the tester plugin.
 * `loglevel` defines the log-level of the control application
+* `develop_mode` defines wether the master application shall start in develop mode, such that it's possible to debug a test program within spyder (possible value: true or false)
 
 ### Starting the Master Application
 
@@ -70,3 +72,18 @@ We assume that the semi-ate-master-app package has been installed in the current
 master   |22/03/2022 04:45:37 PM |INFO    |mqtt connected
 master   |22/03/2022 04:45:37 PM |INFO    |Master state is connecting
 ```
+
+### Starting the Master Application in Develop Mode
+Setting the develop mode to 'true' shall start the master application in a different mode and different state
+
+
+```Console
+(environment)> launch_master
+======== Running on http://127.0.0.1:8081 ========
+(Press CTRL+C to quit)
+master   |21/06/2022 02:31:58 PM |INFO    |mqtt connected
+master   |21/06/2022 02:31:58 PM |INFO    |Master state is connecting
+master   |21/06/2022 02:31:58 PM |INFO    |Master state is loading
+```
+
+In Loading state, master application will wait till a test program started and is ready to accept further commands
