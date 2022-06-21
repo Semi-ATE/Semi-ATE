@@ -25,8 +25,8 @@ Configuration of the master application is done by writing a JSON file called **
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",
     "skip_jobdata_verification": false,
-    "filesystemdatasource.path": ".",
-    "filesystemdatasource.jobpattern": "le#jobname#.xml",
+    "filesystemdatasource_path": ".",
+    "filesystemdatasource_jobpattern": "le#jobname#.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
     "site_layout": { "0": [0, 0]},
@@ -49,8 +49,8 @@ Configuration of the master application is done by writing a JSON file called **
 * `jobsource` defines the location where to find test job definitions
 * `jobformat` defines the format of the job definitions
 * `skip_jobdata_verification` defines whether the job definition has to be verified
-* `filesystemdatasource.path` defines the path where to find job definitions
-* `filesystemdatasource.jobpattern` defines the pattern for the name of the test job file. This is done by replacing _#jobname#_ by the job id, i.e. the lot id.
+* `filesystemdatasource_path` defines the path where to find job definitions
+* `filesystemdatasource_jobpattern` defines the pattern for the name of the test job file. This is done by replacing _#jobname#_ by the job id, i.e. the lot id.
 * `enable_timeouts` defines whether or not timeouts are enabled. If enabled the system will produce some error message if certain things like becomming ready, loading or undloading a test program etc. take to much time.
 * `user_settings_filepath` defines where the user specific settings are stored. These settings are set via the web interface.
 * `site_layout` defines for each site the layout. The layout is the start coordinate of some site

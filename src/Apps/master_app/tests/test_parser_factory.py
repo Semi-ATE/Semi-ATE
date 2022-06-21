@@ -34,8 +34,8 @@ class TestParserFactory:
 
     def test_create_datasource_yields_filesystemdatasource_for_filesystem(self):
         config = {'jobsource': 'filesystem',
-                  'filesystemdatasource.path': '.',
-                  'filesystemdatasource.jobpattern': 'job'}
+                  'filesystemdatasource_path': '.',
+                  'filesystemdatasource_jobpattern': 'job'}
         parser = None
         datasource = parser_factory.CreateDataSource("somejob", config, parser, get_logger())
 
@@ -51,8 +51,8 @@ class TestParserFactory:
     def test_read_data_from_xml_file_file_does_not_exist(self):
         config = {'jobsource': 'filesystem',
                   'jobformat': 'xml.semi-ate',
-                  'filesystemdatasource.path': './tests/apps',
-                  'filesystemdatasource.jobpattern': 'ddd.xml'}
+                  'filesystemdatasource_path': './tests/apps',
+                  'filesystemdatasource_jobpattern': 'ddd.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
         datasource = parser_factory.CreateDataSource("306426.001", config, parser, get_logger())
@@ -63,8 +63,8 @@ class TestParserFactory:
     def test_read_data_from_xml_file_wrong_lot_number(self):
         config = {'jobsource': 'filesystem',
                   'jobformat': 'xml.semi-ate',
-                  'filesystemdatasource.path': BASE_PATH,
-                  'filesystemdatasource.jobpattern': 'le306426001.xml'}
+                  'filesystemdatasource_path': BASE_PATH,
+                  'filesystemdatasource_jobpattern': 'le306426001.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
         datasource = parser_factory.CreateDataSource("11111111", config, parser, get_logger())
@@ -78,8 +78,8 @@ class TestParserFactory:
         config = {'device_id': 'SCT_2121',
                   'jobsource': 'filesystem',
                   'jobformat': 'xml.semi-ate',
-                  'filesystemdatasource.path': BASE_PATH,
-                  'filesystemdatasource.jobpattern': 'le306426001.xml'}
+                  'filesystemdatasource_path': BASE_PATH,
+                  'filesystemdatasource_jobpattern': 'le306426001.xml'}
 
         parser = parser_factory.CreateParser(config['jobformat'])
         datasource = parser_factory.CreateDataSource("306426.001", config, parser, get_logger())
@@ -93,8 +93,8 @@ class TestParserFactory:
         config = {'device_id': DEVICE_ID,
                   'jobsource': 'filesystem',
                   'jobformat': 'xml.semi-ate',
-                  'filesystemdatasource.path': BASE_PATH,
-                  'filesystemdatasource.jobpattern': 'le306426001.xml',
+                  'filesystemdatasource_path': BASE_PATH,
+                  'filesystemdatasource_jobpattern': 'le306426001.xml',
                   'Handler': 'HTO92-20F',
                   'Environment': 'F1'}
 
@@ -110,8 +110,8 @@ class TestParserFactory:
         config = {'device_id': DEVICE_ID,
                   'jobsource': 'filesystem',
                   'jobformat': 'xml.semi-ate',
-                  'filesystemdatasource.path': BASE_PATH,
-                  'filesystemdatasource.jobpattern': 'le306426001.xml',
+                  'filesystemdatasource_path': BASE_PATH,
+                  'filesystemdatasource_jobpattern': 'le306426001.xml',
                   'Handler': 'invalid',
                   'Environment': 'F1'}
 

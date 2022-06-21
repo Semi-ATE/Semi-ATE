@@ -3,6 +3,7 @@ import asyncio
 from enum import Enum
 from ate_master_app.master_connection_handler import MasterConnectionHandler
 from ate_master_app.master_webservice import webservice_setup_app
+from ate_master_app.utils.master_configuration import MasterConfiguration
 
 class TaskType(Enum):
     Websocket = 'websocket'
@@ -14,7 +15,7 @@ class TaskType(Enum):
 
 
 class TaskHandler:
-    def __init__(self, parent: object, configuration: dict, connection_handler: MasterConnectionHandler, request_callback: callable, websocket_callback: callable):
+    def __init__(self, parent: object, configuration: MasterConfiguration, connection_handler: MasterConnectionHandler, request_callback: callable, websocket_callback: callable):
         self._connection_handler = connection_handler
         self._request_handler = request_callback
         self._websocket_handler = websocket_callback
@@ -47,11 +48,11 @@ class TaskHandler:
         return lambda app: task_ctx(app)
 
     def run(self):
-        web_root_path = self._configuration.get('webui_root_path')
+        web_root_path = self._configuration.webui_root_path
         webservice_setup_app(self.app, web_root_path)
         self.app.cleanup_ctx.append(self._run_task_callback(self._connection_handler))
         self.app.cleanup_ctx.append(self._create_task_callback(lambda app: self._websocket_handler(app)))
         self.app.cleanup_ctx.append(self._create_task_callback(lambda app: self._request_handler(app)))
-        host = self._configuration.get('webui_host', 'localhost')
-        port = self._configuration.get('webui_port', 8081)
+        host = self._configuration.webui_host
+        port = self._configuration.webui_port
         web.run_app(self.app, host=host, port=port)

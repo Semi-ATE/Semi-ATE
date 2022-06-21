@@ -1,4 +1,4 @@
-""" master App """
+# """ master App """
 
 # External imports
 from transitions.core import MachineError
@@ -17,6 +17,9 @@ from ate_master_app.parameter_parser import parser_factory
 from ate_master_app.user_settings import UserSettings
 from ate_master_app.utils.command_executor import (GetLogFileCommand, GetLogsCommand, GetLotData, GetTestResultsCommand, GetUserSettings,
                                                                   GetYields, GetBinTable)
+from ate_master_app.utils import ControlState, TestState
+
+from ate_master_app.utils.master_configuration import MasterConfiguration
 from ate_master_app.task_handler.task_handler import TaskHandler
 
 from ate_apps_common.stdf_aggregator import StdfTestResultAggregator
@@ -27,8 +30,6 @@ from ate_master_app.peripheral_controller import PeripheralController
 
 from ate_master_app.statemachines.MultiSite import (MultiSiteTestingModel, MultiSiteTestingMachine)
 from ate_master_app.execution_strategy.execution_strategy import IExecutionStrategy, get_execution_strategy
-from os import getcwd
-from pathlib import Path
 
 
 INTERFACE_VERSION = 1
@@ -68,17 +69,6 @@ def assert_valid_system_mimetypes_config():
               + ' Please fix your systems mimetypes configuration.')
         sys.exit(1)
 
-
-CONTROL_STATE_UNKNOWN = "unknown"
-CONTROL_STATE_LOADING = "loading"
-CONTROL_STATE_BUSY = "busy"
-CONTROL_STATE_IDLE = "idle"
-CONTROL_STATE_CRASH = "crash"
-
-TEST_STATE_IDLE = "idle"
-TEST_STATE_TESTING = "testing"
-TEST_STATE_CRASH = "crash"
-TEST_STATE_TERMINATED = "terminated"
 
 STARTUP_TIMEOUT = 300
 LOAD_TIMEOUT = 180
@@ -140,20 +130,30 @@ class MasterApplication(MultiSiteTestingModel):
 
     """ MasterApplication """
 
-    def __init__(self, configuration):
-        self.sites = configuration['sites']
+    def __init__(self, master_configuration: MasterConfiguration):
+        self.sites = master_configuration.sites
         super().__init__(self.sites)
-        self.fsm = Machine(model=self,
-                           states=MasterApplication.states,
-                           transitions=MasterApplication.transitions,
-                           initial="startup",
-                           after_state_change='publish_state')
-        self.configuration = configuration
+
+        self._setup_machine(self, MasterApplication.states, MasterApplication.transitions, 'startup', 'publish_state')
+        self.configuration = master_configuration
         self.log = Logger('master')
-        self.loglevel = LogLevel.Warning() if configuration.get('loglevel') is None else configuration['loglevel']
+
+        self.configuredSites = master_configuration.sites
+        # Sanity check for bad configurations:
+        if len(self.configuredSites) == 0:
+            self.log.log_message(LogLevel.Error(), 'Master got no sites assigned')
+            sys.exit()
+
+        self.device_id = master_configuration.device_id
+        self.broker_host = master_configuration.broker_host
+        self.broker_port = master_configuration.broker_port
+        self.enableTimeouts = master_configuration.enable_timeouts
+        self.handler_id = master_configuration.Handler
+        self.env = master_configuration.environment
+        self.loglevel = master_configuration.loglevel
         self.log.set_logger_level(self.loglevel)
-        self.apply_configuration(configuration)
-        self.init()
+        self.develop_mode = master_configuration.develop_mode
+
         self.connectionHandler = MasterConnectionHandler(self.broker_host, self.broker_port, self.configuredSites, self.device_id, self.handler_id, self)
         self.peripheral_controller = PeripheralController(self.connectionHandler.mqtt, self.device_id)
 
@@ -177,12 +177,21 @@ class MasterApplication(MultiSiteTestingModel):
         self._stdf_aggregator = None
         self.testing_sites = []
         self.test_num = 0
-        tester = self.get_tester(configuration['tester_type'])
+        tester = self.get_tester(master_configuration.tester_type)
         strategy_type = self.get_strategy_type(tester)
         self.testing_strategy: IExecutionStrategy = self.get_execution_strategy(strategy_type, tester)
 
         self.testing_event = asyncio.Event()
         self.layout = None
+
+        self.init()
+
+    def _setup_machine(self, model: 'MasterApplication', states: list, transitions: list, initial: str, after_state_change: str):
+        self.fsm = Machine(model=model,
+                           states=states,
+                           transitions=transitions,
+                           initial=initial,
+                           after_state_change=after_state_change)
 
     @staticmethod
     def get_strategy_type(tester):
@@ -203,37 +212,19 @@ class MasterApplication(MultiSiteTestingModel):
         return master_tester
 
     def init(self):
-        self.siteStates = {site_id: CONTROL_STATE_UNKNOWN for site_id in self.configuredSites}
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_IDLE], self.configuredSites, lambda: self.all_sites_detected(),
+        self.siteStates = {site_id: ControlState.Unknown for site_id in self.configuredSites}
+        self.pendingTransitionsControl = SequenceContainer([ControlState.Idle], self.configuredSites, lambda: self.all_sites_detected(),
                                                            lambda site, state: self.on_unexpected_control_state(site, state))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_IDLE], self.configuredSites, lambda: self.all_siteloads_complete(),
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
                                                         lambda site, state: self.on_unexpected_testapp_state(site, state))
         self.init_user_settings()
 
         self.timeoutHandle = None
         self.arm_timeout(STARTUP_TIMEOUT, lambda: self.timeout("Not all sites connected."))
 
-    def apply_configuration(self, configuration: dict):
-        try:
-            self.configuredSites = configuration['sites']
-            # Sanity check for bad configurations:
-            if len(self.configuredSites) == 0:
-                self.log.log_message(LogLevel.Error(), 'Master got no sites assigned')
-                sys.exit()
-
-            self.device_id = configuration['device_id']
-            self.broker_host = configuration['broker_host']
-            self.broker_port = configuration['broker_port']
-            self.enableTimeouts = configuration['enable_timeouts']
-            self.handler_id = configuration['Handler']
-            self.env = configuration['environment']
-        except KeyError as e:
-            self.log.log_message(LogLevel.Error(), f'Master got invalid configuration: {e}')
-            sys.exit()
-
     @property
     def user_settings_filepath(self):
-        return self.configuration.get("user_settings_filepath")
+        return self.configuration.user_settings_filepath
 
     @property
     def persistent_user_settings_enabled(self):
@@ -339,7 +330,7 @@ class MasterApplication(MultiSiteTestingModel):
     def on_allsitesdetected(self):
         # Trap any controls that misbehave and move out of the idle state.
         # In this case we want to move to error as well
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_IDLE], self.configuredSites, lambda: None,
+        self.pendingTransitionsControl = SequenceContainer([ControlState.Idle], self.configuredSites, lambda: None,
                                                            lambda site, state: self.on_error(f"Bad statetransition of control {site} during sync to {state}"))
         self.error_message = ''
         self.disarm_timeout()
@@ -358,7 +349,7 @@ class MasterApplication(MultiSiteTestingModel):
         jobname = param_data['lot_number']
         self.loaded_lot_number = str(jobname)
 
-        jobformat = self.configuration.get('jobformat')
+        jobformat = self.configuration.jobformat
         parser = parser_factory.CreateParser(jobformat)
         source = parser_factory.CreateDataSource(jobname,
                                                  self.configuration,
@@ -370,13 +361,13 @@ class MasterApplication(MultiSiteTestingModel):
             self.load_error()
             return
 
-        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.loaded_lot_number, self.loaded_lot_number, self.sites)
+        self._stdf_aggregator = StdfTestResultAggregator(self.device_id + ".Master", self.sites, self.loaded_lot_number, self.loaded_lot_number)
         self._stdf_aggregator.set_test_program_data(test_program_data)
 
         self.arm_timeout(LOAD_TIMEOUT, lambda: self.timeout("not all sites loaded the testprogram"))
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_LOADING, CONTROL_STATE_BUSY], self.configuredSites, lambda: None,
+        self.pendingTransitionsControl = SequenceContainer([ControlState.Loading, ControlState.Busy], self.configuredSites, lambda: None,
                                                            lambda site, state: self.on_error(f"Bad statetransition of control {site} during load to {state}"))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_IDLE], self.configuredSites, lambda: self.all_siteloads_complete(),
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during load to {state}"))
         self.error_message = ''
 
@@ -387,7 +378,7 @@ class MasterApplication(MultiSiteTestingModel):
 
     def set_test_data(self, source: object):
         test_program_data = {}
-        if self.configuration.get('skip_jobdata_verification', False):
+        if self.configuration.skip_jobdata_verification:
             return None
         else:
             param_data = source.retrieve_data()
@@ -422,7 +413,7 @@ class MasterApplication(MultiSiteTestingModel):
             'bin_table': data['BINTABLE']                                                           # optional/unused for now
         }
 
-    def on_allsiteloads_complete(self, paramData=None):
+    def on_allsiteloads_complete(self, _paramData=None):
         self.error_message = ''
         self.disarm_timeout()
 
@@ -433,7 +424,7 @@ class MasterApplication(MultiSiteTestingModel):
         # if handler is not connected, the tester layout should be stored
         # in the master configuration file
         if self.layout is None:
-            self._set_layout(self.configuration['site_layout'])
+            self._set_layout(self.configuration.site_layout)
 
         self.connectionHandler.send_get_execution_strategy_command(self.layout)
 
@@ -470,9 +461,10 @@ class MasterApplication(MultiSiteTestingModel):
             self.command_queue.put_nowait(GetLotData(lambda: self._generate_lot_data_message()))
 
         self.received_site_test_results = []
-        self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TESTING, TEST_STATE_IDLE], self.configuredSites, lambda: None,
+        self.arm_timeout(5, lambda: self.timeout("not all sites respond to next command"))
+        self.pendingTransitionsTest = SequenceContainer([TestState.Testing], self.configuredSites, self.on_test_app_response_to_mext_command,
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
+
         self.error_message = ''
 
         settings = self.user_settings.copy()
@@ -486,6 +478,11 @@ class MasterApplication(MultiSiteTestingModel):
         settings.update(self._extract_sites_information(param_data))
         self.connectionHandler.send_next_to_all_sites(settings)
 
+    def on_test_app_response_to_mext_command(self):
+        self.disarm_timeout()
+        self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: None,
+                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
         self.testing_event.set()
 
     def _extract_sites_information(self, parameters):
@@ -522,9 +519,9 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_unload_command_issued(self, param_data: dict):
         self.arm_timeout(UNLOAD_TIMEOUT, lambda: self.timeout("not all sites unloaded the testprogram"))
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_IDLE], self.configuredSites, lambda: self.all_siteunloads_complete(),
+        self.pendingTransitionsControl = SequenceContainer([ControlState.Idle], self.configuredSites, lambda: self.all_siteunloads_complete(),
                                                            lambda site, state: self.on_error(f"Bad statetransition of control {site} during unload to {state}"))
-        self.pendingTransitionsTest = SequenceContainer([TEST_STATE_TERMINATED], self.configuredSites, lambda: None, lambda site, state: None)
+        self.pendingTransitionsTest = SequenceContainer([TestState.Terminated], self.configuredSites, lambda: None, lambda site, state: None)
         self.error_message = ''
         self.connectionHandler.send_terminate_to_all_sites()
         self.handle_reset_command()
@@ -532,7 +529,7 @@ class MasterApplication(MultiSiteTestingModel):
 
     def on_reset_received(self, param_data: dict):
         self.arm_timeout(UNLOAD_TIMEOUT, lambda: self.timeout("not all sites do report state idle after reset"))
-        self.pendingTransitionsControl = SequenceContainer([CONTROL_STATE_IDLE], self.configuredSites, lambda: self.all_sites_detected(),
+        self.pendingTransitionsControl = SequenceContainer([ControlState.Idle], self.configuredSites, lambda: self.all_sites_detected(),
                                                            lambda site, state: self.on_unexpected_control_state(site, state))
 
         self.pendingTransitionsTest = None
@@ -592,10 +589,11 @@ class MasterApplication(MultiSiteTestingModel):
 
         self.received_sites_test_results.append(payload)
         self.received_site_test_results.append(param_data)
-        success, msg = self._result_info_handler.handle_result(prr_record)
+        if not self.develop_mode:
+            success, msg = self._result_info_handler.handle_result(prr_record)
 
-        if not success:
-            self.on_error(msg)
+            if not success:
+                self.on_error(msg)
 
         self.test_results.append(self._result_info_handler.get_site_result_response(prr_record))
 
@@ -715,8 +713,8 @@ class MasterApplication(MultiSiteTestingModel):
             self.on_error(f'cannot trigger command "{cmd}" from state "{self.fsm.model.state}"')
 
     def _send_host_link(self):
-        port = self.configuration['webui_port']
-        host = self.configuration['webui_host']
+        port = self.configuration.webui_port
+        host = self.configuration.webui_host
 
         self.connectionHandler.send_host_info(host, port)
 

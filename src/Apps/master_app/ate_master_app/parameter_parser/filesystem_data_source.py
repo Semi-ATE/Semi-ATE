@@ -1,22 +1,24 @@
 from ate_common.program_utils import BinTableFieldName
-from ate_common.logger import LogLevel
+from ate_common.logger import LogLevel, Logger
 import os
 import re
 
+from ate_master_app.utils.master_configuration import MasterConfiguration
+
 
 class FileSystemDataSource:
-    def __init__(self, jobname, configuration, parser, logger):
+    def __init__(self, jobname: str, configuration: MasterConfiguration, parser: object, logger: Logger):
         self.parser = parser
-        self.configuration = configuration.get('jobformat')
-        self.device_id = configuration.get('device_id')
-        self.device_handler = configuration.get("Handler")
-        self.device_environment = configuration.get("Environment")
+        self.configuration = configuration.jobformat
+        self.device_id = configuration.device_id
+        self.device_handler = configuration.Handler
+        self.device_environment = configuration.environment
 
-        self.path = configuration['filesystemdatasource.path']
+        self.path = configuration.filesystemdatasource_path
         # the jobpattern defines a pattern for
         # the filename, e.g. le#jobname#.xml
         self.lot_number = jobname
-        self.jobname = configuration['filesystemdatasource.jobpattern'].\
+        self.jobname = configuration.filesystemdatasource_jobpattern.\
             replace("#jobname#", jobname)
 
         self.log = logger

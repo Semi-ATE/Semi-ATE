@@ -1,6 +1,8 @@
 """ master application """
 # from common.application import Application
 from ate_master_app.master_application import MasterApplication, assert_valid_system_mimetypes_config
+from ate_master_app.master_application_dev_mode import MasterApplicationDevMode
+from ate_master_app.utils.master_configuration import MasterConfiguration
 from ate_apps_common import configuration_reader
 from argparse import ArgumentParser
 
@@ -32,9 +34,13 @@ def launch_master(*, config_file_path=None, user_config_dict=None):
     assert_valid_system_mimetypes_config()
 
     cfg = configuration_reader.ConfigReader(config_file_path)
-    configuration = cfg.get_configuration_ex(user_config_dict=user_config_dict)
+    config_dict = cfg.get_configuration_ex(user_config_dict=user_config_dict)
+    configuration = MasterConfiguration(**config_dict)
 
-    f = MasterApplication(configuration)
+    if configuration.develop_mode:
+        f = MasterApplicationDevMode(configuration)
+    else:
+        f = MasterApplication(configuration)
     f.run()
 
 
