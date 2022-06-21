@@ -18,7 +18,7 @@ class MasterConfiguration(BaseModel):
     filesystemdatasource_jobpattern: str
     skip_jobdata_verification: bool = False
     enable_timeouts: int
-    user_settings_filepath: str
+    user_settings_filepath: str = None
     site_layout: list
     tester_type: str
     loglevel: int = LogLevel.Warning()

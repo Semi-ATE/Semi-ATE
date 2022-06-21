@@ -5,6 +5,7 @@ import os
 from tests.utils import (create_xml_file, DEVICE_ID)
 from ate_master_app import master_application
 from ate_master_app import master_connection_handler
+from ate_master_app.utils.master_configuration import MasterConfiguration
 
 LOT_NUMBER = '306426.001'
 WRONG_LOT_NUMBER = '000000.000'
@@ -16,16 +17,8 @@ XML_PATH_NEW = os.path.join(FILE_PATH, 'le306426001.xml')
 # this will generate the desired xml file and must be called before running the tests
 create_xml_file(XML_PATH, XML_PATH_NEW, DEVICE_ID)
 
-
-class Tester:
-    def __init__(self):
-        pass
-
-    def release_test_execution(self, sites: List[str]):
-        pass
-
-    def get_strategy_type(self):
-        return 'default'
+DEVICE_ID = 'SCT-82-1F'
+FILE_PATH = os.path.dirname(__file__)
 
 
 def default_configuration():
@@ -43,14 +36,29 @@ def default_configuration():
             'Handler': "HTO92-20F",
             'tester_type': 'Semi-ATE Master Parallel Tester',
             "site_layout": {"0": [0, 1], "1": [1, 2]},
-            "user_settings_filepath": "master_user_settings.json"}
+            'user_settings_filepath': 'master_user_settings.json',
+            'webui_root_path': '',
+            'webui_host': '',
+            'webui_port': 0,
+            'site_layout': [],
+            'develop_mode': False} 
+
+class Tester:
+    def __init__(self):
+        pass
+
+    def release_test_execution(self, sites: List[str]):
+        pass
+
+    def get_strategy_type(self):
+        return 'default'
 
 
 @pytest.fixture
 def master_app():
     with mock.patch('ate_master_app.master_application.MasterApplication.get_tester', return_value=Tester()):
         cfg = default_configuration()
-        yield master_application.MasterApplication(cfg)
+        yield master_application.MasterApplication(MasterConfiguration(**cfg))
 
 
 class TestApplication:
@@ -74,10 +82,10 @@ class TestApplication:
 
     def test_masterapp_missed_broker_field_configuration(self):
         cfg = default_configuration()
-        cfg.pop("broker_host")
-        with pytest.raises(SystemExit):
-            with pytest.raises(KeyError):
-                _ = master_application.MasterApplication(cfg)
+        cfg.pop("device_id")
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            _ = master_application.MasterApplication(MasterConfiguration(**cfg))
 
     def trigger_test_resource_change(self, app: master_application.MasterApplication, site: str, request_default_config: bool):
         custom_config = {
@@ -207,7 +215,7 @@ class TestApplication:
         cfg = default_configuration()
         cfg['sites'] = []
         with pytest.raises(SystemExit):
-            _ = master_application.MasterApplication(cfg)
+            _ = master_application.MasterApplication(MasterConfiguration(**cfg))
 
     def test_masterapp_site_with_bad_interfaceversion_connects_triggers_error(self, master_app):
         self.app.startup_done()
