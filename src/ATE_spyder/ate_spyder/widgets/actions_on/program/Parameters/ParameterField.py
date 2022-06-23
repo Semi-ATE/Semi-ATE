@@ -35,13 +35,22 @@ class ParameterField:
         return self._editable
 
     def __lt__(self, rhs):
-        return float(self._value) < float(rhs)
+        return self._get_value(self._value) < self._get_value(rhs)
 
     def __le__(self, rhs):
-        return float(self._value) <= float(rhs)
+        return self._get_value(self._value) <= self._get_value(rhs)
 
     def __gt__(self, rhs):
-        return float(self._value) > float(rhs)
+        return self._get_value(self._value) > self._get_value(rhs)
 
     def __ge__(self, rhs):
-        return float(self._value) >= float(rhs)
+        return self._get_value(self._value) >= self._get_value(rhs)
+    
+    def _get_value(self, value: str) -> float:
+        if value == '':
+            return float(0)
+        
+        if value == '-':
+            return float(-0)
+        
+        return float(value)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1102</width>
-    <height>897</height>
+    <width>1266</width>
+    <height>878</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,12 @@
        </property>
        <item>
         <widget class="QLabel" name="label_5">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -43,6 +49,9 @@
          </property>
          <property name="text">
           <string>                  Name :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -543,7 +552,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>30</width>
+           <width>50</width>
            <height>22</height>
           </size>
          </property>
@@ -559,13 +568,13 @@
         <widget class="QLabel" name="temperature_feedback">
          <property name="minimumSize">
           <size>
-           <width>202</width>
+           <width>200</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>174</width>
+           <width>300</width>
            <height>16777215</height>
           </size>
          </property>
@@ -651,6 +660,9 @@
      </item>
      <item>
       <widget class="QTabWidget" name="tab_layout">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -940,7 +952,7 @@
               <item>
                <widget class="QLabel" name="parametersInputLabel">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -948,14 +960,19 @@
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>22</height>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>16777215</width>
-                  <height>22</height>
+                  <height>50</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Call Values:</string>
@@ -967,6 +984,12 @@
               </item>
               <item>
                <widget class="QTableWidget" name="parametersInput">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="textElideMode">
                  <enum>Qt::ElideNone</enum>
                 </property>
@@ -1079,7 +1102,7 @@
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>22</height>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="maximumSize">
@@ -1087,6 +1110,11 @@
                   <width>16777215</width>
                   <height>22</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Limits:</string>
@@ -1098,6 +1126,12 @@
               </item>
               <item>
                <widget class="QTableWidget" name="parametersOutput">
+                <property name="minimumSize">
+                 <size>
+                  <width>400</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="textElideMode">
                  <enum>Qt::ElideMiddle</enum>
                 </property>
@@ -1240,13 +1274,13 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>264</width>
+             <width>400</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>300</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -1401,6 +1435,12 @@
       <layout class="QHBoxLayout" name="buttonLayout">
        <item>
         <widget class="QPushButton" name="OKButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>OK</string>
          </property>
@@ -1424,6 +1464,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="CancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Cancel</string>
          </property>

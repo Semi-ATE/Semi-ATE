@@ -450,6 +450,9 @@ class HardwareWizard(BaseDialog):
         item = table.item(function_row, 2)
         function_name = item.text()
         cfgs = get_plugin_manager().hook.get_configuration_options(object_name=function_name)[0]
+        if not isinstance(cfgs, list):
+            return
+
         from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
         current_config = self._plugin_configurations.get(function_name)
         dialog = PluginConfigurationDialog(self, function_name, cfgs, self.hardware.text(), self.project_info, current_config, self.is_read_only)

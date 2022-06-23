@@ -1,3 +1,4 @@
+from pathlib import Path
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.actions_on.model.TreeModel import TreeModel
 from ate_spyder.widgets.actions_on.project.ProjectWizard import ProjectWizard
@@ -163,7 +164,7 @@ def model(project_navigation):
 
 @pytest.fixture
 def project(qtbot, project_navigation):
-    dialog = ProjectWizard(project_navigation)
+    dialog = ProjectWizard(project_navigation, Path(__file__).parent.joinpath(PROJECT_NAME))
     qtbot.addWidget(dialog)
     return dialog
 

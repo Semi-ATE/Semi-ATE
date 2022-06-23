@@ -129,13 +129,17 @@ class TestProgramWizard(BaseDialog):
         self.availableTests.itemClicked.connect(self._available_test_selected)
         self.availableTests.itemSelectionChanged.connect(self._available_table_clicked)
 
-        self.parametersInput.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.parametersInput.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.parametersInput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.parametersInput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersInput.horizontalHeader().setStretchLastSection(True)
         self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
-        self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
         self.parametersInput.itemClicked.connect(self._input_param_table_clicked)
+
+        self.parametersOutput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersOutput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
+        self.parametersOutput.horizontalHeader().setStretchLastSection(True)
+        self.parametersOutput.itemDoubleClicked.connect(self._double_click_handler_output_param)
         self.parametersOutput.itemClicked.connect(self._output_param_table_clicked)
 
         self.testAdd.clicked.connect(lambda: self._move_test(Action.Right()))
@@ -494,14 +498,12 @@ class TestProgramWizard(BaseDialog):
             return
 
         row = selected[0].row()
-        if row == 0:
-            pass
-        else:
+        if row >= 1:
             test_name = self.selectedTests.item(row, 1).text()
             self._custom_parameter_handler.reorder_test(test_name, Action.Up())
-            self._switch_item_names(row, row - 1)
+            self._switch_row_content(row, row - 1)
+            self.selectedTests.selectRow(row - 1)
 
-        self.selectedTests.selectRow(row - 1)
         self.selectedTests.blockSignals(False)
 
     @QtCore.pyqtSlot()
@@ -514,23 +516,27 @@ class TestProgramWizard(BaseDialog):
         else:
             test_name = self.selectedTests.item(row, 1).text()
             self._custom_parameter_handler.reorder_test(test_name, Action.Down())
-            self._switch_item_names(row, row + 1)
+            self._switch_row_content(row, row + 1)
+            self.selectedTests.selectRow(row + 1)
 
         self.selectedTests.blockSignals(False)
-        self.selectedTests.selectRow(row + 1)
 
-    def _switch_item_names(self, row, next_row):
+    def _switch_row_content(self, row, next_row):
         item_base = self.selectedTests.takeItem(row, 0)
         item_instance = self.selectedTests.takeItem(row, 1)
+        item_selected_state = self.selectedTests.takeItem(row, 2)
 
         switch_item_base = self.selectedTests.takeItem(next_row, 0)
         switch_item_instance = self.selectedTests.takeItem(next_row, 1)
+        switch_item_selected_state = self.selectedTests.takeItem(next_row, 2)
 
         self.selectedTests.setItem(row, 0, switch_item_base)
         self.selectedTests.setItem(row, 1, switch_item_instance)
+        self.selectedTests.setItem(row, 2, switch_item_selected_state)
 
         self.selectedTests.setItem(next_row, 0, item_base)
         self.selectedTests.setItem(next_row, 1, item_instance)
+        self.selectedTests.setItem(next_row, 2, item_selected_state)
 
     @QtCore.pyqtSlot()
     def _remove_from_testprogram(self):
@@ -645,7 +651,7 @@ class TestProgramWizard(BaseDialog):
             self.project_info.active_hardware,
             self.project_info.active_base
         )
-        if not self.temperature.text():
+        if not self._is_valid_temperature():
             return tests
 
         if self.sequencerType.currentText() == Sequencer.Static():
@@ -678,6 +684,9 @@ class TestProgramWizard(BaseDialog):
         self.sample_label.setVisible(is_visible)
         self.one_label.setVisible(is_visible)
 
+    def _is_valid_temperature(self):
+        return self.temperature.text() not in ['', '-']
+
     def _verify(self):
         success = True
         self.target_feedback.setText('')
@@ -701,7 +710,7 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback(ErrorMessage.NoValidTestRange())
             success = False
 
-        if not self.temperature.text():
+        if not self._is_valid_temperature():
             self.temperature_feedback.setText(ErrorMessage.TemperatureNotValidated())
             success = False
 
@@ -720,7 +729,8 @@ class TestProgramWizard(BaseDialog):
         if self.enable_edit:
             group_names = [group.name for group in self.project_info.get_groups()]
             if self.owner_section_name in group_names:  # HACK: ignore qualification children, to be seen as groups
-                if self._generate_test_program_name(self._get_test_program_infos()[0]) in self.project_info.get_program_names_for_group(self.owner_section_name):
+                test_programs = [test_program_name.lower() for test_program_name in self.project_info.get_program_names_for_group(self.owner_section_name)]
+                if self._generate_test_program_name(self._get_test_program_infos()[0]).lower() in test_programs:
                     self._update_feedback(ErrorMessage.UserNameUsed())
                     success = False
 
@@ -757,6 +767,9 @@ class TestProgramWizard(BaseDialog):
                 return False
 
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(item.text(0))
+            if output is None:
+                return True
+
             if not output.is_bin_parameter_valid():
                 return False
 
@@ -1121,8 +1134,12 @@ class TestProgramWizard(BaseDialog):
             item = iterator.value()
             test_instance_name = item.text(0)
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(test_instance_name)
-            bin_item = self.binning_table.findItems(item.text(1), QtCore.Qt.MatchExactly)[0]
-            row = bin_item.row()
+            bin_items = self.binning_table.findItems(item.text(1), QtCore.Qt.MatchExactly)
+            if not bin_items:
+                iterator += 1
+                continue
+
+            row = bin_items[0].row()
             output.set_bin_infos(self.binning_table.item(row, 0).text(),
                                  self.binning_table.item(row, 1).text(),
                                  self.binning_table.item(row, 2).text(),

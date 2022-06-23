@@ -657,7 +657,7 @@ class ProjectNavigation(QObject):
 
     def get_test_temp_limits(self, test, hardware, base):
         test = self.get_test_table_content(test, hardware, base)
-        temp = test['input_parameters']['Temperature']
+        temp = test['input_parameters'].get('Temperature')
         return int(temp[InputColumnKey.MIN()]), int(temp[InputColumnKey.MAX()])
 
     def get_tests_from_db(self, hardware, base, test_type='all'):
@@ -764,6 +764,9 @@ class ProjectNavigation(QObject):
 
     def get_program_names_for_group(self, group):
         return Group.get_programs_for_group(self.get_file_operator(), group)
+
+    def get_programs(self):
+        return Program.get_all(self.get_file_operator())
 
     def _get_tests_for_target(self, hardware, base, test_target):
         return [test.test for test in TestTarget.get_tests(self.get_file_operator(), hardware, base, test_target)]
