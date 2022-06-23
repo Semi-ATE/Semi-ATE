@@ -61,7 +61,7 @@ class ATE(SpyderDockablePlugin):
         widget = self.get_widget()
         toolbar = self.get_plugin(Plugins.Toolbar)
 
-        # extend semi-ate toolbar with labml extension (written by Christian Jung)
+        # extend semi-ate toolbar with labml extension (written by Zlin526F)
         lab_ml_package_name = 'labml-adjutancy'
         import pkg_resources
         packages = [pkg.key for pkg in pkg_resources.working_set]
@@ -69,9 +69,9 @@ class ATE(SpyderDockablePlugin):
             from labml_adjutancy.ctrl.toolbar import ControlToolBar
             control_toolbar = ControlToolBar(widget, "ATE Plugin control toolbar")
             widget.toolbar.add_external_toolbar_item(control_toolbar.get_items())
-            widget.toolbar.build()
 
         toolbar.add_application_toolbar(widget.toolbar)
+        widget.toolbar.build()
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):

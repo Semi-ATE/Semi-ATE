@@ -643,6 +643,18 @@
       <layout class="QHBoxLayout" name="buttonLayout">
        <item>
         <widget class="QPushButton" name="OKButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>OK</string>
          </property>
@@ -666,6 +678,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="CancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Cancel</string>
          </property>
