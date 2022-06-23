@@ -240,6 +240,7 @@ class TestprogramTreeItem(BaseItem):
         menu = [MenuActionTypes.Edit(),
                 MenuActionTypes.View(),
                 MenuActionTypes.CopyPath(),
+                MenuActionTypes.OpenFile(),
                 None,
                 MenuActionTypes.Delete()]
 
@@ -255,6 +256,10 @@ class TestprogramTreeItem(BaseItem):
             return False
 
         return True
+
+    def open_file_item(self):
+        path = self.project_info._generate_program_path(self.program_name)
+        self.model().edit_file.emit(str(path))
 
     def edit_item(self):
         import ate_spyder.widgets.actions_on.program.EditTestProgramWizard as edit

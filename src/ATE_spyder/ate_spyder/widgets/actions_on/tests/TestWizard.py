@@ -462,8 +462,8 @@ class TestWizard(BaseDialog):
              lambda: multiplierSetter('f', 'femto=10⁻¹⁵')),
             ('p (pico=10⁻¹²)',
              lambda: multiplierSetter('p', 'pico=10⁻¹²')),
-            ('η (nano=10⁻⁹)',
-             lambda: multiplierSetter('η', 'nano=10⁻⁹')),
+            ('n (nano=10⁻⁹)',
+             lambda: multiplierSetter('n', 'nano=10⁻⁹')),
             ('μ (micro=10⁻⁶)',
              lambda: multiplierSetter('μ', 'micro=10⁻⁶')),
             ('m (mili=10⁻³)',
@@ -626,7 +626,10 @@ class TestWizard(BaseDialog):
                 self.inputParameterMoveUp.setEnabled(True)
             else:
                 self.inputParameterMoveUp.setEnabled(False)
-            self.inputParameterDelete.setEnabled(True)
+
+            if selectedRow != 0:
+                self.inputParameterDelete.setEnabled(True)
+
             if selectedRow < lastRow:
                 self.inputParameterMoveDown.setEnabled(True)
             else:
@@ -886,6 +889,9 @@ class TestWizard(BaseDialog):
     # name
         name_item.setData(name, QtCore.Qt.DisplayRole)  # https://doc.qt.io/qt-5/qt.html#ItemDataRole-enum
         name_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
+
+        if name == 'Temperature':  # Shmoo is always enabled, user can not change
+            name_item.setFlags(QtCore.Qt.NoItemFlags)
 
     # shmoo
         shmoo_item.setData(int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter), QtCore.Qt.TextAlignmentRole)
@@ -1604,7 +1610,7 @@ class TestWizard(BaseDialog):
         for index in selectedIndexes:
             if index.row() not in selectedRows:
                 selectedRows.add(index.row())
-        if len(selectedRows) == 1:  # can move only delete one parameter at a time!
+        if len(selectedRows) == 1:  # can only delete one parameter at a time!
             row = list(selectedRows)[0]
             self.outputParameterModel.takeRow(row)
             self.outputParameterView.clearSelection()
@@ -1667,7 +1673,7 @@ class TestWizard(BaseDialog):
 
             # 7. Check if the test name already exists
             if not self.read_only and self._does_test_exist(test_name):
-                fb = "test name exists already"
+                fb = "test name already exists"
                 self.Feedback.setText(fb)
 
             if keyword.iskeyword(test_name):
@@ -1722,8 +1728,8 @@ class TestWizard(BaseDialog):
             self.Feedback.setText(f"attribute {attribute} in parameter {name} is invalid")
 
     def _does_test_exist(self, test_name):
-        tests = [test.name for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
-        if test_name in tests:
+        tests = [test.name.lower() for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
+        if test_name.lower() in tests:
             return True
 
         return False
@@ -1834,12 +1840,7 @@ def make_blank_definition(project_info):
     retval['base'] = project_info.active_base
     retval['docstring'] = []
     retval['input_parameters'] = {'Temperature': make_default_input_parameter(temperature=True) }
-
-
-    
-    retval['output_parameters'] = {
-        'new_parameter1': make_default_output_parameter()
-    }
+    retval['output_parameters'] = { 'new_parameter1': make_default_output_parameter() }
     retval['dependencies'] = {}
     return retval
 

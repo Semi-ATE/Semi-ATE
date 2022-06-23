@@ -60,8 +60,18 @@ class ATE(SpyderDockablePlugin):
     def on_toolbar_available(self):
         widget = self.get_widget()
         toolbar = self.get_plugin(Plugins.Toolbar)
+
+        # extend semi-ate toolbar with labml extension (written by Zlin526F)
+        lab_ml_package_name = 'labml-adjutancy'
+        import pkg_resources
+        packages = [pkg.key for pkg in pkg_resources.working_set]
+        if lab_ml_package_name in packages:
+            from labml_adjutancy.ctrl.toolbar import ControlToolBar
+            control_toolbar = ControlToolBar(widget, "ATE Plugin control toolbar")
+            widget.toolbar.add_external_toolbar_item(control_toolbar.get_items())
+
         toolbar.add_application_toolbar(widget.toolbar)
-        widget.toolbar.hide()
+        widget.toolbar.build()
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
@@ -88,14 +98,22 @@ class ATE(SpyderDockablePlugin):
     # --- ATE Plugin API
     # ------------------------------------------------------------------------
     def create_project(self, project_root):
-        print(f"Plugin : Creating ATE project '{os.path.basename(project_root)}'")
         self.project_root = project_root
-        self.get_widget().create_project(project_root)
+        if self.get_widget().create_project(project_root):
+            print(f"Plugin : Creating ATE project '{os.path.basename(project_root)}'")
 
     def open_project(self, project_root):
-        print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
         self.project_root = project_root
-        self.get_widget().open_project(project_root)
+        projects = self.get_plugin(Plugins.Projects)
+        # hide semi-ate toolbar if opening the project was not successful
+        if not self.get_widget().open_project(project_root, projects):
+            self.get_widget().hide()
+            self.get_widget().toolbar.hide()
+        else:
+            self.get_widget().show()
+            self.get_widget().toolbar.show()
+
+        print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
 
     def close_project(self):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")

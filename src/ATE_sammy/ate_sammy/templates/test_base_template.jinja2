@@ -69,6 +69,7 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
         stdf_data = []
         test_result = Result.Inconclusive()
         test_bin = -1
+        {% if output_params %}
         if not exception:
         {% for output_parameter in output_params %}
             current_result = self.op.{{ output_parameter[OutputColumnKey.NAME()] }}.get_testresult()
@@ -82,6 +83,7 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
             test_bin = self.get_sbin()
             stdf_data.append(self.op.{{ output_parameter[OutputColumnKey.NAME()] }}.generate_stdf_result_record(test_result, site_num))
         {% endfor %}
+        {% endif %}
 
         return (test_result, test_bin, stdf_data)
 

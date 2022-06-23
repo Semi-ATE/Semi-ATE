@@ -46,7 +46,7 @@
         <widget class="QLabel" name="hardwareLabel">
          <property name="minimumSize">
           <size>
-           <width>101</width>
+           <width>140</width>
            <height>22</height>
           </size>
          </property>
@@ -96,7 +96,7 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>47</width>
+           <width>70</width>
            <height>22</height>
           </size>
          </property>
@@ -125,13 +125,13 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>0</height>
+           <height>10</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>16777215</height>
+           <height>30</height>
           </size>
          </property>
          <property name="sizeAdjustPolicy">
@@ -178,7 +178,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="pcbsTab">
         <attribute name="title">
@@ -1023,13 +1023,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="text">
@@ -1737,13 +1737,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="text">
@@ -1980,13 +1980,13 @@
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>22</height>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="text">
@@ -2104,6 +2104,12 @@
       <layout class="QHBoxLayout" name="buttonLayout">
        <item>
         <widget class="QPushButton" name="OKButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>OK</string>
          </property>
@@ -2127,6 +2133,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="CancelButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Cancel</string>
          </property>
