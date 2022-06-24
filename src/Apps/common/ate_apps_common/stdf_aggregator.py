@@ -141,7 +141,7 @@ class StdfTestResultAggregator:
 
     @staticmethod
     def _generate_FTR(ftr_record: dict) -> dict:
-        rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], False)
+        rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], ftr_record['TEST_FLG'], False)
         rec.set_value('TEST_FLG', ftr_record['TEST_FLG'])
         return rec
 
