@@ -15,9 +15,6 @@ def generate_PTR_dict(test_num, head_num, site_num,
                               test_txt, alarm_id, l_limit, u_limit,
                               unit, fmt, exponent, ls_limit, us_limit,
                               opt_flag).to_dict()
-    ptr_record['TEST_FLG'] = flag_array_to_int(ptr_record['TEST_FLG'], ENDIAN)
-    ptr_record['PARM_FLG'] = flag_array_to_int(ptr_record['PARM_FLG'], ENDIAN)
-    ptr_record['OPT_FLAG'] = flag_array_to_int(ptr_record['OPT_FLAG'], ENDIAN)
     record.update(ptr_record)
     return record
 
@@ -114,8 +111,6 @@ def generate_PRR_dict(head_num, site_num, is_pass,
                               num_tests, hard_bin, soft_bin,
                               x_coord, y_coord, test_time,
                               part_id, part_txt, part_fix).to_dict()
-    prr_record['PART_FLG'] = flag_array_to_int(prr_record['PART_FLG'], ENDIAN)
-    prr_record['PART_FIX'] = flag_array_to_int(prr_record['PART_FIX'], ENDIAN)
     record.update(prr_record)
     return record
 
@@ -155,24 +150,8 @@ def generate_TSR_dict(head_num, site_num, test_typ, test_num,
                               exec_cnt, fail_cnt, alarm_cnt, test_nam,
                               seq_name, test_lbl, opt_flag, test_tim,
                               test_min, test_max, tst_sums, tst_sqrs).to_dict()
-    tsr_record['OPT_FLAG'] = flag_array_to_int(tsr_record['OPT_FLAG'], ENDIAN)
     record.update(tsr_record)
     return record
-
-
-def flag_array_to_int(flags, endian):
-    counter = 1
-    if endian == '<':
-        counter = -1
-
-    if not flags:
-        return
-
-    num = 0
-    for index, flag in enumerate(flags[::counter]):
-        num += pow(2, index) * int(flag)
-
-    return num
 
 
 def generate_FTR(test_num, head_num, site_num, exception, opt_flag=255):
@@ -191,8 +170,6 @@ def generate_FTR(test_num, head_num, site_num, exception, opt_flag=255):
 def generate_FTR_dict(test_num, head_num, site_num, exception):
     record = {'type': 'FTR'}
     ftr_record = generate_FTR(test_num, head_num, site_num, exception).to_dict()
-    ftr_record['TEST_FLG'] = flag_array_to_int(ftr_record['TEST_FLG'], ENDIAN)
-    ftr_record['OPT_FLAG'] = flag_array_to_int(ftr_record['OPT_FLAG'], ENDIAN)
     record.update(ftr_record)
     return record
 
@@ -291,11 +268,9 @@ def generate_MPR_dict(test_num, head_num, site_num,
                               test_txt, alarm_id, l_limit, u_limit,
                               unit, fmt, exponent, ls_limit, us_limit,
                               opt_flag).to_dict()
-    mpr_record['TEST_FLG'] = flag_array_to_int(mpr_record['TEST_FLG'], ENDIAN)
-    mpr_record['PARM_FLG'] = flag_array_to_int(mpr_record['PARM_FLG'], ENDIAN)
-    mpr_record['OPT_FLAG'] = flag_array_to_int(mpr_record['OPT_FLAG'], ENDIAN)
     record.update(mpr_record)
     return record
+
 
 def generate_MPR(
     test_num, head_num, site_num,
