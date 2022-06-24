@@ -40,7 +40,7 @@ class BinTableGenerator:
         return self._binning_table.items()
 
     def does_bin_exist(self, bin_name: str) -> bool:
-        return self._binning_table.get(bin_name) is not None
+        return self._binning_table.get(bin_name) is None
 
     def get_bin_info(self, sb_name: str) -> dict:
         return self._binning_table.get(sb_name)

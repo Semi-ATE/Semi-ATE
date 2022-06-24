@@ -1,13 +1,12 @@
-from ate_spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-from ate_common.program_utils import (ALARM_BIN_MAX, ALARM_BIN_MIN, BinningColumns, GRADES, BINGROUPS, ErrorMessage)
+from ate_common.program_utils import (ALARM_BIN_MAX, ALARM_BIN_MIN, BinningColumns, GRADES, BINGROUPS)
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLineEdit, QTableWidget, QTableWidgetItem
 from ate_common.program_utils import BinTableFieldName
 
 
 class BinningHandler:
-    def __init__(self, bin_table: QTableWidget, bin_container: BinTableGenerator, parent: BaseDialog):
+    def __init__(self, bin_table: QTableWidget, bin_container: dict, parent: BaseDialog):
         self.binning_table = bin_table
         self._bin_container = bin_container
         self.parent = parent
@@ -28,26 +27,24 @@ class BinningHandler:
         table.setCellWidget(row, column, checkable_widget)
         checkable_widget.editingFinished.connect(lambda: self._edit_input_cell_done(item, checkable_widget, table))
 
-    def _set_selected_row(self, row: int, column: int):
-        self._selected_row = row
-
     def _edit_input_cell_done(self, item: QTableWidgetItem, checkable_widget: QLineEdit, table: QTableWidget):
-        self.parent._update_feedback('')
         old_value = item.text()
         new_value = checkable_widget.text()
         table.removeCellWidget(item.row(), item.column())
 
         if item.column() == BinningColumns.SBinName():
-            if new_value in self.get_all_element_in_column(0):
+            if not self._bin_container.does_bin_exist(new_value):
                 self.parent._update_feedback('bin is already defined')
                 return
 
             self._bin_container.update_bin_name(old_value, new_value)
             item.setText(new_value)
             self.parent._update_binning_tree_items()
+            return
 
         elif item.column() == BinningColumns.SBin():
-            if new_value in self.get_all_element_in_column(1):
+            self.parent._update_feedback('')
+            if self._bin_container.does_bin_num_exist(new_value):
                 self.parent._update_feedback('bin number is already occupied')
                 return
 
@@ -76,7 +73,6 @@ class BinningHandler:
 
         item.setText(new_value)
         self._update_row_content_binning_table(item)
-        self.verify()
         self.parent._verify()
 
     def context_menu_handler(self, point):
@@ -154,38 +150,13 @@ class BinningHandler:
                          value[BinTableFieldName.SBinGroup()], value[BinTableFieldName.SBinDescription()])
 
     def verify(self) -> bool:
-        bin_names = []
-        bin_numbers = []
-
         for row in range(self.binning_table.rowCount()):
             for col in range(self.binning_table.columnCount() - 1):
                 item = self.binning_table.item(row, col)
                 if not item:
                     continue
 
-                if col == 0:
-                    bin_names.append(item.text())
-
-                if col == 1:
-                    bin_numbers.append(item.text())
                 if not self.binning_table.item(row, col).text():
                     return False
 
-        if len(set(bin_numbers)) < len(bin_numbers)\
-                or len(set(bin_names)) < len(bin_names):
-            self.parent._update_feedback(ErrorMessage.BinTableConstraintUnfulfilled())
-            return False
-
-        if not bin_names or not bin_numbers:
-            self.parent._update_feedback(ErrorMessage.BinTableNotfilled())
-            return False
-
         return True
-
-    def get_all_element_in_column(self, column: int) -> list:
-        bin_names = []
-        for row in range(self.binning_table.rowCount()):
-            item = self.binning_table.item(row, column)
-            bin_names.append(item.text())
-
-        return bin_names
