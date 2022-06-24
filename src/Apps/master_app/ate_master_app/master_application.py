@@ -462,7 +462,7 @@ class MasterApplication(MultiSiteTestingModel):
 
         self.received_site_test_results = []
         self.arm_timeout(5, lambda: self.timeout("not all sites respond to next command"))
-        self.pendingTransitionsTest = SequenceContainer([TestState.Testing], self.configuredSites, self.on_test_app_response_to_mext_command,
+        self.pendingTransitionsTest = SequenceContainer([TestState.Testing], self.configuredSites, self.on_test_app_response_to_next_command,
                                                         lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
 
         self.error_message = ''
@@ -478,7 +478,7 @@ class MasterApplication(MultiSiteTestingModel):
         settings.update(self._extract_sites_information(param_data))
         self.connectionHandler.send_next_to_all_sites(settings)
 
-    def on_test_app_response_to_mext_command(self):
+    def on_test_app_response_to_next_command(self):
         self.disarm_timeout()
         self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
         self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: None,

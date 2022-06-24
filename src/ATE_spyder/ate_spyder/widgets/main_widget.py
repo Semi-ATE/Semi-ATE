@@ -8,7 +8,6 @@ from qtpy.QtWidgets import QTreeView
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QDialog
 
-import json
 import os
 from pathlib import Path
 import shutil
@@ -107,8 +106,6 @@ class ATEWidget(PluginMainWidget):
         """For now the run of an ATE project is not integrated in the global
         run button yet"""
         pass
-        # self.control(self.project_info)
-        # self.control.show()
 
     def context_menu_manager(self, point):
         # https://riverbankcomputing.com/pipermail/pyqt/2009-April/022668.html

@@ -2,7 +2,7 @@
 
 from ate_master_app.master_application import MasterApplication
 from ate_master_app.utils.master_configuration import MasterConfiguration
-from ate_master_app.utils import ControlState, TestState
+from ate_master_app.utils import TestState
 from ate_apps_common.sequence_container import SequenceContainer
 from ate_apps_common.stdf_aggregator import StdfTestResultAggregator
 
@@ -61,8 +61,6 @@ class MasterApplicationDevMode(MasterApplication):
             self.pendingTransitionsTest.trigger_transition(siteid, newstatus)
 
         if self.state == 'softerror':
-            self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
-                                                            lambda site, state: self.on_unexpected_testapp_state(site, state))
             self.develop_mode_ready()
 
     def on_unload_command_issued(self, _: dict):
@@ -76,8 +74,20 @@ class MasterApplicationDevMode(MasterApplication):
         self.develop_mode_ready()
         self.is_initialized = False
 
-    def on_test_app_response_to_mext_command(self):
+    def on_error_occurred(self, message):
+        self.on_error_occurred(message)
+        self.develop_mode_ready()
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
+                                                        lambda site, state: self.on_unexpected_testapp_state(site, state))
+
+    def on_timeout(self, message):
+        super().on_timeout(message)
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
+                                                        lambda site, state: self.on_unexpected_testapp_state(site, state))
+        self.develop_mode_ready()
+
+    def on_test_app_response_to_next_command(self):
         self.disarm_timeout()
         self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: None,
-                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
+                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during testing to state: '{state}'"))
         self.testing_event.set()
