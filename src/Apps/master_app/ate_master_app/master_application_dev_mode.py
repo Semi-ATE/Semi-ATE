@@ -8,6 +8,8 @@ from ate_apps_common.stdf_aggregator import StdfTestResultAggregator
 
 from transitions.extensions import HierarchicalMachine as Machine
 
+DEVELOP_MODE_DEVICE_ID = 'developmode'
+
 
 class MasterApplicationDevMode(MasterApplication):
     debug_transtitons = [
@@ -18,6 +20,8 @@ class MasterApplicationDevMode(MasterApplication):
 
     def __init__(self, master_configuration: MasterConfiguration):
         self.transitions.extend(self.debug_transtitons)
+
+        master_configuration.device_id = DEVELOP_MODE_DEVICE_ID
         super().__init__(master_configuration)
 
     def _setup_machine(self, model: 'MasterApplication', states: list, transitions: list, initial: str, after_state_change: str):
@@ -55,7 +59,7 @@ class MasterApplicationDevMode(MasterApplication):
             self.is_initialized = True
 
     def on_testapp_status_changed(self, siteid: str, status_msg: dict):
-        newstatus = status_msg['payload']['state']
+        newstatus = status_msg['state']
 
         if self.pendingTransitionsTest:
             self.pendingTransitionsTest.trigger_transition(siteid, newstatus)
@@ -74,9 +78,11 @@ class MasterApplicationDevMode(MasterApplication):
         self.develop_mode_ready()
         self.is_initialized = False
 
+    def on_unexpected_testapp_state(self, site: str, state: str):
+        self.on_error(f'test app on site: {site} report an unexpected state: {state}')
+
     def on_error_occurred(self, message):
-        self.on_error_occurred(message)
-        self.develop_mode_ready()
+        super().on_error_occurred(message)
         self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
                                                         lambda site, state: self.on_unexpected_testapp_state(site, state))
 

@@ -87,3 +87,5 @@ master   |21/06/2022 02:31:58 PM |INFO    |Master state is loading
 ```
 
 In Loading state, master application will wait till a test program started and is ready to accept further commands
+
+__note__: the `device_id` value will be overridden to match the default value consumed by the test app (`device_id`='developmode')
