@@ -28,9 +28,6 @@ class BinningHandler:
         table.setCellWidget(row, column, checkable_widget)
         checkable_widget.editingFinished.connect(lambda: self._edit_input_cell_done(item, checkable_widget, table))
 
-    def _set_selected_row(self, row: int, column: int):
-        self._selected_row = row
-
     def _edit_input_cell_done(self, item: QTableWidgetItem, checkable_widget: QLineEdit, table: QTableWidget):
         self.parent._update_feedback('')
         old_value = item.text()
