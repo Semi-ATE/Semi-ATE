@@ -68,7 +68,7 @@ class MasterApplicationDevMode(MasterApplication):
             self.develop_mode_ready()
 
     def on_unload_command_issued(self, _: dict):
-        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
+        self.pendingTransitionsTest = SequenceContainer([TestState.Terminated, TestState.Idle], self.configuredSites, lambda: self.all_siteloads_complete(),
                                                         lambda site, state: self.on_unexpected_testapp_state(site, state))
         self.error_message = ''
         self._first_part_tested = False
