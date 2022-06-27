@@ -5,7 +5,7 @@ ENDIAN = '<'
 
 
 def flag_array_to_int(flags):
-    counter = 1
+    counter = -1
     num = 0
     for index, flag in enumerate(flags[::counter]):
         num += pow(2, index) * int(flag)
@@ -46,7 +46,7 @@ def generate_PTR(test_num, head_num, site_num,
     rec.set_value('SITE_NUM', site_num)
     rec.set_value('TEST_NUM', test_num)
 
-    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b00000001)
+    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b10000000)
     rec.set_value('PARM_FLG', param_flag)
     rec.set_value('RESULT', measurement if measurement is not None else ls_limit)
     rec.set_value('TEST_TXT', test_txt)
@@ -175,17 +175,31 @@ def generate_TSR_dict(head_num, site_num, test_typ, test_num,
     return record
 
 
-def generate_FTR(test_num: int, head_num: int, site_num: int, exception: int, is_pass: bool, opt_flag: int = 255) -> dict:
+def generate_FTR(test_num: int, head_num: int, site_num: int, exception: bool, is_pass: bool, opt_flag: int = 255) -> dict:
     rec = FTR('V4', endian=ENDIAN)
     rec.set_value('TEST_NUM', test_num)
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
     if exception:
-        rec.set_value('TEST_FLG', 0b10000000)
-    elif not is_pass:
         rec.set_value('TEST_FLG', 0b00000001)
+    elif not is_pass:
+        rec.set_value('TEST_FLG', 0b10000000)
     else:
         rec.set_value('TEST_FLG', 0b00000000)
+
+    # RTN_ICNT and PGM_ICNT field must be initialized to satisfy the stdf-record generator
+    rec.set_value('RTN_ICNT', 0)
+    rec.set_value('PGM_ICNT', 0)
+    rec.set_value('OPT_FLAG', opt_flag)
+    return rec
+
+
+def generate_FTR_with_test_flag(test_num: int, head_num: int, site_num: int, test_flag: int, opt_flag: int = 255) -> dict:
+    rec = FTR('V4', endian=ENDIAN)
+    rec.set_value('TEST_NUM', test_num)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('TEST_FLG', test_flag)
 
     # RTN_ICNT and PGM_ICNT field must be initialized to satisfy the stdf-record generator
     rec.set_value('RTN_ICNT', 0)
@@ -322,7 +336,7 @@ def generate_MPR(
     rec.set_value('TEST_NUM', test_num)
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
-    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b00000001)
+    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b10000000)
     rec.set_value('PARM_FLG', param_flag)
 
     # We set RTN_ICNT to 0. This implies that the stat and index arrays (RTN_STAT, RTN_INDX) are both empty,
