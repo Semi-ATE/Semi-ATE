@@ -1127,6 +1127,8 @@ class TestProgramWizard(BaseDialog):
             self._bin_table.remove_bin(self.binning_table.item(row, 0).text())
             self.binning_table.removeRow(row)
 
+        self._update_binning_tree_items()
+
     def _update_output_parameter_bin_information(self):
         iterator = QTreeWidgetItemIterator(self.binning_tree, flags=QTreeWidgetItemIterator.NoChildren)
         while iterator.value():

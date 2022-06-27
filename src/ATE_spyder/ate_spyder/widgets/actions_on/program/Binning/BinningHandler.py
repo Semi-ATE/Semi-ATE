@@ -38,7 +38,8 @@ class BinningHandler:
         table.removeCellWidget(item.row(), item.column())
 
         if item.column() == BinningColumns.SBinName():
-            if new_value in self.get_all_element_in_column(0):
+            elements = self.get_all_element_in_column(0)
+            if new_value in elements and elements.index(new_value) != item.row():
                 self.parent._update_feedback('bin is already defined')
                 return
 
@@ -47,7 +48,8 @@ class BinningHandler:
             self.parent._update_binning_tree_items()
 
         elif item.column() == BinningColumns.SBin():
-            if new_value in self.get_all_element_in_column(1):
+            elements = self.get_all_element_in_column(1)
+            if new_value in elements and elements.index(new_value) != item.row():
                 self.parent._update_feedback('bin number is already occupied')
                 return
 
