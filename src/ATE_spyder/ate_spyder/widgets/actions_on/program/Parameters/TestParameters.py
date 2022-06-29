@@ -194,6 +194,10 @@ class TestParameters:
 
             test_nums.append(output.get_test_number())
 
+        # test instance are in this case invalid
+        if not test_nums:
+            return -1
+        
         multiplier = int(test_nums[0] / MAX_TEST_RANGE)
         for index, test_num in enumerate(test_nums):
             # index 0 is reserved for test instance number

@@ -132,8 +132,13 @@ class TestProgramWizard(BaseDialog):
         self.parametersInput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.parametersInput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
         self.parametersInput.horizontalHeader().setStretchLastSection(True)
-        self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
+        # as for now we only support static resolver type, thus input parameter's default value is set manually via test program wizard
+        # (local resolver will not be supported)
+        # local resolver make it possible to pass an output parameter value of a test as the input parameter of the next test
+        # this was implemented before start dealing with MPRs but it's not clear how to implement this for MPR.
+        # TODO: re-enable as soon a decision was made
+        # self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemClicked.connect(self._input_param_table_clicked)
 
         self.parametersOutput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -802,6 +807,9 @@ class TestProgramWizard(BaseDialog):
             test_instance = self._selected_test_instance()
         else:
             parameter_handler = self._standard_parameter_handler
+            if not self.availableTests.selectedItems():
+                return
+
             test_instance = self.availableTests.selectedItems()[0].text()
 
         parameter_handler.display_test(test_instance, self.parametersInput, self.parametersOutput)
@@ -1281,6 +1289,7 @@ class TestProgramWizard(BaseDialog):
         else:
             item.setFlags(QtCore.Qt.NoItemFlags)
 
+    @QtCore.pyqtSlot(QtCore.QPoint)
     def _context_menu_input_params(self, point):
         item = self.parametersInput.itemAt(point)
         if not item:

@@ -1,13 +1,15 @@
 # # -*- coding: utf-8 -*-
 
+from abc import ABC, abstractmethod
 from typing import Dict
 from ate_apps_common.stdf_utils import (generate_MPR_dict, generate_PTR_dict, generate_TSR_dict)
 from ate_test_app.sequencers.DutTesting.Result import Result
 
-MAX_HOLDED_MEASUREMENTS = 5000
+MAX_HOLD_MEASUREMENTS = 5000
 
 
 class InputParameter:
+    __slots__ = ['_value', '_shmoo', '_name', '_min', '_max', '_exponent']
     def __init__(self, name: str, shmoo: bool, value: float, min_value: float, max_value: float, exponent: int):
         self._value = value
         self._shmoo = shmoo
@@ -29,8 +31,74 @@ class InputParameter:
         return self._value
 
 
+class Measurement(ABC):
+    __slots__ = ['_measurement']
+
+    def __init__(self):
+        self.is_set = False
+
+    def write(self, measurement):
+        self.is_set = True
+        self.write_impl(measurement)
+
+    def read(self):
+        if not self.is_set:
+            raise Exception("measurement cannot be read before write")
+
+        return self._measurement
+
+    def reset(self):
+        self.is_set = False
+        self.reset_impl()
+
+    @abstractmethod
+    def write_impl(self, measurement):
+        pass
+
+    @abstractmethod
+    def read_impl(self):
+        pass
+
+    @abstractmethod
+    def reset_impl(self):
+        pass
+
+
+class MultiMeasurement(Measurement):
+    def __init__(self):
+        self._measurement = []
+
+    def write_impl(self, measurement):
+        self._measurement.append(measurement)
+
+    def read_impl(self):
+        return self._measurement
+
+    def reset_impl(self):
+        self._measurement.clear()
+
+
+class SingleMeasurement(Measurement):
+    def __init__(self):
+        self._measurement = None
+
+    def write_impl(self, measurement):
+        self._measurement = measurement
+
+    def read_impl(self):
+        return self._measurement
+
+    def reset_impl(self):
+        self._measurement = None
+
+
 class OutputParameter:
-    def __init__(self, name: str, lsl: float, ltl: float, nom: float, utl: float, usl: float, exponent: int):
+    __slots__ = [
+        '_name', '_lsl', '_ltl', '_nom', '_utl', '_usl', '_exponent', '_fmt', '_unit',
+        '_mpr', '_measurements', '_measurement', '_id', 'bin', 'bin_result', '_test_executions',
+        '_test_failures', '_alarmed_tests', '_test_description'
+    ]
+    def __init__(self, name: str, lsl: float, ltl: float, nom: float, utl: float, usl: float, exponent: int, mpr: bool = False):
         self._name = name
         self._lsl = lsl
         self._ltl = ltl
@@ -40,10 +108,10 @@ class OutputParameter:
         self._exponent = int(exponent)
         self._fmt = None
         self._unit = None
-        self._mpr = False
+        self._mpr = mpr
 
-        self._measurements = [] * MAX_HOLDED_MEASUREMENTS
-        self._measurement = None
+        self._measurements = [] * MAX_HOLD_MEASUREMENTS
+        self._measurement = SingleMeasurement() if not mpr else MultiMeasurement()
         self._id = 0
         self.bin = 0
         self.bin_result = Result.Fail()
@@ -58,9 +126,6 @@ class OutputParameter:
     def set_unit(self, unit: str):
         self._unit = unit
 
-    def set_mpr(self, mpr: bool) -> None:
-        self._mpr = mpr
-
     def set_test_description(self, test_description: str):
         self._test_description = test_description
 
@@ -74,13 +139,13 @@ class OutputParameter:
         return self._test_description + '.' + self._name
 
     def get_measurement(self):
-        return self._measurement
+        return self._measurement.read()
 
     def get_exponent(self):
         return self._exponent
 
     def write(self, measurement: float):
-        self._measurement = measurement
+        self._measurement.write(measurement)
         self._measurements.append(measurement)
 
     def default(self):
@@ -119,13 +184,13 @@ class OutputParameter:
         self.bin = bin
         self.bin_result = bin_result
 
-    def _generate_ptr_record(self, is_pass: bool, site_num: int) -> Dict[str, str]: 
+    def _generate_ptr_record(self, is_pass: bool, site_num: int) -> Dict[str, str]:
         l_limit, u_limit = self._get_limits()
         l_limit = l_limit * (10**self._exponent)
         u_limit = u_limit * (10**self._exponent)
         lsl = self._lsl * (10**self._exponent)
         usl = self._usl * (10**self._exponent)
-        measurement = lsl if self._measurement is None else self._measurement * (10**self._exponent)
+        measurement = lsl if self._measurement is None else self._measurement.read() * (10**self._exponent)
         return generate_PTR_dict(
             test_num=self._id,
             head_num=0,
@@ -149,13 +214,13 @@ class OutputParameter:
         u_limit = u_limit * (10**self._exponent)
         lsl = self._lsl * (10**self._exponent)
         usl = self._usl * (10**self._exponent)
-        return generate_MPR_dict(
+        record = generate_MPR_dict(
             test_num=self._id,
             head_num=0,
             site_num=int(site_num),
             is_pass=is_pass == Result.Pass(),
             param_flag=0,
-            measurements=self._measurements,
+            measurements=self._measurement.read(),
             test_txt=self._get_output_parameter_name(),
             alarm_id='',
             l_limit=l_limit,
@@ -166,7 +231,10 @@ class OutputParameter:
             ls_limit=lsl,
             us_limit=usl)
 
-    def get_testresult(self): 
+        self._measurement.reset()
+        return record
+
+    def get_testresult(self):
         self._test_executions += 1
 
         if self._mpr is False:
@@ -190,7 +258,7 @@ class OutputParameter:
         if self.bin_result == Result.Pass():
             pass_result = self.bin
 
-        if self._measurement >= ll and self._measurement <= ul:
+        if self._measurement.read() >= ll and self._measurement.read() <= ul:
             return (Result.Pass(), pass_result)
         else:
             self._test_failures += 1
