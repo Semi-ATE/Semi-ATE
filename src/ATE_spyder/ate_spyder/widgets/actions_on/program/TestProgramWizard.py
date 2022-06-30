@@ -728,7 +728,6 @@ class TestProgramWizard(BaseDialog):
             success = False
 
         if not self._binning_handler.verify():
-            self._update_feedback(ErrorMessage.BinTableNotfilled())
             success = False
 
         if self.enable_edit:
@@ -1047,7 +1046,7 @@ class TestProgramWizard(BaseDialog):
                 continue
 
             output = self._custom_parameter_handler.get_output_parameter_from_test_instance(item.text(0))
-            if self._bin_table.does_bin_exist(output.get_bin_infos().bin_name):
+            if not self._bin_table.does_bin_exist(output.get_bin_infos().bin_name):
                 self._set_tree_item_color(item, 1, RED)
                 output.set_bin_parameter_validity(False)
             else:
@@ -1135,6 +1134,8 @@ class TestProgramWizard(BaseDialog):
             row = selected_bin.row()
             self._bin_table.remove_bin(self.binning_table.item(row, 0).text())
             self.binning_table.removeRow(row)
+
+        self._update_binning_tree_items()
 
     def _update_output_parameter_bin_information(self):
         iterator = QTreeWidgetItemIterator(self.binning_tree, flags=QTreeWidgetItemIterator.NoChildren)
