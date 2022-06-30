@@ -34,33 +34,16 @@ class InputParameter:
 class Measurement(ABC):
     __slots__ = ['_measurement']
 
-    def __init__(self):
-        self.is_set = False
-
+    @abstractmethod
     def write(self, measurement):
-        self.is_set = True
-        self.write_impl(measurement)
+        pass
 
+    @abstractmethod
     def read(self):
-        if not self.is_set:
-            raise Exception("measurement cannot be read before write")
+        pass
 
-        return self._measurement
-
+    @abstractmethod
     def reset(self):
-        self.is_set = False
-        self.reset_impl()
-
-    @abstractmethod
-    def write_impl(self, measurement):
-        pass
-
-    @abstractmethod
-    def read_impl(self):
-        pass
-
-    @abstractmethod
-    def reset_impl(self):
         pass
 
 
@@ -68,28 +51,28 @@ class MultiMeasurement(Measurement):
     def __init__(self):
         self._measurement = []
 
-    def write_impl(self, measurement):
+    def write(self, measurement):
         self._measurement.append(measurement)
 
-    def read_impl(self):
+    def read(self):
         return self._measurement
 
-    def reset_impl(self):
+    def reset(self):
         self._measurement.clear()
 
 
 class SingleMeasurement(Measurement):
     def __init__(self):
-        self._measurement = None
+        self._measurement = -1
 
-    def write_impl(self, measurement):
+    def write(self, measurement):
         self._measurement = measurement
 
-    def read_impl(self):
+    def read(self):
         return self._measurement
 
-    def reset_impl(self):
-        self._measurement = None
+    def reset(self):
+        self._measurement = -1
 
 
 class OutputParameter:
@@ -98,6 +81,7 @@ class OutputParameter:
         '_mpr', '_measurements', '_measurement', '_id', 'bin', 'bin_result', '_test_executions',
         '_test_failures', '_alarmed_tests', '_test_description'
     ]
+
     def __init__(self, name: str, lsl: float, ltl: float, nom: float, utl: float, usl: float, exponent: int, mpr: bool = False):
         self._name = name
         self._lsl = lsl
@@ -220,7 +204,7 @@ class OutputParameter:
             site_num=int(site_num),
             is_pass=is_pass == Result.Pass(),
             param_flag=0,
-            measurements=self._measurement.read(),
+            measurements=[measurement * (10**self._exponent) for measurement in self._measurement.read()],
             test_txt=self._get_output_parameter_name(),
             alarm_id='',
             l_limit=l_limit,
