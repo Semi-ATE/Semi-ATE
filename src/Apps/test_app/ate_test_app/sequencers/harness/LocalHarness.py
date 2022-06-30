@@ -4,7 +4,7 @@ from ate_apps_common.stdf_aggregator import StdfTestResultAggregator
 
 class LocalHarness(Harness):
     def __init__(self, test_program_name: str):
-        self._stdf_aggregator = StdfTestResultAggregator('testnode', 'no_lot', 'test', ['0'], f'{test_program_name}.stdf')
+        self._stdf_aggregator = StdfTestResultAggregator('testnode', ['0'], 'no_lot', 'test', f'{test_program_name}.stdf')
         self._is_first = True
 
     def next(self):

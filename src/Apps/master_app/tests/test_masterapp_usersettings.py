@@ -1,5 +1,6 @@
 from ate_master_app import master_application
 from ate_master_app.user_settings import UserSettings
+from ate_master_app.utils.master_configuration import MasterConfiguration
 
 
 DEFAULT_USER_SETTINGS_FILE_UNITTEST = 'master_user_settings_from_unittest.json'
@@ -9,20 +10,29 @@ class TestApplication:
 
     def default_configuration(self):
         return {'broker_host': '192.168.0.1',
-                'broker_port': '8991',
-                'sites': ["0", "1"],
-                'device_id': 'd',
-                'jobsource': 'static',
-                'jobformat': 'xml.semi-ate',
-                'enable_timeouts': True,
-                'Handler': "abc",
-                'tester_type': 'Semi-ATE Master Parallel Tester',
-                'environment': "abs"}
+            'broker_port': '8991',
+            'sites': ["0", "1"],
+            'device_id': '0',
+            'jobsource': 'filesystem',
+            'jobformat': 'xml.semi-ate',
+            "filesystemdatasource_path": '',
+            "filesystemdatasource_jobpattern": "le306426001.xml",
+            'enable_timeouts': True,
+            'skip_jobdata_verification': False,
+            'environment': "abs",
+            'Handler': "HTO92-20F",
+            'tester_type': 'Semi-ATE Master Parallel Tester',
+            "site_layout": {"0": [0, 1], "1": [1, 2]},
+            'webui_root_path': '',
+            'webui_host': '',
+            'webui_port': 0,
+            'site_layout': [],
+            'develop_mode': False}
 
     def default_configuration_with_persistent_user_settings(self):
         cfg = self.default_configuration()
         cfg['user_settings_filepath'] = DEFAULT_USER_SETTINGS_FILE_UNITTEST
-        return cfg
+        return MasterConfiguration(**cfg)
 
     def default_UserSettings(self):
         return UserSettings.get_defaults()
@@ -40,7 +50,7 @@ class TestApplication:
         mocker.patch.object(master_application.MasterApplication, 'get_execution_strategy')
 
         cfg = self.default_configuration()
-        app = master_application.MasterApplication(cfg)
+        app = master_application.MasterApplication(MasterConfiguration(**cfg))
 
         assert app.persistent_user_settings_enabled is False
         assert app.user_settings_filepath is None

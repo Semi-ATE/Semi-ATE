@@ -144,8 +144,8 @@ The files ```master_config_file_template.json``` and
     "environment": "F1",
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",
-    "filesystemdatasource.path": ".",
-    "filesystemdatasource.jobpattern": "le306426001_template.xml",
+    "filesystemdatasource_path": ".",
+    "filesystemdatasource_jobpattern": "le306426001_template.xml",
     "enable_timeouts": true,
     "skip_jobdata_verification": false,
     "user_settings_filepath": "master_user_settings.json"

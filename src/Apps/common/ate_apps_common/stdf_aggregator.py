@@ -24,7 +24,7 @@ STDF_PATH = 'temp_final_stdf_file_on_unload.stdf'
 class StdfTestResultAggregator:
     completed_part_records: List[List[STDR]]
 
-    def __init__(self, node_name: str, lot_id: str, job_name: str, sites: list, file_path: str = ''):
+    def __init__(self, node_name: str, sites: list, lot_id: str = '', job_name: str = '' , file_path: str = ''):
         self.version = 'V4'
         self.endian = '<'
         self.completed_part_records = []
@@ -37,6 +37,14 @@ class StdfTestResultAggregator:
         self.end_timestamp = 0
         self.path = STDF_PATH if not file_path else file_path
         self.sites = sites
+
+        self.user_text = ''
+        self.program_dir = ''
+        self.temperature = ''
+        self.tester_program = ''
+        self.part_id = ''
+        self.package_id = ''
+        self.sublot_id = ''
 
         self._clean_up()
 
