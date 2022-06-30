@@ -70,6 +70,8 @@ is compatible to the tester_type of file 'master_config_file.json'.
 
                 if not exception:
                     test_result = test_case._select_testresult(test_result, result)
+                else:
+                    test_result = Result.Fail()
 
             end = time.time()
             execution_time = int((end - start) * 1000.0)

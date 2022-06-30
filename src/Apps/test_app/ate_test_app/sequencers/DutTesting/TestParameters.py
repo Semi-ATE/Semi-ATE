@@ -5,11 +5,14 @@ from typing import Dict
 from ate_apps_common.stdf_utils import (generate_MPR_dict, generate_PTR_dict, generate_TSR_dict)
 from ate_test_app.sequencers.DutTesting.Result import Result
 
-MAX_HOLD_MEASUREMENTS = 5000
+import math
+
+INITIAL_MEASUREMENT_NUMBER = 5000
 
 
 class InputParameter:
     __slots__ = ['_value', '_shmoo', '_name', '_min', '_max', '_exponent']
+
     def __init__(self, name: str, shmoo: bool, value: float, min_value: float, max_value: float, exponent: int):
         self._value = value
         self._shmoo = shmoo
@@ -32,47 +35,67 @@ class InputParameter:
 
 
 class Measurement(ABC):
-    __slots__ = ['_measurement']
+    __slots__ = ['_measurement', '_is_set']
 
-    @abstractmethod
+    def __init__(self):
+        self._is_set = False
+
     def write(self, measurement):
-        pass
+        self._is_set = True
+        self.write_impl(measurement)
 
-    @abstractmethod
     def read(self):
+        return self._measurement
+
+    def reset(self):
+        self._is_set = False
+        self.reset_impl()
+
+    @property
+    def is_set(self):
+        return self._is_set
+
+    @abstractmethod
+    def write_impl(self, measurement):
         pass
 
     @abstractmethod
-    def reset(self):
+    def read_impl(self):
+        pass
+
+    @abstractmethod
+    def reset_impl(self):
         pass
 
 
 class MultiMeasurement(Measurement):
     def __init__(self):
+        super().__init__()
         self._measurement = []
 
-    def write(self, measurement):
+    def write_impl(self, measurement):
         self._measurement.append(measurement)
 
-    def read(self):
+    def read_impl(self):
         return self._measurement
 
-    def reset(self):
+    def reset_impl(self):
         self._measurement.clear()
 
 
 class SingleMeasurement(Measurement):
     def __init__(self):
-        self._measurement = -1
+        super().__init__()
+        self._measurement = math.inf
 
-    def write(self, measurement):
+    def write_impl(self, measurement):
         self._measurement = measurement
 
-    def read(self):
+    def read_impl(self):
         return self._measurement
 
-    def reset(self):
-        self._measurement = -1
+    def reset_impl(self):
+        self._measurement = math.inf
 
 
 class OutputParameter:
@@ -94,7 +117,7 @@ class OutputParameter:
         self._unit = None
         self._mpr = mpr
 
-        self._measurements = [] * MAX_HOLD_MEASUREMENTS
+        self._measurements = [] * INITIAL_MEASUREMENT_NUMBER
         self._measurement = SingleMeasurement() if not mpr else MultiMeasurement()
         self._id = 0
         self.bin = 0
@@ -133,7 +156,6 @@ class OutputParameter:
         self._measurements.append(measurement)
 
     def default(self):
-        import math
         if math.isnan(self._ltl):
             LTL = self._lsl
         else:
@@ -174,12 +196,15 @@ class OutputParameter:
         u_limit = u_limit * (10**self._exponent)
         lsl = self._lsl * (10**self._exponent)
         usl = self._usl * (10**self._exponent)
+
+        is_pass = self._measurement.read() >= l_limit and self._measurement.read() <= u_limit and self._measurement.is_set
+
         measurement = lsl if self._measurement is None else self._measurement.read() * (10**self._exponent)
         return generate_PTR_dict(
             test_num=self._id,
             head_num=0,
             site_num=int(site_num),
-            is_pass=is_pass == Result.Pass(),
+            is_pass=is_pass,
             param_flag=0,
             measurement=measurement,
             test_txt=self._get_output_parameter_name(),
@@ -228,10 +253,9 @@ class OutputParameter:
 
     def _get_ptr_test_result(self):
         ll, ul = self._get_limits()
-        if self._measurement is None:
+        if not self._measurement.is_set:
             raise Exception(f'no measured value is available for test parameter "{self._get_output_parameter_name()}"')
 
-        import math
         if math.isnan(ll) and math.isnan(ul):
             return (Result.Pass(), 1)
 
@@ -250,10 +274,9 @@ class OutputParameter:
 
     def _get_mpr_test_result(self):
         ll, ul = self._get_limits()
-        if self._measurement is None:
+        if not self._measurement.is_set:
             raise Exception(f'no measured value is available for test parameter "{self._get_output_parameter_name()}"')
 
-        import math
         if math.isnan(ll) and math.isnan(ul):
             return (Result.Pass(), 1)
 
@@ -273,7 +296,6 @@ class OutputParameter:
             return (Result.Pass(), pass_result)
 
     def _get_limits(self):
-        import math
         ll, ul = -math.inf, math.inf
         lls = [self._ltl, self._lsl]
         uls = [self._utl, self._usl]
