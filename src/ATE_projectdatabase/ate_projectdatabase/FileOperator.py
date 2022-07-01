@@ -160,7 +160,7 @@ class FileOperator:
         if self.query_open is False:
             raise Exception("Cannot get 'one' when no query is open.")
         items = self.all()
-        assert (len(items) == 1)
+        assert (len(items) == 1), f'{len(items)}'
         return items[0]
 
     def one_or_none(self) -> DBObject:
