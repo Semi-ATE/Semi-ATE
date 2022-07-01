@@ -59,6 +59,9 @@ class NewDeviceWizard(BaseDialog):
             self.package_changed(package)
 
     def _setup_pins(self):
+        # remove 'pins' tab for now as there are still some issue while validating the data
+        # will be resolve in #190
+        self.tabWidget.setTabVisible(1, False)
         if self.hardware.currentText() == '':
             self.tabWidget.setEnabled(False)
             self.available_dies = []
@@ -395,6 +398,10 @@ class NewDeviceWizard(BaseDialog):
 
     def remove_dies(self):
         self.diesInDevice.blockSignals(True)
+
+        if not self.diesInDevice .selectedIndexes():
+            return
+
         row = self.diesInDevice.selectedIndexes()[0].row()
         item = self.diesInDevice.item(row)
         text = item.text()

@@ -19,6 +19,8 @@ class Bininfo:
 
 
 class OutputParameter(ParameterBase):
+    __slots__ = ('name', 'lsl', 'ltl', 'utl', 'usl', 'exponent', 'unit', 'format', 'bin_parameter', 'test_number', 'valid', 'output_validator')
+
     def __init__(self, name: str, parameter: dict, output_validator: OutputValidator):
         self.name = ParameterField(name)
         self.lsl = ParameterField(parameter[OutputColumnKey.LSL()])

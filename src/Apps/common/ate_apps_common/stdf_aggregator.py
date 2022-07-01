@@ -9,7 +9,8 @@ from ate_apps_common.stdf_utils import (generate_FTR, generate_PIR,
                                         generate_TSR, generate_HBR,
                                         generate_SBR, generate_MRR,
                                         generate_MIR, generate_PCR,
-                                        generate_FAR, generate_MPR)
+                                        generate_FAR, generate_MPR,
+                                        generate_FTR_with_test_flag)
 
 
 class StdfPartTestContext:
@@ -23,7 +24,7 @@ STDF_PATH = 'temp_final_stdf_file_on_unload.stdf'
 class StdfTestResultAggregator:
     completed_part_records: List[List[STDR]]
 
-    def __init__(self, node_name: str, lot_id: str, job_name: str, sites: list, file_path: str = ''):
+    def __init__(self, node_name: str, sites: list, lot_id: str = '', job_name: str = '' , file_path: str = ''):
         self.version = 'V4'
         self.endian = '<'
         self.completed_part_records = []
@@ -36,6 +37,14 @@ class StdfTestResultAggregator:
         self.end_timestamp = 0
         self.path = STDF_PATH if not file_path else file_path
         self.sites = sites
+
+        self.user_text = ''
+        self.program_dir = ''
+        self.temperature = ''
+        self.tester_program = ''
+        self.part_id = ''
+        self.package_id = ''
+        self.sublot_id = ''
 
         self._clean_up()
 
@@ -122,48 +131,46 @@ class StdfTestResultAggregator:
     @staticmethod
     def _generate_PTR(ptr_record: dict) -> dict:
         return generate_PTR(
-            test_num = ptr_record['TEST_NUM'],
-            head_num = ptr_record['HEAD_NUM'],
-            site_num = ptr_record['SITE_NUM'],
-            is_pass = ptr_record['TEST_FLG'] == 0,
-            param_flag = ptr_record['PARM_FLG'],
-            measurement = ptr_record['RESULT'],
-            test_txt = ptr_record['TEST_TXT'],
-            alarm_id = ptr_record['ALARM_ID'],
-            l_limit = ptr_record['LO_LIMIT'],
-            u_limit = ptr_record['HI_LIMIT'],
-            unit = ptr_record['UNITS'],
-            fmt = ptr_record['C_RESFMT'],
-            exponent = ptr_record['RES_SCAL'],
-            ls_limit = ptr_record['LO_SPEC'],
-            us_limit = ptr_record['HI_SPEC'],
-            opt_flag = ptr_record['OPT_FLAG'])
+            test_num=ptr_record['TEST_NUM'],
+            head_num=ptr_record['HEAD_NUM'],
+            site_num=ptr_record['SITE_NUM'],
+            is_pass=ptr_record['TEST_FLG'] == 0,
+            param_flag=ptr_record['PARM_FLG'],
+            measurement=ptr_record['RESULT'],
+            test_txt=ptr_record['TEST_TXT'],
+            alarm_id=ptr_record['ALARM_ID'],
+            l_limit=ptr_record['LO_LIMIT'],
+            u_limit=ptr_record['HI_LIMIT'],
+            unit=ptr_record['UNITS'],
+            fmt=ptr_record['C_RESFMT'],
+            exponent=ptr_record['RES_SCAL'],
+            ls_limit=ptr_record['LO_SPEC'],
+            us_limit=ptr_record['HI_SPEC'],
+            opt_flag=ptr_record['OPT_FLAG'])
 
     @staticmethod
     def _generate_FTR(ftr_record: dict) -> dict:
-        rec = generate_FTR(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], False)
-        rec.set_value('TEST_FLG', ftr_record['TEST_FLG'])
-        return rec
+        return generate_FTR_with_test_flag(ftr_record['TEST_NUM'], ftr_record['HEAD_NUM'], ftr_record['SITE_NUM'], ftr_record['TEST_FLG'])
 
     @staticmethod
     def _generate_MPR(mpr_record: dict) -> dict:
         return generate_MPR(
-            test_num = mpr_record['TEST_NUM'],
-            head_num = mpr_record['HEAD_NUM'],
-            site_num = mpr_record['SITE_NUM'],
-            is_pass = mpr_record['TEST_FLG'] == 0,
-            param_flag = mpr_record['PARM_FLG'],
-            measurements = mpr_record['RTN_RSLT'],
-            test_txt = mpr_record['TEST_TXT'],
-            alarm_id = mpr_record['ALARM_ID'],
-            l_limit = mpr_record['LO_LIMIT'],
-            u_limit = mpr_record['HI_LIMIT'],
-            unit = mpr_record['UNITS'],
-            fmt = mpr_record['C_RESFMT'],
-            exponent = mpr_record['RES_SCAL'],
-            ls_limit = mpr_record['LO_SPEC'],
-            us_limit = mpr_record['HI_SPEC'],
-            opt_flag = mpr_record['OPT_FLAG'])
+            test_num=mpr_record['TEST_NUM'],
+            head_num=mpr_record['HEAD_NUM'],
+            site_num=mpr_record['SITE_NUM'],
+            is_pass=mpr_record['TEST_FLG'] == 0,
+            param_flag=mpr_record['PARM_FLG'],
+            measurements=mpr_record['RTN_RSLT'],
+            test_txt=mpr_record['TEST_TXT'],
+            alarm_id=mpr_record['ALARM_ID'],
+            l_limit=mpr_record['LO_LIMIT'],
+            u_limit=mpr_record['HI_LIMIT'],
+            unit=mpr_record['UNITS'],
+            fmt=mpr_record['C_RESFMT'],
+            exponent=mpr_record['RES_SCAL'],
+            ls_limit=mpr_record['LO_SPEC'],
+            us_limit=mpr_record['HI_SPEC'],
+            opt_flag=mpr_record['OPT_FLAG'])
 
     @staticmethod
     def _generate_PIR(pir_record: dict) -> dict:

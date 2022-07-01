@@ -164,7 +164,7 @@ class SequencerBase:
         result = test_result[2]
         self.stdf_data += result
         self.soft_bin = DutTestCaseBase._select_bin(self.soft_bin, test_result)
-        ftr_record = generate_FTR_dict(test_num=test_num, head_num=0, site_num=int(self.site_id), exception=exception)
+        ftr_record = generate_FTR_dict(test_num=test_num, head_num=0, site_num=int(self.site_id), exception=exception, is_pass=test_result[0] == Result.Pass())
         self.stdf_data.append(ftr_record)
 
         self.harness.collect(result + [ftr_record])

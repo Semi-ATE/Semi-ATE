@@ -34,7 +34,7 @@ class Plugin:
 
     @staticmethod
     def prefix():
-        return 'Semi-ATE'
+        return 'Semi_ATE'
 
     @hookimpl
     def get_plugin_identification():
