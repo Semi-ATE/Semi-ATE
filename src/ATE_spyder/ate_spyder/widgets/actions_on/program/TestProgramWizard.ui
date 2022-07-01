@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1266</width>
+    <width>1286</width>
     <height>878</height>
    </rect>
   </property>
@@ -989,6 +989,9 @@
                   <width>600</width>
                   <height>0</height>
                  </size>
+                </property>
+                <property name="contextMenuPolicy">
+                 <enum>Qt::CustomContextMenu</enum>
                 </property>
                 <property name="textElideMode">
                  <enum>Qt::ElideNone</enum>

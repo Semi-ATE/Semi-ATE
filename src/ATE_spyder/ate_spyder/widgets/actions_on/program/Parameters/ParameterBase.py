@@ -14,6 +14,7 @@ GREEN = (34, 117, 76)
 
 
 class ParameterBase():
+    __slots__ = ('table', 'table_row')
 
     def __init__(self):
         self.table = None

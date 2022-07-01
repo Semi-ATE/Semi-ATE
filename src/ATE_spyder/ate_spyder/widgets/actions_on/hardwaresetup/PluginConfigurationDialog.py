@@ -14,7 +14,7 @@ class PluginConfigurationDialog(BaseDialog):
         self.project_info = project_info
         self.object_name = object_name
         self.target_hardware = hardware
-        self.cfg = {}
+        self.cfg = current_config
 
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', self.__class__.__name__)))
         saveButton = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)

@@ -4,6 +4,15 @@ from Semi_ATE.STDF import (PTR, PRR, PIR, TSR, SBR, HBR, MRR, MIR, PCR, FAR, FTR
 ENDIAN = '<'
 
 
+def flag_array_to_int(flags):
+    counter = -1
+    num = 0
+    for index, flag in enumerate(flags[::counter]):
+        num += pow(2, index) * int(flag)
+
+    return num
+
+
 def generate_PTR_dict(test_num, head_num, site_num,
                       is_pass, param_flag, measurement,
                       test_txt, alarm_id, l_limit, u_limit,
@@ -15,9 +24,11 @@ def generate_PTR_dict(test_num, head_num, site_num,
                               test_txt, alarm_id, l_limit, u_limit,
                               unit, fmt, exponent, ls_limit, us_limit,
                               opt_flag).to_dict()
-    ptr_record['TEST_FLG'] = flag_array_to_int(ptr_record['TEST_FLG'], ENDIAN)
-    ptr_record['PARM_FLG'] = flag_array_to_int(ptr_record['PARM_FLG'], ENDIAN)
-    ptr_record['OPT_FLAG'] = flag_array_to_int(ptr_record['OPT_FLAG'], ENDIAN)
+
+    ptr_record['TEST_FLG'] = flag_array_to_int(ptr_record['TEST_FLG'])
+    ptr_record['PARM_FLG'] = flag_array_to_int(ptr_record['PARM_FLG'])
+    ptr_record['OPT_FLAG'] = flag_array_to_int(ptr_record['OPT_FLAG'])
+
     record.update(ptr_record)
     return record
 
@@ -35,7 +46,7 @@ def generate_PTR(test_num, head_num, site_num,
     rec.set_value('SITE_NUM', site_num)
     rec.set_value('TEST_NUM', test_num)
 
-    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b00000001)
+    rec.set_value('TEST_FLG', 0b00000000 if is_pass else 0b10000000)
     rec.set_value('PARM_FLG', param_flag)
     rec.set_value('RESULT', measurement if measurement is not None else ls_limit)
     rec.set_value('TEST_TXT', test_txt)
@@ -114,8 +125,10 @@ def generate_PRR_dict(head_num, site_num, is_pass,
                               num_tests, hard_bin, soft_bin,
                               x_coord, y_coord, test_time,
                               part_id, part_txt, part_fix).to_dict()
-    prr_record['PART_FLG'] = flag_array_to_int(prr_record['PART_FLG'], ENDIAN)
-    prr_record['PART_FIX'] = flag_array_to_int(prr_record['PART_FIX'], ENDIAN)
+
+    prr_record['PART_FLG'] = flag_array_to_int(prr_record['PART_FLG'])
+    prr_record['PART_FIX'] = flag_array_to_int(prr_record['PART_FIX'])
+
     record.update(prr_record)
     return record
 
@@ -155,32 +168,25 @@ def generate_TSR_dict(head_num, site_num, test_typ, test_num,
                               exec_cnt, fail_cnt, alarm_cnt, test_nam,
                               seq_name, test_lbl, opt_flag, test_tim,
                               test_min, test_max, tst_sums, tst_sqrs).to_dict()
-    tsr_record['OPT_FLAG'] = flag_array_to_int(tsr_record['OPT_FLAG'], ENDIAN)
+
+    tsr_record['OPT_FLAG'] = flag_array_to_int(tsr_record['OPT_FLAG'])
+
     record.update(tsr_record)
     return record
 
 
-def flag_array_to_int(flags, endian):
-    counter = 1
-    if endian == '<':
-        counter = -1
-
-    if not flags:
-        return
-
-    num = 0
-    for index, flag in enumerate(flags[::counter]):
-        num += pow(2, index) * int(flag)
-
-    return num
-
-
-def generate_FTR(test_num, head_num, site_num, exception, opt_flag=255):
+def generate_FTR(test_num: int, head_num: int, site_num: int, exception: bool, is_pass: bool, opt_flag: int = 255) -> dict:
     rec = FTR('V4', endian=ENDIAN)
     rec.set_value('TEST_NUM', test_num)
     rec.set_value('HEAD_NUM', head_num)
     rec.set_value('SITE_NUM', site_num)
-    rec.set_value('TEST_FLG', 0b10000000 if exception else 0b00000001)
+    if exception:
+        rec.set_value('TEST_FLG', 0b00000001)
+    elif not is_pass:
+        rec.set_value('TEST_FLG', 0b10000000)
+    else:
+        rec.set_value('TEST_FLG', 0b00000000)
+
     # RTN_ICNT and PGM_ICNT field must be initialized to satisfy the stdf-record generator
     rec.set_value('RTN_ICNT', 0)
     rec.set_value('PGM_ICNT', 0)
@@ -188,11 +194,27 @@ def generate_FTR(test_num, head_num, site_num, exception, opt_flag=255):
     return rec
 
 
-def generate_FTR_dict(test_num, head_num, site_num, exception):
+def generate_FTR_with_test_flag(test_num: int, head_num: int, site_num: int, test_flag: int, opt_flag: int = 255) -> dict:
+    rec = FTR('V4', endian=ENDIAN)
+    rec.set_value('TEST_NUM', test_num)
+    rec.set_value('HEAD_NUM', head_num)
+    rec.set_value('SITE_NUM', site_num)
+    rec.set_value('TEST_FLG', test_flag)
+
+    # RTN_ICNT and PGM_ICNT field must be initialized to satisfy the stdf-record generator
+    rec.set_value('RTN_ICNT', 0)
+    rec.set_value('PGM_ICNT', 0)
+    rec.set_value('OPT_FLAG', opt_flag)
+    return rec
+
+
+def generate_FTR_dict(test_num: int, head_num: int, site_num: int, exception: bool, is_pass: bool) -> dict:
     record = {'type': 'FTR'}
-    ftr_record = generate_FTR(test_num, head_num, site_num, exception).to_dict()
-    ftr_record['TEST_FLG'] = flag_array_to_int(ftr_record['TEST_FLG'], ENDIAN)
-    ftr_record['OPT_FLAG'] = flag_array_to_int(ftr_record['OPT_FLAG'], ENDIAN)
+    ftr_record = generate_FTR(test_num, head_num, site_num, exception, is_pass).to_dict()
+
+    ftr_record['TEST_FLG'] = flag_array_to_int(ftr_record['TEST_FLG'])
+    ftr_record['OPT_FLAG'] = flag_array_to_int(ftr_record['OPT_FLAG'])
+
     record.update(ftr_record)
     return record
 
@@ -280,6 +302,7 @@ def generate_SDR(head_num: int, site_grp: int, site_cnt: int, site_nums: list) -
     rec.set_value('SITE_NUM', [int(site_num) for site_num in site_nums])
     return rec
 
+
 def generate_MPR_dict(test_num, head_num, site_num,
                       is_pass, param_flag, measurements,
                       test_txt, alarm_id, l_limit, u_limit,
@@ -291,11 +314,14 @@ def generate_MPR_dict(test_num, head_num, site_num,
                               test_txt, alarm_id, l_limit, u_limit,
                               unit, fmt, exponent, ls_limit, us_limit,
                               opt_flag).to_dict()
-    mpr_record['TEST_FLG'] = flag_array_to_int(mpr_record['TEST_FLG'], ENDIAN)
-    mpr_record['PARM_FLG'] = flag_array_to_int(mpr_record['PARM_FLG'], ENDIAN)
-    mpr_record['OPT_FLAG'] = flag_array_to_int(mpr_record['OPT_FLAG'], ENDIAN)
+
+    mpr_record['TEST_FLG'] = flag_array_to_int(mpr_record['TEST_FLG'])
+    mpr_record['PARM_FLG'] = flag_array_to_int(mpr_record['PARM_FLG'])
+    mpr_record['OPT_FLAG'] = flag_array_to_int(mpr_record['OPT_FLAG'])
+
     record.update(mpr_record)
     return record
+
 
 def generate_MPR(
     test_num, head_num, site_num,
@@ -316,7 +342,7 @@ def generate_MPR(
     # We set RTN_ICNT to 0. This implies that the stat and index arrays (RTN_STAT, RTN_INDX) are both empty,
     # i.e. we do not have to set RTN_STAT, RTN_INDX fields here!!!
     # This is done as we do not have a Pin Map Record (PMR). For details refer to STDF-V4-spec.pdf.
-    rec.set_value('RTN_ICNT', 0 )
+    rec.set_value('RTN_ICNT', 0)
 
     # Here we always write the scale exponent and also the limits (test- and spec limits).
     # This implies that bit 0, 2, 3,  4, 5, 6, and 7 of 'OPT_FLAG' are set to 0, i.e. they are NOT MISSING

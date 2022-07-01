@@ -22,7 +22,7 @@ def test_can_create_output_parameter():
 def test_can_write_output_parameter():
     op = OutputParameter("Op", 0, 10, 20, 30, 40, 1)
     op.write(25)
-    assert(op._measurement == 25)
+    assert(op._measurement.read() == 25)
 
 
 def test_output_parameter_is_pass_yields_false_if_out_of_spec():

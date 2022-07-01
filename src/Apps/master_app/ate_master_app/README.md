@@ -25,14 +25,15 @@ Configuration of the master application is done by writing a JSON file called **
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",
     "skip_jobdata_verification": false,
-    "filesystemdatasource.path": ".",
-    "filesystemdatasource.jobpattern": "le#jobname#.xml",
+    "filesystemdatasource_path": ".",
+    "filesystemdatasource_jobpattern": "le#jobname#.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
     "site_layout": { "0": [0, 0]},
     "tester_type": "Semi-ATE Master Single Tester",
     "loglevel": 10,
-    "web_root_folder": "./"
+    "web_root_folder": "./",
+    "develop_mode": false
 }
 ```
 
@@ -49,13 +50,14 @@ Configuration of the master application is done by writing a JSON file called **
 * `jobsource` defines the location where to find test job definitions
 * `jobformat` defines the format of the job definitions
 * `skip_jobdata_verification` defines whether the job definition has to be verified
-* `filesystemdatasource.path` defines the path where to find job definitions
-* `filesystemdatasource.jobpattern` defines the pattern for the name of the test job file. This is done by replacing _#jobname#_ by the job id, i.e. the lot id.
+* `filesystemdatasource_path` defines the path where to find job definitions
+* `filesystemdatasource_jobpattern` defines the pattern for the name of the test job file. This is done by replacing _#jobname#_ by the job id, i.e. the lot id.
 * `enable_timeouts` defines whether or not timeouts are enabled. If enabled the system will produce some error message if certain things like becomming ready, loading or undloading a test program etc. take to much time.
 * `user_settings_filepath` defines where the user specific settings are stored. These settings are set via the web interface.
 * `site_layout` defines for each site the layout. The layout is the start coordinate of some site
 * `tester_type` defines the type of he tester. This provided by the tester plugin.
 * `loglevel` defines the log-level of the control application
+* `develop_mode` defines wether the master application shall start in develop mode, such that it's possible to debug a test program within spyder (possible value: true or false)
 
 ### Starting the Master Application
 
@@ -70,3 +72,20 @@ We assume that the semi-ate-master-app package has been installed in the current
 master   |22/03/2022 04:45:37 PM |INFO    |mqtt connected
 master   |22/03/2022 04:45:37 PM |INFO    |Master state is connecting
 ```
+
+### Starting the Master Application in Develop Mode
+Setting the develop mode to 'true' shall start the master application in a different mode and different state
+
+
+```Console
+(environment)> launch_master
+======== Running on http://127.0.0.1:8081 ========
+(Press CTRL+C to quit)
+master   |21/06/2022 02:31:58 PM |INFO    |mqtt connected
+master   |21/06/2022 02:31:58 PM |INFO    |Master state is connecting
+master   |21/06/2022 02:31:58 PM |INFO    |Master state is loading
+```
+
+In Loading state, master application will wait till a test program started and is ready to accept further commands
+
+__note__: the `device_id` value will be overridden to match the default value consumed by the test app (`device_id`='developmode')

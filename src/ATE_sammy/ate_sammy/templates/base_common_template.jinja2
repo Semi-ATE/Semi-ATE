@@ -113,11 +113,15 @@ class Context:
 
 
 def apply_configuration(feature_dict):
+    from pathlib import Path
     for name, instance in feature_dict.items():
-        config_file_path = pathlib.Path(os.path.join(pathlib.Path(__file__).parent.absolute(), "..", f"{name}.json"))
-        if os.path.exists(config_file_path):
+        config_file_path = Path(__file__).parent.joinpath("..", f"{name}.json")
+        configuration = {}
+        if config_file_path.exists():
             with open(config_file_path) as reader:
-                instance.apply_configuration(json.loads(reader.read()))
+                configuration = json.loads(reader.read())
+
+        instance.apply_configuration(configuration)
 
 
 def make_context(

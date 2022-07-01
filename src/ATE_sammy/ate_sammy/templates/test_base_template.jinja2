@@ -25,10 +25,9 @@ class {{ definition['name'] }}_OP:
     def __init__(self):
         self.num_outputs = 0
         {% for output_parameter in output_params %}
-        self.{{ output_parameter[OutputColumnKey.NAME()] }} = OutputParameter('{{ output_parameter[OutputColumnKey.NAME()] }}', {{  output_parameter[OutputColumnKey.LSL()] }}, {{  output_parameter[OutputColumnKey.LTL()] }}, {{  output_parameter[OutputColumnKey.NOM()] }}, {{  output_parameter[OutputColumnKey.UTL()] }}, {{  output_parameter[OutputColumnKey.USL()] }}, {{  output_parameter[OutputColumnKey.POWER()] }})
+        self.{{ output_parameter[OutputColumnKey.NAME()] }} = OutputParameter('{{ output_parameter[OutputColumnKey.NAME()] }}', {{  output_parameter[OutputColumnKey.LSL()] }}, {{  output_parameter[OutputColumnKey.LTL()] }}, {{  output_parameter[OutputColumnKey.NOM()] }}, {{  output_parameter[OutputColumnKey.UTL()] }}, {{  output_parameter[OutputColumnKey.USL()] }}, {{  output_parameter[OutputColumnKey.POWER()] }}, {{ output_parameter[OutputColumnKey.MPR()] }})
         self.{{ output_parameter[OutputColumnKey.NAME()] }}.set_format('{{  output_parameter[OutputColumnKey.FMT()] }}')
         self.{{ output_parameter[OutputColumnKey.NAME()] }}.set_unit('{{  output_parameter[OutputColumnKey.UNIT()] }}')
-        self.{{ output_parameter[OutputColumnKey.NAME()] }}.set_mpr({{  output_parameter[OutputColumnKey.MPR()] }})
         {% endfor %}
 
     def set_parameter(self, name: str, id: int, ltl: float, utl: float, bin: int, bin_result: int, test_desc: str):

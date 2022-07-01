@@ -110,6 +110,7 @@ class ErrorMessage(Enum):
     TestDescriptionNotUnique = 'test description must be unique'
     ParameterNotValid = 'parameter are not valid'
     BinTableNotfilled = 'make sure to fill bin table'
+    BinTableConstraintUnfulfilled = 'make sure that bin number and bin name are unique'
     UserNameMissing = 'user naming is missing'
     UserNameUsed = 'user defined name is already used'
 

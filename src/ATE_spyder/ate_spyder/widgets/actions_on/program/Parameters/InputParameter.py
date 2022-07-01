@@ -13,6 +13,8 @@ class InputParameter(ParameterBase):
             editable = ParameterEditability.Selectable() if editable == ParameterEditability.Editable() else editable
             super().__init__(value, editable)
 
+    __slots__ = ('name', 'min', 'max', 'format', 'unit', 'exponent', 'type', 'default', 'value', 'valid', 'shmoo')
+
     def __init__(self, name, input_params):
         editable = ParameterEditability.Editable()
 

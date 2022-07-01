@@ -141,14 +141,14 @@ class WebsocketCommunicationHandler:
         return self._create_message(MessageTypes.Status(), payload)
 
     def _create_configuration_message(self, configuration):
-        payload = {'broker_host': configuration['broker_host'],
-                   'broker_port': configuration['broker_port'],
+        payload = {'broker_host': configuration.broker_host,
+                   'broker_port': configuration.broker_port,
                    'device_id': self._app['master_app'].device_id,
                    'sites': self._app['master_app'].configuredSites,
-                   'handler': configuration['Handler'],
-                   'environment': configuration['environment'],
-                   'jobsource': configuration['jobsource'],
-                   'jobformat': configuration['jobformat'],
+                   'handler': configuration.Handler,
+                   'environment': configuration.environment,
+                   'jobsource': configuration.jobsource,
+                   'jobformat': configuration.jobformat,
                    }
 
         return self._create_message(MessageTypes.Configuration(), payload)
@@ -201,7 +201,6 @@ class WebsocketCommunicationHandler:
 
     def is_ws_connection_established(self):
         return len(self._websockets) > 0
-
 
 async def index_handler(request):
     static_file_path = request.app['static_file_path']
