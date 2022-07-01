@@ -68,14 +68,14 @@ class FileOperator:
         import glob
         for f in glob.glob(file_path):
             try:
-                with open(f, 'r') as f:
-                    loaded_data = json.load(f)
+                with open(f, 'r') as file:
+                    loaded_data = json.load(file)
                     return_val = []
                     for item in loaded_data:
                         return_val.append(self._make_db_object(item))
-                self.data_cache[f.name] = return_val
+                self.data_cache[file.name] = return_val
             except Exception:
-                self.data_cache[f.name] = []
+                self.data_cache[file.name] = []
 
         # nastyness: if nothing was found in the FS we at least create
         # the file the specifies our filename:
@@ -87,7 +87,6 @@ class FileOperator:
         # DBObjects are not easily serializable, we serialize
         # them each on their own...
         for name, itemlist in self.data_cache.items():
-            print(f'Name: {name}')
             data_to_write = []
             for item in itemlist:
                 data_to_write.append(item.__dict__)
