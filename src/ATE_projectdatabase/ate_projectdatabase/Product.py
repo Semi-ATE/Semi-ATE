@@ -23,7 +23,7 @@ class Product:
         product = {"name": name, "device": device, "hardware": hardware, "is_enabled": is_enabled,
                    "grade": grade, "quality": quality, "grade_reference": grade_reference, "type": type,
                    "customer": customer}
-        session.query(Types.Product())
+        session.query_with_subtype(Types.Product(), name)
         session.add(product)
         session.commit()
 

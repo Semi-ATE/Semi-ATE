@@ -77,8 +77,8 @@ class FileOperator:
             except Exception:
                 self.data_cache[f.name] = []
 
-        # nastyness: if nothing was found in the FS we atleast create
-        # the file thet specifies our filename:
+        # nastyness: if nothing was found in the FS we at least create
+        # the file the specifies our filename:
         if len(self.data_cache) == 0:
             file_path = file_path.replace("*", "")
             self.data_cache[file_path] = []
@@ -130,6 +130,7 @@ class FileOperator:
             self.load_configuration(type, subtypes)
             self.current_type = type
             self.current_subtypes = subtypes
+
         self.query_open = True
         self.filter_expression = lambda x: True
         self.sort_expression = None
