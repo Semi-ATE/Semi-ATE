@@ -191,7 +191,6 @@ def test_in_progress(self, site_id: int)
 def test_done(self, site_id: int, timeout: int)
 def setup(self)
 def teardown(self)
-
 ```
 __note__: `get_tester` will also be used in the hwsetup in semi-ate-plugin to determine the number of sites supported with which the parallelism is configured. Therefore, prevent any interaction with the tester hardware while instantiating the tester (e.g in `__init__` function) and use the `setup()` and `teardown()` functions for that.
 

@@ -46,8 +46,6 @@ class Context:
         self.logger.set_logger_level(LogLevel.Info)
         try:
             self.auto_script = auto_script
-            self.auto_script.set_logger(self.logger)
-            self.auto_script.set_context(self)
             self.harness.set_after_terminate_callback(lambda: self.auto_script.after_terminate_teardown())
             self.harness.set_logger(self.logger)
             sequencer.set_logger(self.logger)
