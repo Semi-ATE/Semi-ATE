@@ -191,7 +191,9 @@ class ProjectNavigation(QObject):
         return self.file_operator
 
     def get_active_hardware_names(self):
-        return [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list = [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list.sort()
+        return hw_list
 
     def get_hardware_names(self):
         '''
