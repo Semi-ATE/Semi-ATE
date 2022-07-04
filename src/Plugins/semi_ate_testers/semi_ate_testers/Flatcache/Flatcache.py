@@ -1,9 +1,16 @@
 import requests
 import json
+from pydantic import BaseModel
+
+
+class FlatcacheConfig(BaseModel):
+    ip: str
+    port: int
 
 
 class Flatcache:
     def __init__(self):
+        self.config: FlatcacheConfig = None
         self.target_ip = ""
         self.target_port = ""
         self.last_part_id = ""
@@ -11,13 +18,11 @@ class Flatcache:
         self.subdoc_cache = {}
 
     def apply_configuration(self, data: dict):
-        self.target_ip = data["ip"]
-        self.target_port = data["port"]
+        self.config = FlatcacheConfig(**data)
 
         # Canary request -> check if service is available (i.e. requests succeeds)
         # and if it reports the correct API version.
-        url = f"http://{self.target_ip}:{self.target_port}/api"
-        r = requests.get(url)
+        r = requests.get(self.url('api'))
         api_version = json.loads(r.content)
         version = api_version["version"]
         if version != 1:
@@ -55,8 +60,7 @@ class Flatcache:
         return self.get_value(self.last_part_id, value_name)
 
     def do_fetch(self, part_id):
-        url = f"http://{self.target_ip}:{self.target_port}/{part_id}"
-        r = requests.get(url)
+        r = requests.get(self.url(part_id))
         try:
             values = json.loads(r.content)
             self.last_part_id = part_id
@@ -73,9 +77,11 @@ class Flatcache:
     def publish(self, part_id: str, program_name: str, data):
         # Trouble: This will completely replace the date stored in the cache
         #  with "data" -> we don't want that.
-        url = f"http://{self.target_ip}:{self.target_port}/{part_id}"
-        requests.put(url, json={"subdocid": str(program_name), "contents": json.dumps(data)})
+        requests.put(self.url(part_id), json={"subdocid": str(program_name), "contents": json.dumps(data)})
 
     def drop_part(self, part_id: str):
-        url = f"http://{self.target_ip}:{self.target_port}/{part_id}"
-        requests.delete(url)
+        requests.delete(self.url(part_id))
+
+    def utl(self, part_id: str):
+        return f"http://{self.config.ip}:{self.config.port}/{part_id}"
+
