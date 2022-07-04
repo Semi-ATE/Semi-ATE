@@ -444,7 +444,7 @@ class TestProgramWizard(BaseDialog):
         column = item.column()
         test_name = self.selectedTests.item(row, TEST_INSTANCE_COL).text()
 
-        if column == CHECK_TEST_COL:
+        if column == CHECK_TEST_COL and not self._is_production():
             new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
             item.setCheckState(new_check_state)
             is_selected = True if new_check_state == QtCore.Qt.Checked else False
@@ -910,6 +910,9 @@ class TestProgramWizard(BaseDialog):
         self.selectedTests.setItem(row, 0, test_base_item)
         self.selectedTests.setItem(row, 1, test_name_item)
         self.selectedTests.setItem(row, 2, check_item)
+
+    def _is_production(self) -> bool:
+        return self.owner_section_name == 'production'
 
     def _validate_parameter(self, parameter):
         if not parameter.is_valid_value():
