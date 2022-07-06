@@ -6,6 +6,7 @@ from semi_ate_testers.master_testers.dummy_master_parallel_tester import DummyMa
 from semi_ate_testers.Flatcache import Flatcache
 from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
 from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
+from semi_ate_testers.testers.tester_interface import TesterInterface
 
 class BusinessObjectStandin:
     def __init__(self, logger: Logger = None):
@@ -161,6 +162,25 @@ class Plugin:
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
             return DummyMiniSCT()
+
+    @hookimpl
+    def get_tester_type(tester_name: str):
+        if tester_name == f"{Plugin.prefix()} Single Tester":
+            return DummySingleTester
+        elif tester_name == f"{Plugin.prefix()} Parallel Tester":
+            return DummyParallelTester
+        elif tester_name == f"{Plugin.prefix()} Mini-SCT":
+            import platform
+            # Tester package for minisct hardware is not available on windows
+            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
+                from semi_ate_testers.testers.minisct import MiniSCT
+                return MiniSCT
+            else:
+                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+                return DummyMiniSCT
+        elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
+            from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+            return DummyMiniSCT
 
     @hookimpl
     def get_tester_master(tester_name: str):

@@ -18,6 +18,8 @@ from ate_test_app.sequencers.DutTesting.Result import Result
 from ate_test_app.parameters.ResolverFactory import create_parameter_resolver
 from ate_common.logger import (LogLevel, Logger)
 
+from {{project_name}}.{{definition['hardware']}}.{{definition['base']}}.common import Context
+
 
 class {{ definition['name'] }}_OP:
     """Class definition for the output parameters of {{ definition['name'] }}."""
@@ -61,6 +63,7 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
 
     def __init__(self, instance_name: str, sbin, test_num, context):
         super().__init__(None, None, instance_name, sbin, test_num, context)
+        self.context: Context = context
         self.ip = {{ definition['name'] }}_IP()
         self.op = {{ definition['name'] }}_OP()
 
