@@ -446,7 +446,6 @@ class TestProgramWizard(BaseDialog):
 
         if column == CHECK_TEST_COL and not self._is_production():
             new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
-            item.setCheckState(new_check_state)
             is_selected = True if new_check_state == QtCore.Qt.Checked else False
             self._custom_parameter_handler.update_test_selectability(test_name, is_selected)
 
@@ -978,11 +977,14 @@ class TestProgramWizard(BaseDialog):
         name_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return name_item
 
-    @staticmethod
-    def _generate_checkable_item(is_selected: bool = True):
+    def _generate_checkable_item(self, is_selected: bool = True):
         checkable_item = QtWidgets.QTableWidgetItem()
-        checkable_item.setCheckState(QtCore.Qt.Checked if is_selected else QtCore.Qt.Unchecked)
-        checkable_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        if self._is_production():
+            checkable_item.setToolTip('test selection is disabled in production flow')
+            checkable_item.setFlags(checkable_item.flags() & ~QtCore.Qt.ItemIsEnabled)
+        else:
+            checkable_item.setCheckState(QtCore.Qt.Checked if is_selected else QtCore.Qt.Unchecked)
+            checkable_item.setFlags(QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return checkable_item
 
     def _populate_binning_tree(self):
