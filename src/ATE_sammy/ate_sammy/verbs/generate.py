@@ -138,7 +138,7 @@ class Generate(VerbBase):
                 continue
 
             print(f"        gen {test_target.name}")
-            if not Path(f'{test_path}.py'):
+            if not Path(f'{test_path}.py').exists():
                 test_target_generator(self.template_path, cwd, testdefinition)
                 continue
 
