@@ -82,6 +82,5 @@ class Flatcache:
     def drop_part(self, part_id: str):
         requests.delete(self.url(part_id))
 
-    def utl(self, part_id: str):
+    def url(self, part_id: str):
         return f"http://{self.config.ip}:{self.config.port}/{part_id}"
-
