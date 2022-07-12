@@ -1,10 +1,18 @@
+from pathlib import Path
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 import os
 
 
 class AutoScriptGenerator:
-    def __init__(self, template_dir, file_name):
+    def __init__(self, template_dir: str, project_path: str, hardware_definition: dict):
+        hardware = hardware_definition['hardware']
+        file_name = f'{hardware}_auto_script.py'
+        path = Path(project_path).joinpath('src', hardware, file_name)
+        # if the file exists already we shall do nothing to prevent overriding user configuration
+        if path.exists():
+            return
+
         template_path = os.path.normpath(template_dir)
         file_loader = FileSystemLoader(template_path)
         env = Environment(loader=file_loader)
@@ -17,5 +25,6 @@ class AutoScriptGenerator:
 
         template = env.get_template(template_name)
         output = template.render()
-        with open(file_name, 'w', encoding='utf-8') as fd:
+
+        with open(path, 'w', encoding='utf-8') as fd:
             fd.write(output)

@@ -22,3 +22,9 @@ class TesterInterface(ABC):
     @abstractmethod
     def test_done(self, site_id: int, timeout: int):
         pass
+
+    def setup(self):
+        pass
+
+    def teardown(self):
+        pass
