@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class TesterInterface(ABC):
     @abstractmethod
     def get_sites_count(self):
@@ -19,4 +20,10 @@ class TesterInterface(ABC):
 
     @abstractmethod
     def do_init_state(self, site_id: int):
+        pass
+
+    def setup(self):
+        pass
+
+    def teardown(self):
         pass

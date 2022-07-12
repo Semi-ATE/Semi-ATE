@@ -5,6 +5,8 @@ from SCT8.tester import Tester as sct8
 
 
 class MiniSCT(sct8):
+    def __init__(self):
+        self.tester = sct8()
 
     def get_sites_count(self):
         return 1

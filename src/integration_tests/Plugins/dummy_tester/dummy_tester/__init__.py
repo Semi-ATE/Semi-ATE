@@ -122,7 +122,7 @@ class Plugin:
             return BusinessObjectStandin()
 
     @hookimpl
-    def get_tester(tester_name: str):
+    def get_tester(tester_name: str, logger: Logger):
         if tester_name == "DummySingleTester":
             return DummySingleTester()
         elif tester_name == "DummyParallelTester":
@@ -144,4 +144,5 @@ class Plugin:
     def get_configuration_options(object_name):
         if "DummyTester." in object_name:
             return BusinessObjectStandin()
+
 __version__ = '0.0.0'

@@ -64,7 +64,7 @@ class ATEPlugin:
         pass
 
     @hookspec
-    def get_tester(tester_name):
+    def get_tester(tester_name, logger: Logger):
         pass
 
     @hookspec
