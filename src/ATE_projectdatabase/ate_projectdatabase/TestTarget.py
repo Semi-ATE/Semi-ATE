@@ -8,7 +8,7 @@ class TestTarget:
     def add(session: FileOperator, name: str, prog_name: str, hardware: str, base: str, test: str, is_default: bool, is_enabled: bool):
         target = {"name": name, "prog_name": prog_name, "hardware": hardware, "base": base, "test": test,
                   "is_default": is_default, "is_enabled": is_enabled, "is_changed": False, "is_changed": False}
-        session.query(Types.Testtarget()).add(target)
+        session.query_with_subtype(Types.Testtarget(), name).add(target)
         session.commit()
 
     @staticmethod
