@@ -18,7 +18,10 @@ from ate_test_app.sequencers.DutTesting.Result import Result
 from ate_test_app.parameters.ResolverFactory import create_parameter_resolver
 from ate_common.logger import (LogLevel, Logger)
 
-from {{project_name}}.{{definition['hardware']}}.{{definition['base']}}.common import Context
+import sys
+from pathlib import Path
+parent_path = sys.path.append(Path(__file__).parent.parent.resolve())
+from common import Context
 
 
 class {{ definition['name'] }}_OP:
