@@ -10,6 +10,7 @@ from ate_sammy.migration.migration_scripts.migration_version_5 import MigrationV
 from ate_sammy.migration.migration_scripts.migration_version_6 import MigrationVersion6
 from ate_sammy.migration.migration_scripts.migration_version_7 import MigrationVersion7
 from ate_sammy.migration.migration_scripts.migration_version_8 import MigrationVersion8
+from ate_sammy.migration.migration_scripts.migration_version_9 import MigrationVersion9
 
 from ate_sammy.migration.utils import (generate_path, write_version_to_file, VERSION, VERSION_FILE_NAME)
 
@@ -23,6 +24,7 @@ MIGRATORS = [
     MigrationVersion6(),
     MigrationVersion7(),
     MigrationVersion8(),
+    MigrationVersion9(),
 ]
 
 
@@ -63,6 +65,7 @@ class MigrationTool:
             5: lambda: MigrationVersion6(),
             6: lambda: MigrationVersion7(),
             7: lambda: MigrationVersion8(),
+            8: lambda: MigrationVersion9(),
         }[version_num]()
 
     @staticmethod
