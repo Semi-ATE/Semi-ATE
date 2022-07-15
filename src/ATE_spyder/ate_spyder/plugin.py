@@ -14,11 +14,12 @@ from spyder.api.plugin_registration.decorators import on_plugin_available
 from ate_spyder.project import ATEPluginProject
 from ate_spyder.project import ATEProject
 from ate_spyder.widgets.main_widget import ATEWidget
+
 # Third party imports
 # Local imports
 
 # Localization
-_ = get_translation('spyder')
+_ = get_translation("spyder")
 
 
 # --- Plugin
@@ -27,8 +28,9 @@ class ATE(SpyderDockablePlugin):
     """
     Breakpoint list Plugin.
     """
-    NAME = 'ate'
-    REQUIRES = [Plugins.Toolbar, Plugins.Projects, Plugins.Editor]   # TODO: fix crash  (Plugins.Editor)
+
+    NAME = "ate"
+    REQUIRES = [Plugins.Toolbar, Plugins.Projects, Plugins.Editor]  # TODO: fix crash  (Plugins.Editor)
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
     CONF_SECTION = NAME
@@ -62,12 +64,15 @@ class ATE(SpyderDockablePlugin):
         toolbar = self.get_plugin(Plugins.Toolbar)
 
         # extend semi-ate toolbar with labml extension (written by Zlin526F)
-        lab_ml_package_name = 'labml-adjutancy'
+        lab_ml_package_name = "labml-adjutancy"
         import pkg_resources
+
         packages = [pkg.key for pkg in pkg_resources.working_set]
         if lab_ml_package_name in packages:
             from labml_adjutancy.ctrl.toolbar import ControlToolBar
+
             control_toolbar = ControlToolBar(widget, "ATE Plugin control toolbar")
+            widget.toolbar.set_external_signal(control_toolbar.sig_run_changed)
             widget.toolbar.add_external_toolbar_item(control_toolbar.get_items())
 
         toolbar.add_application_toolbar(widget.toolbar)
@@ -91,9 +96,9 @@ class ATE(SpyderDockablePlugin):
 
     def on_mainwindow_visible(self):
         # Hide by default the first time the plugin is loaded.
-        if self.get_conf('first_time_shown', True):
+        if self.get_conf("first_time_shown", True):
             self.get_widget().toggle_view(False)
-            self.set_conf('first_time_shown', False)
+            self.set_conf("first_time_shown", False)
 
     # --- ATE Plugin API
     # ------------------------------------------------------------------------

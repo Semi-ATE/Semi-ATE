@@ -12,27 +12,27 @@ from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
 class ToolbarItems:
-    HardwareLabel = 'hardware_label'
-    HardwareCombo = 'hardware_combo'
-    BaseLabel = 'base_label'
-    BaseCombo = 'base_combo'
-    TargetLabel = 'target_label'
-    TargetCombo = 'target_combo'
-    GroupLabel = 'group_label'
-    GroupCombo = 'group_combo'
+    HardwareLabel = "hardware_label"
+    HardwareCombo = "hardware_combo"
+    BaseLabel = "base_label"
+    BaseCombo = "base_combo"
+    TargetLabel = "target_label"
+    TargetCombo = "target_combo"
+    GroupLabel = "group_label"
+    GroupCombo = "group_combo"
 
 
 class ToolBar(ApplicationToolbar):
-    ID = 'ate_toolbar'
+    ID = "ate_toolbar"
 
     def __init__(self, project_info, parent, identifier):
         super().__init__(parent, identifier)
         self.parent = parent
         self.setMovable(False)
-        self.active_tester = ''
-        self.active_hardware = ''
-        self.active_base = ''
-        self.active_target = ''
+        self.active_tester = ""
+        self.active_hardware = ""
+        self.active_base = ""
+        self.active_target = ""
         self.project_info = project_info
         self.extended_toolbar_items = []
 
@@ -55,12 +55,23 @@ class ToolBar(ApplicationToolbar):
         self.project_info.update_toolbar_elements(hardware, base, target)
         self.project_info.store_settings(hardware, base, target)
 
+    def set_external_signal(self, signal):
+        self.external_signal = signal
+
     def add_external_toolbar_item(self, items: list):
         self.extended_toolbar_items.extend(items)
 
     def get_standard_tooblar_items(self) -> list:
-        return [self.hardware_label, self.hardware_combo, self.base_label, self.base_combo,
-                self.target_label, self.target_combo, self.group_label, self.group_combo]
+        return [
+            self.hardware_label,
+            self.hardware_combo,
+            self.base_label,
+            self.base_combo,
+            self.target_label,
+            self.target_combo,
+            self.group_label,
+            self.group_combo,
+        ]
 
     def toolbar_items(self):
         self.extended_toolbar_items.extend(self.get_standard_tooblar_items())
@@ -89,7 +100,7 @@ class ToolBar(ApplicationToolbar):
         self.hardware_combo.clear()
         available_hardwares = self.project_info.get_active_hardware_names()
         self.hardware_combo.addItems(available_hardwares)
-        self.active_hardware = '' if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
+        self.active_hardware = "" if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
         self.hardware_combo.setCurrentIndex(0 if len(available_hardwares) == 0 else len(available_hardwares) - 1)
 
     def _setup_base(self):
@@ -100,7 +111,7 @@ class ToolBar(ApplicationToolbar):
         self.base_combo = QtWidgets.QComboBox()
         self.base_combo.ID = ToolbarItems.BaseCombo
         self.base_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.base_combo.addItems(['', 'PR', 'FT'])
+        self.base_combo.addItems(["", "PR", "FT"])
 
     def _setup_target(self):
         self.target_label = QtWidgets.QLabel("Target:")
@@ -110,7 +121,7 @@ class ToolBar(ApplicationToolbar):
         self.target_combo = QtWidgets.QComboBox()
         self.target_combo.ID = ToolbarItems.TargetCombo
         self.target_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.target_combo.addItems([''])
+        self.target_combo.addItems([""])
         self.target_combo.setCurrentText(self.active_target)
 
     def _setup_group(self):
@@ -128,7 +139,7 @@ class ToolBar(ApplicationToolbar):
         # remove tests section
         # tests section is active by default (removing it would avoid some confusions)
         for index, group in enumerate(groups):
-            if group.name != 'tests':
+            if group.name != "tests":
                 continue
 
             groups.pop(index)
@@ -209,7 +220,7 @@ class ToolBar(ApplicationToolbar):
     def _rescan_testers(self):
         self.tester_combo.blockSignals(True)
         self.testers.rescan()
-        tester_list = [''] + self.testers.report()
+        tester_list = [""] + self.testers.report()
         self.tester_combo.clear()
         self.tester_combo.addItems(tester_list)
         if self.active_tester in tester_list:
@@ -235,7 +246,7 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _base_changed(self, selected_base):
-        if(self.active_base == selected_base):
+        if self.active_base == selected_base:
             return
 
         self.active_base = selected_base
@@ -255,11 +266,11 @@ class ToolBar(ApplicationToolbar):
 
         if self.active_target in self.project_info.get_active_device_names_for_hardware(self.active_hardware):
             self.base_combo.blockSignals(True)
-            self.base_combo.setCurrentText('FT')
+            self.base_combo.setCurrentText("FT")
             self.base_combo.blockSignals(False)
         elif self.active_target in self.project_info.get_active_die_names_for_hardware(self.active_hardware):
             self.base_combo.blockSignals(True)
-            self.base_combo.setCurrentText('PR')
+            self.base_combo.setCurrentText("PR")
             self.base_combo.blockSignals(False)
         else:
             pass
@@ -270,11 +281,11 @@ class ToolBar(ApplicationToolbar):
     def _update_target(self):
         self.target_combo.blockSignals(True)
         self.target_combo.clear()
-        self.target_combo.addItem('')
-        if self._get_base() == 'FT':
+        self.target_combo.addItem("")
+        if self._get_base() == "FT":
             self.target_combo.addItems(self.project_info.get_active_device_names_for_hardware(self.active_hardware))
 
-        elif self._get_base() == 'PR':
+        elif self._get_base() == "PR":
             self.target_combo.addItems(self.project_info.get_active_die_names_for_hardware(self.active_hardware))
 
         else:
@@ -297,7 +308,7 @@ class ToolBar(ApplicationToolbar):
         self.base_combo.blockSignals(True)
         self.target_combo.blockSignals(True)
         self.hardware_combo.clear()
-        self.base_combo.setCurrentText('')
+        self.base_combo.setCurrentText("")
         self.target_combo.clear()
         self.hardware_combo.blockSignals(False)
         self.base_combo.blockSignals(False)
