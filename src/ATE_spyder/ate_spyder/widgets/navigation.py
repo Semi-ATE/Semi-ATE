@@ -1209,7 +1209,7 @@ class ProjectNavigation(QObject):
             pass
 
     def last_project_setting(self):
-        return os.path.join(self.project_directory, '.lastsettings')
+        return Path(self.project_directory).joinpath('.lastsettings')
 
     def store_settings(self, hardware, base, target):
         import json
