@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>907</width>
+    <width>862</width>
     <height>629</height>
    </rect>
   </property>
@@ -47,7 +47,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="TestName"/>
+        <widget class="QComboBox" name="testName">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_6">
@@ -60,23 +67,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="ForHardwareSetup">
-         <item>
-          <property name="text">
-           <string>HW0</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HW1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>HW2</string>
-          </property>
-         </item>
-        </widget>
+        <widget class="QComboBox" name="hardware"/>
        </item>
        <item>
         <widget class="QLabel" name="label_7">
@@ -89,7 +80,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="WithBase">
+        <widget class="QComboBox" name="base">
          <item>
           <property name="text">
            <string>PR</string>
@@ -101,6 +92,19 @@
           </property>
          </item>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -150,7 +154,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit"/>
+              <widget class="QLineEdit" name="iteration"/>
              </item>
              <item>
               <widget class="QLabel" name="label_2">
@@ -181,7 +185,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="spinBox">
+              <widget class="QSpinBox" name="maxIteration">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                  <horstretch>0</horstretch>
@@ -243,7 +247,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="start">
                <property name="text">
                 <string>Start</string>
                </property>
@@ -275,32 +279,12 @@
               </attribute>
               <layout class="QGridLayout" name="gridLayout_3">
                <item row="0" column="0">
-                <widget class="QTableWidget" name="tableWidget">
-                 <row>
+                <widget class="QTableWidget" name="inputParameter">
+                 <column>
                   <property name="text">
-                   <string>parameter 1</string>
+                   <string>Name</string>
                   </property>
-                 </row>
-                 <row>
-                  <property name="text">
-                   <string>parameter 2</string>
-                  </property>
-                 </row>
-                 <row>
-                  <property name="text">
-                   <string>parameter 3</string>
-                  </property>
-                 </row>
-                 <row>
-                  <property name="text">
-                   <string>parameter 4</string>
-                  </property>
-                 </row>
-                 <row>
-                  <property name="text">
-                   <string>parameter 5</string>
-                  </property>
-                 </row>
+                 </column>
                  <column>
                   <property name="text">
                    <string>Min</string>
@@ -328,6 +312,16 @@
                  </column>
                 </widget>
                </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="feedback">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="outputParametersTab">
@@ -339,12 +333,12 @@
                 <widget class="QTreeWidget" name="treeWidget">
                  <column>
                   <property name="text">
-                   <string>1</string>
+                   <string>Min</string>
                   </property>
                  </column>
                  <column>
                   <property name="text">
-                   <string>2</string>
+                   <string>Max</string>
                   </property>
                  </column>
                 </widget>

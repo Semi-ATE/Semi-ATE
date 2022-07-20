@@ -20,6 +20,7 @@ class Generate(VerbBase):
                        "test": lambda: self.gen_tests(cwd, arglist),
                        "test_target": lambda: self.gen_test_targets(cwd, arglist),
                        "new": lambda: self.gen_new_project(cwd, arglist),
+                       "test_runner": lambda: self.gen_test_runner_main(cwd, arglist),
                        }
 
         if noun not in valid_nouns:
@@ -181,3 +182,7 @@ class Generate(VerbBase):
             definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
 
         return definition
+
+    def gen_test_runner_main(self, project_directory: Path, arglist: list):
+        from ate_sammy.coding.generators import test_runner_main_generator
+        test_runner_main_generator(self.template_path, project_directory, arglist.params[0], arglist.params[1])

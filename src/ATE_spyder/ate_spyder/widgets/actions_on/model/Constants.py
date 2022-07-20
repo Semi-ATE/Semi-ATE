@@ -31,6 +31,7 @@ class MenuActionTypes(Enum):
     CopyPath = "copy_absolute_path"
     AddGroup = "add_test_group"
     Export = "export_item"
+    ExecuteTestRunner = "execute_test_runner" 
 
     def __call__(self):
         return self.value

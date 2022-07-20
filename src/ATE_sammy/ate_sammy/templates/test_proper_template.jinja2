@@ -5,10 +5,11 @@
 {{ line }}
 {% endfor %}
 """
-if __name__ == '__main__':
-    from {{ definition['name'] }}_BC import {{ definition['name'] }}_BC
-else:
-    from {{ definition['name'] }}.{{ definition['name'] }}_BC import {{ definition['name'] }}_BC
+
+import os, sys
+test_path = os.path.abspath('.')
+sys.path.append(test_path)
+from {{ definition['name'] }}_BC import {{ definition['name'] }}_BC
 
 
 class {{ definition['name'] }}({{ definition['name'] }}_BC):
@@ -36,21 +37,3 @@ class {{ definition['name'] }}({{ definition['name'] }}_BC):
         {% for output_parameter in definition['output_parameters'] %}
         self.op.{{ output_parameter }}.default()
         {% endfor %}
-
-
-if __name__ == '__main__':
-    import os
-    tester = os.environ.get('TESTER')
-    tester_mode = os.environ.get('TESTERMODE')
-    if tester_mode == 'DIRECT':
-        pass  # TODO: implement
-    else:  # 'INTERACTIVE'
-        from PyQt5 import QtWidgets
-        import sys
-        import qdarkstyle
-        app = QtWidgets.QApplication(sys.argv)
-        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-        from ate_spyder.widgets.actions_on.tests.TestRunner import TestRunner
-        testRunner = TestRunner(__file__, None)
-        testRunner.show()
-        sys.exit(app.exec_())

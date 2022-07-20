@@ -96,7 +96,8 @@ class TestItemChild(TestBaseItem):
         menu = [MenuActionTypes.OpenFile(),
                 MenuActionTypes.Edit(),
                 MenuActionTypes.Trace(),
-                MenuActionTypes.Export()]
+                MenuActionTypes.Export(),
+                MenuActionTypes.ExecuteTestRunner()]
 
         delete_menu_option = [None,
                               MenuActionTypes.Delete()]
@@ -131,6 +132,12 @@ class TestItemChild(TestBaseItem):
 
     def get_available_test_targets(self):
         return self.project_info.get_available_test_targets(self.project_info.active_hardware, self.project_info.active_base, self.text())
+
+    def execute_test_runner(self):
+        from ate_spyder.widgets.actions_on.tests.TestRunner import TestRunner
+        testRunner = TestRunner(self.text(), self.project_info)
+        testRunner.exec_()
+        del(testRunner)
 
 
 class TestItemChildTarget(TestBaseItem):

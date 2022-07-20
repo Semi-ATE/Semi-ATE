@@ -1249,3 +1249,6 @@ class ProjectNavigation(QObject):
 
     def get_test_path(self, name, hardware, base):
         return Path(self.project_directory).joinpath('src', hardware, base, name, name)
+
+    def create_test_runner_main(self, file_path: Path, test_configuration: Test):
+        _ = self.run_build_tool('generate', 'test_runner', Path(self.project_directory), file_path, test_configuration)

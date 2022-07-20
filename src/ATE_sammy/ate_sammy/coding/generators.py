@@ -23,6 +23,7 @@ all other generators are called by these 4 'top level' generators.
 """
 import os
 import shutil
+from pathlib import Path
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -30,8 +31,9 @@ from jinja2 import FileSystemLoader
 from ate_sammy.coding.BaseGenerator import BaseGenerator
 from ate_sammy.coding.ProperGenerator import test_proper_generator
 from ate_sammy.coding.BaseTestGenerator import test_base_generator, BaseTestGenerator
-from ate_projectdatabase import latest_semi_ate_project_db_version
+from ate_projectdatabase import latest_semi_ate_project_db_version, Test
 from ate_sammy.coding.AutoScriptGenerator import AutoScriptGenerator
+from ate_sammy.coding.TestRunnerMainGenerator import test_runner_generator
 
 
 def project_generator(template_path, project_path):
@@ -72,6 +74,10 @@ def test_generator(template_path, project_path, definition):
 def test_update(template_path, project_path, definition):
     test_base_generator(template_path, project_path, definition)
     test_proper_generator(template_path, project_path, definition, do_update=True)
+
+
+def test_runner_main_generator(template_path: Path, project_path: Path, file_path: Path, test_configuration: Test):
+    test_runner_generator(Path(template_path), project_path, file_path, test_configuration)
 
 
 def copydir(source, destination, ignore_dunder=True):
