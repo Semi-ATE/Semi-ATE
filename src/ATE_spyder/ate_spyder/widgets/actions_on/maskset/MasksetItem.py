@@ -6,7 +6,7 @@ from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.utils.StateItem import StateItem
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 
 
@@ -22,7 +22,7 @@ class MasksetItem(BaseItem):
         return MasksetItemChild(self.project_info, name, parent)
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_maskset_dialog(self.project_info),
                           ExceptionTypes.Maskset())
 
@@ -43,12 +43,12 @@ class MasksetItemChild(StateItem):
         return self.project_info.get_dependant_objects_for_maskset(self.text())
 
     def edit_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit_maskset_dialog(self.project_info, self.text()),
                           ExceptionTypes.Maskset())
 
     def display_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: display_maskset_settings_dialog(self.project_info, self.text()),
                           ExceptionTypes.Maskset())
 

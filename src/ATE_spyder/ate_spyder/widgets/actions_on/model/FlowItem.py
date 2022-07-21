@@ -2,7 +2,7 @@ from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem as BaseItem
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 from ate_spyder.widgets.constants import SUBFLOWS_QUALIFICATION, FLOWS
 
@@ -54,7 +54,7 @@ def append_test_program_nodes(item):
 
 def add_testprogram_impl(project_info, item):
     import ate_spyder.widgets.actions_on.program.TestProgramWizard as new_prog
-    handle_excpetions(project_info.parent,
+    handle_exceptions(project_info.parent,
                       lambda: new_prog.new_program_dialog(project_info, get_prefix(item), item),
                       ExceptionTypes.Program())
 
@@ -263,13 +263,13 @@ class TestprogramTreeItem(BaseItem):
 
     def edit_item(self):
         import ate_spyder.widgets.actions_on.program.EditTestProgramWizard as edit
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit.edit_program_dialog(self.text(), self.project_info, self.owner, self.parent),
                           ExceptionTypes.Program())
 
     def display_item(self):
         import ate_spyder.widgets.actions_on.program.ViewTestProgramWizard as view
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: view.view_program_dialog(self.text(), self.project_info, self.owner, self.parent),
                           ExceptionTypes.Program())
 
