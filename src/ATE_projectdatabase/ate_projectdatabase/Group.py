@@ -16,7 +16,7 @@ class Group:
     @staticmethod
     def add(session: FileOperator, name: str, is_standard: bool = False):
         group = {"name": name, "is_selected": True, "is_standard": is_standard, "programs": [], "tests": []}
-        session.query(Types.Group()).add(group)
+        session.query_with_subtype(Types.Group(), name).add(group)
         session.commit()
 
     @staticmethod

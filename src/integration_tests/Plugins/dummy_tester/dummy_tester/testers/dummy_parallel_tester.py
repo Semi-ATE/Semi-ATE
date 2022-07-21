@@ -21,6 +21,8 @@ PORT = 1883
 
 
 class DummyParallelTester(TesterInterface):
+    SITE_COUNT = 16
+
     def __init__(self):
         self.name = f'tester_{str(time.time())}_{random.randint(1, 10000000)}'
         self._log = Logger('tester')
@@ -31,9 +33,6 @@ class DummyParallelTester(TesterInterface):
 
         th = Thread(target=TesterConnectionHandler, args=(get_broker_address(), PORT, self.event, self._log, self), daemon=True)
         th.start()
-
-    def get_sites_count(self):
-        return 16
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         self.event.clear()

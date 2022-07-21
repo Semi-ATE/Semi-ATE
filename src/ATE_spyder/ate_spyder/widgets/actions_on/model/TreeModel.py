@@ -37,7 +37,7 @@ class TreeModel(QtGui.QStandardItemModel):
 
         import os
         self.doc_path = os.path.join(self.project_info.project_directory, "doc")
-        self.base_path = os.path.join(self.project_info.project_directory, "src")
+        self.base_path = os.path.join(self.project_info.project_directory, self.project_info.project_name)
 
         self.file_item_handler = FileItemHandler(self.project_info, self.base_path)
         self._setup()

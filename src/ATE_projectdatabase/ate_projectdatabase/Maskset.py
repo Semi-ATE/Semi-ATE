@@ -17,7 +17,7 @@ class Maskset:
     @staticmethod
     def add(session: FileOperator, name: str, customer: str, definition: dict, is_enabled: bool):
         maskset = {"name": name, "customer": customer, "definition": definition, "is_enabled": is_enabled}
-        session.query(Types.Maskset()).add(maskset)
+        session.query_with_subtype(Types.Maskset(), name).add(maskset)
         session.commit()
 
     @staticmethod

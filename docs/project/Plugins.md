@@ -194,7 +194,34 @@ def teardown(self)
 ```
 __note__: `get_tester` will also be used in the hwsetup in semi-ate-plugin to determine the number of sites supported with which the parallelism is configured. Therefore, prevent any interaction with the tester hardware while instantiating the tester (e.g in `__init__` function) and use the `setup()` and `teardown()` functions for that.
 
+
+__note__: `get_sites_count` shall not be implemented by the tester itself as it's already implemented in the base class (`TesterInterface`). Though, it's required that tester implementation declare the `SITE_COUNT` static class variable. (see example below)
+
+```python
+class TesterInterface:
+    SITE_COUNT = -1
+    def get_site_count(self) -> int:
+        ...
+        return self.SITE_COUNT
+
+class TestImpl(TesterInterface):
+    SITE_COUNT = 1
+
+    # rest
+    ...
+```
+
+__note__: if the declaration of `SITE_COUNT` is missing an exception will be raised
 ---
+
+get_tester_type(tester_name)
+This hook shall return an instance type of the concrete tester
+
+The type will be used to generate the code containing the tester type information which is necessary to provide the IDE with the type information needed to activate the autocompletion support
+
+__note__: both `get_tester` and `get_tester_type` functions have almost the same implementation but not the same output type, they return `the tester instance` and `the tester class` respectively.
+* from `the tester instance` we could operate on the tester (e.g setup the tester, etc...)
+* from `the tester class` we extract/collect some metadata too facilitate the development process (see above)
 
 ```
 get_tester_master(tester_name) -> TesterInstance
@@ -248,7 +275,8 @@ get_devicepin_importer(importer_name) -> Importer
 get_instrument(instrument_name, logger: Logger) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
 
-get_tester(tester_name, logger: Optional[Logger]) -> TesterInstance
+get_tester(tester_name, logger: Logger) -> TesterInstance
+get_tester_type(tester_name) -> object
 get_tester_master(tester_name) -> TesterInstance
 
 get_general_purpose_function(func_name) -> FunctionInstance
@@ -322,7 +350,11 @@ class ThePlugin(object):
         raise NotImplementedError
 
     @hookimpl
-    def get_tester(tester_name, logger: Optional[Logger]) -> TesterInstance:
+    def get_tester(tester_name, logger: Logger) -> TesterInstance:
+        raise NotImplementedError
+
+    @hookimpl
+    def get_tester_type(tester_name) -> object
         raise NotImplementedError
 
     @hookimpl

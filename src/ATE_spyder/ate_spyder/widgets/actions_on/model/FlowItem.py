@@ -299,7 +299,7 @@ class TestprogramTreeItem(BaseItem):
         clip_board.clear(mode=clip_board.Clipboard)
         from pathlib import Path
         file_path = os.fspath(Path(os.path.join(self.project_info.project_directory,
-                                                'src',
+                                                self.project_info.project_name,
                                                 self.project_info.active_hardware,
                                                 self.project_info.active_base,
                                                 f'{self.program_name}.py')))

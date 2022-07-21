@@ -35,7 +35,7 @@ class TestContainerBase(BaseItem):
         from os import path, fspath
         from pathlib import Path
 
-        test_directory = path.join(self.project_info.project_directory, 'src',
+        test_directory = path.join(self.project_info.project_directory, self.project_info.project_name,
                                    active_hardware, active_base)
         return fspath(Path(test_directory))
 

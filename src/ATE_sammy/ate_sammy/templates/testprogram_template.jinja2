@@ -14,21 +14,24 @@ from ate_test_app.sequencers.mqtt.MqttConnection import MqttConnection
 from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
 # setup the include path manually as the project is not a package
-import os, sys
-parent_path = os.path.abspath('..')
+import os
+import sys
+from pathlib import Path
+parent_path = str(Path(__file__).joinpath('..', '..').resolve())
 sys.path.append(parent_path)
 
 import common
 from {{program_configuration['hardware']}}_auto_script import AutoScript
 
+
 if __name__ == '__main__':
     params = CommandLineParser(sys.argv)
-    test_program_name, _ = os.path.splitext(__file__)
+    test_program_name = Path(__file__).stem
     bin_table_name = f'{test_program_name}_binning.json'
-    bin_table_path = os.path.join(os.path.dirname(__file__), bin_table_name)
+    bin_table_path = Path(__file__).parent.joinpath(bin_table_name)
 
     execution_strategy_name = f'{test_program_name}_execution_strategy.json'
-    execution_strategy_path = os.path.join(os.path.dirname(__file__), execution_strategy_name)
+    execution_strategy_path = Path(__file__).parent.joinpath(execution_strategy_name)
 
     execution_strategy = StagesSequenceGenerator(execution_strategy_path)
     bin_strategy = create_bin_strategy(params.bin_strategytype, bin_table_path, test_program_name)

@@ -330,7 +330,7 @@ class test_proper_generator(BaseTestGenerator):
         base = self.definition['base']
         name = self.definition['name']
 
-        return os.path.join('src', hardware, base, name)
+        return self.project_path.joinpath(self.project_path.name, hardware, base, name)
 
     def _generate_render_data(self, abs_path=''):
         return {'module_doc_string': prepare_module_docstring(),
