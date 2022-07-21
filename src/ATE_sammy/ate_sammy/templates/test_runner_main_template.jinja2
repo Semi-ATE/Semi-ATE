@@ -12,7 +12,8 @@ from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
 # setup the include path manually as the project is not a package
 import os, sys
-test_path = os.path.abspath('../{{project_name}}/{{hardware}}/{{base}}/{{test_name}}')
+from pathlib import Path
+test_path = str(Path(__file__).joinpath('..', '..', '{{project_name}}', '{{hardware}}', '{{base}}', '{{test_name}}').resolve())
 sys.path.append(test_path)
 
 

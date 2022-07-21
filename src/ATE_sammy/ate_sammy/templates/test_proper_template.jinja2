@@ -7,8 +7,10 @@
 """
 
 import os, sys
-test_path = os.path.abspath('.')
+from pathlib import Path
+test_path = os.path.abspath(Path(__file__).joinpath('..'))
 sys.path.append(test_path)
+
 from {{ definition['name'] }}_BC import {{ definition['name'] }}_BC
 
 

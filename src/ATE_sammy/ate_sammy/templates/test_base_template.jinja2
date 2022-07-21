@@ -18,9 +18,12 @@ from ate_test_app.sequencers.DutTesting.Result import Result
 from ate_test_app.parameters.ResolverFactory import create_parameter_resolver
 from ate_common.logger import (LogLevel, Logger)
 
+import os
 import sys
 from pathlib import Path
-parent_path = sys.path.append(Path(__file__).parent.parent.resolve())
+parent_path = str(Path(__file__).joinpath('..', '..').resolve())
+sys.path.append(parent_path)
+
 from common import Context
 
 
