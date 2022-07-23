@@ -3,30 +3,22 @@ ATE widget.
 """
 # Standard library imports
 import os
+import os.path as osp
+import sys
 from pathlib import Path
 import shutil
-from functools import partial
-from typing import Type, Dict
-from ate_spyder.widgets.actions_on.utils.MenuDialog import StandardDialog
-# Qt-related imports
-from qtpy.QtCore import Qt
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QTreeView
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QDialog
 
 # Local imports
-from ate_spyder.widgets.actions_on.project.ProjectWizard import ProjectWizard
+from ate_spyder.widgets.constants import ATEActions
+from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
-from ate_spyder.widgets.actions_on.patterns.PatternItem import PatternItemChild
 from ate_spyder.project import ATEProject
-from ate_spyder.widgets.vcs import VCSInitializationProvider
-from ate_spyder.widgets.vcs.local import LocalGitProvider
-from ate_spyder.widgets.vcs.github import GitHubInitialization
 
 # Third party imports
+from qtpy.QtCore import Qt, Signal, QProcess
+from qtpy.QtWidgets import QTreeView, QVBoxLayout, QDialog
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 
@@ -48,8 +40,6 @@ class ATEWidget(PluginMainWidget):
     sig_close_file = Signal(str)
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
-    sig_project_created = Signal()
-    sig_project_loaded = Signal()
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -69,17 +59,23 @@ class ATEWidget(PluginMainWidget):
     groups_update = Signal(str, list)
     init_done = Signal()
 
-    def __init__(self, name=None, plugin=None, parent=None):
-        super().__init__(name, plugin, parent=parent)
+    # --- PluginMainWidget API
+    # ------------------------------------------------------------------------
+    def get_title(self):
+        return _('ATE')
 
-        # Widgets
+    def get_focus_widget(self):
+        return self.tree
+
+    def setup(self):
         self.model = None
+        self.stil_process = None
+        self.stil_process_running = False
+
         self.tree = QTreeView()
         self.tree.setHeaderHidden(True)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.context_menu_manager)
-
-        self.project_dialog = None
 
         # TODO: simplify the navigator to get ride of 'workspace_path'
         homedir = os.path.expanduser("~")
@@ -92,21 +88,13 @@ class ATEWidget(PluginMainWidget):
         layout.addWidget(self.tree)
         self.setLayout(layout)
 
-        # Signals
-        self.vcs_handlers: Dict[str, Type[VCSInitializationProvider]] = {}
-        self.register_version_control_provider(LocalGitProvider)
-        self.register_version_control_provider(GitHubInitialization)
+        self.run_stil_action = self.create_action(
+            ATEActions.RunStil, _('Compile STIL files'),
+            self.create_icon('run_again'), tip=_('Compile STIL files'),
+            triggered=self.compile_stil
+        )
 
-    # --- PluginMainWidget API
-    # ------------------------------------------------------------------------
-    def get_title(self):
-        return _('ATE')
-
-    def get_focus_widget(self):
-        return self.tree
-
-    def setup(self):
-        return
+        self.run_stil_action.setEnabled(False)
 
     def on_option_update(self, option, value):
         pass
@@ -160,9 +148,6 @@ class ATEWidget(PluginMainWidget):
         if isinstance(model_item, TestItemChild):
             self.open_test_file(model_item.path)
 
-        if isinstance(model_item, PatternItemChild):
-            self.open_test_file(model_item.path)
-
         if isinstance(model_item, TestItemChildTarget):
             self.open_test_file(model_item.get_path())
 
@@ -177,24 +162,19 @@ class ATEWidget(PluginMainWidget):
         self.sig_save_all.emit()
 
     def create_project(self, project_path) -> bool:
-        # status = new_project_dialog(self.project_info, project_path)
-        self.project_dialog = ProjectWizard(
-            self, self.vcs_handlers, self.project_info, project_path)
-        self.project_dialog.finished.connect(partial(
-            self.project_dialog_finished, project_path=project_path))
-        self.project_dialog.open()
+        status = new_project_dialog(self.project_info, project_path)
 
-    def project_dialog_finished(self, result, project_path=None):
-        if result == QDialog.Rejected:
-            # hack: as spyder automatically create an empty project even
-            # before semi-ate project validation done we need to clean up
-            # after canceling creating the project
+        # hack: as spyder automatically create an empty project even before semi-ate project validation done
+        # we need to clean up after canceling creating the project
+        if status == QDialog.DialogCode.Rejected:
             shutil.rmtree(project_path)
-        elif result == QDialog.Accepted:
-            print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
-            self.sig_project_created.emit()
+            return False
+
+        print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
+        return True
 
     def open_project(self, project_path, parent_instance) -> bool:
+        project_loaded = False
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
             # while creating a new project spyder do not validate the project name the way semi-ate plugin is expecting it
@@ -204,10 +184,9 @@ class ATEWidget(PluginMainWidget):
                 # so we clear up the interface by closing the project for both the plugin and spyder
                 parent_instance.close_project()
                 self.close_project()
-                return False
 
             parent_instance.open_project(path=self.project_info.project_directory)
-            return True
+            project_loaded = True
         else:
             # in case the project exist we only reload the project navigator with the new project path
             # but we still need to make sure that the project type is 'Semi-ATE Project'
@@ -217,64 +196,17 @@ class ATEWidget(PluginMainWidget):
             config_file_path = Path(project_path).joinpath(default_spyder_project_configuration_file_relative_path)
             if not config_file_path.exists:
                 print("could not find configuration file 'workspace.init' ")
-                return False
 
             if self._is_semi_ate_project(config_file_path):
                 self.project_info(project_path)
 
-                from ate_projectdatabase import latest_semi_ate_project_db_version
-                try:
-                    project_version = self.project_info.get_version()
-                except Exception:
-                    # older projects doesn't have the database structure supported by the current Semi-ATE Plugin version
-                    # For those the auto migration is disabled and shall be done manually
-                    raise Exception(f'''\n
-Project: '{project_path}' cannot be migrated automatically!
-Execute the following commands inside the project root\n
-$ sammy migrate\n
-Running the generate all command shall refresh the generated code based on the template files\n
-$ sammy generate all\n
-                    ''')
+                self.toolbar(self.project_info)
+                self.set_tree()
+                self.init_done.emit()
+                project_loaded = True
 
-                if (project_version != latest_semi_ate_project_db_version):
-                    try:
-                        raise Exception(f'''\n
-Migration required:\n
-Project: '{project_path}' with project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
-To prevent any inconsistencies the project must be migrated\n
-Execute the following commands inside the project root\n
-$ sammy migrate\n
-Running the generate all command shall refresh the generated code based on the template files\n
-$ sammy generate all\n
-                    ''')
-                    except Exception:
-                        diag = StandardDialog(self.project_info.parent, 'migrate the project automatically?')
-                        if not diag.exec_():
-                            from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
-                            report_exception(self.project_info.parent, "migration required")
-                            self.close_project()
-                        else:
-                            self.project_info.run_build_tool('migrate', '', project_path)
-                            self.project_info.run_build_tool('generate', 'all', project_path)
-                            self.open_project(project_path, parent_instance)
-                            self.init_project()
-                            self.sig_project_loaded.emit()
-                            return True
-
-                        return False
-
-                self.init_project()
-                self.sig_project_loaded.emit()
-                return True
-            else:
-                print(f'project type is not: {ATEProject.ID}')
-
-        return False
-
-    def init_project(self):
-        self.toolbar(self.project_info)
-        self.set_tree()
-        self.init_done.emit()
+        self.run_stil_action.setEnabled(project_loaded)
+        return project_loaded
 
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
         with open(config_file_path, 'r') as file:
@@ -299,19 +231,36 @@ $ sammy generate all\n
         import os
         self.sig_close_file.emit(os.fspath(Path(path)))
 
-    def register_version_control_provider(
-            self, VCSProviderClass: Type[VCSInitializationProvider]):
-        """
-        Register a new version control system (VCS) provider.
+    def compile_stil(self):
+        if self.stil_process_running:
+            self.stil_process.kill()
+            return
 
-        Parameters
-        ----------
-        VCSProviderClass: Type[VCSInitializationProvider]
-            The class that implements the `VCSInitializationProvider`
-            interface to be registered.
-        """
-        vcs_name = VCSProviderClass.NAME
-        self.vcs_handlers[vcs_name] = VCSProviderClass
+        self.stil_process = QProcess(self)
+        # self.stil_process.errorOccurred.connect(self.stil_process_failed)
+        self.stil_process.finished.connect(self.stil_process_finished)
 
-    def get_project_navigation(self) -> ProjectNavigation:
-        return self.project_info
+        # TODO: Determine STIL file location adequately
+        project_path = self.project_info.project_directory
+        cwd = os.path.join(project_path, 'stil')
+        env = self.stil_process.processEnvironment()
+
+        for var in os.environ:
+            env.insert(var, os.environ[var])
+
+        self.stil_process.setProcessEnvironment(env)
+        self.stil_process.setWorkingDirectory(cwd)
+
+        # TODO: Determine which STIL file to run
+        stil_file_location = osp.join(cwd, 'test_atpg_1.stil')
+        args = ['sscl', '-c', '-i', stil_file_location]
+
+        self.stil_process.setProcessChannelMode(QProcess.ForwardedChannels)
+        self.stil_process.start(args[0], args[1:])
+        self.stil_process_running = True
+        self.run_stil_action.setIcon(self.create_icon('stop'))
+
+    def stil_process_finished(self, exit_code, exit_status):
+        self.stil_process_running = False
+        self.stil_process = None
+        self.run_stil_action.setIcon(self.create_icon('run_again'))

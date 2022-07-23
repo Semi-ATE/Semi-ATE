@@ -86,6 +86,14 @@ class UpdateOptions(IntEnum):
         return self.value
 
 
+class ATEActions:
+    RunStil = 'run_stil'
+
+
+class ATEToolbars:
+    ATE = 'ate_toolbar'
+
+
 TEST_SECTION = 'tests'
 QUALIFICATION = 'qualification'
 
