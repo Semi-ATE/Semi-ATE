@@ -4,18 +4,18 @@ ATE Plugin.
 # Standard library imports
 import os
 
+# Third party imports
 from qtpy.QtCore import Signal
 from qtpy.QtGui import QIcon
-from spyder.api.plugins import Plugins
-from spyder.api.plugins import SpyderDockablePlugin
+from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
-from spyder.api.plugin_registration.decorators import on_plugin_available
+from spyder.api.plugin_registration.decorators import (
+    on_plugin_available, on_plugin_teardown)
 
-from ate_spyder.project import ATEPluginProject
-from ate_spyder.project import ATEProject
-from ate_spyder.widgets.main_widget import ATEWidget
-# Third party imports
 # Local imports
+from ate_spyder.project import ATEProject, ATEPluginProject
+from ate_spyder.widgets.main_widget import ATEWidget
+from ate_spyder.widgets.constants import ATEActions, ATEToolbars
 
 # Localization
 _ = get_translation('spyder')
@@ -73,6 +73,9 @@ class ATE(SpyderDockablePlugin):
         toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.build()
 
+        widget.toolbar.add_item(
+            self.get_action(ATEActions.RunStil))
+
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
         projects = self.get_plugin(Plugins.Projects)
@@ -88,6 +91,13 @@ class ATE(SpyderDockablePlugin):
         self.sig_edit_goto_requested.connect(editor.load)
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
+
+
+    @on_plugin_teardown(plugin=Plugins.Toolbar)
+    def on_toolbar_teardown(self):
+        toolbar = self.get_plugin(Plugins.Toolbar)
+        toolbar.remove_item_from_application_toolbar(
+            ATEActions.RunStil, ATEToolbars.ATE)
 
     def on_mainwindow_visible(self):
         # Hide by default the first time the plugin is loaded.

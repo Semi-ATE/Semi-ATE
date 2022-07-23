@@ -4,7 +4,7 @@ from ate_spyder import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
-       
+
 with requirements_path.open('r') as f:
     install_requires = list(f)
 
