@@ -278,7 +278,7 @@ class ATEWidget(PluginMainWidget):
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
         args += stil_files
 
-        self.stil_process.setProcessChannelMode(QProcess.ForwardedChannels)
+        self.stil_process.setProcessChannelMode(QProcess.SeparateChannels)
         self.stil_process.start(args[0], args[1:])
         self.stil_process_running = True
         self.run_stil_action.setIcon(self.create_icon('stop'))
