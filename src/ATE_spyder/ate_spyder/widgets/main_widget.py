@@ -4,20 +4,22 @@ ATE widget.
 # Standard library imports
 import os
 import os.path as osp
-import sys
 from pathlib import Path
 import shutil
+import logging
 
 # Local imports
 from ate_spyder.widgets.constants import ATEActions
 from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
+from ate_spyder.widgets.statusbar import ATEStatusBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
 from ate_spyder.project import ATEProject
 
 # Third party imports
-from qtpy.QtCore import Qt, Signal, QProcess
+import zmq
+from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
 from qtpy.QtWidgets import QTreeView, QVBoxLayout, QDialog
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
@@ -25,6 +27,7 @@ from spyder.api.widgets.main_widget import PluginMainWidget
 
 # Localization
 _ = get_translation('spyder')
+logger = logging.getLogger(__name__)
 
 
 class ATEWidget(PluginMainWidget):
@@ -40,6 +43,7 @@ class ATEWidget(PluginMainWidget):
     sig_close_file = Signal(str)
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
+    sig_update_statusbar = Signal(str)
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -71,6 +75,17 @@ class ATEWidget(PluginMainWidget):
         self.model = None
         self.stil_process = None
         self.stil_process_running = False
+
+        self.zmq_context = zmq.Context.instance()
+        self.stil_sock = self.zmq_context.socket(zmq.PULL)
+        self.stil_port = self.stil_sock.bind_to_random_port('tcp://127.0.0.1')
+
+        fid = self.stil_sock.getsockopt(zmq.FD)
+        self.notifier = QSocketNotifier(fid, QSocketNotifier.Read, self)
+        self.notifier.activated.connect(self.on_stil_msg_received)
+
+        self.statusbar = ATEStatusBar(self)
+        self.sig_update_statusbar.connect(self.statusbar.sig_update_value)
 
         self.tree = QTreeView()
         self.tree.setHeaderHidden(True)
@@ -242,7 +257,7 @@ class ATEWidget(PluginMainWidget):
 
         # TODO: Determine STIL file location adequately
         project_path = self.project_info.project_directory
-        cwd = os.path.join(project_path, 'stil')
+        cwd = os.path.join(project_path, 'patterns')
         env = self.stil_process.processEnvironment()
 
         for var in os.environ:
@@ -253,7 +268,8 @@ class ATEWidget(PluginMainWidget):
 
         # TODO: Determine which STIL file to run
         stil_file_location = osp.join(cwd, 'test_atpg_1.stil')
-        args = ['sscl', '-c', '-i', stil_file_location]
+        args = ['sscl', '-c', '-i', stil_file_location, '--port',
+                str(self.stil_port)]
 
         self.stil_process.setProcessChannelMode(QProcess.ForwardedChannels)
         self.stil_process.start(args[0], args[1:])
@@ -264,3 +280,15 @@ class ATEWidget(PluginMainWidget):
         self.stil_process_running = False
         self.stil_process = None
         self.run_stil_action.setIcon(self.create_icon('run_again'))
+
+    def on_stil_msg_received(self):
+        try:
+            response = self.stil_sock.recv_json(flags=zmq.NOBLOCK)
+        except zmq.ZMQError:
+            return
+
+        if response['kind'] == 'info':
+            payload = response['payload']
+            message = payload['message']
+            logger.info(message)
+            self.sig_update_statusbar.emit(message)

@@ -37,6 +37,10 @@ class ATEToolbars:
     ATE = 'ate_toolbar'
 
 
+class ATEStatusBars:
+    ATE = 'ate_statusbar'
+
+
 TEST_SECTION = 'tests'
 QUALIFICATION = 'qualification'
 
