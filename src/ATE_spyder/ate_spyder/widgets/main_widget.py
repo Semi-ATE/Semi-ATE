@@ -257,7 +257,7 @@ class ATEWidget(PluginMainWidget):
 
         # TODO: Determine STIL file location adequately
         project_path = self.project_info.project_directory
-        cwd = os.path.join(project_path, 'patterns')
+        cwd = osp.join(project_path, 'patterns')
         env = self.stil_process.processEnvironment()
 
         for var in os.environ:
@@ -266,10 +266,17 @@ class ATEWidget(PluginMainWidget):
         self.stil_process.setProcessEnvironment(env)
         self.stil_process.setWorkingDirectory(cwd)
 
-        # TODO: Determine which STIL file to run
-        stil_file_location = osp.join(cwd, 'test_atpg_1.stil')
-        args = ['sscl', '-c', '-i', stil_file_location, '--port',
-                str(self.stil_port)]
+        # Find STIL files recursively
+        stil_files = []
+        for root, _, files in os.walk(cwd):
+            for file in files:
+                _, ext = osp.splitext(file)
+                ext = ext[1:]
+                if ext == 'stil':
+                    stil_files.append(osp.join(root, file))
+
+        args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
+        args += stil_files
 
         self.stil_process.setProcessChannelMode(QProcess.ForwardedChannels)
         self.stil_process.start(args[0], args[1:])
