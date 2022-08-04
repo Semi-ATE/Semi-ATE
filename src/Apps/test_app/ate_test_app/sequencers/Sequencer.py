@@ -69,7 +69,6 @@ def start_parent_process_death_watchdog_win32(parent_pid):
 #                          daemon=True)
 #     t.start()
 
-
 class Sequencer:
     _statemachine: Optional[TheTestAppMachine]
 

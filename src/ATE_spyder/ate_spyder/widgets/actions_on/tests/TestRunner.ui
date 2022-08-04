@@ -280,6 +280,9 @@
               <layout class="QGridLayout" name="gridLayout_3">
                <item row="0" column="0">
                 <widget class="QTableWidget" name="inputParameter">
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustToContents</enum>
+                 </property>
                  <column>
                   <property name="text">
                    <string>Name</string>
@@ -312,16 +315,6 @@
                  </column>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="feedback">
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="outputParametersTab">
@@ -330,15 +323,35 @@
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
                <item row="0" column="0">
-                <widget class="QTreeWidget" name="treeWidget">
+                <widget class="QTableWidget" name="outputParameter">
                  <column>
                   <property name="text">
-                   <string>Min</string>
+                   <string>Name</string>
                   </property>
                  </column>
                  <column>
                   <property name="text">
-                   <string>Max</string>
+                   <string>LSL</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>LTL</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>UTL</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>USL</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Unit</string>
                   </property>
                  </column>
                 </widget>
@@ -677,6 +690,16 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="feedback">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

@@ -161,13 +161,13 @@ class Generate(VerbBase):
 
         for hw in hws:
             print(f"        gen {hw.name}")
-            definition = self._prepare_hardware_definiton(hw.definition)
+            definition = self._prepare_hardware_definition(hw.definition)
             definition["hardware"] = hw.name
             hardware_generator(self.template_path, cwd, definition)
         return 0
 
     @staticmethod
-    def _prepare_hardware_definiton(definition):
+    def _prepare_hardware_definition(definition):
         for index, hw in enumerate(definition['Actuator']['FT']):
             definition['Actuator']['FT'][index] = hw.replace(" ", "_")
         for index, hw in enumerate(definition['Actuator']['PR']):
@@ -186,4 +186,4 @@ class Generate(VerbBase):
 
     def gen_test_runner_main(self, project_directory: Path, arglist: list):
         from ate_sammy.coding.generators import test_runner_main_generator
-        test_runner_main_generator(self.template_path, project_directory, arglist.params[0], arglist.params[1])
+        test_runner_main_generator(self.template_path, project_directory, arglist.params[0], arglist.params[1], self._prepare_hardware_definition(arglist.params[2]))

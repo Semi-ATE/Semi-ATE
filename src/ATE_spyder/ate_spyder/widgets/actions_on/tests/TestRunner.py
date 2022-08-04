@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractclassmethod
-from dataclasses import dataclass
-from enum import IntEnum, Enum, unique
+from enum import IntEnum, unique
 from pathlib import Path
 import re
 from typing import List, Tuple
@@ -9,7 +8,7 @@ from typing import List, Tuple
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.validation import valid_integer_regex, valid_float_regex
-from ate_common.parameter import InputColumnKey
+from ate_common.parameter import InputColumnKey, OutputColumnKey
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -22,8 +21,9 @@ class TabIds(IntEnum):
     Timing = 2
     Console = 3
 
+
 @unique
-class Columns(IntEnum):
+class InputColumn(IntEnum):
     Name = 0
     Min = 1
     Call = 2
@@ -34,6 +34,18 @@ class Columns(IntEnum):
     def __call__(self):
         return self.value
 
+
+@unique
+class OutputColumn(IntEnum):
+    Name = 0
+    LSL = 1
+    LTL = 2
+    UTL = 3
+    USL = 4
+    Unit = 5
+
+    def __call__(self):
+        return self.value
 
 class TabInterface(ABC):
     def __init__(self, parent: 'TestRunner'):
@@ -70,13 +82,13 @@ class RunTab(TabInterface):
         integer_validator = QtGui.QRegExpValidator(regx, self.parent)
         self.parent.iteration.setValidator(integer_validator)
 
+        self.parent.inputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.parent.outputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
 
     def _start_execution(self):
-        # starting the execution is only possible if we get the signal to emit the event
-        # awaited by spyder to run a file
-
         # TODO: make sure this is the right interpretation
         # if int(self.parent.iteration.text()) == self.parent.maxIteration.value():
         #     ''' max iteration is reached '''
@@ -85,9 +97,54 @@ class RunTab(TabInterface):
         file_path = Path(self.parent.project_info.project_directory).joinpath('runner', f'{self.test_name}_{self.hardware}_{self.base}_test_runner.py')
         self.parent.project_info.create_test_runner_main(file_path, configured_test)
 
-        # TODO: generate main function
-        # TODO: open generated file
         # TODO: emit signal to spyder
+
+    def _fill_output_parameter_table(self):
+        output_table = self.parent.outputParameter
+        output_table.setRowCount(0)
+
+        if not self.test_name:
+            return
+
+        data = self.parent.project_info.get_test(self.test_name, self.hardware, self.base)
+        output_parameters = data.definition['output_parameters']
+
+        output_table.cellChanged.connect(lambda row, col: self._call_value_updated(row, col))
+        output_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
+            output_table,
+            row,
+            col,
+            float(self.parent.outputParameter.item(row, OutputColumn.LSL).text()),
+            float(self.parent.outputParameter.item(row, OutputColumn.USL).text()))
+        )
+
+        output_table.blockSignals(True)
+        for index, (key, value) in enumerate(output_parameters.items()):
+            output_table.insertRow(index)
+
+            item = QtWidgets.QTableWidgetItem(key)
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            output_table.setItem(index, OutputColumn.Name, item)
+
+            item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.LSL()]))
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            output_table.setItem(index, OutputColumn.LSL, item)
+
+            item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.LTL()]))
+            output_table.setItem(index, OutputColumn.LTL, item)
+
+            item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.UTL()]))
+            output_table.setItem(index, OutputColumn.UTL, item)
+
+            item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.USL()]))
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            output_table.setItem(index, OutputColumn.USL, item)
+
+            item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.UNIT()]))
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            output_table.setItem(index, OutputColumn.Unit, item)
+        output_table.blockSignals(False)
+
 
     def _fill_input_parameter_table(self):
         input_table = self.parent.inputParameter
@@ -100,7 +157,13 @@ class RunTab(TabInterface):
         input_parameters = data.definition['input_parameters']
 
         input_table.cellChanged.connect(lambda row, col: self._call_value_updated(row, col))
-        input_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(row, col))
+        input_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
+            input_table,
+            row,
+            col,
+            float(self.parent.inputParameter.item(row, InputColumn.Min).text()),
+            float(self.parent.inputParameter.item(row, InputColumn.Max).text()))
+        )
 
         input_table.blockSignals(True)
         for index, (key, value) in enumerate(input_parameters.items()):
@@ -108,73 +171,70 @@ class RunTab(TabInterface):
 
             item = QtWidgets.QTableWidgetItem(key)
             item.setFlags(QtCore.Qt.NoItemFlags)
-            input_table.setItem(index, Columns.Name, item)
+            input_table.setItem(index, InputColumn.Name, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MIN()]))
             item.setFlags(QtCore.Qt.NoItemFlags)
-            input_table.setItem(index, Columns.Min, item)
+            input_table.setItem(index, InputColumn.Min, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MAX()]))
             item.setFlags(QtCore.Qt.NoItemFlags)
-            input_table.setItem(index, Columns.Max, item)
+            input_table.setItem(index, InputColumn.Max, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.DEFAULT()]))
-            input_table.setItem(index, Columns.Call, item)
+            input_table.setItem(index, InputColumn.Call, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.POWER()]))
             item.setFlags(QtCore.Qt.NoItemFlags)
-            input_table.setItem(index, Columns.Power, item)
+            input_table.setItem(index, InputColumn.Power, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.UNIT()]))
             item.setFlags(QtCore.Qt.NoItemFlags)
-            input_table.setItem(index, Columns.Unit, item)
+            input_table.setItem(index, InputColumn.Unit, item)
         input_table.blockSignals(False)
 
-    @QtCore.pyqtSlot(int, int)
-    def _call_value_double_clicked(self, row: int, col: int):
-        if col != Columns.Call():
-            return
-
-        input_table = self.parent.inputParameter
-        item = input_table.item(row, col)
+    @QtCore.pyqtSlot(int, int, float, float)
+    def _call_value_double_clicked(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float):
+        item = table.item(row, col)
         initial_value = item.text()
 
         regx = QtCore.QRegExp(valid_float_regex)
         integer_validator = QtGui.QRegExpValidator(regx, self.parent)
         line = QtWidgets.QLineEdit(str(item.text()))
         line.setValidator(integer_validator)
-        line.textChanged.connect(lambda text: self._call_value_changed(text, row, col))
-        line.editingFinished.connect(lambda: self._call_value_edited(initial_value, row, col))
+        line.textChanged.connect(lambda text: self._call_value_changed(text, row, col, min, max))
+        line.editingFinished.connect(lambda: self._call_value_edited(table, initial_value, row, col, min, max))
 
         line.blockSignals(True)
         line.setText(initial_value)
         line.blockSignals(False)
 
-        input_table.setCellWidget(row, Columns.Call, line)
+        table.setCellWidget(row, col, line)
 
     @QtCore.pyqtSlot(int, int)
     def _call_value_updated(self, row: int, col: int):
-        if col != Columns.Call():
+        if col != InputColumn.Call():
             return
 
-    @QtCore.pyqtSlot(str, int, int)
-    def _call_value_edited(self, initial_value: str, row: int, col: int):
+    @QtCore.pyqtSlot(str, QtWidgets.QTableWidget, int, int, float, float)
+    def _call_value_edited(self, table: QtWidgets.QTableWidget, initial_value: str, row: int, col: int, min: float, max: float):
         value = initial_value
-        text = self.parent.inputParameter.cellWidget(row, col).text()
-        if self._validate_value(text, row):
+        text = table.cellWidget(row, col).text()
+        if self._validate_value(text, row, min, max):
             value = text
 
-        self.parent.inputParameter.removeCellWidget(row, col)
+        table.removeCellWidget(row, col)
         item = QtWidgets.QTableWidgetItem(value)
-        self.parent.inputParameter.setItem(row, col, item)
+        table.setItem(row, col, item)
 
-    @QtCore.pyqtSlot(str, int, int)
-    def _call_value_changed(self, text: str, row: int, col: int):
-        if not self._validate_value(text, row):
+    @QtCore.pyqtSlot(str, int, int, float, float)
+    def _call_value_changed(self, text: str, row: int, col: int, min: float, max: float):
+        if not self._validate_value(text, row, min, max):
             ''' set feedback '''
             print('not valid')
 
-    def _validate_value(self, text, row) -> bool:
+    def _validate_value(self, text: str, row: int, min: float, max: float) -> bool:
+        print(text, max, min)
         self.parent.feedback.setText('')
 
         if not text or text in ['-', '+']:
@@ -182,8 +242,6 @@ class RunTab(TabInterface):
             return False
 
         value = float(text)
-        min = float(self.parent.inputParameter.item(row, Columns.Min).text())
-        max = float(self.parent.inputParameter.item(row, Columns.Max).text())
 
         if value > max or value < min:
             self.parent.feedback.setText('call value is out of range')
@@ -204,8 +262,8 @@ class RunTab(TabInterface):
     def _get_table_values(self) -> List[Tuple[str, float]]:
         value_tuples = []
         for row in range(self.parent.inputParameter.rowCount()):
-            name = self.input_table.item(row, 0).text()
-            value = self.input_table.item(row, 2).text()
+            name = self.input_table.item(row, InputColumn.Name).text()
+            value = self.input_table.item(row, InputColumn.Call).text()
 
             value_tuples.append((name, float(value)))
 
@@ -227,6 +285,7 @@ class RunTab(TabInterface):
         self.parent.testName.setCurrentIndex(0)
 
         self._fill_input_parameter_table()
+        self._fill_output_parameter_table()
 
     @property
     def input_table(self) -> QtWidgets.QTableWidget:
