@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractclassmethod
+from dataclasses import dataclass
 from enum import IntEnum, unique
+import math
 from pathlib import Path
 import re
-from typing import List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_spyder.widgets.navigation import ProjectNavigation
@@ -47,6 +49,13 @@ class OutputColumn(IntEnum):
     def __call__(self):
         return self.value
 
+
+@dataclass
+class CellInfo:
+    row: int
+    col: int
+
+
 class TabInterface(ABC):
     def __init__(self, parent: 'TestRunner'):
         self.parent = parent
@@ -63,6 +72,7 @@ class TabInterface(ABC):
 class RunTab(TabInterface):
     def __init__(self, parent: 'TestRunner'):
         super().__init__(parent)
+        self.current_cell_info: Optional[CellInfo] = None
 
     def setup_view(self):
         # the running tab doesn't support both Trends and Statistics in the current version
@@ -84,6 +94,12 @@ class RunTab(TabInterface):
 
         self.parent.inputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.parent.outputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        self.parent.inputParameter.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.parent.outputParameter.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+        self.parent.inputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.inputParameter))
+        self.parent.outputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.outputParameter))
 
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
@@ -109,7 +125,6 @@ class RunTab(TabInterface):
         data = self.parent.project_info.get_test(self.test_name, self.hardware, self.base)
         output_parameters = data.definition['output_parameters']
 
-        output_table.cellChanged.connect(lambda row, col: self._call_value_updated(row, col))
         output_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
             output_table,
             row,
@@ -123,11 +138,11 @@ class RunTab(TabInterface):
             output_table.insertRow(index)
 
             item = QtWidgets.QTableWidgetItem(key)
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             output_table.setItem(index, OutputColumn.Name, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.LSL()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             output_table.setItem(index, OutputColumn.LSL, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.LTL()]))
@@ -137,14 +152,13 @@ class RunTab(TabInterface):
             output_table.setItem(index, OutputColumn.UTL, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.USL()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             output_table.setItem(index, OutputColumn.USL, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[OutputColumnKey.UNIT()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             output_table.setItem(index, OutputColumn.Unit, item)
         output_table.blockSignals(False)
-
 
     def _fill_input_parameter_table(self):
         input_table = self.parent.inputParameter
@@ -156,7 +170,6 @@ class RunTab(TabInterface):
         data = self.parent.project_info.get_test(self.test_name, self.hardware, self.base)
         input_parameters = data.definition['input_parameters']
 
-        input_table.cellChanged.connect(lambda row, col: self._call_value_updated(row, col))
         input_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
             input_table,
             row,
@@ -170,31 +183,37 @@ class RunTab(TabInterface):
             input_table.insertRow(index)
 
             item = QtWidgets.QTableWidgetItem(key)
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Name, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MIN()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Min, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MAX()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Max, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.DEFAULT()]))
             input_table.setItem(index, InputColumn.Call, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.POWER()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Power, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.UNIT()]))
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Unit, item)
         input_table.blockSignals(False)
 
-    @QtCore.pyqtSlot(int, int, float, float)
+    @QtCore.pyqtSlot(str, QtWidgets.QTableWidget, int, int, float, float)
     def _call_value_double_clicked(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float):
+        if table == self.parent.outputParameter:
+            self._check_table_parameter(table, row, col, min, max, self._validate_output_parameter)
+        else:
+            self._check_table_parameter(table, row, col, min, max, self._validate_value)
+    
+    def _check_table_parameter(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float, validate_callback: Callable):
         item = table.item(row, col)
         initial_value = item.text()
 
@@ -202,8 +221,8 @@ class RunTab(TabInterface):
         integer_validator = QtGui.QRegExpValidator(regx, self.parent)
         line = QtWidgets.QLineEdit(str(item.text()))
         line.setValidator(integer_validator)
-        line.textChanged.connect(lambda text: self._call_value_changed(text, row, col, min, max))
-        line.editingFinished.connect(lambda: self._call_value_edited(table, initial_value, row, col, min, max))
+        line.textChanged.connect(lambda text: self._call_value_changed(text, row, col, min, max, validate_callback))
+        line.editingFinished.connect(lambda: self._call_value_edited(table, initial_value, row, col, min, max, validate_callback))
 
         line.blockSignals(True)
         line.setText(initial_value)
@@ -211,16 +230,11 @@ class RunTab(TabInterface):
 
         table.setCellWidget(row, col, line)
 
-    @QtCore.pyqtSlot(int, int)
-    def _call_value_updated(self, row: int, col: int):
-        if col != InputColumn.Call():
-            return
-
-    @QtCore.pyqtSlot(str, QtWidgets.QTableWidget, int, int, float, float)
-    def _call_value_edited(self, table: QtWidgets.QTableWidget, initial_value: str, row: int, col: int, min: float, max: float):
+    @QtCore.pyqtSlot(str, QtWidgets.QTableWidget, int, int, float, float, object)
+    def _call_value_edited(self, table: QtWidgets.QTableWidget, initial_value: str, row: int, col: int, min: float, max: float, validate_callback: Callable):
         value = initial_value
         text = table.cellWidget(row, col).text()
-        if self._validate_value(text, row, min, max):
+        if validate_callback(text, row, col, min, max):
             value = text
 
         table.removeCellWidget(row, col)
@@ -228,13 +242,10 @@ class RunTab(TabInterface):
         table.setItem(row, col, item)
 
     @QtCore.pyqtSlot(str, int, int, float, float)
-    def _call_value_changed(self, text: str, row: int, col: int, min: float, max: float):
-        if not self._validate_value(text, row, min, max):
-            ''' set feedback '''
-            print('not valid')
+    def _call_value_changed(self, text: str, row: int, col: int, min: float, max: float, validate_callback: Callable):
+        _ = validate_callback(text, row, col, min, max)
 
-    def _validate_value(self, text: str, row: int, min: float, max: float) -> bool:
-        print(text, max, min)
+    def _validate_value(self, text: str, row: int, col: int, min: float, max: float) -> bool:
         self.parent.feedback.setText('')
 
         if not text or text in ['-', '+']:
@@ -249,19 +260,51 @@ class RunTab(TabInterface):
 
         return True
 
+    def _validate_output_parameter(self, text: str, row: int, col: int, min: float, max: float):
+        if self._validate_value(text, row, col, min, max):
+            return self.check_utl_ltl(text, row, col)
+
+    def check_utl_ltl(self, text: str, row: int, col: int) -> bool:
+        if col == OutputColumn.LTL:
+            utl = float(self.parent.outputParameter.item(row, OutputColumn.UTL).text())
+            if math.isnan(float(utl)):
+                return True
+
+            ltl = float(text)
+        else:
+            ltl = float(self.parent.outputParameter.item(row, OutputColumn.LTL).text())
+            if math.isnan(float(ltl)):
+                return True
+
+            utl = float(text)
+
+        if not utl > ltl:
+            self.parent.feedback.setText('upper limit should be bigger than lower limit')
+            return False
+
+        return True
+
     def _collect_data(self) -> dict:
-        value_tuples = self._get_table_values()
+        input_value_tuples = self._get_input_table_values()
+
         data = self.parent.project_info.get_test(self.test_name, self.hardware, self.base)
         input_parameters = data.definition['input_parameters']
 
-        for name, value in value_tuples:
+        output_parameters = data.definition['output_parameters']
+        output_value_tuples = self._get_output_table_values()
+
+        for name, value in input_value_tuples:
             input_parameters[name]['value'] = value
+
+        for name, ltl, utl in output_value_tuples:
+            output_parameters[name]['ltl'] = ltl
+            output_parameters[name]['utl'] = utl
 
         return data
 
-    def _get_table_values(self) -> List[Tuple[str, float]]:
+    def _get_input_table_values(self) -> List[Tuple[str, float]]:
         value_tuples = []
-        for row in range(self.parent.inputParameter.rowCount()):
+        for row in range(self.input_table.rowCount()):
             name = self.input_table.item(row, InputColumn.Name).text()
             value = self.input_table.item(row, InputColumn.Call).text()
 
@@ -269,9 +312,27 @@ class RunTab(TabInterface):
 
         return value_tuples
 
+    def _get_output_table_values(self) -> List[Tuple[str, float, float]]:
+        value_tuples = []
+        for row in range(self.output_table.rowCount()):
+            name = self.output_table.item(row, OutputColumn.Name).text()
+            ltl = self.output_table.item(row, OutputColumn.LTL).text()
+            utl = self.output_table.item(row, OutputColumn.UTL).text()
+
+            value_tuples.append((name, float(ltl), float(utl)))
+
+        return value_tuples
+
     @QtCore.pyqtSlot(int)
     def _hardware_changed(self, _: int):
         self._update_test_names()
+
+    def _update_cell(self, _selected, _deselected, table):
+        if self.current_cell_info is not None:
+            table.removeCellWidget(self.current_cell_info.row, self.current_cell_info.col)
+
+        item = table.currentItem()
+        self.current_cell_info = CellInfo(table.row(item), table.column(item))
 
     @QtCore.pyqtSlot(int)
     def _base_changed(self, _: int):
@@ -292,6 +353,10 @@ class RunTab(TabInterface):
         return self.parent.inputParameter
 
     @property
+    def output_table(self) -> QtWidgets.QTableWidget:
+        return self.parent.outputParameter
+
+    @property
     def hardware(self) -> str:
         return self.parent.hardware.currentText()
 
@@ -309,7 +374,6 @@ class Widget(TabInterface):
         super().__init__(parent)
 
     def setup_view(self):
-        # self.parent.testName.setText(self.parent.test_name)
         self.parent.testName.setEnabled(True)
         self.parent.hardware.setEnabled(True)
         self.parent.base.setEnabled(True)
