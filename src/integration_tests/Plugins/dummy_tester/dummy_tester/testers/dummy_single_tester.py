@@ -2,8 +2,7 @@ from dummy_tester.testers.tester_interface import TesterInterface
 
 
 class DummySingleTester(TesterInterface):
-    def get_sites_count(self):
-        return 1
+    SITE_COUNT = 1
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True

@@ -116,7 +116,7 @@ class ATE(SpyderDockablePlugin):
         print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
 
     def close_project(self):
-        print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
+        print(f"Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
 
     @staticmethod

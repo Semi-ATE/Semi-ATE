@@ -23,6 +23,7 @@ all other generators are called by these 4 'top level' generators.
 """
 import os
 import shutil
+from pathlib import Path
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -120,7 +121,7 @@ class test__init__generator(BaseTestGenerator):
         base = self.definition['base']
         name = self.definition['name']
 
-        return os.path.join('src', hardware, base, name)
+        return self.project_path.joinpath(Path(self.project_path).name, hardware, base, name)
 
     def _generate_render_data(self, abs_path):
         imports = []
@@ -149,6 +150,7 @@ def project_root_generator(template_dir, project_path):
     project__main__generator(template_dir, project_path)
     project__init__generator(template_dir, project_path)
     project_gitignore_generator(template_dir, project_path)
+    project_setup_file_generator(template_dir, project_path)
     project_defintinion_generator(project_path)
 
 
@@ -192,7 +194,7 @@ def _generate_version_file(definition_path):
     from pathlib import Path
     path = os.path.join(definition_path, "version", "version.json")
     with open(os.fspath(Path(path)), 'w') as f:
-        json.dump({"version": latest_semi_ate_project_db_version}, f, indent=4)
+        json.dump([{"version": latest_semi_ate_project_db_version}], f, indent=4)
 
 
 def _make_definition_dir(root, dir_name):
@@ -206,15 +208,16 @@ def _make_definition_dir(root, dir_name):
 class BaseProjectGenerator:
     """Generator for the project's __main__.py file."""
 
-    def __init__(self, template_dir, project_path, file_name):
+    def __init__(self, template_dir: str, project_path: str, file_name: str, template_name: str = ''):
         template_path = os.path.normpath(template_dir)
         file_loader = FileSystemLoader(template_path)
         env = Environment(loader=file_loader)
         env.trim_blocks = True
         env.lstrip_blocks = True
         env.rstrip_blocks = True
-        template_name = str(self.__class__.__name__).split('.')[-1].split(' ')[0]
-        template_name = template_name.replace('generator', 'template') + '.jinja2'
+        if not template_name:
+            template_name = str(self.__class__.__name__).split('.')[-1].split(' ')[0]
+            template_name = template_name.replace('generator', 'template') + '.jinja2'
         if not os.path.exists(os.path.join(template_path, template_name)):
             raise Exception(f"couldn't find the template : {template_name}")
         template = env.get_template(template_name)
@@ -244,6 +247,12 @@ class project__main__generator(BaseProjectGenerator):
         super().__init__(template_dir, project_path, file_name)
 
 
+class project_setup_file_generator(BaseProjectGenerator):
+    """Generator for the project's setup.py file."""
+    def __init__(self, template_dir, project_path, file_name='setup.py'):
+        super().__init__(template_dir, project_path, file_name, template_name='project_setup_file_template.jinja2')
+
+
 class project__init__generator(BaseProjectGenerator):
     """Generator for the project's __init__.py file."""
 
@@ -267,10 +276,11 @@ class src__init__generator(BaseProjectGenerator):
     """
 
     def __init__(self, template_dir, project_path, file_name='__init__.py'):
+        self.project_name = Path(project_path).name
         super().__init__(template_dir, project_path, file_name)
 
     def _generate_relative_path(self):
-        return 'src'
+        return self.project_name
 
 
 class src_common_generator(src__init__generator):
@@ -292,7 +302,7 @@ class HW__init__generator(BaseGenerator):
         super().__init__(template_path, project_path, definition, file_name)
 
     def _generate_relative_path(self):
-        return os.path.join('src', self.definition['hardware'])
+        return Path(self.project_path).joinpath(self.project_path.name, self.definition['hardware'])
 
 
 class HW_common_generator(HW__init__generator):
@@ -309,7 +319,7 @@ class Base_Source_generator(BaseGenerator):
         super().__init__(template_path, project_path, definition, file_name, template_file_name)
 
     def _generate_relative_path(self):
-        return os.path.join('src', self.definition['hardware'], self.base_name)
+        return self.project_path.joinpath(self.project_path.name, self.definition['hardware'], self.base_name)
 
 
 class PR__init__generator(Base_Source_generator):
@@ -319,13 +329,6 @@ class PR__init__generator(Base_Source_generator):
         super().__init__('PR', template_path, project_path, definition, file_name, template_file_name="base_init_template.jinja2")
 
 
-class PR_common_generator(Base_Source_generator):
-    """Generator for the common.py file of 'PR' for the given hardware."""
-
-    def __init__(self, template_path, project_path, definition):
-        super().__init__('PR', template_path, project_path, definition, file_name='common.py', template_file_name="base_common_template.jinja2")
-
-
 class FT__init__generator(Base_Source_generator):
     """Generator for the __init__.py file of 'FT' for the given hardware."""
 
@@ -333,8 +336,61 @@ class FT__init__generator(Base_Source_generator):
         super().__init__('FT', template_path, project_path, definition, file_name, template_file_name="base_init_template.jinja2")
 
 
-class FT_common_generator(Base_Source_generator):
+class BaseCommonGenerator:
+    """Generator for the project's __main__.py file."""
+
+    def __init__(self, template_dir: str, project_path: str, definition: dict):
+        from pathlib import Path
+        template_path = Path(template_dir)
+        file_loader = FileSystemLoader(template_path)
+        env = Environment(loader=file_loader)
+        env.trim_blocks = True
+        env.lstrip_blocks = True
+        env.rstrip_blocks = True
+        template_name = 'base_common_template.jinja2'
+        if not template_path.joinpath(template_name).exists():
+            raise Exception(f"couldn't find the template : {template_name}")
+        template = env.get_template(template_name)
+
+        abs_path_to_dir = Path(project_path).joinpath(Path(project_path).name, definition['hardware'], definition['active_base'])
+        abs_path_to_file = abs_path_to_dir.joinpath('common.py')
+
+        # in this section, the concrete type of the tester will be extracted and used to generate the code.
+        # this is necessary to type hint the tester instance which provides the IDE with the information needed to support the autocompletion
+        from ate_semiateplugins.pluginmanager import get_plugin_manager
+        tester_types = get_plugin_manager().hook.get_tester_type(tester_name=definition['tester'])
+        if not tester_types:
+            print('''selected type not found within the supported tester types
+                this is not an error but the user will not have any IDE support (e.g autocompletion)
+            ''')
+            module_name = 'object'
+            module_path = ''
+            module_import = ''
+        else:
+            module_name = get_plugin_manager().hook.get_tester_type(tester_name=definition['tester'])[0].__name__
+            module_path = get_plugin_manager().hook.get_tester_type(tester_name=definition['tester'])[0].__module__
+            module_import = f'from {module_path} import {module_name}'
+
+        msg = template.render(definition=definition, module_import=module_import, module_name=module_name)
+
+        if not abs_path_to_dir.exists():
+            os.makedirs(abs_path_to_dir)
+
+        with open(abs_path_to_file, 'w', encoding='utf-8') as f:
+            f.write(msg)
+
+
+class FT_common_generator(BaseCommonGenerator):
     """Generator for the common.py file of 'FT' for the given hardware."""
 
     def __init__(self, template_path, project_path, definition):
-        super().__init__('FT', template_path, project_path, definition, file_name='common.py', template_file_name="base_common_template.jinja2")
+        definition["active_base"] = 'FT'
+        super().__init__(template_path, project_path, definition)
+
+
+class PR_common_generator(BaseCommonGenerator):
+    """Generator for the common.py file of 'PR' for the given hardware."""
+
+    def __init__(self, template_path, project_path, definition):
+        definition["active_base"] = 'PR'
+        super().__init__(template_path, project_path, definition)

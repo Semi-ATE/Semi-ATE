@@ -11,6 +11,7 @@ class FlatcacheConfig(BaseModel):
 class Flatcache:
     def __init__(self):
         self.config: FlatcacheConfig = None
+        self.config: FlatcacheConfig = None
         self.last_part_id = ""
         self.fetched_data = {}
         self.subdoc_cache = {}
@@ -80,5 +81,6 @@ class Flatcache:
     def drop_part(self, part_id: str):
         requests.delete(self.url(part_id))
 
-    def url(self, part_id: str):
+    def utl(self, part_id: str):
         return f"http://{self.config.ip}:{self.config.port}/{part_id}"
+

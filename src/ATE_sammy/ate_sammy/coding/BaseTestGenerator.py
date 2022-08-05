@@ -1,5 +1,6 @@
 
 import os
+from pathlib import Path
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -58,12 +59,12 @@ class BaseTestGenerator:
         template_name = template_name.replace('generator', 'template') + '.jinja2'
         template = env.get_template(template_name)
         self.definition = definition
-        self.project_path = project_path
+        self.project_path = Path(project_path)
 
         rel_path_to_dir = self._generate_relative_path()
-        abs_path_to_dir = os.path.join(self.project_path, rel_path_to_dir)
-        self.abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
-        if not os.path.exists(abs_path_to_dir):
+        abs_path_to_dir = self.project_path.joinpath(rel_path_to_dir)
+        self.abs_path_to_file = abs_path_to_dir.joinpath(file_name)
+        if not abs_path_to_dir.exists():
             os.makedirs(abs_path_to_dir)
 
         render_data = self._generate_render_data(abs_path_to_dir)
@@ -98,7 +99,7 @@ class test_base_generator(BaseTestGenerator):
         base = self.definition['base']
         name = self.definition['name']
 
-        return os.path.join('src', hardware, base, name)
+        return self.project_path.joinpath(Path(self.project_path).name, hardware, base, name)
 
     def _render_parameters(self, parameter_type):
         paramlist = []
@@ -127,4 +128,5 @@ class test_base_generator(BaseTestGenerator):
                                opppd=render_data['opppd'],
                                output_params=render_data['output_params'],
                                input_params=render_data['input_params'],
-                               OutputColumnKey=OutputColumnKey)
+                               OutputColumnKey=OutputColumnKey,
+                               project_name=Path(self.project_path).name)

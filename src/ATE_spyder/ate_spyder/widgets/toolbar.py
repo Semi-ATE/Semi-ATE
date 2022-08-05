@@ -8,6 +8,7 @@ Created on Tue Apr  7 18:18:33 2020
 import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
@@ -91,6 +92,7 @@ class ToolBar(ApplicationToolbar):
         self.hardware_combo.addItems(available_hardwares)
         self.active_hardware = '' if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
         self.hardware_combo.setCurrentIndex(0 if len(available_hardwares) == 0 else len(available_hardwares) - 1)
+        self.project_info.active_hardware = self.active_hardware
 
     def _setup_base(self):
         self.base_label = QtWidgets.QLabel("Base:")
@@ -100,7 +102,7 @@ class ToolBar(ApplicationToolbar):
         self.base_combo = QtWidgets.QComboBox()
         self.base_combo.ID = ToolbarItems.BaseCombo
         self.base_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.base_combo.addItems(['', 'PR', 'FT'])
+        self.base_combo.addItems(['PR', 'FT'])
 
     def _setup_target(self):
         self.target_label = QtWidgets.QLabel("Target:")
@@ -110,7 +112,6 @@ class ToolBar(ApplicationToolbar):
         self.target_combo = QtWidgets.QComboBox()
         self.target_combo.ID = ToolbarItems.TargetCombo
         self.target_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.target_combo.addItems([''])
         self.target_combo.setCurrentText(self.active_target)
 
     def _setup_group(self):
@@ -120,10 +121,13 @@ class ToolBar(ApplicationToolbar):
 
         self.group_combo = QtWidgets.QComboBox()
         self.group_combo.ID = ToolbarItems.GroupCombo
+        combo_list = self.group_combo.view()
+        combo_list.setSpacing(2)
         self.group_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
     def _init__group(self):
         self.group_combo.blockSignals(True)
+        self.group_combo.clear()
         groups = self.project_info.get_groups()
         # remove tests section
         # tests section is active by default (removing it would avoid some confusions)
@@ -139,6 +143,10 @@ class ToolBar(ApplicationToolbar):
             item = self.group_combo.model().item(group_index, 0)
             item.setCheckState(QtCore.Qt.Unchecked if not group.is_selected else QtCore.Qt.Checked)
 
+        # combobox list will 
+        sp = self.group_combo.view().sizePolicy()
+        sp.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+        self.group_combo.view().setSizePolicy(sp)
         self.group_combo.setCurrentIndex(0)
         self.group_combo.blockSignals(False)
 
@@ -153,6 +161,7 @@ class ToolBar(ApplicationToolbar):
         self.parent.update_settings.connect(self._settings_update)
         self.parent.hardware_activated.connect(self._update_hardware)
         self.parent.group_added.connect(self._group_added)
+        self.parent.group_removed.connect(self._group_removed)
 
         self.group_combo.activated.connect(self._group_selected)
 
@@ -168,9 +177,17 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _group_added(self, name: str):
-        self.group_combo.addItem(name)
-        item = self.group_combo.model().item(self.group_combo.count() - 1, 0)
+        self._init__group()
+        item_index = self.group_combo.findText(name)
+        if item_index is None:
+            return
+
+        item = self.group_combo.model().item(item_index, 0)
         item.setCheckState(QtCore.Qt.Checked)
+
+    @QtCore.pyqtSlot(str)
+    def _group_removed(self, _name: str):
+        self._init__group()
 
     def _update_group_item_state(self, index: int, state: QtCore.Qt):
         item = self.group_combo.model().item(index, 0)
@@ -182,7 +199,6 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str, str, str)
     def _settings_update(self, hardware, base, target):
-        self.active_hardware = hardware
         self.hardware_combo.setCurrentText(hardware)
         self.base_combo.setCurrentText(base)
         self._update_target()
@@ -226,6 +242,8 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _hardware_changed(self, selected_hardware):
+        if not selected_hardware:
+            return
         self.active_hardware = selected_hardware
         self.project_info.active_hardware = selected_hardware
         self._update_target()
@@ -268,20 +286,23 @@ class ToolBar(ApplicationToolbar):
         self.project_info.store_settings(self._get_hardware(), self._get_base(), self._get_target())
 
     def _update_target(self):
-        self.target_combo.blockSignals(True)
         self.target_combo.clear()
-        self.target_combo.addItem('')
+        targets = []
         if self._get_base() == 'FT':
-            self.target_combo.addItems(self.project_info.get_active_device_names_for_hardware(self.active_hardware))
-
+            targets = self.project_info.get_active_device_names_for_hardware(self.active_hardware)
+            self.target_combo.addItems(targets)
         elif self._get_base() == 'PR':
-            self.target_combo.addItems(self.project_info.get_active_die_names_for_hardware(self.active_hardware))
-
+            targets = self.project_info.get_active_die_names_for_hardware(self.active_hardware)
+            self.target_combo.addItems(targets)
         else:
-            pass
+            return
 
-        self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
-        self.target_combo.blockSignals(False)
+        try:
+            current_target_index = targets.index(self._get_target())
+            self.target_combo.setCurrentIndex(current_target_index)
+            self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
+        except ValueError:
+            return
 
     def _get_hardware(self):
         return self.hardware_combo.currentText()

@@ -9,6 +9,8 @@ from ate_sammy.migration.migration_scripts.migration_version_4 import MigrationV
 from ate_sammy.migration.migration_scripts.migration_version_5 import MigrationVersion5
 from ate_sammy.migration.migration_scripts.migration_version_6 import MigrationVersion6
 from ate_sammy.migration.migration_scripts.migration_version_7 import MigrationVersion7
+from ate_sammy.migration.migration_scripts.migration_version_8 import MigrationVersion8
+from ate_sammy.migration.migration_scripts.migration_version_9 import MigrationVersion9
 
 from ate_sammy.migration.utils import (generate_path, write_version_to_file, VERSION, VERSION_FILE_NAME)
 
@@ -20,7 +22,9 @@ MIGRATORS = [
     MigrationVersion4(),
     MigrationVersion5(),
     MigrationVersion6(),
-    MigrationVersion7()
+    MigrationVersion7(),
+    MigrationVersion8(),
+    MigrationVersion9(),
 ]
 
 
@@ -48,6 +52,9 @@ class MigrationTool:
 
         with open(generate_path(version_dir, VERSION_FILE_NAME), 'r') as f:
             data = json.load(f)
+            if isinstance(data, list):
+                return data[0]['version']
+
             return data['version']
 
     @staticmethod
@@ -60,6 +67,8 @@ class MigrationTool:
             4: lambda: MigrationVersion5(),
             5: lambda: MigrationVersion6(),
             6: lambda: MigrationVersion7(),
+            7: lambda: MigrationVersion8(),
+            8: lambda: MigrationVersion9(),
         }[version_num]()
 
     @staticmethod

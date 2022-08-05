@@ -37,7 +37,7 @@ class TreeModel(QtGui.QStandardItemModel):
 
         import os
         self.doc_path = os.path.join(self.project_info.project_directory, "doc")
-        self.base_path = os.path.join(self.project_info.project_directory, "src")
+        self.base_path = os.path.join(self.project_info.project_directory, self.project_info.project_name)
 
         self.file_item_handler = FileItemHandler(self.project_info, self.base_path)
         self._setup()
@@ -116,6 +116,9 @@ class TreeModel(QtGui.QStandardItemModel):
     @QtCore.Slot(str)
     def _add_group(self, name):
         self.new_group_flow = FlowItem.SimpleFlowItem(self.project_info, name)
+        if not self.project_info.active_target:
+            return
+
         self.flows.appendRow(self.new_group_flow)
 
     @QtCore.Slot(str)

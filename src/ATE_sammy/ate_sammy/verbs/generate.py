@@ -86,7 +86,7 @@ class Generate(VerbBase):
                 "execution_strategy": execution_strategy,
             }
 
-        file_path = Path(project_base_dir, "src", hw_name, base_type.value, f'{program_name}_execution_strategy.json')
+        file_path = Path(project_base_dir, Path(project_base_dir).name, hw_name, base_type.value, f'{program_name}_execution_strategy.json')
         with open(file_path, "w") as file:
             json.dump(data, file, indent=4)
 
@@ -104,9 +104,9 @@ class Generate(VerbBase):
 
         for test in tests:
             print(f"        gen {test.name}")
-            import os
-            test_path = os.path.join(cwd, 'src', test.hardware, test.base, test.name)
-            if not os.path.exists(test_path):
+            project_dir = Path(cwd)
+            test_path = project_dir.joinpath(project_dir.name, test.hardware, test.base, test.name)
+            if not test_path.exists():
                 test_generator(self.template_path, cwd, test.definition)
                 continue
 
@@ -128,7 +128,8 @@ class Generate(VerbBase):
 
         for test_target in test_targets:
             import os
-            test_path = os.path.join(cwd, 'src', test_target.hardware, test_target.base, test_target.name)
+            project_dir = Path(cwd)
+            test_path = project_dir.joinpath(project_dir.name, test_target.hardware, test_target.base, test_target.name)
             testdefinition = Test.get(self.file_operator, test_target.test, test_target.hardware, test_target.base).definition
             testdefinition['base'] = test_target.base
             testdefinition['base_class'] = test_target.test
@@ -139,7 +140,7 @@ class Generate(VerbBase):
                 continue
 
             print(f"        gen {test_target.name}")
-            if not os.path.exists(test_path):
+            if not Path(f'{test_path}.py').exists():
                 test_target_generator(self.template_path, cwd, testdefinition)
                 continue
 
