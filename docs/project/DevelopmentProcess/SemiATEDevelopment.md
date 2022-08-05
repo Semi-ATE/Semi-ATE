@@ -1,12 +1,12 @@
 # Semi-ATE Project Development
 
-The development of a Semi-ATE project can only be done in different & sequential stages. Therefore, this document will help to create a tests and integrate&execute them in a test program flow (e.g run tests).
+The development of a Semi-ATE project can only be done in different & sequential stages. Therefore, this document will help to create, integrate & execute a tests in a test program flow.
 
 __note__: this document assumes that all project dependencies such as Semi-ATE Plugin, Tester Plugin, etc... are installed and configured (see [semi-ate-packages](../semi-ate-packages))
 
 ## Spyder Environment
 
-Spyder is a Graphic IDE that Semi-ATE based on to develop and debug tests.
+Spyder is a Plugin based IDE that Semi-ATE depends on and will be used to develop and debug tests.
 
 ## Project Setup
 
@@ -14,7 +14,7 @@ Setting up the project shall be done in different sections/stages.
 
 ### Definitions Section
 
-All items under this section shall be configured at first to setup&build the base structure of the project to develop tests.
+All items under this section shall be configured at first to setup & build the base structure of the project to develop the tests.
 
 ![ ](images/definition_section.png)
 
@@ -43,7 +43,7 @@ hardwaresetup contains different section to be configured. Though, it's not nece
 
 ##### Optional
 
-Those optional sections are not necessary for the development of tests but are useful in some scenarios
+The optional sections are not necessary for the development of tests but are useful in some scenarios
 
 * Instruments: present external instruments that could be controlled over the network such as with `mqtt`
 
@@ -66,7 +66,7 @@ __note__: any selected component from `Instruments`, `Actuators` or `General Pur
 #### Non-Optional
 
 * Parallelism: describes the strategy the testers shall adapt while testing. It should be at least one configuration available
-* Tester: the tester dropdown contains all installed tester plugins that use to implement the tester interface with which the TE may interact with the tester. (see [Plugins](../Plugins.md) for more information)
+* Tester: the tester dropdown contains all installed tester plugins that implements the tester interface with which the TE may interact with the tester. (see [Plugins](../Plugins.md) for more information)
 
 > __note__: The PCBs section is not a part of this documentation and should be self explained for those with some domain know-how
 >
@@ -101,7 +101,7 @@ This section is only enabled if stage one is completed (e.g a configuration is g
 
 ![ ](images/test_section.png)
 
-As seen above the test section is activated and below are the standard test groups where a test could be located/grouped.
+As seen above the test section is activated and below are the standard test groups where a test could be virtually located/grouped.
 
 ![ ](images/test_in_test_section.png)
 
@@ -109,12 +109,11 @@ __note__: The test groups are only virtual (e.g they do not exist physically in 
 
 #### Generate and Configure Tests
 
-Filling the required fields and apply the configuration will generate a test that should directly be added to the tree.
+Filling the required fields and apply the configuration will generate a test that will be automatically appended to the tree.
 
 ![ ](images/test_view.png)
 
-Creating a test will update the tree and the test will be available under the corresponding groups.
-(below is an example of a newly created test `contact` which belongs to the `engineering` group)
+Below is an example of a newly created test `contact` which belongs to the `engineering` group
 
 ![ ](images/test_created.png)
 
@@ -134,19 +133,19 @@ Generating a test as described above will automatically generate code that may b
 
 ```
 
-The generated code is a valid python code that may be used and executed.
+The generated code is valid python code that may be used and executed.
 Though, the test literally doesn't do anything other than setting the output parameter to a default value. The `do` function is basically all we need to write tests, so in this section we will discuss
 how to write tests and how to integrate the tester and operate on the hardware.
 
-The test will be provided with the a `context` objects container which contains all available interfaces such as instrument/actuator/tester...
+The test will be provided with a `context` objects which contains all available interfaces such as instrument/actuator/tester...
 
-The context could be used as follow:
+The context could be used as follow (more [here](./TestInterface.md)):
 
 ```Python
 self.context.tester.<operate_on_hardware>
 ```
 
-__note__: Spyder-IDE will provide the auto completion support needed to select the right interface
+__note__: Spyder-IDE will provide the auto completion support needed to select the corresponding members & functions
 
 __note__: operating on the tester may require tester specific knowledge
 
@@ -160,13 +159,9 @@ Creating or Editing a test program shall show the same view as shown below:
 
 ![ ](images/test_program.png)
 
-Creating a test program will update the tree and the test program will be available under the corresponding group
+The created test program will be available under the corresponding group
 
-![ ](images/flow_in_flow_section.png)
-
-> do we need to describe how to use the test program wizard ?
-
-__note__: Unlike the test code the test program code shall never be edited as it contains automatically all information to run the associated tests
+__note__: Unlike the test code the test program code shall never be edited as it contains all information to run the associated tests
 
 #### Toolbar Extension
 
