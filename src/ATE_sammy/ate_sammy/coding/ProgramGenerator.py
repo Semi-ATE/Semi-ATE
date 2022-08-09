@@ -3,7 +3,6 @@ from ate_common.parameter import InputColumnKey, OutputColumnKey
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ate_sammy.coding.generators import BaseGenerator
-from ate_sammy.coding.AutoScriptGenerator import AutoScriptGenerator
 
 
 class test_program_generator(BaseGenerator):
@@ -48,10 +47,6 @@ class test_program_generator(BaseGenerator):
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
-
-        script_name = os.path.join(abs_path_to_dir, f'{prog_name}_auto_script.py')
-        if not os.path.exists(script_name):
-            AutoScriptGenerator(template_path, script_name)
 
     def build_test_entry_list(self, tests_in_program, test_targets):
         test_list = []

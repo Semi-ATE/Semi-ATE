@@ -178,17 +178,23 @@ Note that a "Function" in this context denotes an object that can have an arbitr
 
 ### Tester
 ```
-get_tester(tester_name) -> TesterInstance
+get_tester(tester_name, logger: Logger) -> TesterInstance
 ```
 This hook shall return an instance of a tester with the given name.
+Tester will also be provided with a logger
 
 A tester is expected to have the following interface:
 ```
 get_sites_count() -> int
 def do_request(self, site_id: int, timeout: int) -> bool
-def test_in_progress(site_id: int)
-def test_done(site_id: int, timeout: int)
+def test_in_progress(self, site_id: int)
+def test_done(self, site_id: int, timeout: int)
+def setup(self)
+def teardown(self)
 ```
+__note__: `get_tester` will also be used in the hwsetup in semi-ate-plugin to determine the number of sites supported with which the parallelism is configured. Therefore, prevent any interaction with the tester hardware while instantiating the tester (e.g in `__init__` function) and use the `setup()` and `teardown()` functions for that.
+
+---
 
 ```
 get_tester_master(tester_name) -> TesterInstance
@@ -239,10 +245,10 @@ get_exporter(exporter_name) -> Exporter
 get_equipment(equipment_name) -> EquipmentInstance
 get_devicepin_importer(importer_name) -> Importer
 
-get_instrument(instrument_name) -> InstrumentInstance
+get_instrument(instrument_name, logger: Logger) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
 
-get_tester(tester_name) -> TesterInstance
+get_tester(tester_name, logger: Optional[Logger]) -> TesterInstance
 get_tester_master(tester_name) -> TesterInstance
 
 get_general_purpose_function(func_name) -> FunctionInstance
@@ -316,7 +322,7 @@ class ThePlugin(object):
         raise NotImplementedError
 
     @hookimpl
-    def get_tester(tester_name) -> TesterInstance:
+    def get_tester(tester_name, logger: Optional[Logger]) -> TesterInstance:
         raise NotImplementedError
 
     @hookimpl

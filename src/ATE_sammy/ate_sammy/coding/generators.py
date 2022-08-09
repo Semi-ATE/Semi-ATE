@@ -31,6 +31,7 @@ from ate_sammy.coding.BaseGenerator import BaseGenerator
 from ate_sammy.coding.ProperGenerator import test_proper_generator
 from ate_sammy.coding.BaseTestGenerator import test_base_generator, BaseTestGenerator
 from ate_projectdatabase import latest_semi_ate_project_db_version
+from ate_sammy.coding.AutoScriptGenerator import AutoScriptGenerator
 
 
 def project_generator(template_path, project_path):
@@ -52,13 +53,14 @@ def hardware_generator(template_path, project_path, hardware):
     """Generator for a new hardware structure."""
 
     HW__init__generator(template_path, project_path, hardware)
-    HW_common_generator(template_path, project_path, hardware)
 
     PR__init__generator(template_path, project_path, hardware)
     PR_common_generator(template_path, project_path, hardware)
 
     FT__init__generator(template_path, project_path, hardware)
     FT_common_generator(template_path, project_path, hardware)
+
+    AutoScriptGenerator(template_path, project_path, hardware)
 
 
 def test_generator(template_path, project_path, definition):

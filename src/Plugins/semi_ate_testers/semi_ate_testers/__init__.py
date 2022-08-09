@@ -144,7 +144,7 @@ class Plugin:
             return BusinessObjectStandin()
 
     @hookimpl
-    def get_tester(tester_name: str):
+    def get_tester(tester_name: str, logger: Logger):
         if tester_name == f"{Plugin.prefix()} Single Tester":
             return DummySingleTester()
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
