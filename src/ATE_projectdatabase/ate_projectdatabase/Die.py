@@ -16,7 +16,7 @@ class Die:
     def add(session: FileOperator, name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled):
         die = {"name": name, "hardware": hardware, "maskset": maskset, "quality": quality, "grade": grade,
                "grade_reference": grade_reference, "type": type, "customer": customer, "is_enabled": is_enabled}
-        session.query(Types.Die()).add(die)
+        session.query_with_subtype(Types.Die(), name).add(die)
         session.commit()
 
     @staticmethod
