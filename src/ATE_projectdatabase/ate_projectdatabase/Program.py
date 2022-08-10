@@ -20,7 +20,7 @@ class Program:
             "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy, "test_ranges": test_ranges,
             "instance_count": instance_count, "execution_sequence": execution_sequence
         }
-        session.query(Types.Program()).add(prog)
+        session.query_with_subtype(Types.Program(), name).add(prog)
         session.commit()
 
     @staticmethod
