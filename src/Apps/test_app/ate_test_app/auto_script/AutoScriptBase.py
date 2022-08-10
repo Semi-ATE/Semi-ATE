@@ -4,6 +4,10 @@ from ate_common.logger import Logger
 
 class AutoScriptBase(ABC):
     @abstractmethod
+    def before_start_setup(self):
+        pass
+
+    @abstractmethod
     def after_cycle_teardown(self):
         pass
 

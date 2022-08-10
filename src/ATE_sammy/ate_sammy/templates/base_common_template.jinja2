@@ -46,15 +46,13 @@ class Context:
         self.logger.set_logger_level(LogLevel.Info)
         try:
             self.auto_script = auto_script
-            self.auto_script.set_logger(self.logger)
-            self.auto_script.set_context(self)
             self.harness.set_after_terminate_callback(lambda: self.auto_script.after_terminate_teardown())
             self.harness.set_logger(self.logger)
             sequencer.set_logger(self.logger)
             sequencer.set_auto_script(self.auto_script)
 
             # Tester
-            testers = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}")
+            testers = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}", logger=self.logger)
             assert len(testers) < 2, "The testertype {{definition["tester"]}} maps to multiple testers. Check installed plugins."
             assert len(testers) == 1, "The testertype {{definition["tester"]}} is not available or installed on this machine."
             self.tester_instance = testers[0]
