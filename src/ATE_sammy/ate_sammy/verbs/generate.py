@@ -128,7 +128,6 @@ class Generate(VerbBase):
             test_targets = TestTarget.get_all(self.file_operator)
 
         for test_target in test_targets:
-            import os
             project_dir = Path(cwd)
             test_path = project_dir.joinpath(project_dir.name, test_target.hardware, test_target.base, test_target.name)
             testdefinition = Test.get(self.file_operator, test_target.test, test_target.hardware, test_target.base).definition
@@ -141,7 +140,7 @@ class Generate(VerbBase):
                 continue
 
             print(f"        gen {test_target.name}")
-            if not os.path.exists(test_path):
+            if not Path(f'{test_path}.py').exists():
                 test_target_generator(self.template_path, cwd, testdefinition)
                 continue
 
