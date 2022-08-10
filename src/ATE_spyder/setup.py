@@ -51,7 +51,8 @@ setup(
     entry_points={
         "spyder.plugins": [
             "ate = ate_spyder.plugin:ATE",
-            "test_runner = ate_spyder_test_runner.plugin:TestRunnerPlugin"
+            "test_runner = ate_spyder_test_runner.plugin:TestRunnerPlugin",
+            "stil = ate_spyder_stil.plugin:STIL"
         ]
     }
 )
