@@ -15,6 +15,7 @@ from spyder.api.plugin_registration.decorators import (
 # Local imports
 from ate_spyder.project import ATEProject, ATEPluginProject
 from ate_spyder.widgets.main_widget import ATEWidget
+from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.constants import ATEActions, ATEToolbars, ATEStatusBars
 
 # Localization
@@ -38,6 +39,15 @@ class ATE(SpyderDockablePlugin):
     sig_close_file = Signal(str)
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
+    sig_ate_project_changed = Signal(bool)
+    """
+    Signal that indicates if an ATE project gets loaded or not.
+
+    Parameters
+    ----------
+    ate_project_loaded: bool
+        True if an ATE project was loaded, False otherwise.
+    """
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -56,6 +66,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
         widget.sig_close_file.connect(self.sig_close_file)
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
+        widget.sig_ate_project_changed.connect(self.sig_ate_project_changed)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
@@ -73,9 +84,6 @@ class ATE(SpyderDockablePlugin):
 
         toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.build()
-
-        widget.toolbar.add_item(
-            self.get_action(ATEActions.RunStil))
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
@@ -97,18 +105,17 @@ class ATE(SpyderDockablePlugin):
     def on_statusbar_available(self):
         statusbar = self.get_plugin(Plugins.StatusBar)
         container = self.get_container()
-        statusbar.add_status_widget(container.statusbar)
+        # statusbar.add_status_widget(container.statusbar)
 
     @on_plugin_teardown(plugin=Plugins.Toolbar)
     def on_toolbar_teardown(self):
         toolbar = self.get_plugin(Plugins.Toolbar)
-        toolbar.remove_item_from_application_toolbar(
-            ATEActions.RunStil, ATEToolbars.ATE)
+        toolbar.remove_application_toolbar(ATEToolbars.ATE)
 
     @on_plugin_teardown(plugin=Plugins.StatusBar)
     def on_statusbar_teardown(self):
         statusbar = self.get_plugin(Plugins.StatusBar)
-        statusbar.remove_status_widget(ATEStatusBars.ATE)
+        # statusbar.remove_status_widget(ATEStatusBars.ATE)
 
     def on_mainwindow_visible(self):
         # Hide by default the first time the plugin is loaded.
@@ -139,6 +146,13 @@ class ATE(SpyderDockablePlugin):
     def close_project(self):
         print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
+
+    def get_project_navigation(self) -> ProjectNavigation:
+        return self.get_widget().get_project_navigation()
+
+    def add_item_to_toolbar(self, item):
+        widget = self.get_widget()
+        widget.toolbar.add_item(item)
 
     @staticmethod
     def close_file(path, editor):

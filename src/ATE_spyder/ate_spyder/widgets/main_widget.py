@@ -9,17 +9,14 @@ import shutil
 import logging
 
 # Local imports
-from ate_spyder.widgets.constants import ATEActions
 from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dialog
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
-from ate_spyder.widgets.statusbar import ATEStatusBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
 from ate_spyder.project import ATEProject
 
 # Third party imports
-import zmq
-from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
+from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QTreeView, QVBoxLayout, QDialog
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
@@ -44,6 +41,15 @@ class ATEWidget(PluginMainWidget):
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
     sig_update_statusbar = Signal(str)
+    sig_ate_project_changed = Signal(bool)
+    """
+    Signal that indicates if an ATE project gets loaded or closed.
+
+    Parameters
+    ----------
+    ate_project_loaded: bool
+        True if an ATE project was loaded, False otherwise.
+    """
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -73,19 +79,6 @@ class ATEWidget(PluginMainWidget):
 
     def setup(self):
         self.model = None
-        self.stil_process = None
-        self.stil_process_running = False
-
-        self.zmq_context = zmq.Context.instance()
-        self.stil_sock = self.zmq_context.socket(zmq.PULL)
-        self.stil_port = self.stil_sock.bind_to_random_port('tcp://127.0.0.1')
-
-        fid = self.stil_sock.getsockopt(zmq.FD)
-        self.notifier = QSocketNotifier(fid, QSocketNotifier.Read, self)
-        self.notifier.activated.connect(self.on_stil_msg_received)
-
-        self.statusbar = ATEStatusBar(self)
-        self.sig_update_statusbar.connect(self.statusbar.sig_update_value)
 
         self.tree = QTreeView()
         self.tree.setHeaderHidden(True)
@@ -102,14 +95,6 @@ class ATEWidget(PluginMainWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.tree)
         self.setLayout(layout)
-
-        self.run_stil_action = self.create_action(
-            ATEActions.RunStil, _('Compile STIL files'),
-            self.create_icon('run_again'), tip=_('Compile STIL files'),
-            triggered=self.compile_stil
-        )
-
-        self.run_stil_action.setEnabled(False)
 
     def on_option_update(self, option, value):
         pass
@@ -220,7 +205,7 @@ class ATEWidget(PluginMainWidget):
                 self.init_done.emit()
                 project_loaded = True
 
-        self.run_stil_action.setEnabled(project_loaded)
+        self.sig_ate_project_changed.emit(project_loaded)
         return project_loaded
 
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
@@ -241,61 +226,10 @@ class ATEWidget(PluginMainWidget):
         self.project_info.project_directory = ''
         self.tree.setModel(None)
 
+    def get_project_navigation(self) -> ProjectNavigation:
+        return self.project_info
+
     def delete_test(self, path):
         from pathlib import Path
         import os
         self.sig_close_file.emit(os.fspath(Path(path)))
-
-    def compile_stil(self):
-        if self.stil_process_running:
-            self.stil_process.kill()
-            return
-
-        self.stil_process = QProcess(self)
-        # self.stil_process.errorOccurred.connect(self.stil_process_failed)
-        self.stil_process.finished.connect(self.stil_process_finished)
-
-        # TODO: Determine STIL file location adequately
-        project_path = self.project_info.project_directory
-        cwd = osp.join(project_path, 'patterns')
-        env = self.stil_process.processEnvironment()
-
-        for var in os.environ:
-            env.insert(var, os.environ[var])
-
-        self.stil_process.setProcessEnvironment(env)
-        self.stil_process.setWorkingDirectory(cwd)
-
-        # Find STIL files recursively
-        stil_files = []
-        for root, _, files in os.walk(cwd):
-            for file in files:
-                _, ext = osp.splitext(file)
-                ext = ext[1:]
-                if ext == 'stil':
-                    stil_files.append(osp.join(root, file))
-
-        args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
-        args += stil_files
-
-        self.stil_process.setProcessChannelMode(QProcess.SeparateChannels)
-        self.stil_process.start(args[0], args[1:])
-        self.stil_process_running = True
-        self.run_stil_action.setIcon(self.create_icon('stop'))
-
-    def stil_process_finished(self, exit_code, exit_status):
-        self.stil_process_running = False
-        self.stil_process = None
-        self.run_stil_action.setIcon(self.create_icon('run_again'))
-
-    def on_stil_msg_received(self):
-        try:
-            response = self.stil_sock.recv_json(flags=zmq.NOBLOCK)
-        except zmq.ZMQError:
-            return
-
-        if response['kind'] == 'info':
-            payload = response['payload']
-            message = payload['message']
-            logger.info(message)
-            self.sig_update_statusbar.emit(message)

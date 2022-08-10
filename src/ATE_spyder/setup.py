@@ -49,6 +49,9 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
     ],
     entry_points={
-        "spyder.plugins": ["ate = ate_spyder.plugin:ATE"]
+        "spyder.plugins": [
+            "ate = ate_spyder.plugin:ATE",
+            "stil = ate_spyder_stil.plugin:STIL"
+        ]
     }
 )
