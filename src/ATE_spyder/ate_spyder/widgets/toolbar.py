@@ -91,6 +91,7 @@ class ToolBar(ApplicationToolbar):
         self.hardware_combo.addItems(available_hardwares)
         self.active_hardware = '' if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
         self.hardware_combo.setCurrentIndex(0 if len(available_hardwares) == 0 else len(available_hardwares) - 1)
+        self.project_info.active_hardware = self.active_hardware
 
     def _setup_base(self):
         self.base_label = QtWidgets.QLabel("Base:")
@@ -182,7 +183,6 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str, str, str)
     def _settings_update(self, hardware, base, target):
-        self.active_hardware = hardware
         self.hardware_combo.setCurrentText(hardware)
         self.base_combo.setCurrentText(base)
         self._update_target()
@@ -226,6 +226,8 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _hardware_changed(self, selected_hardware):
+        if not selected_hardware:
+            return
         self.active_hardware = selected_hardware
         self.project_info.active_hardware = selected_hardware
         self._update_target()
@@ -287,6 +289,10 @@ class ToolBar(ApplicationToolbar):
         return self.hardware_combo.currentText()
 
     def _get_base(self):
+        base = self.base_combo.currentText()
+        if not base:
+            return 'PR'
+
         return self.base_combo.currentText()
 
     def _get_target(self):
