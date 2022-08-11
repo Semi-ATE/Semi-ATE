@@ -19,7 +19,7 @@ class Device:
     def add(session: FileOperator, name: str, hardware: str, package: str, definition: dict, is_enabled: bool):
         # ToDo: implement constraints, i.e. hardware should exist
         device = {"name": name, "hardware": hardware, "package": package, "definition": definition, "is_enabled": is_enabled}
-        session.query(Types.Device()).add(device)
+        session.query_with_subtype(Types.Device(), name).add(device)
         session.commit()
 
     @staticmethod

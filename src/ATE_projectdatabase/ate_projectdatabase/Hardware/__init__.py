@@ -24,7 +24,7 @@ class Hardware:
             DB_KEYS.HARDWARE.DEFINITION.KEY(): definition,
             DB_KEYS.HARDWARE.IS_ENABLED: is_enabled
         }
-        session.query(Types.Hardware()).add(hw)
+        session.query_with_subtype(Types.Hardware(), name).add(hw)
         session.commit()
 
     @staticmethod

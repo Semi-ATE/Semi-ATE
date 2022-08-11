@@ -66,7 +66,7 @@ class Test:
     @staticmethod
     def add(session: FileOperator, name: str, hardware: str, base: str, test_type: str, definition: dict, is_enabled: bool):
         test = {"name": name, "hardware": hardware, "base": base, "type": test_type, "definition": definition, "is_enabled": is_enabled}
-        session.query(Types.Test()).add(test)
+        session.query_with_subtype(Types.Test(), name).add(test)
         session.commit()
 
     @staticmethod
