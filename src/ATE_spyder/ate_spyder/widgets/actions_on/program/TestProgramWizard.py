@@ -446,6 +446,7 @@ class TestProgramWizard(BaseDialog):
 
         if column == CHECK_TEST_COL and not self._is_production():
             new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
+            item.setCheckState(new_check_state)
             is_selected = True if new_check_state == QtCore.Qt.Checked else False
             self._custom_parameter_handler.update_test_selectability(test_name, is_selected)
 
