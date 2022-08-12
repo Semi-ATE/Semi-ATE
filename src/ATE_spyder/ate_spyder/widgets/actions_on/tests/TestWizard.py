@@ -1815,8 +1815,19 @@ class TestWizard(BaseDialog):
 
     def _is_test_used_in_group(self, group):
         test_name = self.TestName.text()
-        sections = [target.split('_')[1] for target in self.project_info.get_available_test_targets(self.ForHardwareSetup.text(), self.WithBase.text(), test_name)]
-        return group in sections
+        targets = self.project_info.get_available_test_targets(self.ForHardwareSetup.text(), self.WithBase.text(), test_name)
+        for target in targets:
+            if group == self._extract_group_name_from_target(target):
+                return True
+
+        return False
+
+    def _extract_group_name_from_target(self, target: str):
+        start_index = target.index('_') + 1
+        end_index = len(target) - target[::-1].index('_') - 1
+
+        return target[start_index: end_index]
+
 
     @QtCore.pyqtSlot(int)
     def _group_selected(self, index: int):
