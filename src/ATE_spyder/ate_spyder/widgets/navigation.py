@@ -191,7 +191,9 @@ class ProjectNavigation(QObject):
         return self.file_operator
 
     def get_active_hardware_names(self):
-        return [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list = [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list.sort()
+        return hw_list
 
     def get_hardware_names(self):
         '''
@@ -586,6 +588,7 @@ class ProjectNavigation(QObject):
         if update_option == UpdateOptions.Code_Update:
             self._update_test_code(definition)
             self._update_test_target_code(definition)
+            # self.update_test_target(definition['name'], definition['hardware'], definition['base'])
             self._update_programs_state_for_test(definition['name'])
 
     def _update_test_groups(self, test_name: str, groups: list):
@@ -616,6 +619,7 @@ class ProjectNavigation(QObject):
 
     def _update_test_code(self, definition):
         _ = self.run_build_tool("generate", "test", self.project_directory, definition['name'], definition['hardware'], definition['base'])
+        _ = self.run_build_tool('generate', 'test_target', self.project_directory, definition['name'], definition['hardware'], definition['base'])
 
     def get_tests_from_files(self, hardware, base, test_type='all'):
         '''

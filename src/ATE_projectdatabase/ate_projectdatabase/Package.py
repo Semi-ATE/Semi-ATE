@@ -6,7 +6,7 @@ class Package:
     @staticmethod
     def add(session: FileOperator, name: str, leads: int, is_naked_die: bool, is_enabled: bool):
         package = {"name": name, "leads": leads, "is_naked_die": is_naked_die, "is_enabled": is_enabled}
-        session.query(Types.Package()).add(package)
+        session.query_with_subtype(Types.Package(), name).add(package)
         session.commit()
 
     @staticmethod
