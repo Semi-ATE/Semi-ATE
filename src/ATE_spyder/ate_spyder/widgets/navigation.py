@@ -1228,8 +1228,8 @@ class ProjectNavigation(QObject):
     def load_project_settings(self):
         import json
         settings_path = self.last_project_setting()
-        if not os.path.exists(settings_path):
-            return '', '', ''
+        if not settings_path.exists():
+            return '', 'PR', ''
 
         with open(settings_path, 'r') as f:
             settings = json.load(f)
