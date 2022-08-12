@@ -1,7 +1,7 @@
 from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 from ate_spyder.widgets.actions_on.protocol.NewProtocolWizard import new_protocol_dialog
 
@@ -11,7 +11,7 @@ class ProtocolItem(BaseItem):
         super().__init__(project_info, name, project_info.parent)
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_protocol_dialog(self.project_info),
                           ExceptionTypes.Protocol())
 
