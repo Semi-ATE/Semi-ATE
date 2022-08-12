@@ -16,7 +16,7 @@ def report_exception(parent, title, is_trace_back=True, label='', steps=''):
     parent.sig_exception_occurred.emit(generate_exception(text, title, is_trace_back, label, steps))
 
 
-def handle_excpetions(parent, call_back_function, call_back_source):
+def handle_exceptions(parent, call_back_function, call_back_source):
     try:
         call_back_function()
     except Exception:
