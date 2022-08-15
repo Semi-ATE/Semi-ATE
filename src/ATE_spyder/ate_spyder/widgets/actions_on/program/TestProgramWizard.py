@@ -446,6 +446,7 @@ class TestProgramWizard(BaseDialog):
 
         if column == CHECK_TEST_COL and not self._is_production():
             new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
+            item.setCheckState(new_check_state)
             is_selected = True if new_check_state == QtCore.Qt.Checked else False
             self._custom_parameter_handler.update_test_selectability(test_name, is_selected)
 
@@ -668,7 +669,7 @@ class TestProgramWizard(BaseDialog):
 
         for test in tests:
             groups = [group.name for group in self.project_info.get_groups_for_test(test.name)]
-            if self.owner_section_name.split('_')[0] not in groups:
+            if self.owner_section_name not in groups:
                 continue
 
             min, max = self.project_info.get_test_temp_limits(
@@ -1180,7 +1181,7 @@ class TestProgramWizard(BaseDialog):
         if not self.read_only and self.enable_edit:
             owner, count = self._get_test_program_infos()
             self.prog_name = self._generate_test_program_name(owner)
-            group = self.owner_section_name.split('_')[0]
+            group = self.owner_section_name
 
             self.project_info.insert_program(
                 self.prog_name, self.hardware.currentText(), self.base.currentText(),
