@@ -269,7 +269,6 @@ class ToolBar(ApplicationToolbar):
         self.project_info.store_settings(self._get_hardware(), self._get_base(), self._get_target())
 
     def _update_target(self):
-        self.target_combo.blockSignals(True)
         self.target_combo.clear()
         targets = []
         if self._get_base() == 'FT':
@@ -279,18 +278,14 @@ class ToolBar(ApplicationToolbar):
             targets = self.project_info.get_active_die_names_for_hardware(self.active_hardware)
             self.target_combo.addItems(targets)
         else:
-            self.target_combo.blockSignals(False)
             return
 
         try:
-            current_target_index = targets.index(self.active_target)
+            current_target_index = targets.index(self._get_target())
             self.target_combo.setCurrentIndex(current_target_index)
             self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
         except ValueError:
-            self.target_combo.blockSignals(False)
             return
-
-        self.target_combo.blockSignals(False)
 
     def _get_hardware(self):
         return self.hardware_combo.currentText()
