@@ -10,7 +10,7 @@ from ate_spyder.widgets.actions_on.tests.TestItems.utils import import_content
 from ate_spyder.widgets.constants import TEST_SECTION, QUALIFICATION
 
 from ate_spyder.widgets.actions_on.utils.MenuDialog import new_group
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 import os
 
@@ -85,7 +85,7 @@ class TestItem(TestContainerBase):
         self.appendRow(child)
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_test_dialog(self.project_info),
                           ExceptionTypes.Test())
 
@@ -126,7 +126,7 @@ class TestItem(TestContainerBase):
         return [group.name for group in self.project_info.get_groups() if group.is_selected]
 
     def add_standard_test_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_standard_test_dialog(self.project_info),
                           ExceptionTypes.Test())
 

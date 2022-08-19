@@ -588,6 +588,7 @@ class ProjectNavigation(QObject):
         if update_option == UpdateOptions.Code_Update:
             self._update_test_code(definition)
             self._update_test_target_code(definition)
+            # self.update_test_target(definition['name'], definition['hardware'], definition['base'])
             self._update_programs_state_for_test(definition['name'])
 
     def _update_test_groups(self, test_name: str, groups: list):
@@ -618,6 +619,7 @@ class ProjectNavigation(QObject):
 
     def _update_test_code(self, definition):
         _ = self.run_build_tool("generate", "test", self.project_directory, definition['name'], definition['hardware'], definition['base'])
+        _ = self.run_build_tool('generate', 'test_target', self.project_directory, definition['name'], definition['hardware'], definition['base'])
 
     def get_tests_from_files(self, hardware, base, test_type='all'):
         '''
@@ -1211,7 +1213,7 @@ class ProjectNavigation(QObject):
             pass
 
     def last_project_setting(self):
-        return os.path.join(self.project_directory, '.lastsettings')
+        return Path(self.project_directory, '.lastsettings')
 
     def store_settings(self, hardware, base, target):
         import json
@@ -1226,8 +1228,8 @@ class ProjectNavigation(QObject):
     def load_project_settings(self):
         import json
         settings_path = self.last_project_setting()
-        if not os.path.exists(settings_path):
-            return '', '', ''
+        if not settings_path.exists():
+            return '', 'PR', ''
 
         with open(settings_path, 'r') as f:
             settings = json.load(f)

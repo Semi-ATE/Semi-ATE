@@ -5,7 +5,7 @@ from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.utils.StateItem import StateItem
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 
 
@@ -23,7 +23,7 @@ class HardwaresetupItem(BaseItem):
         return HardwaresetupItemChild(self.project_info, name, parent)
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_hardwaresetup_dialog(self.project_info),
                           ExceptionTypes.Hardware())
 
@@ -47,12 +47,12 @@ class HardwaresetupItemChild(StateItem):
         self.project_info.update_active_hardware(self.text())
 
     def edit_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit_hardwaresetup_dialog(self.project_info, self.text()),
                           ExceptionTypes.Hardware())
 
     def display_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: display_hardware_settings_dialog(self.text(), self.project_info),
                           ExceptionTypes.Hardware())
 

@@ -91,6 +91,7 @@ class ToolBar(ApplicationToolbar):
         self.hardware_combo.addItems(available_hardwares)
         self.active_hardware = '' if len(available_hardwares) == 0 else available_hardwares[len(available_hardwares) - 1]
         self.hardware_combo.setCurrentIndex(0 if len(available_hardwares) == 0 else len(available_hardwares) - 1)
+        self.project_info.active_hardware = self.active_hardware
 
     def _setup_base(self):
         self.base_label = QtWidgets.QLabel("Base:")
@@ -100,7 +101,7 @@ class ToolBar(ApplicationToolbar):
         self.base_combo = QtWidgets.QComboBox()
         self.base_combo.ID = ToolbarItems.BaseCombo
         self.base_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.base_combo.addItems(['', 'PR', 'FT'])
+        self.base_combo.addItems(['PR', 'FT'])
 
     def _setup_target(self):
         self.target_label = QtWidgets.QLabel("Target:")
@@ -110,7 +111,6 @@ class ToolBar(ApplicationToolbar):
         self.target_combo = QtWidgets.QComboBox()
         self.target_combo.ID = ToolbarItems.TargetCombo
         self.target_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.target_combo.addItems([''])
         self.target_combo.setCurrentText(self.active_target)
 
     def _setup_group(self):
@@ -182,7 +182,6 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str, str, str)
     def _settings_update(self, hardware, base, target):
-        self.active_hardware = hardware
         self.hardware_combo.setCurrentText(hardware)
         self.base_combo.setCurrentText(base)
         self._update_target()
@@ -226,6 +225,8 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _hardware_changed(self, selected_hardware):
+        if not selected_hardware:
+            return
         self.active_hardware = selected_hardware
         self.project_info.active_hardware = selected_hardware
         self._update_target()
@@ -268,20 +269,23 @@ class ToolBar(ApplicationToolbar):
         self.project_info.store_settings(self._get_hardware(), self._get_base(), self._get_target())
 
     def _update_target(self):
-        self.target_combo.blockSignals(True)
         self.target_combo.clear()
-        self.target_combo.addItem('')
+        targets = []
         if self._get_base() == 'FT':
-            self.target_combo.addItems(self.project_info.get_active_device_names_for_hardware(self.active_hardware))
-
+            targets = self.project_info.get_active_device_names_for_hardware(self.active_hardware)
+            self.target_combo.addItems(targets)
         elif self._get_base() == 'PR':
-            self.target_combo.addItems(self.project_info.get_active_die_names_for_hardware(self.active_hardware))
-
+            targets = self.project_info.get_active_die_names_for_hardware(self.active_hardware)
+            self.target_combo.addItems(targets)
         else:
-            pass
+            return
 
-        self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
-        self.target_combo.blockSignals(False)
+        try:
+            current_target_index = targets.index(self._get_target())
+            self.target_combo.setCurrentIndex(current_target_index)
+            self.project_info.update_toolbar_elements(self._get_hardware(), self._get_base(), self._get_target())
+        except ValueError:
+            return
 
     def _get_hardware(self):
         return self.hardware_combo.currentText()

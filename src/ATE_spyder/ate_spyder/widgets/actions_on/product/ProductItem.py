@@ -5,7 +5,7 @@ from ate_spyder.widgets.actions_on.product.NewProductWizard import new_product_d
 from ate_spyder.widgets.actions_on.product.ViewProductWizard import display_product_settings_dialog
 from ate_spyder.widgets.actions_on.utils.StateItem import StateItem
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 
 
@@ -24,7 +24,7 @@ class ProductItem(BaseItem):
         return [MenuActionTypes.Add()]
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_product_dialog(self.project_info),
                           ExceptionTypes.Product())
 
@@ -34,12 +34,12 @@ class ProductItemChild(StateItem):
         super().__init__(project_info, productdata, parent=parent)
 
     def edit_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit_product_dialog(self.project_info, self.text()),
                           ExceptionTypes.Product())
 
     def display_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: display_product_settings_dialog(self.text(), self.project_info),
                           ExceptionTypes.Product())
 

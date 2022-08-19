@@ -63,12 +63,12 @@ Create the following files:
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",
     "skip_jobdata_verification": false,
-    "filesystemdatasource.path": ".",
-    "filesystemdatasource.jobpattern": "le123456000.xml",
+    "filesystemdatasource_path": ".",
+    "filesystemdatasource_jobpattern": "le123456000.xml",
     "enable_timeouts": true,
     "user_settings_filepath": "master_user_settings.json",
     "site_layout": [[0, 0]],
-    "tester_type": "Semi-ATE Master Single Tester",
+    "tester_type": "Semi_ATE Master Single Tester",
     "loglevel": 10
   }
   ```
