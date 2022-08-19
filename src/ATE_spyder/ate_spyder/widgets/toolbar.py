@@ -8,6 +8,7 @@ Created on Tue Apr  7 18:18:33 2020
 import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
@@ -120,6 +121,8 @@ class ToolBar(ApplicationToolbar):
 
         self.group_combo = QtWidgets.QComboBox()
         self.group_combo.ID = ToolbarItems.GroupCombo
+        combo_list = self.group_combo.view()
+        combo_list.setSpacing(2)
         self.group_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
     def _init__group(self):
@@ -140,6 +143,10 @@ class ToolBar(ApplicationToolbar):
             item = self.group_combo.model().item(group_index, 0)
             item.setCheckState(QtCore.Qt.Unchecked if not group.is_selected else QtCore.Qt.Checked)
 
+        # combobox list will 
+        sp = self.group_combo.view().sizePolicy()
+        sp.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+        self.group_combo.view().setSizePolicy(sp)
         self.group_combo.setCurrentIndex(0)
         self.group_combo.blockSignals(False)
 
@@ -170,8 +177,12 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _group_added(self, name: str):
-        self.group_combo.addItem(name)
-        item = self.group_combo.model().item(self.group_combo.count() - 1, 0)
+        self._init__group()
+        item_index = self.group_combo.findText(name)
+        if item_index is None:
+            return
+
+        item = self.group_combo.model().item(item_index, 0)
         item.setCheckState(QtCore.Qt.Checked)
 
     @QtCore.pyqtSlot(str)
