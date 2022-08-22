@@ -78,6 +78,9 @@ class FlowItem(BaseItem):
         for index in range(self.rowCount()):
             flow_item = self.child(index)
 
+            if not flow_item:
+                continue
+
             if flow_item.text() != name:
                 continue
 
