@@ -18,7 +18,9 @@ class MixedHarness(Harness):
         self.mqtt_harness.send_testresult(stdf_data)
 
     def next(self):
-        pass
+        self.local_harness.next()
+        self.mqtt_harness.next()
 
     def collect(self, stdf_data: dict):
-        pass
+        self.local_harness.collect(stdf_data)
+        self.mqtt_harness.collect(stdf_data)

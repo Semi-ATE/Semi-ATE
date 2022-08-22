@@ -42,8 +42,12 @@ class MigrationVersion8(MigratorBase):
             data = [category_config]
             self.write_configuration(path, data)
 
-        import os
-        os.remove(file_name)
+        file_base_name = Path(file_name).stem
+        parent_folder_name = Path(file_name).parent.name
+
+        if (file_base_name == parent_folder_name):
+            import os
+            os.remove(file_name)
 
     def _migrate_testtargets(self, file_name):
         category_config_list = self.read_configuration(file_name)
