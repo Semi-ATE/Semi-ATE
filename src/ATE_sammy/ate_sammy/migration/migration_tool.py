@@ -52,6 +52,9 @@ class MigrationTool:
 
         with open(generate_path(version_dir, VERSION_FILE_NAME), 'r') as f:
             data = json.load(f)
+            if isinstance(data, list):
+                return data[0]['version']
+
             return data['version']
 
     @staticmethod
