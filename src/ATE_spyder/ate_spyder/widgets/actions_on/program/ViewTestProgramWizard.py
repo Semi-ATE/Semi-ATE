@@ -60,7 +60,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog._update_selected_test_list()
         dialog.execution_widget.update_rows_view()
         dialog._load_bin_table(os.path.join(dialog.project_info.project_directory,
-                                            'src',
+                                            dialog.project_info.project_name,
                                             dialog.hardware.currentText(),
                                             dialog.base.currentText(),
                                             f'{name}_binning.json'))

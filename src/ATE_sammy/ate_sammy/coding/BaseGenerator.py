@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -23,15 +24,15 @@ class BaseGenerator:
         template = env.get_template(template_name)
 
         self.definition = definition
-
+        self.project_path = Path(project_path)
         rel_path_to_dir = self._generate_relative_path()
-        abs_path_to_dir = os.path.join(project_path, rel_path_to_dir)
-        abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
+        abs_path_to_dir = self.project_path.joinpath(rel_path_to_dir)
+        abs_path_to_file = abs_path_to_dir.joinpath(file_name)
 
-        if not os.path.exists(abs_path_to_dir):
+        if not abs_path_to_dir.exists():
             os.makedirs(abs_path_to_dir)
 
-        if os.path.exists(abs_path_to_file):
+        if abs_path_to_file.exists():
             os.remove(abs_path_to_file)
 
         msg = template.render(definition=self.definition)

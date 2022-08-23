@@ -37,7 +37,7 @@ SETTING_QUALITY_GRADE = "Commercial"
 
 
 def generate_bin_table():
-    path = os.path.join(os.path.dirname(__file__), PROJECT_NAME, 'src', test_configruation['hardware'], test_configruation['base'])
+    path = os.path.join(os.path.dirname(__file__), PROJECT_NAME, PROJECT_NAME, test_configruation['hardware'], test_configruation['base'])
     with open(os.path.join(path, 'binmapping.json'), 'w+') as f:
         json.dump(bin_table, f)
 
