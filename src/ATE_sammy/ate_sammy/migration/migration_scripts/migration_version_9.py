@@ -19,10 +19,13 @@ class MigrationVersion9(MigratorBase):
 
         # update version structure
         version_path = project_path.joinpath('definitions').joinpath('version').joinpath('version.json')
-        with open(version_path, 'w+') as f:
+
+        data = None
+        with open(version_path, 'r') as f:
             data = json.load(f)
-            new_data = [data]
-            print(new_data)
-            json.dump(new_data, f)
+
+        if data:
+            with open(version_path, 'w') as f:
+                json.dump([data], f)
 
         source_path.rename(project_name)
