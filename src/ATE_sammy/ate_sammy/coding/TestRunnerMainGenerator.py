@@ -15,6 +15,8 @@ class test_runner_generator(BaseGenerator):
         env.trim_blocks = True
         env.lstrip_blocks = True
         env.rstrip_blocks = True
+
+        raise NotImplementedError('shall be fixed in #239')
         template_name = 'test_runner_main_template.jinja2'
 
         if not template_dir.joinpath(template_name).exists():

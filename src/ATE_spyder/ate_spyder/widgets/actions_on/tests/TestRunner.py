@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
-from enum import IntEnum, unique
+from enum import IntEnum, unique, auto
 import math
 from pathlib import Path
 import re
@@ -18,7 +18,7 @@ from PyQt5 import QtWidgets
 
 
 @dataclass
-class Row:
+class InputRow:
     __slot__ = ['name', 'shmoo', 'min', 'call', 'step', 'max', 'exponent', 'unit']
 
     def __init__(self, name: str, shmoo: bool, min: float, max: float, exponent: int, unit: str) -> None:
@@ -29,7 +29,7 @@ class Row:
         self.exponent = exponent
         self.unit = unit
 
-        self.shmoo_state = False
+        self.shmoo_state = shmoo
 
         self.call = None
         self.step = None
@@ -43,31 +43,20 @@ class Row:
 
         return self.call is not None
 
-    def set_shmooable(self):
-        self.shmoo_state != self.shmoo_state
+    def set_shmooable(self, shmoo_state: bool):
+        self.shmoo_state = shmoo_state
 
 
 @dataclass
-class Table:
+class InputTable:
     def __init__(self):
         self.rows = []
 
-    def add_row(self, row: Row):
+    def add_row(self, row: InputRow):
         self.rows.append(row)
 
-    def is_valid(self):
-        for row in self.rows:
-            if not row.is_set():
-                return False
-
-        return True
-
-    def set_shmooable(self, row: int):
-        if not self.rows[row].is_shmmoable():
-            return False
-
-        self.row[row].set_shmooable()
-        return True
+    def get_row(self, row: int) -> InputRow:
+        return self.rows[row]
 
 
 class TabIds(IntEnum):
@@ -80,11 +69,13 @@ class TabIds(IntEnum):
 @unique
 class InputColumn(IntEnum):
     Name = 0
-    Min = 1
-    Call = 2
-    Max = 3
-    Power = 4
-    Unit = 5
+    Shmoo = auto()
+    Min = auto()
+    Call = auto()
+    Step = auto()
+    Max = auto()
+    Power = auto()
+    Unit = auto()
 
     def __call__(self):
         return self.value
@@ -126,6 +117,8 @@ class RunTab(TabInterface):
     def __init__(self, parent: 'TestRunner'):
         super().__init__(parent)
         self.current_cell_info: Optional[CellInfo] = None
+        self.input_table_data = InputTable()
+        self.output_table_data = []
 
     def setup_view(self):
         # the running tab doesn't support both Trends and Statistics in the current version
@@ -141,10 +134,6 @@ class RunTab(TabInterface):
 
         self.parent.feedback.setStyleSheet('color: orange')
 
-        regx = QtCore.QRegExp(valid_integer_regex)
-        integer_validator = QtGui.QRegExpValidator(regx, self.parent)
-        self.parent.iteration.setValidator(integer_validator)
-
         self.parent.inputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.parent.outputParameter.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
@@ -155,18 +144,14 @@ class RunTab(TabInterface):
         self.parent.outputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.outputParameter))
 
     def setup_callbacks(self):
+        # TODO: the implementation of this part shall be done in #239
         self.parent.start.clicked.connect(self._start_execution)
+        ''''''
 
     def _start_execution(self):
-        # TODO: make sure this is the right interpretation
-        # if int(self.parent.iteration.text()) == self.parent.maxIteration.value():
-        #     ''' max iteration is reached '''
-
-        configured_test = self._collect_data()
-        file_path = Path(self.parent.project_info.project_directory).joinpath('runner', f'{self.test_name}_{self.hardware}_{self.base}_test_runner.py')
-        self.parent.project_info.create_test_runner_main(file_path, configured_test)
-
+        # TODO: the code generation may be the same as generating a test program but with only one test
         # TODO: emit signal to spyder
+        self.parent.feedback.setText('not implemented yet')
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
@@ -223,6 +208,7 @@ class RunTab(TabInterface):
         data = self.parent.project_info.get_test(self.test_name, self.hardware, self.base)
         input_parameters = data.definition['input_parameters']
 
+        input_table.itemClicked.connect(self._shmoo_state_update)
         input_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
             input_table,
             row,
@@ -233,11 +219,22 @@ class RunTab(TabInterface):
 
         input_table.blockSignals(True)
         for index, (key, value) in enumerate(input_parameters.items()):
+            row = InputRow(key, value[InputColumnKey.SHMOO()], value[InputColumnKey.MIN()], value[InputColumnKey.MAX()], value[InputColumnKey.POWER()], value[InputColumnKey.UNIT()])
+            self.input_table_data.add_row(row)
+
             input_table.insertRow(index)
 
             item = QtWidgets.QTableWidgetItem(key)
             item.setFlags(QtCore.Qt.ItemIsSelectable)
             input_table.setItem(index, InputColumn.Name, item)
+
+            item = QtWidgets.QTableWidgetItem()
+            item.setFlags(QtCore.Qt.NoItemFlags)
+            input_table.setItem(index, InputColumn.Shmoo, item)
+            if not row.is_shmooable():
+                item.setToolTip('parameter is not shmooable')
+            else:
+                item.setCheckState(QtCore.Qt.Checked if row.is_shmooable() else QtCore.Qt.Unchecked)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MIN()]))
             item.setFlags(QtCore.Qt.ItemIsSelectable)
@@ -248,7 +245,18 @@ class RunTab(TabInterface):
             input_table.setItem(index, InputColumn.Max, item)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.DEFAULT()]))
+            item.setToolTip('call is only enabled when shmoo is not set')
             input_table.setItem(index, InputColumn.Call, item)
+
+            if row.is_shmooable():
+                item.setFlags(QtCore.Qt.ItemIsSelectable)
+
+            item = QtWidgets.QTableWidgetItem('0.0')
+            input_table.setItem(index, InputColumn.Step, item)
+            item.setToolTip('step is only enabled when shmoo is set')
+
+            if not row.is_shmooable():
+                item.setFlags(QtCore.Qt.ItemIsSelectable)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.POWER()]))
             item.setFlags(QtCore.Qt.ItemIsSelectable)
@@ -261,10 +269,43 @@ class RunTab(TabInterface):
 
     @QtCore.pyqtSlot(str, QtWidgets.QTableWidget, int, int, float, float)
     def _call_value_double_clicked(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float):
+        if col == InputColumn.Shmoo:
+            return
+
         if table == self.parent.outputParameter:
             self._check_table_parameter(table, row, col, min, max, self._validate_output_parameter)
         else:
             self._check_table_parameter(table, row, col, min, max, self._validate_value)
+
+    def _shmoo_state_update(self, item: QtWidgets.QTableWidgetItem):
+        if item.column() != InputColumn.Shmoo:
+            return
+
+        if not self.input_table_data.get_row(item.row()).is_shmooable():
+            return
+
+        self.input_table.blockSignals(True)
+        new_check_state = QtCore.Qt.Checked if item.checkState() == QtCore.Qt.Unchecked else QtCore.Qt.Unchecked
+        item.setCheckState(new_check_state)
+        self._update_row(item.row(), new_check_state == QtCore.Qt.Checked)
+        self.input_table.blockSignals(False)
+
+    def _update_row(self, row_index: int, is_checked: bool):
+        row = self.input_table_data.get_row(row_index)
+        row.set_shmooable(is_checked)
+
+        if row.shmoo_state:
+            item = self.input_table.item(row_index, InputColumn.Call)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
+
+            item = self.input_table.item(row_index, InputColumn.Step)
+            item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+        else:
+            item = self.input_table.item(row_index, InputColumn.Call)
+            item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled)
+
+            item = self.input_table.item(row_index, InputColumn.Step)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
 
     def _check_table_parameter(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float, validate_callback: Callable):
         item = table.item(row, col)
@@ -310,6 +351,12 @@ class RunTab(TabInterface):
         if value > max or value < min:
             self.parent.feedback.setText('call value is out of range')
             return False
+
+        row_data = self.input_table_data.get_row(row)
+        if col == InputColumn.Call:
+            row_data.call = value
+        if col == InputColumn.Step:
+            row_data.step = value
 
         return True
 
