@@ -24,7 +24,7 @@ class MigrationVersion9(MigratorBase):
         with open(version_path, 'r') as f:
             data = json.load(f)
 
-        if data:
+        if data and isinstance(data, dict):
             with open(version_path, 'w') as f:
                 json.dump([data], f)
 
