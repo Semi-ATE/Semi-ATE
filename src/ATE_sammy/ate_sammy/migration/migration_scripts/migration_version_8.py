@@ -10,7 +10,7 @@ class MigrationVersion8(MigratorBase):
             Path(defs_path).joinpath('hardware'), Path(defs_path).joinpath('masksets'), Path(defs_path).joinpath('die'),
             Path(defs_path).joinpath('package'), Path(defs_path).joinpath('device'), Path(defs_path).joinpath('product'),
             Path(defs_path).joinpath('group'), Path(defs_path).joinpath('program'), Path(defs_path).joinpath('qualification'),
-            Path(defs_path).joinpath('test')
+            Path(defs_path).joinpath('test'), Path(defs_path).joinpath('testtarget')
         ]
 
         for category_config_path in all_categories_config_path:
@@ -71,5 +71,9 @@ class MigrationVersion8(MigratorBase):
         for key, values in target_info.items():
             self.write_configuration(key, values)
 
-        import os
-        os.remove(file_name)
+        file_base_name = Path(file_name).stem
+        parent_folder_name = Path(file_name).parent.name
+
+        if (file_base_name == parent_folder_name):
+            import os
+            os.remove(file_name)

@@ -1,12 +1,12 @@
 from semi_ate_testers.testers.tester_interface import TesterInterface
 
+
 class DummySingleTester(TesterInterface):
+    SITE_COUNT = 1
+
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
         print(f"Single Tester: Pulse Trigger Out")
-
-    def get_sites_count(self):
-        return 1
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True

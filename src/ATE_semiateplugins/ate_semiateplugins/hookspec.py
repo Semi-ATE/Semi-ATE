@@ -68,6 +68,10 @@ class ATEPlugin:
         pass
 
     @hookspec
+    def get_tester_type(tester_name: str):
+        pass
+
+    @hookspec
     def get_general_purpose_function(func_name, logger: Logger):
         pass
 
