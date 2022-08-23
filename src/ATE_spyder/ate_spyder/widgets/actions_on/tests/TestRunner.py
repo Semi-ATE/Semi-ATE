@@ -17,6 +17,59 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
+@dataclass
+class Row:
+    __slot__ = ['name', 'shmoo', 'min', 'call', 'step', 'max', 'exponent', 'unit']
+
+    def __init__(self, name: str, shmoo: bool, min: float, max: float, exponent: int, unit: str) -> None:
+        self.name = name
+        self.shmoo = shmoo
+        self.min = min
+        self.max = max
+        self.exponent = exponent
+        self.unit = unit
+
+        self.shmoo_state = False
+
+        self.call = None
+        self.step = None
+
+    def is_shmooable(self):
+        return self.shmoo
+
+    def is_set(self):
+        if self.shmoo:
+            return self.step is not None
+
+        return self.call is not None
+
+    def set_shmooable(self):
+        self.shmoo_state != self.shmoo_state
+
+
+@dataclass
+class Table:
+    def __init__(self):
+        self.rows = []
+
+    def add_row(self, row: Row):
+        self.rows.append(row)
+
+    def is_valid(self):
+        for row in self.rows:
+            if not row.is_set():
+                return False
+
+        return True
+
+    def set_shmooable(self, row: int):
+        if not self.rows[row].is_shmmoable():
+            return False
+
+        self.row[row].set_shmooable()
+        return True
+
+
 class TabIds(IntEnum):
     Run = 0
     Shmoo = 1
@@ -212,7 +265,7 @@ class RunTab(TabInterface):
             self._check_table_parameter(table, row, col, min, max, self._validate_output_parameter)
         else:
             self._check_table_parameter(table, row, col, min, max, self._validate_value)
-    
+
     def _check_table_parameter(self, table: QtWidgets.QTableWidget, row: int, col: int, min: float, max: float, validate_callback: Callable):
         item = table.item(row, col)
         initial_value = item.text()
