@@ -8,6 +8,7 @@ Created on Tue Apr  7 18:18:33 2020
 import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
 
@@ -120,10 +121,13 @@ class ToolBar(ApplicationToolbar):
 
         self.group_combo = QtWidgets.QComboBox()
         self.group_combo.ID = ToolbarItems.GroupCombo
+        combo_list = self.group_combo.view()
+        combo_list.setSpacing(2)
         self.group_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
     def _init__group(self):
         self.group_combo.blockSignals(True)
+        self.group_combo.clear()
         groups = self.project_info.get_groups()
         # remove tests section
         # tests section is active by default (removing it would avoid some confusions)
@@ -139,6 +143,10 @@ class ToolBar(ApplicationToolbar):
             item = self.group_combo.model().item(group_index, 0)
             item.setCheckState(QtCore.Qt.Unchecked if not group.is_selected else QtCore.Qt.Checked)
 
+        # combobox list will 
+        sp = self.group_combo.view().sizePolicy()
+        sp.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+        self.group_combo.view().setSizePolicy(sp)
         self.group_combo.setCurrentIndex(0)
         self.group_combo.blockSignals(False)
 
@@ -153,6 +161,7 @@ class ToolBar(ApplicationToolbar):
         self.parent.update_settings.connect(self._settings_update)
         self.parent.hardware_activated.connect(self._update_hardware)
         self.parent.group_added.connect(self._group_added)
+        self.parent.group_removed.connect(self._group_removed)
 
         self.group_combo.activated.connect(self._group_selected)
 
@@ -168,9 +177,17 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _group_added(self, name: str):
-        self.group_combo.addItem(name)
-        item = self.group_combo.model().item(self.group_combo.count() - 1, 0)
+        self._init__group()
+        item_index = self.group_combo.findText(name)
+        if item_index is None:
+            return
+
+        item = self.group_combo.model().item(item_index, 0)
         item.setCheckState(QtCore.Qt.Checked)
+
+    @QtCore.pyqtSlot(str)
+    def _group_removed(self, _name: str):
+        self._init__group()
 
     def _update_group_item_state(self, index: int, state: QtCore.Qt):
         item = self.group_combo.model().item(index, 0)
