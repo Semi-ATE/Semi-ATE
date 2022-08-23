@@ -129,6 +129,7 @@ class Generate(VerbBase):
 
         for test_target in test_targets:
             project_dir = Path(cwd)
+            project_dir = Path(cwd)
             test_path = project_dir.joinpath(project_dir.name, test_target.hardware, test_target.base, test_target.name)
             testdefinition = Test.get(self.file_operator, test_target.test, test_target.hardware, test_target.base).definition
             testdefinition['base'] = test_target.base

@@ -71,5 +71,9 @@ class MigrationVersion8(MigratorBase):
         for key, values in target_info.items():
             self.write_configuration(key, values)
 
-        import os
-        os.remove(file_name)
+        file_base_name = Path(file_name).stem
+        parent_folder_name = Path(file_name).parent.name
+
+        if (file_base_name == parent_folder_name):
+            import os
+            os.remove(file_name)

@@ -275,7 +275,7 @@ get_devicepin_importer(importer_name) -> Importer
 get_instrument(instrument_name, logger: Logger) -> InstrumentInstance
 get_instrument_proxy(required_capability) -> InstrumentProxy
 
-get_tester(tester_name, logger: Logger) -> TesterInstance
+get_tester(tester_name) -> TesterInstance
 get_tester_type(tester_name) -> object
 get_tester_master(tester_name) -> TesterInstance
 
@@ -350,7 +350,7 @@ class ThePlugin(object):
         raise NotImplementedError
 
     @hookimpl
-    def get_tester(tester_name, logger: Logger) -> TesterInstance:
+    def get_tester(tester_name) -> TesterInstance:
         raise NotImplementedError
 
     @hookimpl
