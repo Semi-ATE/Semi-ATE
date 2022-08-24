@@ -61,14 +61,24 @@ Actuators may be selected for the different development phases and will be autom
 
 > Actuator are partially implemented so make sure to read documentation([ActuatorControl](../ActuatorControl.md))
 
-* General Purpose Functions: helper interfaces that are used inside a test to provide a specific functionality line flatcache. Flatcache provides support exchanging test results among different testers.
+* General Purpose Functions: helper interfaces that are used inside a test to provide a specific functionality like flatcache. Flatcache provides support for exchanging test results among different testers.
 
-__note__: any selected component from `Instruments`, `Actuators` or `General Purpose Functions` will be automatically integrated in code and could be use in the context of a written test.
+__note__: any selected component from `Instruments`, `Actuators` or `General Purpose Functions` will automatically be integrated in the generated code and can be accessed/used when implementing a test.
 
 #### Non-Optional
 
-* Parallelism: describes the strategy the testers shall adapt while testing. It should be at least one configuration available
-* Tester: the tester dropdown contains all installed tester plugins that implements the tester interface with which the TE may interact with the tester. (see [Plugins](../Plugins.md) for more information)
+* Parallelism: describes the alignment the testing sites shall adapt while testing.
+
+__note__: It should be at least one configuration available
+
+In case of a single site:
+![](images/singlesiteallignment.png)
+
+In case of multi-sites:
+
+![](images/multisiteallignment.png)
+
+* Tester: the tester dropdown contains all installed tester plugins that implements the tester interface with which the test engineer may interact with the tester. (see [Plugins](../Plugins.md) for more information)
 
 > __note__: The PCBs section is not a part of this documentation.
 >
@@ -92,7 +102,7 @@ The toolbar may be used to configure and filter the tree view such enabling or d
 
 The toolbar provide a way to select the different configuration already defined in the [definition](#definitions-section) section:
 
-* select the [hardwaresetup](#hardwaresetup)
+* select the [hardware setup](#hardware-setup)
 * select the test phase PR or FT
 * select the target (e.g `die` for PR phase and `device` for FT phase)
 * hide/show groups
@@ -107,7 +117,7 @@ As seen above the test section is activated and below are the standard test grou
 
 ![ ](images/test_in_test_section.png)
 
-__note__: The test groups are only virtual (e.g they do not exist physically in the file system).
+__note__: The test groups are only virtual (e.g. they do not exist physically in the file system).
 
 #### Generate and Configure Tests
 
@@ -115,7 +125,7 @@ Filling the required fields and apply the configuration will generate a test tha
 
 ![ ](images/test_view.png)
 
-Below is an example of a newly created `contact` test for `engineering` group.
+The image below shows an example of test named `contact` for the `engineering` group.
 
 ![ ](images/test_created.png)
 
@@ -146,17 +156,17 @@ The context could be used as follow (more [here](./TestInterface.md)):
 self.context.tester.<operate_on_hardware>
 ```
 
-__note__: Spyder-IDE will provide the auto completion support needed to select the corresponding members & functions.
+__note__: Spyder-IDE will provide the auto completion support needed to select the corresponding members and functions.
 
 __note__: operating on the tester may require tester specific knowledge.
 
 ### Flows Section
 
-The test programs will also be grouped same as tests.
+The test programs will also be grouped in the same style as tests.
 
 ![ ](images/flow_section.png)
 
-Creating or Editing a test program shall show the same view as shown below:
+Creating or editing a test program will open the following wizard:
 
 ![ ](images/test_program.png)
 
@@ -168,7 +178,7 @@ __note__: Unlike the test code the test program code shall never be edited as it
 
 ![ ](images/semiate_toolbar_extension.png)
 
-__note__: the extension is not a part of Semi-ATE Plugin.
+__note__: The extension is not a part of the Semi-ATE Plugin.
 
 ### Auto Script
 
@@ -193,7 +203,7 @@ The auto script has the following interface:
 
 The functions listed above will be executed automatically at the different test program execution stages, for instance:
 
-* `before_start_setup`: will be called as soon the test program starts.
+* `before_start_setup`: will be called once in the beginning of a test program start.
 * `after_cycle_teardown`: will be called after running a complete test program flow.
 * `after_terminate_teardown`: will be called when the unload command is received.
 * `after_exception_teardown`: will be called when exceptions in a valid python code occur.
