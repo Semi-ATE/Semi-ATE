@@ -77,4 +77,4 @@ To be defined
 
 ### Development Process
 
-Test program development process documentation could be found [here](docs/project/SemiATEDevelopment)
+Test program development process documentation can be found [here](docs/project/SemiATEDevelopment)
