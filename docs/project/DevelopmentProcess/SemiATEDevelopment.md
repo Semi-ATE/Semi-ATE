@@ -33,7 +33,7 @@ All items under this section shall be configured at first to setup and build the
 
 The table above provides the setup needed to develop tests in different test phases such as probing or final Test.
 
-#### Hadware Setup
+#### Hardware Setup
 
 In this section, we will focus on how to configure a hardware setup to be able to use it to write test and run test programs.
 
@@ -92,7 +92,7 @@ The toolbar may be used to configure and filter the tree view such enabling or d
 
 The toolbar provide a way to select the different configuration already defined in the [definition](#definitions-section) section:
 
-* select the [hardwaresetup](#hadwaresetup)
+* select the [hardwaresetup](#hardwaresetup)
 * select the test phase PR or FT
 * select the target (e.g `die` for PR phase and `device` for FT phase)
 * hide/show groups

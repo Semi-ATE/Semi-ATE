@@ -330,7 +330,7 @@ class test_proper_generator(BaseTestGenerator):
         base = self.definition['base']
         name = self.definition['name']
 
-        return os.path.join('src', hardware, base, name)
+        return self.project_path.joinpath(self.project_path.name, hardware, base, name)
 
     def _generate_render_data(self, abs_path=''):
         return {'module_doc_string': prepare_module_docstring(),
@@ -345,12 +345,12 @@ class test_proper_generator(BaseTestGenerator):
     def _generate_do_not_touch_section(self):
         input_table_content = prepare_input_parameters_table(self.definition['input_parameters'])
         output_table_content = prepare_output_parameters_table(self.definition['output_parameters'])
+
         sec = '    ' + self.do_not_touch_start + '\n'
 
         for doc in self.definition['docstring'][0].split('\n'):
             sec += '    ' + doc + '\n'
 
-        sec += '\n\n'
         sec += self._stringify_table(input_table_content)
         sec += '\n'
         sec += self._stringify_table(output_table_content)

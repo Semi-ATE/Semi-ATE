@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = Path(__file__).parent
 XML_PATH = str(Path(CURRENT_DIR, '../Apps/master_app/tests/le306426001_template.xml'))
 XML_PATH_NEW = str(Path(CURRENT_DIR, './le306426001.xml'))
-TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/src/HW0/PR/smoke_test_HW0_PR_Die1_production_TheTest.py'))
+TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/smoke_test/HW0/PR/smoke_test_HW0_PR_Die1_production_TheTest.py'))
 
 def generate_default_device_id():
     # goal: we don't want something fully random for debugging purposes,

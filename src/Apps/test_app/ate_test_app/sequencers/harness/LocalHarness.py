@@ -38,5 +38,4 @@ class LocalHarness(Harness):
         self._stdf_aggregator.write_footer_records()
 
     def send_testresult(self, stdf_data: dict):
-        pass
-        # self._stdf_aggregator.append_test_results(stdf_data)
+        self._stdf_aggregator.append_test_results(stdf_data)

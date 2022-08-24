@@ -5,7 +5,7 @@ from ate_spyder.widgets.actions_on.tests.TestItems.TestBaseItem import TestBaseI
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 from ate_spyder.widgets.actions_on.tests.TestWizard import edit_test_dialog
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 from ate_spyder.widgets.actions_on.tests.TestItems.utils import export_content
 from ate_spyder.widgets.constants import TEST_SECTION
@@ -30,7 +30,7 @@ class TestItemChild(TestBaseItem):
     def edit_item(self):
         self.model().edit_test_params.emit(self.path)
         test_content = self._get_test_content()
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit_test_dialog(self.project_info, test_content),
                           ExceptionTypes.Maskset())
 

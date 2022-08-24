@@ -6,7 +6,7 @@ from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.utils.StateItem import StateItem
 
-from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excpetions,
+from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_exceptions,
                                                                   ExceptionTypes)
 
 
@@ -25,7 +25,7 @@ class PackageItem(BaseItem):
         return [MenuActionTypes.Add()]
 
     def new_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: new_package_dialog(self.project_info),
                           ExceptionTypes.Package())
 
@@ -35,12 +35,12 @@ class PackageItemChild(StateItem):
         super().__init__(project_info, name, parent=parent)
 
     def edit_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: edit_package_dialog(self.project_info, self.text()),
                           ExceptionTypes.Package())
 
     def display_item(self):
-        handle_excpetions(self.project_info.parent,
+        handle_exceptions(self.project_info.parent,
                           lambda: display_package_settings_dialog(self.text(), self.project_info),
                           ExceptionTypes.Package())
 

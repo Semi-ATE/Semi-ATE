@@ -68,17 +68,17 @@ class FileOperator:
         import glob
         for f in glob.glob(file_path):
             try:
-                with open(f, 'r') as f:
-                    loaded_data = json.load(f)
+                with open(f, 'r') as file:
+                    loaded_data = json.load(file)
                     return_val = []
                     for item in loaded_data:
                         return_val.append(self._make_db_object(item))
-                self.data_cache[f.name] = return_val
+                self.data_cache[file.name] = return_val
             except Exception:
-                self.data_cache[f.name] = []
+                self.data_cache[file.name] = []
 
-        # nastyness: if nothing was found in the FS we atleast create
-        # the file thet specifies our filename:
+        # nastyness: if nothing was found in the FS we at least create
+        # the file the specifies our filename:
         if len(self.data_cache) == 0:
             file_path = file_path.replace("*", "")
             self.data_cache[file_path] = []
@@ -87,7 +87,6 @@ class FileOperator:
         # DBObjects are not easily serializable, we serialize
         # them each on their own...
         for name, itemlist in self.data_cache.items():
-            print(f'Name: {name}')
             data_to_write = []
             for item in itemlist:
                 data_to_write.append(item.__dict__)
@@ -130,6 +129,7 @@ class FileOperator:
             self.load_configuration(type, subtypes)
             self.current_type = type
             self.current_subtypes = subtypes
+
         self.query_open = True
         self.filter_expression = lambda x: True
         self.sort_expression = None
@@ -159,7 +159,7 @@ class FileOperator:
         if self.query_open is False:
             raise Exception("Cannot get 'one' when no query is open.")
         items = self.all()
-        assert (len(items) == 1)
+        assert (len(items) == 1), f'{len(items)}'
         return items[0]
 
     def one_or_none(self) -> DBObject:

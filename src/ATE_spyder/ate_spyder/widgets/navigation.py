@@ -85,11 +85,11 @@ class ProjectNavigation(QObject):
             self.active_base = ''
             self.project_name = ''
         else:
-            self.project_directory = project_directory
+            self.project_directory = Path(project_directory)
             self.active_target = ''
             self.active_hardware = ''
             self.active_base = ''
-            self.project_name = os.path.basename(self.project_directory)
+            self.project_name = self.project_directory.name
 
             settings_file = os.path.join(project_directory, ".lastsettings")
 
@@ -191,7 +191,9 @@ class ProjectNavigation(QObject):
         return self.file_operator
 
     def get_active_hardware_names(self):
-        return [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list = [hw.name for hw in Hardware.get_all(self.get_file_operator()) if hw.is_enabled]
+        hw_list.sort()
+        return hw_list
 
     def get_hardware_names(self):
         '''
@@ -238,7 +240,7 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Hardware())
         self.parent.hardware_removed.emit(name)
         import shutil
-        shutil.rmtree(os.path.join(self.project_directory, 'src', name))
+        shutil.rmtree(os.path.join(self.project_directory, self.project_name, name))
 
     def add_maskset(self, name, customer, definition, is_enabled=True):
         '''
@@ -586,6 +588,7 @@ class ProjectNavigation(QObject):
         if update_option == UpdateOptions.Code_Update:
             self._update_test_code(definition)
             self._update_test_target_code(definition)
+            # self.update_test_target(definition['name'], definition['hardware'], definition['base'])
             self._update_programs_state_for_test(definition['name'])
 
     def _update_test_groups(self, test_name: str, groups: list):
@@ -616,6 +619,7 @@ class ProjectNavigation(QObject):
 
     def _update_test_code(self, definition):
         _ = self.run_build_tool("generate", "test", self.project_directory, definition['name'], definition['hardware'], definition['base'])
+        _ = self.run_build_tool('generate', 'test_target', self.project_directory, definition['name'], definition['hardware'], definition['base'])
 
     def get_tests_from_files(self, hardware, base, test_type='all'):
         '''
@@ -628,7 +632,7 @@ class ProjectNavigation(QObject):
             'all' --> standard + custom tests
         '''
         retval = {}
-        tests_directory = os.path.join(self.project_directory, 'src', 'tests', hardware, base)
+        tests_directory = os.path.join(self.project_directory, self.project_name, 'tests', hardware, base)
         potential_tests = os.listdir(tests_directory)
         from ate_spyder.widgets.actions_on.tests import standard_test_names
 
@@ -838,7 +842,7 @@ class ProjectNavigation(QObject):
         return self._generate_path_for_program_with_suffix(program_name, '_execution_strategy.json')
 
     def _generate_path_for_program_with_suffix(self, program_name, suffix: str) -> Path:
-        return Path(self.project_directory).joinpath('src', self.active_hardware, self.active_base, program_name + suffix)
+        return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name + suffix)
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
@@ -1175,13 +1179,13 @@ class ProjectNavigation(QObject):
         return Test.get(self.get_file_operator(), name, hardware, base)
 
     def store_plugin_cfg(self, hw, object_name, cfg):
-        file_dir = os.path.join(self.project_directory, "src", hw)
+        file_dir = os.path.join(self.project_directory, self.project_name, hw)
         file_path = os.path.join(file_dir, f"{object_name}.json")
         with open(file_path, 'w+') as writer:
             writer.write(json.dumps(cfg))
 
     def load_plugin_cfg(self, hw, object_name):
-        file_path = os.path.join(self.project_directory, "src", hw, f"{object_name}.json")
+        file_path = os.path.join(self.project_directory, self.project_name, hw, f"{object_name}.json")
         if os.path.exists(file_path):
             with open(file_path, 'r') as reader:
                 raw = reader.read()
@@ -1209,7 +1213,7 @@ class ProjectNavigation(QObject):
             pass
 
     def last_project_setting(self):
-        return os.path.join(self.project_directory, '.lastsettings')
+        return Path(self.project_directory, '.lastsettings')
 
     def store_settings(self, hardware, base, target):
         import json
@@ -1224,8 +1228,8 @@ class ProjectNavigation(QObject):
     def load_project_settings(self):
         import json
         settings_path = self.last_project_setting()
-        if not os.path.exists(settings_path):
-            return '', '', ''
+        if not settings_path.exists():
+            return '', 'PR', ''
 
         with open(settings_path, 'r') as f:
             settings = json.load(f)
@@ -1248,4 +1252,4 @@ class ProjectNavigation(QObject):
         return Test.get_one_or_none(self.get_file_operator(), name, hardware, base) is not None
 
     def get_test_path(self, name, hardware, base):
-        return Path(self.project_directory).joinpath('src', hardware, base, name, name)
+        return Path(self.project_directory).joinpath(self.project_name, hardware, base, name, name)

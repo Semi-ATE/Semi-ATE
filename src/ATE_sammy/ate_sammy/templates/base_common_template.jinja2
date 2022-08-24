@@ -13,7 +13,6 @@ import pathlib
 import traceback
 from ate_test_app.sequencers.Sequencer import Sequencer
 from ate_test_app.sequencers.SequencerBase import SequencerBase
-from ate_test_app.sequencers.SequencerBase import SequencerBase
 from ate_test_app.auto_script.AutoScriptBase import AutoScriptBase
 from ate_test_app.sequencers import Harness
 from ate_test_app.stages_sequence_generator.stages_sequence_generator import StagesSequenceGenerator
@@ -55,8 +54,10 @@ class Context:
             testers = get_plugin_manager().hook.get_tester(tester_name="{{definition["tester"]}}", logger=self.logger)
             assert len(testers) < 2, "The testertype {{definition["tester"]}} maps to multiple testers. Check installed plugins."
             assert len(testers) == 1, "The testertype {{definition["tester"]}} is not available or installed on this machine."
-            self.tester_instance = testers[0]
-            sequencer.set_tester_instance(self.tester_instance)
+
+            {{module_import}}
+            self.tester: {{module_name}} = testers[0]
+            sequencer.set_tester_instance(self.tester)
 
             {% for actuator in definition['Actuator'][definition['active_base']] %}
             from ate_test_app.actuators.{{actuator}}.{{actuator}} import {{actuator}}Proxy

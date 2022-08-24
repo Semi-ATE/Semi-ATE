@@ -8,7 +8,7 @@ class AutoScriptGenerator:
     def __init__(self, template_dir: str, project_path: str, hardware_definition: dict):
         hardware = hardware_definition['hardware']
         file_name = f'{hardware}_auto_script.py'
-        path = Path(project_path).joinpath('src', hardware, file_name)
+        path = Path(project_path).joinpath(Path(project_path).name, hardware, file_name)
         # if the file exists already we shall do nothing to prevent overriding user configuration
         if path.exists():
             return
