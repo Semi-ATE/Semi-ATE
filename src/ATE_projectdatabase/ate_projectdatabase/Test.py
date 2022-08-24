@@ -49,6 +49,8 @@ class Test:
                .filter(lambda Test: Test.name == name and Test.hardware == hardware and Test.base == base)\
                .delete()
 
+        session.commit()
+
         test = {"name": name, "hardware": hardware, "base": base, "type": test_type, "definition": database, "is_enabled": True}
         session.query(Types.Test()).add(test)
 
