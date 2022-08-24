@@ -21,7 +21,7 @@ from PyQt5 import QtWidgets
 class InputRow:
     __slot__ = ['name', 'shmoo', 'min', 'call', 'step', 'max', 'exponent', 'unit']
 
-    def __init__(self, name: str, shmoo: bool, min: float, max: float, exponent: int, unit: str) -> None:
+    def __init__(self, name: str, shmoo: bool, min: float, max: float, exponent: int, unit: str):
         self.name = name
         self.shmoo = shmoo
         self.min = min
@@ -34,14 +34,8 @@ class InputRow:
         self.call = None
         self.step = None
 
-    def is_shmooable(self):
+    def is_shmooable(self) -> bool:
         return self.shmoo
-
-    def is_set(self):
-        if self.shmoo:
-            return self.step is not None
-
-        return self.call is not None
 
     def set_shmooable(self, shmoo_state: bool):
         self.shmoo_state = shmoo_state
@@ -59,6 +53,7 @@ class InputTable:
         return self.rows[row]
 
 
+@unique
 class TabIds(IntEnum):
     Run = 0
     Shmoo = 1
@@ -496,7 +491,7 @@ class SetupCallback:
 
 
 class Setup:
-    def __init__(self, *tabs: List[TabInterface]) -> None:
+    def __init__(self, *tabs: List[TabInterface]):
         self.tabs = tabs
 
     def setup_view(self) -> SetupCallback:
