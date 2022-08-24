@@ -9,6 +9,7 @@ import re
 from os.path import basename
 from os import unlink
 
+
 class SetupCommand(Enum):
     Install = 'install'
     Sdist = 'sdist'
@@ -44,6 +45,7 @@ class Profile(Enum):
     def __call__(self):
         return self.value
 
+
 git_root_folder = Path(Path(__file__).parents[0], '../')
 integration_tests_path = Path(git_root_folder, 'src/integration_tests')
 
@@ -56,6 +58,7 @@ def uninstall(packages: Package):
         exit_code = process.wait()
         if exit_code != 0:
             exit(exit_code)
+
 
 def setup(packages: Package, setup_command: SetupCommand):
     setup_path_list = _compute_package_list(packages, PackageType.SetupDirPath)
@@ -85,7 +88,7 @@ def setup(packages: Package, setup_command: SetupCommand):
                         with backup_readme_path.open('r') as temp_readme:
                             for line in temp_readme:
                                 readme.write(line)
-        
+
                 # Generate SDIST
                 process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
                 exit_code = process.wait()
@@ -149,6 +152,7 @@ def tag_version(packages: Package, version: str):
             init_file.write('"""\n')
             init_file.write(f'__version__ = \'{version}\'\n')
 
+
 def _compute_package_list(package_type: Package, type: PackageType) -> Union[List[str], List[Path]]:
     if package_type == Package.Distribution:
         packages = distribution_packages
@@ -157,7 +161,7 @@ def _compute_package_list(package_type: Package, type: PackageType) -> Union[Lis
         packages.extend(integration_test_packages)
     else:
         packages = integration_test_packages
-    
+
     if type == PackageType.Name:
         return list(map(lambda entry: entry['name'], packages))
     elif type == PackageType.SetupDirPath:
@@ -214,7 +218,8 @@ def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
                         packages.add(line.strip())
     return list(packages)
 
-def _add_license_file(manifest_folder: Path, package_folder: Path) -> None:
+
+def _add_license_file(manifest_folder: Path, package_folder: Path):
     # add license file to package_folder
     global_license_path = Path(git_root_folder, 'LICENSE.txt')
     shutil.copy(global_license_path, Path(package_folder, 'LICENSE.txt'))
@@ -226,7 +231,8 @@ def _add_license_file(manifest_folder: Path, package_folder: Path) -> None:
         manifest.write(f'include {basename(package_folder)}/LICENSE.txt')
         manifest.write('\n')
 
-def _remove_license_file(manifest_folder: Path, package_folder: Path) -> None:
+
+def _remove_license_file(manifest_folder: Path, package_folder: Path):
     # remove file if exists
     license_file_path = Path(package_folder, 'LICENSE.txt')
     if license_file_path.exists():
@@ -241,6 +247,7 @@ def _remove_license_file(manifest_folder: Path, package_folder: Path) -> None:
         for line in manifest_lines:
             if line.strip('\n') != unwanted_line and line != '\n':
                 manifest.write(line)
+
 
 def main():
     parser = argparse.ArgumentParser()

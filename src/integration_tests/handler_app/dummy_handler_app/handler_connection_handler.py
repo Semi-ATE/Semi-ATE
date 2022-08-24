@@ -9,7 +9,7 @@ INVISIBLE_TESTER_STATES = ['connecting', 'loading', 'unloading', 'waitingforbint
 
 
 class HandlerConnectionHandler:
-    def __init__(self, host, port, _handler_id, _device_ids, log, app, event) -> None:
+    def __init__(self, host, port, _handler_id, _device_ids, log, app, event):
         self._mqtt = None
         self._app = app
         self._log = log
@@ -39,23 +39,23 @@ class HandlerConnectionHandler:
                 self._generate_status_message('crash', '')))
         self._mqtt.start_loop()
 
-    async def stop(self) -> None:
+    async def stop(self):
         await self._mqtt.stop_loop()
 
-    def subscribe(self, topic) -> None:
+    def subscribe(self, topic):
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic, payload, qos=2, retain=False) -> None:
+    def publish(self, topic, payload, qos=2, retain=False):
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
-    def publish_state(self, state, message) -> None:
+    def publish_state(self, state, message):
         self._log.log_message(LogLevel.Info(), f'Handler state: {state}')
         self.publish(self._generate_handler_status_topic(),
                      self._generate_status_message(state, message),
                      qos=2,
                      retain=False)
 
-    def _on_connect(self, client, userdata, flags, rc) -> None:
+    def _on_connect(self, client, userdata, flags, rc):
         self._app.startup_done('connection to broker is established')
 
         for device_id in self._device_ids:
@@ -63,10 +63,10 @@ class HandlerConnectionHandler:
             self.subscribe(self._generate_command_topic(device_id))
             self.subscribe(self._generate_response_topic(device_id))
 
-    def _on_disconnect(self, client, userdata, rc) -> None:
+    def _on_disconnect(self, client, userdata, rc):
         self._log.log_message(LogLevel.Debug(), "disconnected")
 
-    def dispatch_masterapp_message(self, topic, message) -> None:
+    def dispatch_masterapp_message(self, topic, message):
         master_id = topic.split('/')[1]
         if "status" in topic:
             master_state = message['state']

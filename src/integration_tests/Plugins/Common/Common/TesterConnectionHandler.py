@@ -7,7 +7,7 @@ from Common.ConnectionHandler import ConnectionHandler
 
 
 class TesterConnectionHandler(ConnectionHandler):
-    def __init__(self, host: str, port: int, event: Event, logger: Logger, parent) -> None:
+    def __init__(self, host: str, port: int, event: Event, logger: Logger, parent):
         super().__init__(host, port, event, logger, parent)
 
     async def do_for_ever(self):
@@ -18,7 +18,7 @@ class TesterConnectionHandler(ConnectionHandler):
 
             await asyncio.sleep(0.1)
 
-    def dispatch_tester_message(self, topic, message) -> None:
+    def dispatch_tester_message(self, topic, message):
         print(topic, message)
 
         if "test-release" in topic:
