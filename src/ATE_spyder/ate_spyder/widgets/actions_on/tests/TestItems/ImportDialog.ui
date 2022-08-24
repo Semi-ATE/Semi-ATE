@@ -90,22 +90,6 @@
     <string>cancel</string>
    </property>
   </widget>
-  <widget class="QLabel" name="test_exist_message">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>10</y>
-     <width>231</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>test name already exists</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>
