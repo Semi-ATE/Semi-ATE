@@ -841,8 +841,8 @@ class ProjectNavigation(QObject):
     def _generate_strategy_file_path(self, program_name):
         return self._generate_path_for_program_with_suffix(program_name, '_execution_strategy.json')
 
-    def _generate_path_for_program_with_suffix(self, program_name, suffix: str) -> Path:
-        return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name + suffix)
+    def _generate_path_for_program_with_suffix(self, hardware_name: str, suffix: str) -> Path:
+        return Path(self.project_directory).joinpath(self.project_name, hardware_name, hardware_name + suffix)
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
