@@ -13,6 +13,7 @@ from typing import Dict, List
 
 from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
 from ate_common.parameter import InputColumnKey
+from ate_projectdatabase.Utils import BaseType
 
 from qtpy.QtCore import QObject
 from ate_spyder.widgets.constants import TableIds as TableId
@@ -327,6 +328,8 @@ class ProjectNavigation(QObject):
         '''
         Die.add(self.get_file_operator(), name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled)
 
+        self.project_directory.joinpath('pattern', hardware, BaseType.PR(), name).mkdir(exist_ok=True)
+
         self.parent.database_changed.emit(TableId.Die())
 
     def update_die(self, name, hardware, maskset, grade, grade_reference, quality, type, customer, is_enabled=True):
@@ -435,6 +438,9 @@ class ProjectNavigation(QObject):
         if 'package' doesn't exist, a KeyError is raised
         '''
         Device.add(self.get_file_operator(), name, hardware, package, definition, is_enabled)
+
+        self.project_directory.joinpath('pattern', hardware, BaseType.FT(), name).mkdir(exist_ok=True)
+
         self.parent.database_changed.emit(TableId.Device())
 
     def update_device(self, name, hardware, package, definition):
