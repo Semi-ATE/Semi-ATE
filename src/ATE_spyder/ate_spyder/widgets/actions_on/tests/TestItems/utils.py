@@ -44,6 +44,8 @@ class ImportDialog(BaseDialog):
         self.reject()
 
     def _rename(self):
+        self.feedback.setText('')
+
         name = self.fileName.text()
         if not name:
             self.feedback.setText('make sure to insert a name')
