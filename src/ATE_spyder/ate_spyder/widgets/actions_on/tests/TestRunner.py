@@ -9,7 +9,7 @@ from typing import Callable, List, Optional, Tuple
 
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_spyder.widgets.navigation import ProjectNavigation
-from ate_spyder.widgets.validation import valid_integer_regex, valid_float_regex
+from ate_spyder.widgets.validation import valid_float_regex
 from ate_common.parameter import InputColumnKey, OutputColumnKey
 
 from PyQt5 import QtCore
