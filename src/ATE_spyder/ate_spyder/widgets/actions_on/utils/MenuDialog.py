@@ -6,7 +6,6 @@ import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from pathlib import Path
 
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_spyder.widgets.navigation import ProjectNavigation
@@ -159,44 +158,6 @@ class ExceptionFoundDialog(DeleteFileDialog):
         self.label.setText(f"{message}")
 
     def _accept(self):
-        self.accept()
-
-
-class Action(IntEnum):
-    Rename = 0
-    Overwrite = 1
-
-
-class ImportDialog(BaseDialog):
-    def __init__(self, parent):
-        ui_file = Path(__file__).parent.joinpath('ImportDialog.ui')
-        super().__init__(str(ui_file), parent)
-        self._connect_action_handler()
-
-    def _connect_action_handler(self):
-        from ate_spyder.widgets.validation import valid_name_regex
-        test_name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
-        self.fileName.setValidator(test_name_validator)
-        self.rename.clicked.connect(self._rename)
-        self.overwrite.clicked.connect(self._overwrite)
-        self.cancel.clicked.connect(self._cancel)
-        self.feedback.setText('')
-        self.feedback.setStyleSheet(ORANGE_LABEL)
-
-    def _cancel(self):
-        self.reject()
-
-    def _rename(self):
-        name = self.fileName.text()
-        if not name:
-            self.feedback.setText('make sure to insert a name')
-            return
-
-        self.action = {'type': Action.Rename, 'data': {'name': name}}
-        self.accept()
-
-    def _overwrite(self):
-        self.action = {'type': Action.Overwrite, 'data': {}}
         self.accept()
 
 

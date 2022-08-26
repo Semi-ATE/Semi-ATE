@@ -14,6 +14,8 @@ from ate_spyder.widgets.actions_on.utils.ExceptionHandler import (handle_excepti
                                                                   ExceptionTypes)
 import os
 
+from ate_spyder.widgets.navigation import ProjectNavigation
+
 FILE_FILTER = '*.ate'
 TESTS_COLUMN = 0
 
@@ -44,12 +46,12 @@ class TestContainerBase(BaseItem):
 
 
 class TestItem(TestContainerBase):
-    def __init__(self, project_info, name, path, parent=None):
+    def __init__(self, project_info: ProjectNavigation, name: str, path: str, parent=None):
         self.observer = None
         super().__init__(project_info, name, parent)
         self._is_enabled = False
         self.set_children_hidden(True)
-        self.file_system_operator = FileSystemOperator(path, project_info.parent)
+        self.file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
 
     def _append_children(self):
         active_hardware = self.project_info.active_hardware
