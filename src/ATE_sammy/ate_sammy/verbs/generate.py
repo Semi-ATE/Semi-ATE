@@ -20,6 +20,7 @@ class Generate(VerbBase):
                        "test": lambda: self.gen_tests(cwd, arglist),
                        "test_target": lambda: self.gen_test_targets(cwd, arglist),
                        "new": lambda: self.gen_new_project(cwd, arglist),
+                       "test_runner": lambda: self.gen_test_runner_main(cwd, arglist),
                        }
 
         if noun not in valid_nouns:
@@ -127,7 +128,7 @@ class Generate(VerbBase):
             test_targets = TestTarget.get_all(self.file_operator)
 
         for test_target in test_targets:
-            import os
+            project_dir = Path(cwd)
             project_dir = Path(cwd)
             test_path = project_dir.joinpath(project_dir.name, test_target.hardware, test_target.base, test_target.name)
             testdefinition = Test.get(self.file_operator, test_target.test, test_target.hardware, test_target.base).definition
@@ -160,13 +161,13 @@ class Generate(VerbBase):
 
         for hw in hws:
             print(f"        gen {hw.name}")
-            definition = self._prepare_hardware_definiton(hw.definition)
+            definition = self._prepare_hardware_definition(hw.definition)
             definition["hardware"] = hw.name
             hardware_generator(self.template_path, cwd, definition)
         return 0
 
     @staticmethod
-    def _prepare_hardware_definiton(definition):
+    def _prepare_hardware_definition(definition):
         for index, hw in enumerate(definition['Actuator']['FT']):
             definition['Actuator']['FT'][index] = hw.replace(" ", "_")
         for index, hw in enumerate(definition['Actuator']['PR']):
@@ -182,3 +183,7 @@ class Generate(VerbBase):
             definition['GPFunctionNames'][instrument] = instrument.replace(" ", "_").replace(".", "_")
 
         return definition
+
+    def gen_test_runner_main(self, project_directory: Path, arglist: list):
+        from ate_sammy.coding.generators import test_runner_main_generator
+        test_runner_main_generator(self.template_path, project_directory, arglist.params[0], arglist.params[1], self._prepare_hardware_definition(arglist.params[2]))

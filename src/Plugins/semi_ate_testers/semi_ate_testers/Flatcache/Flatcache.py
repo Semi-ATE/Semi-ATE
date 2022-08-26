@@ -11,7 +11,8 @@ class FlatcacheConfig(BaseModel):
 class Flatcache:
     def __init__(self):
         self.config: FlatcacheConfig = None
-        self.config: FlatcacheConfig = None
+        self.target_ip = ""
+        self.target_port = ""
         self.last_part_id = ""
         self.fetched_data = {}
         self.subdoc_cache = {}

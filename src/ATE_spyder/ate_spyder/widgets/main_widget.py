@@ -222,6 +222,8 @@ $ sammy generate all\n
                 self.set_tree()
                 self.init_done.emit()
                 return True
+            else:
+                print(f'project type is not: {ATEProject.ID}')
 
         return False
 

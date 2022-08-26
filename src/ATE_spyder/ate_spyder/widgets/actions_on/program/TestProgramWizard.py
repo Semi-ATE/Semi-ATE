@@ -13,7 +13,7 @@ from ate_spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinT
 from ate_spyder.widgets.actions_on.program.ExecutionWidget import ExecutionWidget
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_common.program_utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
-                                                         ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
+                                      ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
 from ate_spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
 from ate_spyder.widgets.actions_on.program.PingPongWidget import PingPongWidget
 from ate_spyder.widgets.navigation import ProjectNavigation

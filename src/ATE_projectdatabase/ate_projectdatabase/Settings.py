@@ -19,7 +19,7 @@ class Settings:
         return session.query(Types.Settings()).one()
 
     @staticmethod
-    def set_quality_grade(session: FileOperator, quality_grade: str) -> None:
+    def set_quality_grade(session: FileOperator, quality_grade: str):
         settings = Settings.get(session)
         settings.quality_grade = quality_grade
         session.commit()

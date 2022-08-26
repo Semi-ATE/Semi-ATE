@@ -1213,7 +1213,7 @@ class ProjectNavigation(QObject):
             pass
 
     def last_project_setting(self):
-        return Path(self.project_directory, '.lastsettings')
+        return Path(self.project_directory).joinpath('.lastsettings')
 
     def store_settings(self, hardware, base, target):
         import json
@@ -1253,3 +1253,7 @@ class ProjectNavigation(QObject):
 
     def get_test_path(self, name, hardware, base):
         return Path(self.project_directory).joinpath(self.project_name, hardware, base, name, name)
+
+    def create_test_runner_main(self, file_path: Path, test_configuration: Test):
+        hardware_definition = self.get_hardware_definition(test_configuration.hardware)
+        _ = self.run_build_tool('generate', 'test_runner', Path(self.project_directory), file_path, test_configuration, hardware_definition)
