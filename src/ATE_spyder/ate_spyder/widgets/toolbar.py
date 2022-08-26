@@ -43,14 +43,14 @@ class ToolBar(ApplicationToolbar):
     def __call__(self, project_info):
         self.project_info = project_info
 
+        hardware, base, target = self.project_info.load_project_settings()
+
         self.hardware_combo.blockSignals(True)
         self._init_hardware()
         self.hardware_combo.blockSignals(False)
-        self._update_target()
-        hardware, base, target = self.project_info.load_project_settings()
         self._hardware_changed(hardware)
         self._base_changed(base)
-        self._update_target()
+        self._target_changed(target)
         self._init__group()
 
         self.project_info.update_toolbar_elements(hardware, base, target)
@@ -143,7 +143,7 @@ class ToolBar(ApplicationToolbar):
             item = self.group_combo.model().item(group_index, 0)
             item.setCheckState(QtCore.Qt.Unchecked if not group.is_selected else QtCore.Qt.Checked)
 
-        # combobox list will 
+        # combobox list will
         sp = self.group_combo.view().sizePolicy()
         sp.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
         self.group_combo.view().setSizePolicy(sp)
@@ -253,7 +253,7 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _base_changed(self, selected_base):
-        if(self.active_base == selected_base):
+        if self.active_base == selected_base:
             return
 
         self.active_base = selected_base
@@ -266,6 +266,8 @@ class ToolBar(ApplicationToolbar):
 
     @QtCore.pyqtSlot(str)
     def _target_changed(self, selected_target):
+        if not selected_target:
+            return
         # the fact that we have a target to change to, means that there is a navigator ... no?
         self.active_target = selected_target
         self.project_info.active_target = selected_target
