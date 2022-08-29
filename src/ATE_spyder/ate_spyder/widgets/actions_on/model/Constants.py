@@ -32,6 +32,7 @@ class MenuActionTypes(Enum):
     AddGroup = "add_test_group"
     Export = "export_item"
     ExecuteTestRunner = "execute_test_runner" 
+    OpenAutoScriptFile = "open_auto_script_file_item" 
 
     def __call__(self):
         return self.value

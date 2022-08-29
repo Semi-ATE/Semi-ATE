@@ -66,7 +66,12 @@ class HardwaresetupItemChild(StateItem):
     def _enabled_item_menu(self):
         menu = super()._enabled_item_menu()
         menu.insert(0, MenuActionTypes.Activate())
+        menu.insert(len(menu) - 2, MenuActionTypes.OpenAutoScriptFile())
         return menu
 
     def delete_item(self):
         self.project_info.remove_hardware(self.text())
+
+    def open_auto_script_file_item(self):
+        path = self.project_info._generate_auto_script_path(self.text())
+        self.model().edit_file.emit(str(path))
