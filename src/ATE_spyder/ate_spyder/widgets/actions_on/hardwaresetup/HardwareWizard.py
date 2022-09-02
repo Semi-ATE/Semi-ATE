@@ -375,11 +375,9 @@ class HardwareWizard(BaseDialog):
         if not self._availableTesters:
             return
         selected_name = self._availableTesters[self.tester.currentText()]
-        # tester plugin hook-spec requires a logger, as we are not interested in logging at this level we provide the tester
-        # with a dummy logger to satisfy it's interface and to get the number of configured sites
-        logger = Logger('dummy')
-        selected_tester = self._plugin_manager.hook.get_tester(tester_name=selected_name, logger=logger)[0]
-        tester_sites_count = selected_tester.get_sites_count()
+        tester_sites_count = self._plugin_manager.hook.get_tester_type(tester_name=selected_name)[0].SITE_COUNT
+        if tester_sites_count < 1:
+            raise Exception(f'tester site count is not valid: {tester_sites_count}')
 
         sites = [str(site + 1) for site in range(tester_sites_count)]
         self.maxParallelism.blockSignals(True)

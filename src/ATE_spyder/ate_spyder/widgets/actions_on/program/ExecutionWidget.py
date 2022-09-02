@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class ExecutionWidget(QWidget):
-    def __init__(self, parent: "TestProgramWizard") -> None:
+    def __init__(self, parent: "TestProgramWizard"):
         super().__init__(parent=parent)
         uic.loadUi(__file__.replace(".py", ".ui"), self)
         self.tp_wizard: TestProgramWizard = parent

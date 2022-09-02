@@ -8,7 +8,7 @@ from Common.utils import GPIOState
 
 
 class ConnectionHandler:
-    def __init__(self, host: str, port: int, event: Event, logger: Logger, parent) -> None:
+    def __init__(self, host: str, port: int, event: Event, logger: Logger, parent):
         self._parent = parent
         self._mqtt = None
         self._log = logger
@@ -40,28 +40,28 @@ class ConnectionHandler:
 
         await self.do_for_ever()
 
-    def subscribe(self, topic) -> None:
+    def subscribe(self, topic):
         self._mqtt.subscribe(topic)
 
-    def publish(self, topic, payload, qos=2, retain=False) -> None:
+    def publish(self, topic, payload, qos=2, retain=False):
         self._mqtt.publish(topic, json.dumps(payload), qos=qos, retain=retain)
 
-    def publish_state(self, state) -> None:
+    def publish_state(self, state):
         self.publish(self._topicFactory.tester_status_topic(self._client_id),
                      self._topicFactory.tester_status_message(state),
                      qos=2,
                      retain=False)
 
-    def _on_connect(self, client, userdata, flags, rc) -> None:
+    def _on_connect(self, client, userdata, flags, rc):
         for topic in self._parent.get_topics():
             self.subscribe(topic)
 
         self.publish_state('running')
 
-    def _on_disconnect(self, client, userdata, rc) -> None:
+    def _on_disconnect(self, client, userdata, rc):
         self._log.log_message(LogLevel.Debug(), "disconnected")
 
-    def dispatch_tester_message(self, topic, message) -> None:
+    def dispatch_tester_message(self, topic, message):
         raise Exception('impl. me')
 
     def send_request_message(self, site_id: str, gpio_state: GPIOState):

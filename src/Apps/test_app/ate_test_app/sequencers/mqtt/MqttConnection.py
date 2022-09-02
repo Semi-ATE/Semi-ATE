@@ -10,7 +10,7 @@ class MqttConnection:
     _statemachine: Optional[TheTestAppMachine]
     _mqtt: Optional[MqttClient]
 
-    def __init__(self, params: object) -> None:
+    def __init__(self, params: object):
         self._statemachine = None
         self._mqtt = None
         self._logger = None

@@ -216,10 +216,31 @@ class ATEWidget(PluginMainWidget):
             if self._is_semi_ate_project(config_file_path):
                 self.project_info(project_path)
 
+                from ate_projectdatabase import latest_semi_ate_project_db_version
+                project_version = self.project_info.get_version()
+                if (project_version != latest_semi_ate_project_db_version):
+                    try:
+                        raise Exception(f'''\n
+Migration required:\n
+Project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
+To prevent any inconsistencies the project must be migrated\n
+Execute the following commands inside the project root\n
+$ sammy migrate\n
+Running the generate all command shall refresh the generated code based on the template files\n
+$ sammy generate all\n
+                    ''')
+                    except Exception as e:
+                        from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
+                        report_exception(self.project_info.parent, "migration required")
+                        self.close_project()
+                        return False
+
                 self.toolbar(self.project_info)
                 self.set_tree()
                 self.init_done.emit()
                 return True
+            else:
+                print(f'project type is not: {ATEProject.ID}')
 
         return False
 

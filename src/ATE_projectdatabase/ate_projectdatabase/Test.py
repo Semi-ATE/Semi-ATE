@@ -45,14 +45,9 @@ class Test:
         hardware = database['hardware']
         base = database['base']
         test_type = database['type']
-        session.query(Types.Test())\
-               .filter(lambda Test: Test.name == name and Test.hardware == hardware and Test.base == base)\
-               .delete()
+        Test.remove(session, name, hardware, base)
 
-        test = {"name": name, "hardware": hardware, "base": base, "type": test_type, "definition": database, "is_enabled": True}
-        session.query(Types.Test()).add(test)
-
-        session.commit()
+        Test.add(session, name, hardware, base, test_type, database, is_enabled=True)
 
     @staticmethod
     def update(session: FileOperator, name: str, hardware: str, base: str, type: str, definition: dict, is_enabled: bool):

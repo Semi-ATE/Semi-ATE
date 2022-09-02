@@ -18,13 +18,13 @@ class AutoScript(AutoScriptBase):
         super().__init__()
 
     def before_start_setup(self):
-        self.context.tester_instance.setup()
+        self.context.tester.setup()
 
     def after_cycle_teardown(self):
         pass
 
     def after_terminate_teardown(self):
-        self.context.tester_instance.teardown()
+        self.context.tester.teardown()
 
     def after_exception_teardown(self, source: str, exception: Exception):
         pass

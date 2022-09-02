@@ -13,4 +13,4 @@ class test_target_generator(test_proper_generator):
         base = self.definition['base']
         base_class = self.definition['base_class']
 
-        return os.path.join('src', hardware, base, base_class)
+        return self.project_path.joinpath(self.project_path.name, hardware, base, base_class)
