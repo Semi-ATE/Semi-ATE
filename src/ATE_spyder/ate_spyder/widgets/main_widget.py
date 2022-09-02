@@ -17,6 +17,7 @@ from ate_spyder.widgets.actions_on.project.ProjectWizard import new_project_dial
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.toolbar import ToolBar
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestItemChild, TestItemChildTarget)
+from ate_spyder.widgets.actions_on.patterns.PatternItem import PatternItemChild
 from ate_spyder.project import ATEProject
 
 # Third party imports
@@ -144,6 +145,9 @@ class ATEWidget(PluginMainWidget):
 
         model_item = item.model().itemFromIndex(index)
         if isinstance(model_item, TestItemChild):
+            self.open_test_file(model_item.path)
+
+        if isinstance(model_item, PatternItemChild):
             self.open_test_file(model_item.path)
 
         if isinstance(model_item, TestItemChildTarget):
