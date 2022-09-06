@@ -33,4 +33,6 @@ ACTIONS = {MenuActionTypes.Edit(): (qta.icon('mdi.lead-pencil', color='orange'),
            MenuActionTypes.AddGroup(): (qta.icon('mdi.folder-plus', color='orange'), "Add New Group"),
            MenuActionTypes.Export(): (qta.icon('mdi.application-export', color='orange'), "Export"),
            MenuActionTypes.OpenAutoScriptFile(): (qta.icon('mdi.book-open', color='orange'), "Open Auto Script"),
-           MenuActionTypes.CompilePattern(): (qta.icon('mdi.file-cog-outline', color='orange'), "Compile Pattern")}
+           MenuActionTypes.ExecuteTestRunner(): (qta.icon('mdi.play', color='orange'), "Execute Test Runner"),
+           MenuActionTypes.CompilePattern(): (qta.icon('mdi.file-cog-outline', color='orange'), "Compile Pattern"),
+           MenuActionTypes.ExcelTestImport(): (qta.icon('mdi.application-import', color='orange'), "Excel test list Import")}
