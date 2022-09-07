@@ -1668,12 +1668,10 @@ class ExcelTestWizard(BaseDialog):
                             value = searchAndAssign(parameterName, write_content=False)
                             if parameterName_split[1] == 'unit':
                                 if value == '' or value == ' ' or (type(value) == float and np.isnan(value)):
-                                    value == '˽'
+                                    value = '˽'
                                 if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
                                     output_parameters['exp10'] = POWER[value[0]]
                                     value = value[1:]
-                            elif parameterName_split[1] == 'unit':
-                                output_parameters['exp10'] = 0
                             output_parameters[parameterName_split[1]] = value
                 if 'output_parameters' not in test_content:
                     test_content['output_parameters'] = {name: output_parameters}
@@ -1777,5 +1775,5 @@ if __name__ == "__main__":
     project_info.active_target = 'Device1'
     file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
     # selected_file = file_system_operator.get_file('*.xlsx')
-    selected_file = r"C:\Users\jung\ATE\packages\envs\semi-ate-4\tb_ate\Output_HATB_65.xlsx"
+    selected_file = r"C:\Users\jung\ATE\packages\envs\semi-ate-4\tb_ate\Output_HATB_65new.xlsx"
     excel_test_dialog(project_info, selected_file)
