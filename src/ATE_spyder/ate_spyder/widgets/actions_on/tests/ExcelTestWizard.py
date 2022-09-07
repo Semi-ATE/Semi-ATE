@@ -1648,6 +1648,7 @@ class ExcelTestWizard(BaseDialog):
                 searchAndAssign('docstring', [''])
                 searchAndAssign('dependencies', {})
                 test_content['input_parameters'] = {'Temperature': TestWizard.make_default_input_parameter(temperature=True)}
+                test_content['input_parameters']['Temperature']['exp10'] = 0
 
             column = searchmapping('input_parameters.name')
             if column is not None:
@@ -1764,8 +1765,8 @@ if __name__ == "__main__":
     import sys
 
     app = QApplication(sys.argv)
-    #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    #app.references = set()
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    app.references = set()
     main = QMainWindow()
     project_directory = r'C:\Users\jung\ATE\packages\envs\semi-ate-4\tb_ate'
     homedir = os.path.expanduser("~")
@@ -1774,6 +1775,5 @@ if __name__ == "__main__":
     project_info.active_base = 'FT'
     project_info.active_target = 'Device1'
     file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-    # selected_file = file_system_operator.get_file('*.xlsx')
-    selected_file = r"C:\Users\jung\ATE\packages\envs\semi-ate-4\tb_ate\Output_HATB_65new.xlsx"
+    selected_file = file_system_operator.get_file('*.xlsx')
     excel_test_dialog(project_info, selected_file)
