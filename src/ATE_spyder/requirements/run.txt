@@ -1,6 +1,7 @@
 qtawesome
 pydantic
 numpy
+pandas
 spyder==5.3
 semi-ate-common
 semi-ate-plugins
