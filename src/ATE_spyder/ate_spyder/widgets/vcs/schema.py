@@ -64,7 +64,7 @@ class GitHubUser(TypedDict):
     ldap_dn: str
 
 
-class GitHubOrganization(TypedDict):
+class GitHubOrganizationInfo(TypedDict):
     login: str
     id: str
     node_id: str
@@ -77,6 +77,51 @@ class GitHubOrganization(TypedDict):
     public_members_url: str
     avatar_url: str
     description: Optional[str]
+
+
+class GitHubOrganization(GitHubOrganizationInfo):
+    name: str
+    company: str
+    blog: str
+    location: str
+    email: str
+    twitter_username: Optional[str]
+    is_verified: bool
+    has_organization_projects: bool
+    has_repository_projects: bool
+    public_repos: int
+    public_gists: int
+    followers: int
+    following: int
+    html_url: str
+    created_at: str
+    type: str
+    total_private_repos: int
+    owned_private_repos: int
+    private_gists: Optional[int]
+    disk_usage: Optional[int]
+    collaborators: Optional[int]
+    billing_email: Optional[str]
+    plan: dict
+    default_repository_permission: Optional[str]
+    members_can_create_repositories: Optional[bool]
+    two_factor_requirement_enabled: Optional[bool]
+    members_allowed_repository_creation_type: str
+    members_can_create_public_repositories: bool
+    members_can_create_private_repositories: bool
+    members_can_create_internal_repositories: bool
+    members_can_create_pages: bool
+    members_can_create_public_pages: bool
+    members_can_create_private_pages: bool
+    members_can_fork_private_repositories: Optional[bool]
+    web_commit_signoff_required: bool
+    updated_at: str
+    advanced_security_enabled_for_new_repositories: bool
+    dependabot_alerts_enabled_for_new_repositories: bool
+    dependabot_security_updates_enabled_for_new_repositories: bool
+    dependency_graph_enabled_for_new_repositories: bool
+    secret_scanning_enabled_for_new_repositories: bool
+    secret_scanning_push_protection_enabled_for_new_repositories: bool
 
 
 class GitHubUserRepoPermissions(TypedDict):

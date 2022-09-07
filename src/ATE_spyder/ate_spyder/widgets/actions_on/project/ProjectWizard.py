@@ -167,6 +167,7 @@ class ProjectWizard(QDialog):
         ProviderWidget = self.vcs_prov_model[index]
         self.vcs_conf_widget: VCSInitializationProvider = ProviderWidget()
         self.vcs_conf_widget.sig_widget_changed.connect(self.validate)
+        self.vcs_conf_widget.sig_update_status.connect(self.change_status)
         self.vcs_stack.addWidget(self.vcs_conf_widget)
         self.validate()
 
@@ -192,6 +193,13 @@ class ProjectWizard(QDialog):
             is_valid = is_valid and vcs_valid
 
         self.sig_dialog_enabled.emit(is_valid)
+
+    def change_status(self, is_valid: bool, msg: Optional[str]):
+        self.sig_dialog_enabled.emit(is_valid)
+        text = ''
+        if msg is not None:
+            text = msg
+        self.feedback_label.setText(text)
 
     def accept(self) -> None:
         if self.vcs_conf_widget is not None:

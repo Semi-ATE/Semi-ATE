@@ -41,6 +41,18 @@ class VCSInitializationProvider(QWidget):
     This signal must be connected to any widget that might change its status.
     """
 
+    sig_update_status = Signal(bool, str)
+    """
+    Signal used to update the validity of the project dialog.
+
+    Parameters
+    ----------
+    is_valid: bool
+        True if the dialog should be enabled, False otherwise
+    msg: Optional[str]
+        Optional message to display.
+    """
+
     @classmethod
     def get_name(cls) -> str:
         """Retrieve the name of the VCS provider."""
