@@ -2,6 +2,7 @@ qtawesome
 pydantic
 numpy
 pandas
+openpyxl
 spyder>=5.3
 semi-ate-common
 semi-ate-plugins
