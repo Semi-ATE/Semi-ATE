@@ -103,6 +103,7 @@ class ProjectNavigation(QObject):
             self._set_folder_structure()
             self.file_operator = FileOperator(self.project_directory)
             self._store_default_groups()
+            self._validate_pattern_folder_structure()
 
         if self.verbose:
             print("Navigator:")
@@ -131,6 +132,27 @@ class ProjectNavigation(QObject):
         doc_path = os.path.join(self.project_directory, "doc")
         os.makedirs(os.path.join(doc_path, "audits"), exist_ok=True)
         os.makedirs(os.path.join(doc_path, "exports"), exist_ok=True)
+
+    def _validate_pattern_folder_structure(self):
+        pattern_path = self.project_directory.joinpath("pattern")
+        pattern_path.mkdir(exist_ok=True)
+        hws = self.get_hardware_names()
+        for hw in hws:
+            hw_path = pattern_path.joinpath(hw)
+            hw_path.mkdir(exist_ok=True)
+            hw_path.joinpath(BaseType.PR()).mkdir(exist_ok=True)
+            hw_path.joinpath(BaseType.FT()).mkdir(exist_ok=True)
+
+            dies = self.get_active_die_names_for_hardware(hw)
+            for die in dies:
+                die_path = hw_path.joinpath(BaseType.PR(), die)
+                die_path.mkdir(exist_ok=True)
+
+            devices = self.get_active_device_names_for_hardware(hw)
+            for device in devices:
+                device_path = hw_path.joinpath(BaseType.FT(), device)
+                device_path.mkdir(exist_ok=True)
+
 
     def _store_default_groups(self):
         groups = [group.name for group in self.get_groups()]
