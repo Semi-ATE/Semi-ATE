@@ -23,13 +23,21 @@ class EventHandler(EventHandlerBase):
         parent_item.add_dir_item(dir_name, path, parent_item.rowCount())
 
     def _on_deleted(self, path):
+        # Spyder IDE makes it harder to recognize file deletion
+        # as saving changes to file inside the editor will generate two event (create & delete)
+        # the create event is triggered when spyder creates a temp file to buffer the content of the open file
+        # and at the same time a delete event is triggered and deletes the file from the tree
+        if os.path.exists(path):
+            return
+
         file_name = os.path.basename(path)
         parent_item = get_changed_dir_item(self.section_root, path, self.path)
         parent_item.remove_child(file_name)
 
-    def _on_file_modified(self, event):
-        # ignored for now
-        pass
+    def _on_file_modified(self, path):
+        file_name = os.path.basename(path)
+        parent_item = get_changed_dir_item(self.section_root, path, self.path)
+        parent_item.add_file_item(file_name, path, parent_item.rowCount())
 
     def _on_dir_modified(self, event):
         # event is generated each time we do change the content of folder
@@ -42,6 +50,7 @@ class EventHandler(EventHandlerBase):
 
         # to prevent emiting an event, child will be token from the tree and modified
         child_item = self._get_changed_file_item(parent_item, file_name)
+        if not child_item: return
 
         row = child_item.row()
         item = parent_item.takeChild(row)
@@ -93,8 +102,13 @@ class DocumentationObserver(ObserverBase):
                 item = self.section_root.get_child(root_file)
             elif level > 1:  # skip the case were level == 0
                 parent_item = get_changed_dir_item(self.section_root, path, self.path)
+                if not parent_item:
+                    continue
+
                 parent_item.add_dir_item(root_file, path)
                 item = parent_item.get_child(root_file)
 
             for f in files:
+                if not item:
+                    continue
                 item.add_file_item(f, os.path.join(path, f), item.rowCount())

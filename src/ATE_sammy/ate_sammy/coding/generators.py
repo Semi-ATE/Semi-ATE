@@ -50,6 +50,8 @@ def project_generator(template_path, project_path):
     src_common_generator(template_path, project_path)
     project_doc_generator(template_path, project_path)
 
+    Path(project_path).joinpath('pattern').mkdir(exist_ok=True)
+
 
 def hardware_generator(template_path, project_path, hardware):
     """Generator for a new hardware structure."""
@@ -63,6 +65,17 @@ def hardware_generator(template_path, project_path, hardware):
     FT_common_generator(template_path, project_path, hardware)
 
     AutoScriptGenerator(template_path, project_path, hardware)
+
+    create_pattern_hardware_folder(Path(project_path), hardware)
+
+
+def create_pattern_hardware_folder(project_path: Path, hardware_db: dict):
+    project_path.joinpath('pattern').mkdir(exist_ok=True)
+    project_path.joinpath('pattern', hardware_db['hardware']).mkdir(exist_ok=True)
+
+    # for each testing phase (e.g. `probing` and `final`) a folder is generated automatically
+    project_path.joinpath('pattern', hardware_db['hardware'], 'PR').mkdir(exist_ok=True)
+    project_path.joinpath('pattern', hardware_db['hardware'], 'FT').mkdir(exist_ok=True)
 
 
 def test_generator(template_path, project_path, definition):

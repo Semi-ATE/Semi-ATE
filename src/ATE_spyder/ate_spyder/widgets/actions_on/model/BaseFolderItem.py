@@ -11,8 +11,8 @@ class BaseFolderItem(BaseItem):
     def import_folder_item(self):
         self.file_system_operator.import_dir()
 
-    def import_file_item(self):
-        self.file_system_operator.import_file()
+    def import_file_item(self, file_types: str = ''):
+        self.file_system_operator.import_file(file_types)
 
     def delete_item(self):
         self.file_system_operator.delete_dir()

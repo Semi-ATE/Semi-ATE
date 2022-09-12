@@ -13,7 +13,7 @@ class FileIconTypes(Enum):
     PNG = ['.png', '.jpg']
     AVI = ['.avi', '.mp4']
     FLAC = ['.flac', '.mid', '.midi', '.aac']
-    TXT = ['.txt']
+    TXT = ['.txt', '.stil', '.wav']
     MD = ['.md']
     ZIP = ['.zip', '.xz', '.gz', '.bz2']
     FOLDER = ['.']
