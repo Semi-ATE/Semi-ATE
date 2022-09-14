@@ -23,6 +23,7 @@ from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import (TestIte
 from ate_spyder.project import ATEProject
 from ate_spyder.widgets.vcs import VCSInitializationProvider
 from ate_spyder.widgets.vcs.local import LocalGitProvider
+from ate_spyder.widgets.vcs.github import GitHubInitialization
 
 # Third party imports
 from spyder.api.translations import get_translation
@@ -92,6 +93,7 @@ class ATEWidget(PluginMainWidget):
         # Signals
         self.vcs_handlers: Dict[str, Type[VCSInitializationProvider]] = {}
         self.register_version_control_provider(LocalGitProvider)
+        self.register_version_control_provider(GitHubInitialization)
 
     # --- PluginMainWidget API
     # ------------------------------------------------------------------------
