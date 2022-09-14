@@ -7,15 +7,17 @@ Local Git repository initialization.
 """
 
 # Standard library imports
-from functools import wraps, partial
-from threading import Semaphore, Lock, RLock
-from typing import Optional, List, Union, Dict, Tuple, Any, Callable
+import time
+from functools import partial
+from queue import Queue
+from threading import Semaphore
+from typing import Optional, List, Dict, Tuple, Any, Callable
 
 # Qt imports
 from qtpy.QtCore import (Qt, QAbstractListModel, Signal, QObject, QModelIndex,
                          QThread)
 from qtpy.QtWidgets import (QWidget, QLabel, QLineEdit, QHBoxLayout, QComboBox,
-                            QVBoxLayout)
+                            QVBoxLayout, QDialog)
 
 # Third-party imports
 import requests
@@ -44,6 +46,8 @@ def perform_http_call(url: str, headers: Dict) -> Tuple[Any, Optional[str]]:
     except requests.ConnectionError as e:
         msg = e.strerror
         return None, msg
+    except requests.exceptions.InvalidHeader:
+        return None, _('Invalid token format')
 
     try:
         req.raise_for_status()
@@ -53,50 +57,22 @@ def perform_http_call(url: str, headers: Dict) -> Tuple[Any, Optional[str]]:
     return req.json(), None
 
 
-class AtomicCounter:
-    def __init__(self, initial_value: int):
-        self.lock = Lock()
-        self.zero_lock = RLock()
-        self.count = initial_value
-        self.initial_value = initial_value
-
-    def __iadd__(self, other: int):
-        with self.lock:
-            if self.count == self.initial_value:
-                self.zero_lock.acquire()
-
-            self.count += other
-
-            if self.count == self.initial_value:
-                self.zero_lock.release()
-
-    def __isub__(self, other: int):
-        with self.lock:
-            self.count -= other
-
-            if self.count == self.initial_value:
-                self.zero_lock.release()
-
-    def __ge__(self, other: int):
-        with self.lock:
-            return self.count > other
-
-
 class HTTPThreadRequestThread(QThread):
     sig_thread_response = Signal(object, str)
 
     def __init__(self, parent: Optional[QObject] = None,
                  url: Optional[str] = None,
-                 headers: Optional[Dict] = None) -> None:
+                 headers: Optional[Dict] = None,
+                 queue: Optional[Queue] = None) -> None:
         super().__init__(parent)
         self.url = url
         self.headers = headers
+        self.queue = queue
 
     def run(self) -> None:
         print('**************************', self.url)
         body, err_msg = perform_http_call(self.url, self.headers)
-        self.sig_thread_response.emit(body, err_msg)
-
+        self.queue.put((body, err_msg))
 
 class HTTPRequestPerformer:
     MAX_CONCURRENT_REQUESTS = 5
@@ -106,25 +82,27 @@ class HTTPRequestPerformer:
         self.http_threads = set({})
 
     def perform_http_call(self, url: str, headers: Dict,
-                          callback: Callable[[Any, Optional[str]], Any]):
-        @wraps(callback)
-        def wrapped_callback(body: Any, err_msg: Optional[str],
-                             thread: Optional[HTTPThreadRequestThread] = None):
-            print(callback)
-            self.http_semaphore.release(1)
-            self.http_threads -= {thread}
-            callback(body, err_msg)
+                          callback: Callable[[Any, Optional[str]], Any],
+                          queue: Optional[Queue] = None):
+        with self.http_semaphore:
+            use_queue = queue or Queue()
+            thread = HTTPThreadRequestThread(None, url, headers, use_queue)
+            thread.start()
+            self.http_threads |= {thread}
 
-        self.http_semaphore.acquire()
-        thread = HTTPThreadRequestThread(self, url, headers)
-        thread.sig_thread_response.connect(
-            partial(wrapped_callback, thread=thread))
-        thread.start()
-        self.http_threads |= {thread}
+            if queue is None:
+                print(f'Awaiting response for {url}')
+                msg, err_msg = use_queue.get()
+                print(f'Got response for {url}')
+
+        if queue is None:
+            print(f'Calling {callback}')
+            callback(msg, err_msg)
 
 
 class GitHubOrgRetrieverThread(QThread, HTTPRequestPerformer):
     sig_orgs_retrieved = Signal(list)
+    sig_err_occurred = Signal(str)
 
     def __init__(self, parent: Optional[QObject],
                  org_info: List[GitHubOrganizationInfo],
@@ -133,9 +111,7 @@ class GitHubOrgRetrieverThread(QThread, HTTPRequestPerformer):
         HTTPRequestPerformer.__init__(self)
 
         self.org_info = org_info
-        self.all_orgs: List[GitHubOrganization] = []
         self.headers = headers
-        self.counter: Optional[AtomicCounter] = None
 
     def append_org_result(self, org: GitHubOrganization, err_msg: str):
         self.counter -= 1
@@ -147,15 +123,31 @@ class GitHubOrgRetrieverThread(QThread, HTTPRequestPerformer):
             self.all_orgs.append(org)
 
     def run(self) -> None:
-        self.counter = AtomicCounter(0)
+        queue = Queue()
         for org_info in self.org_info:
             org_url = org_info['url']
-            org: GitHubOrganization
-            self.counter += 1
             self.perform_http_call(
-                org_url, self.headers, self.append_org_result)
+                org_url, self.headers, self.append_org_result, queue)
 
-        self.sig_orgs_retrieved.emit(self.all_orgs)
+        # Wait for tasks to be enqueued
+        counter = len(self.org_info)
+        all_orgs: List[GitHubOrganization] = []
+
+        while counter > 0:
+            org: GitHubOrganization
+            org, err_msg = queue.get()
+            counter -= 1
+
+            if err_msg is not None:
+                self.sig_err_occurred.emit(err_msg)
+            else:
+                org_allows_creation = org['members_can_create_repositories']
+                if org_allows_creation:
+                    all_orgs.append(org)
+
+        self.sig_err_occurred.emit(
+            f'A total of {len(all_orgs)} organizations were found')
+        self.sig_orgs_retrieved.emit(all_orgs)
 
 
 class GitHubOrgModel(QAbstractListModel, HTTPRequestPerformer):
@@ -186,7 +178,8 @@ class GitHubOrgModel(QAbstractListModel, HTTPRequestPerformer):
     def organizations_callback(self, body: List[GitHubOrganizationInfo],
                                err_msg: Optional[str],
                                headers: Optional[Dict] = None):
-        if err_msg != '':
+        # print(body, err_msg,)
+        if err_msg is not None:
             self.sig_err_occurred.emit(err_msg)
             return False
 
@@ -200,6 +193,7 @@ class GitHubOrgModel(QAbstractListModel, HTTPRequestPerformer):
 
         self.org_thread = GitHubOrgRetrieverThread(self, body, headers)
         self.org_thread.sig_orgs_retrieved.connect(set_orgs)
+        self.org_thread.sig_err_occurred.connect(self.sig_err_occurred)
         self.org_thread.start()
         return True
 
@@ -213,25 +207,37 @@ class GitHubOrgModel(QAbstractListModel, HTTPRequestPerformer):
     def rowCount(self, parent: QModelIndex = None) -> int:
         return len(self.organizations)
 
+    def clear(self):
+        self.beginResetModel()
+        self.organizations = []
+        self.org_thread = None
+        self.endResetModel()
 
-class GitHubRepoModel(QAbstractListModel):
+    def __getitem__(self, index: int) -> GitHubOrganization:
+        return self.organizations[index]
+
+
+class GitHubRepoModel(QAbstractListModel, HTTPRequestPerformer):
     sig_err_occurred = Signal(str)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
+        HTTPRequestPerformer.__init__(self)
         self.repositories: List[GitHubRepository] = []
 
     def set_repositories(self, org: GitHubOrganization, headers: Dict) -> bool:
         repos_url = org['repos_url']
-        body: List[GitHubRepository]
-        body, err_msg = perform_http_call(repos_url, headers)
+        self.perform_http_call(
+            repos_url, headers, self.process_repositories)
 
+    def process_repositories(self, repos: List[GitHubRepository],
+                             err_msg: Optional[str]):
         if err_msg is not None:
             self.sig_err_occurred.emit(err_msg)
-            return False
+            return
 
         repositories: List[GitHubRepository] = []
-        for repo in body:
+        for repo in repos:
             is_archived = repo['archived']
             allow_forking = repo['allow_forking']
             permissions = repo['permissions']
@@ -243,37 +249,58 @@ class GitHubRepoModel(QAbstractListModel):
 
             repositories.append(repo)
 
+        self.beginResetModel()
         self.repositories = repositories
-        return True
+        self.endResetModel()
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> str:
         row = index.row()
-        repo = self.repositories[row]
         if role == Qt.DisplayRole:
+           if row == 0:
+                return _('Create new repository...')
+
+           repo = self.repositories[row]
            repo_name = repo['full_name']
            return repo_name
 
     def rowCount(self, parent: QModelIndex = None) -> int:
+        return len(self.repositories) + 1
+
+    def clear(self):
+        self.beginResetModel()
+        self.repositories = []
+        self.endResetModel()
+
+    def __getitem__(self, index: int) -> GitHubRepository:
+        return self.repositories[index]
+
+    def __len__(self) -> int:
         return len(self.repositories)
 
 
-class GitHubBranchModel(QAbstractListModel):
+class GitHubBranchModel(QAbstractListModel, HTTPRequestPerformer):
     sig_err_occurred = Signal(str)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
+        HTTPRequestPerformer.__init__(self)
         self.branches: List[GitHubBranch] = []
 
     def set_branches(self, repo: GitHubRepository, headers: Dict) -> bool:
-        branches_url = repo['branches_url']
+        branches_url = repo['branches_url'].replace('{/branch}', '')
         body: List[GitHubBranch]
-        body, err_msg = perform_http_call(branches_url, headers)
 
-        if err_msg is not None:
-            self.sig_err_occurred.emit(err_msg)
-            return False
+        def handle_branches(branches: List[GitHubBranch],
+                            err_msg: Optional[str]):
+            if err_msg is not None:
+                self.sig_err_occurred.emit(err_msg)
+                return
 
-        self.branches = body
+            self.beginResetModel()
+            self.branches = branches
+            self.endResetModel()
+
+        self.perform_http_call(branches_url, headers, handle_branches)
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> str:
         row = index.row()
@@ -281,6 +308,11 @@ class GitHubBranchModel(QAbstractListModel):
         if role == Qt.DisplayRole:
             branch_name = branch['name']
             return branch_name
+
+    def clear(self):
+        self.beginResetModel()
+        self.branches = []
+        self.endResetModel()
 
     def rowCount(self, parent: QModelIndex = None) -> int:
         return len(self.branches)
@@ -356,12 +388,15 @@ class GitHubInitialization(VCSInitializationProvider):
         self.pat_text.textChanged.connect(self.pat_changed)
         self.org_combobox.currentIndexChanged.connect(self.org_selected)
         self.repo_combobox.currentIndexChanged.connect(self.repo_selected)
-        self.branch_combobox.currentIndexChanged.connect(self.branch_selected)
+        self.branch_combobox.currentIndexChanged.connect(
+            lambda _: self.sig_widget_changed.emit())
 
         self.pat_text.setText('')
         self.org_combobox.setEnabled(False)
         self.repo_combobox.setEnabled(False)
         self.branch_combobox.setEnabled(False)
+
+        self.select_first_defined_repo = True
 
     @classmethod
     def get_name(cls) -> str:
@@ -372,6 +407,14 @@ class GitHubInitialization(VCSInitializationProvider):
             msg = _('Personal access token length should contain at '
                     'least 40 characters')
             self.sig_update_status.emit(False, msg)
+
+            self.github_org_model.clear()
+            self.github_repo_model.clear()
+            self.github_branch_model.clear()
+
+            self.org_combobox.setEnabled(False)
+            self.repo_combobox.setEnabled(False)
+            self.branch_combobox.setEnabled(False)
             return
 
         self.headers = {
@@ -392,18 +435,37 @@ class GitHubInitialization(VCSInitializationProvider):
         self.github_org_model.set_organizations(
             self.current_user, self.headers)
         self.org_combobox.setEnabled(True)
-        # self.repo_combobox.setEnabled(status)
-        # self.branch_combobox.setEnabled(False)
-
+        self.repo_combobox.setEnabled(False)
+        self.branch_combobox.setEnabled(False)
 
     def org_selected(self, index: int):
         print('---------------------------', index)
+        org = self.github_org_model[index]
+        self.repo_combobox.setEnabled(True)
+        self.github_repo_model.set_repositories(org, self.headers)
+        self.select_first_defined_repo = True
 
     def repo_selected(self, index: int):
-        pass
+        print('////////////////////', index)
+        if index == 0:
+            if self.select_first_defined_repo:
+                self.select_first_defined_repo = False
+                if len(self.github_repo_model) > 0:
+                    self.repo_combobox.setCurrentIndex(1)
+                return
+            self.github_branch_model.clear()
+            self.branch_combobox.setEnabled(False)
+            # Create new repository
+            return
 
-    def branch_selected(self, index: int):
-        pass
+        repo = self.github_repo_model[index]
+        self.branch_combobox.setEnabled(True)
+        self.github_branch_model.set_branches(repo, self.headers)
 
     def validate(self) -> Tuple[bool, Optional[str]]:
-        return False, ''
+        pat = self.pat_text.text()
+        if pat == '':
+            msg = _('Personal access token length should contain at '
+                    'least 40 characters')
+            return False, msg
+        return True, None
