@@ -28,4 +28,9 @@ class MigrationVersion9(MigratorBase):
             with open(version_path, 'w') as f:
                 json.dump([data], f)
 
-        source_path.rename(project_name)
+        if not project_path.exists():
+            source_path.rename(project_name)
+
+        if source_path.exists():
+            import shutil
+            shutil.rmtree(source_path, ignore_errors=True)

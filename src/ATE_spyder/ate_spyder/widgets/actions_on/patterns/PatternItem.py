@@ -52,7 +52,6 @@ class PatternItem(BaseFolderStructureItem):
         self.insertRow(index, item)
 
     def add_file_item(self, name: str, path: str, index: int=0):
-        # TODO: what extension shall we support
         if Path(path).suffix not in self.supported_file_extension():
             return
 
