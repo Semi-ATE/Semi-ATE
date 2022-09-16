@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 from PyQt5 import QtWidgets
+import os
 
 from ate_spyder.widgets.actions_on.documentation.BaseFolderStructureItem import BaseFolderStructureItem, BaseFolderStructureItemChild
 from ate_spyder.widgets.navigation import ProjectNavigation
@@ -17,7 +18,6 @@ class PatternItem(BaseFolderStructureItem):
         return self.project_info.project_directory.joinpath('pattern')
 
     def add_dir_item(self, name: str, path: str, index: int=0):
-        import os
         diff_path = Path(path).relative_to(Path(self.pattern_root_dir))
         items = str(diff_path).split(os.sep)
 
@@ -59,11 +59,17 @@ class PatternItem(BaseFolderStructureItem):
         if self._does_item_already_exist(name):
             return
 
+        diff_path = Path(path).relative_to(Path(self.root))
+        items = str(diff_path).split(os.sep)
+
+        if len(items) > 1:
+            return
+
         item = PatternItemChild(name, path, self, self.project_info)
         self.insertRow(index, item)
 
     def add_new_menu_options(self, new_menu: QtWidgets.QMenu):
-        self.add_action(new_menu, MenuActionTypes.AddFile(), MenuActionTypes.AddFile(), self.add_file__item)
+        self.add_action(new_menu, MenuActionTypes.AddFile(), MenuActionTypes.AddFile(), lambda: self.add_file__item('STIL files (*.stil);;WAV files (*.wav)'))
 
     def add_import_menu_options(self, menu_action: QtWidgets.QMenu):
         self.add_action(menu_action, MenuActionTypes.AddFile(), MenuActionTypes.ImportFile(), lambda: self.import_file_item('Stil files (*.stil *.wav)'))
