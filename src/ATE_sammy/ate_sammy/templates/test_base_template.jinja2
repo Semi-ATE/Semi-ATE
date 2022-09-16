@@ -24,6 +24,15 @@ parent_path = str(Path(__file__).joinpath('..', '..').resolve())
 sys.path.append(parent_path)
 
 from common import Context
+from enum import Enum, unique
+
+{% if definition['patterns'] %}
+@unique
+class Patterns(str, Enum):
+    {% for pattern in definition['patterns'] %}
+    {{pattern}} = '{{pattern}}'
+    {% endfor %}
+{% endif %}
 
 
 class {{ definition['name'] }}_OP:
