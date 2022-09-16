@@ -837,7 +837,6 @@ class ProjectNavigation(QObject):
 
         self._remove_file(self._generate_program_path(program_name))
         self._remove_file(self._generate_bin_table_path(program_name))
-        self._remove_file(self._generate_auto_script_path(program_name))
         self._remove_file(self._generate_strategy_file_path(program_name))
 
         self._remove_testprogram_form_group_list(program_name, owner_name)
@@ -858,19 +857,19 @@ class ProjectNavigation(QObject):
         os.remove(file_name)
 
     def _generate_program_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '.py')
+        return self._generate_path_for_program(f'{program_name}.py')
 
     def _generate_bin_table_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_binning.json')
+        return self._generate_path_for_program(f'{program_name}_binning.json')
 
     def _generate_auto_script_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_auto_script.py')
+        return self._generate_path_for_program(f'{program_name}_auto_script.py')
 
     def _generate_strategy_file_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_execution_strategy.json')
+        return self._generate_path_for_program(f'{program_name}_execution_strategy.json')
 
-    def _generate_path_for_program_with_suffix(self, hardware_name: str, suffix: str) -> Path:
-        return Path(self.project_directory).joinpath(self.project_name, hardware_name, hardware_name + suffix)
+    def _generate_path_for_program(self, program_name: str) -> Path:
+        return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name)
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
