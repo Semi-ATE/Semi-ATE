@@ -19,8 +19,8 @@ class FileSystemOperator(QtWidgets.QFileDialog):
     def __call__(self, path):
         self.path = path
 
-    def add_file(self):
-        selected, _ = self.getSaveFileName(self, "Save File", self.path, "", options=self.options())
+    def add_file(self, file_types: str = ''):
+        selected, _ = self.getSaveFileName(self, "Save File", self.path, file_types, options=self.options())
         if not selected:
             return
 
