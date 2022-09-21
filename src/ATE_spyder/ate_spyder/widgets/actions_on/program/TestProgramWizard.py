@@ -63,7 +63,7 @@ class TestProgramWizard(BaseDialog):
         self.execution_widget = ExecutionWidget(self)
         self.tab_layout.addTab(self.execution_widget, "Execution")
 
-        self.pattern_tab = PatternTab(self)
+        self.pattern_tab = PatternTab(self, self.project_info)
 
         self._setup()
         self._view()
@@ -760,6 +760,9 @@ class TestProgramWizard(BaseDialog):
             self._update_feedback("Execution not correct")
             success = False
 
+        if not self.pattern_tab.validate_pattern_table():
+            success = False
+
         if success:
             self.target_feedback.setText('')
             self.temperature_feedback.setText('')
@@ -879,6 +882,9 @@ class TestProgramWizard(BaseDialog):
         self._validate_tests_parameters()
         self._insert_tests_to_selected_list()
 
+    def load_patterns(self, assigned_patterns: dict):
+        self.pattern_tab.fill_pattern_table([test.get_test_base() for test in self._custom_parameter_handler.get_tests()], assigned_patterns)
+
     def _insert_tests_to_selected_list(self):
         self.selectedTests.blockSignals(True)
         self.selectedTests.setRowCount(len(self._custom_parameter_handler.get_test_names()))
@@ -947,6 +953,8 @@ class TestProgramWizard(BaseDialog):
         self._insert_test_tuple_items(pos, test_name, indexed_test)
         bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
         self._add_tests_to_bin_table(bin_info)
+
+        self.pattern_tab.add_pattern_items(test_name)
 
     def _generate_new_executions(self) -> Dict[str, int]:
         return {
@@ -1194,7 +1202,7 @@ class TestProgramWizard(BaseDialog):
                 self._get_temperature_value(), definition, owner, count, target_prefix,
                 self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges,
                 group, len(self._custom_parameter_handler.get_tests()),
-                self._custom_parameter_handler.serialize_execution()
+                self._custom_parameter_handler.serialize_execution(), patterns=self.pattern_tab.collect_pattern()
             )
         else:
             self.project_info.update_changed_state_test_targets(self.hardware.currentText(), self.base.currentText(), self.prog_name)
@@ -1203,7 +1211,8 @@ class TestProgramWizard(BaseDialog):
                 self.target.currentText(), self.user_name.text(), self.sequencer_type,
                 self._get_temperature_value(), definition, self.owner, target_prefix,
                 self.cacheType.currentText(), self._get_caching_policy_value(), test_ranges,
-                len(self._custom_parameter_handler.get_tests()), self._custom_parameter_handler.serialize_execution()
+                len(self._custom_parameter_handler.get_tests()), self._custom_parameter_handler.serialize_execution(),
+                patterns=self.pattern_tab.collect_pattern()
             )
 
         self._bin_table.create_binning_file(os.path.join(self.project_info.project_directory,

@@ -12,13 +12,14 @@ class Program:
     def add(
         session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
         sequencer_typ: str, temperature: str, owner_name: str, order: int, cache_type: str,
-        caching_policy: str, test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType
+        caching_policy: str, test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType,
+        patterns: dict
     ):
         prog = {
             "id": str(uuid1()), "prog_name": name, "hardware": hardware, "base": base, "target": target, "usertext": usertext,
             "sequencer_type": sequencer_typ, "temperature": temperature, "owner_name": owner_name, "prog_order": order,
             "is_valid": True, "cache_type": cache_type, "caching_policy": caching_policy, "test_ranges": test_ranges,
-            "instance_count": instance_count, "execution_sequence": execution_sequence
+            "instance_count": instance_count, "execution_sequence": execution_sequence, "patterns": patterns
         }
         session.query_with_subtype(Types.Program(), name).add(prog)
         session.commit()
@@ -27,7 +28,7 @@ class Program:
     def update(
         session: FileOperator, name: str, hardware: str, base: str, target: str, usertext: str,
         sequencer_type: str, temperature: str, owner_name: str, cache_type: str, caching_policy: str,
-        test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType
+        test_ranges: list, instance_count: int, execution_sequence: ExecutionSequenceType, patterns: dict
     ):
         prog = Program.get_by_name_and_owner(session, name, owner_name)
         prog.hardware = hardware
@@ -41,6 +42,7 @@ class Program:
         prog.test_ranges = test_ranges
         prog.instance_count = instance_count
         prog.execution_sequence = execution_sequence
+        prog.patterns = patterns
         session.commit()
 
     @staticmethod
@@ -165,3 +167,9 @@ class Program:
         program = Program.get(session, name)
         program.is_valid = is_valid
         session.commit()
+
+    @staticmethod
+    def get_patterns(session: FileOperator, program_name: str) -> dict:
+        program = Program.get(session, program_name)
+        return program.patterns
+

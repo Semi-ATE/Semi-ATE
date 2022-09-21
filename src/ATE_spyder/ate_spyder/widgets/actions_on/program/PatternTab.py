@@ -1,6 +1,6 @@
 from os import walk
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -16,12 +16,33 @@ class PatternTab(QtWidgets.QWidget):
 
     def setup(self):
         self.pattern_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.pattern_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.pattern_table.horizontalHeader().setStretchLastSection(True)
 
-    def fill_table(self):
-        pass
+    def fill_pattern_table(self, test_names: List[str], assinged_patterns: dict):
+        for test_name in test_names:
+            self.add_pattern_items(test_name)
 
-    def add_pattern_item(self, test_name: str):
-        if self._does_exist(test_name):
+        current_test_name = ''
+        for index in range(self.pattern_table.rowCount()):
+            test_item = self.pattern_table.item(index, 0)
+            if test_item.text():
+                current_test_name = test_item.text()
+
+            pattern_name = self.pattern_table.item(index, 1).text()
+            assigned_tuples = assinged_patterns.get(current_test_name)
+            if assigned_tuples is None:
+                continue
+
+            for tuple in assigned_tuples:
+                if tuple[0] == pattern_name:
+                    combo = self.pattern_table.cellWidget(index, 2) 
+                    index = combo.findText(tuple[1])
+                    combo.setCurrentIndex(index)
+
+
+    def add_pattern_items(self, test_name: str):
+        if self._is_assigned(test_name):
             return
 
         patterns = self.project_navigation.get_pattern_list_for_test(
@@ -29,50 +50,60 @@ class PatternTab(QtWidgets.QWidget):
             self.project_navigation.active_hardware,
             self.project_navigation.active_base
         )
-        self.pattern_table.insertRow(self.pattern_table.rowCount())
 
         title_set = False
         for pattern in patterns:
+            self.pattern_table.insertRow(self.pattern_table.rowCount())
             if not title_set:
                 test_name_item = self._generate_item(test_name)
                 title_set = True
             else:
-                test_name_item = self._generate_item(test_name)
+                test_name_item = self._generate_item('')
 
-            # make item not editable
-            # test_name_item.
-            self.pattern_list.setItem(self.pattern_list.rowCount() - 1, 0, test_name_item)
-
+            flags = QtCore.Qt.NoItemFlags
+            test_name_item.setFlags(flags)
+            self.pattern_table.setItem(self.pattern_table.rowCount() - 1, 0, test_name_item)
 
             pattern_item = self._generate_item(pattern)
-            self.pattern_list.setItem(self.pattern_list.rowCount() - 1, 1, pattern_item)
+            pattern_item.setFlags(flags)
+            self.pattern_table.setItem(self.pattern_table.rowCount() - 1, 1, pattern_item)
 
-            self.pattern_list.setItem(self.pattern_list.rowCount() - 1, 2, pattern)
+            self.pattern_table.setCellWidget(self.pattern_table.rowCount() - 1, 2, self._generate_dropdown_item())
 
     def _generate_dropdown_item(self):
         combo = QtWidgets.QComboBox()
-        combo.addItem()
+        combo.currentIndexChanged.connect(self._table_changed)
+        files = self._collect_patterns_from_file_structure()
+        combo.addItems(files)
+        return combo
+
+    def _table_changed(self, _index: int):
+        self.parent._verify()
 
     def _collect_patterns_from_file_structure(self):
-        project_root = self.project_navigation.project_directory
+        project_root: Path = self.project_navigation.project_directory
         pattern_files = []
-        pattern_files.extend(self._get_pattern_files(project_root.joinpath('pattern', self.project_navigation.active_hardware)))
-        pattern_files.extend(self._get_pattern_files(project_root.joinpath('pattern', self.project_navigation.active_hardware, self.project_navigation.active_base)))
-        pattern_files.extend(self._get_pattern_files(project_root.joinpath('pattern', self.project_navigation.active_hardware, self.project_navigation.active_base, self.project_navigation.active_target)))
+        hw_path = project_root.joinpath('pattern', self.project_navigation.active_hardware)
+        base_path = hw_path.joinpath(self.project_navigation.active_base)
+        target_path = base_path.joinpath(self.project_navigation.active_target)
+        pattern_files.extend(self._get_pattern_files(hw_path))
+        pattern_files.extend(self._get_pattern_files(base_path))
+        pattern_files.extend(self._get_pattern_files(target_path))
 
         return pattern_files
 
-    def _get_pattern_files(self, path: Path):
-        for _, _, files in walk(path):
-            return [file for file in files if Path(file).suffix not in ['.stil', '.wav']]
+    def _get_pattern_files(self, path: Path) -> List[str]:
+        for dir_path, _, files in walk(path):
+            return [str(Path(dir_path, file)) for file in files if file.endswith('.stil') or file.endswith('.wav')]
 
+        return []
 
     def _generate_item(self, content: str = '') -> QtWidgets.QTableWidgetItem:
         item = QtWidgets.QTableWidgetItem()
         item.setText(content)
         return item
 
-    def _does_exist(self, test_name: str) -> bool:
+    def _is_assigned(self, test_name: str) -> bool:
         for index in range(self.pattern_table.rowCount()):
             item = self.pattern_table.item(index, 0)
 
@@ -81,6 +112,38 @@ class PatternTab(QtWidgets.QWidget):
 
         return False
 
+    def validate_pattern_table(self) -> bool:
+        for index in range(self.pattern_table.rowCount()):
+            pattern = self.pattern_table.item(index, 1)
+            combo = self.pattern_table.cellWidget(index, 2)
+            if combo is None:
+                continue
+            text = combo.currentText()
+            if not text:
+                self.feedback.setText(f'pattern: \'{pattern.text()}\' is not assigned yet')
+                return False
+
+        return True
+
+    def collect_pattern(self) -> dict:
+        patterns = {}
+        current_test_name = ''
+        for index in range(self.pattern_table.rowCount()):
+            test_item = self.pattern_table.item(index, 0)
+            if test_item.text():
+                current_test_name = test_item.text()
+
+            pattern_name = self.pattern_table.item(index, 1).text()
+            pattern_path = self.pattern_table.cellWidget(index, 2).currentText()
+
+            patterns.setdefault(current_test_name, []).append((pattern_name, pattern_path))
+
+        return patterns
+
     @property
     def pattern_table(self) -> QtWidgets.QTableWidget:
         return self.parent.pattern_table
+
+    @property
+    def feedback(self) -> QtWidgets.QTableWidget:
+        return self.parent.Feedback

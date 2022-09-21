@@ -348,6 +348,8 @@ class test_proper_generator(BaseTestGenerator):
 
         sec = '    ' + self.do_not_touch_start + '\n'
         if self.definition['patterns']:
+            sec += '    ' + 'import Pattern class if missing' + '\n'
+            sec += '    ' + f'  from {self.definition["name"]}_BC import Patterns' + '\n'
             sec += '    ' + 'get patterns id:' + '\n'
 
             for pattern in self.definition['patterns']:

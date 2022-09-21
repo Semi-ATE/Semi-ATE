@@ -64,6 +64,7 @@ class ViewTestProgramWizard(TestProgramWizard):
                                             dialog.hardware.currentText(),
                                             dialog.base.currentText(),
                                             f'{name}_binning.json'))
+        dialog.load_patterns(program_configuration['patterns'])
         dialog._populate_binning_tree()
         caching_policy = program_configuration['caching_policy']
         # cacheDisable is checked by default, we just check

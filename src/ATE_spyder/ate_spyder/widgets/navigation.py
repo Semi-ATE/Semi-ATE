@@ -753,7 +753,8 @@ class ProjectNavigation(QObject):
     def insert_program(
         self, name, hardware, base, target, usertext, sequencer_typ, temperature,
         definition, owner_name, order, test_target, cache_type, caching_policy,
-        test_ranges, group, instance_count: int, execution_sequence: ExecutionSequenceType
+        test_ranges, group, instance_count: int, execution_sequence: ExecutionSequenceType,
+        patterns: dict
     ):
         for _, test in enumerate(definition):
             base_test_name = test['name']
@@ -761,7 +762,8 @@ class ProjectNavigation(QObject):
 
         Program.add(
             self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
-            temperature, owner_name, order, cache_type, caching_policy, test_ranges, instance_count, execution_sequence
+            temperature, owner_name, order, cache_type, caching_policy, test_ranges, instance_count, execution_sequence,
+            patterns
         )
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
@@ -781,14 +783,14 @@ class ProjectNavigation(QObject):
     def update_program(
         self, name, hardware, base, target, usertext, sequencer_typ, temperature,
         definition, owner_name, test_target, cache_type, caching_policy, test_ranges,
-        instance_count: int, execution_sequence: ExecutionSequenceType
+        instance_count: int, execution_sequence: ExecutionSequenceType, patterns: dict
     ):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
         Program.set_program_validity(self.get_file_operator(), name, True)
         Program.update(
             self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
             temperature, owner_name, cache_type, caching_policy, test_ranges,
-            instance_count, execution_sequence
+            instance_count, execution_sequence, patterns
         )
 
         self._delete_program_sequence(name, owner_name)

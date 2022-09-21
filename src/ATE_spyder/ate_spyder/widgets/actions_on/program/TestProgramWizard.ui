@@ -1431,7 +1431,23 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QTableWidget" name="pattern_table"/>
+          <widget class="QTableWidget" name="pattern_table">
+           <column>
+            <property name="text">
+             <string>Test Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Pattern Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Pattern Path</string>
+            </property>
+           </column>
+          </widget>
          </item>
         </layout>
        </widget>
