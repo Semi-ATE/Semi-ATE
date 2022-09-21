@@ -636,6 +636,10 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
 
+    def get_pattern_list_for_test(self, test_name: str, hardware: str, base: str):
+        test = Test.get(self.get_file_operator(), test_name, hardware, base)
+        return test.definition['patterns']
+
     def is_test_program_valid(self, program_name):
         program = Program.get(self.get_file_operator(), program_name)
         return program.is_valid

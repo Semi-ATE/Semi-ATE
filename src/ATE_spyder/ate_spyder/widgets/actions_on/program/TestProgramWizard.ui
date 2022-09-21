@@ -664,7 +664,7 @@
         <bool>true</bool>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="testProgramTab">
         <attribute name="title">
@@ -1419,6 +1419,19 @@
             </property>
            </column>
           </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="PatternMap">
+        <property name="accessibleName">
+         <string>patternmap</string>
+        </property>
+        <attribute name="title">
+         <string>Pattern Map</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QTableWidget" name="pattern_table"/>
          </item>
         </layout>
        </widget>

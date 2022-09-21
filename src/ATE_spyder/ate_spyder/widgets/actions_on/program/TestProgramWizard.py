@@ -11,6 +11,7 @@ from ate_projectdatabase.Hardware import ParallelismStore
 from ate_spyder.widgets.actions_on.program.Binning.BinningHandler import BinningHandler
 from ate_spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
 from ate_spyder.widgets.actions_on.program.ExecutionWidget import ExecutionWidget
+from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_common.program_utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
                                       ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
@@ -62,6 +63,8 @@ class TestProgramWizard(BaseDialog):
         self.execution_widget = ExecutionWidget(self)
         self.tab_layout.addTab(self.execution_widget, "Execution")
 
+        self.pattern_tab = PatternTab(self)
+
         self._setup()
         self._view()
         self._connect_event_handler()
@@ -102,6 +105,8 @@ class TestProgramWizard(BaseDialog):
         regx = QtCore.QRegExp(valid_integer_regex)
         integer_validator = QtGui.QRegExpValidator(regx, self)
         self.temperature.setValidator(integer_validator)
+
+        self.pattern_tab.setup()
 
     def _connect_event_handler(self):
         self.tab_layout.currentChanged.connect(self._tab_changed_handler)
