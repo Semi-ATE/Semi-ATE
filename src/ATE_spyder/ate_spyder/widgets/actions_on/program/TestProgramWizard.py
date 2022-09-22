@@ -63,7 +63,7 @@ class TestProgramWizard(BaseDialog):
         self.execution_widget = ExecutionWidget(self)
         self.tab_layout.addTab(self.execution_widget, "Execution")
 
-        self.pattern_tab = PatternTab(self, self.project_info)
+        self.pattern_tab = PatternTab(self, self.project_info, self.read_only)
 
         self._setup()
         self._view()

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "asdf_checker_trog",
+    "prog_name": "project_version_10_HW0_PR_asdf_checker_trog",
+    "hardware": "HW0",
+    "base": "PR",
+    "test": "fae",
+    "is_default": true,
+    "is_enabled": false,
+    "is_changed": false
+  }
+]

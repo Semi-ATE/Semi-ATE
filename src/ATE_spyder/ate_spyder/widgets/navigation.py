@@ -1290,3 +1290,38 @@ class ProjectNavigation(QObject):
     def create_test_runner_main(self, file_path: Path, test_configuration: Test):
         hardware_definition = self.get_hardware_definition(test_configuration.hardware)
         _ = self.run_build_tool('generate', 'test_runner', Path(self.project_directory), file_path, test_configuration, hardware_definition)
+
+    def is_pattern_used(self, name: str) -> bool:
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            for _, patterns in program.patterns.items():
+                for pattern_tuple in patterns:
+                    if pattern_tuple[1].endswith(name):
+                        return True
+
+        return False
+
+    def get_dependant_program_for_pattern(self, name: str) -> dict:
+        program_list = []
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            for _, patterns in program.patterns.items():
+                for pattern_tuple in patterns:
+                    if not pattern_tuple[1].endswith(name):
+                        continue
+
+                    program_list.append(program.prog_name)
+
+        return {name: list(set(program_list))}
+
+    def get_program_patterns(self, prog_name: str) -> dict:
+        program = Program.get(self.get_file_operator(), prog_name)
+        pattern_data = {}
+        for _, patterns in program.patterns.items():
+            for pattern_tuple in patterns:
+                if pattern_data.get(pattern_tuple[0]):
+                    continue
+
+                pattern_data[pattern_tuple[0]] = pattern_tuple[1]
+
+        return pattern_data

@@ -1,18 +1,18 @@
 from os import walk
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-from PyQt5 import QtGui
 
 from ate_spyder.widgets.navigation import ProjectNavigation
 
 
 class PatternTab(QtWidgets.QWidget):
-    def __init__(self, parent: QtWidgets.QTabWidget, project_navigation: ProjectNavigation):
+    def __init__(self, parent: QtWidgets.QTabWidget, project_navigation: ProjectNavigation, read_only: bool = False):
         super().__init__(parent=parent)
         self.parent = parent
         self.project_navigation = project_navigation
+        self.read_only = read_only
 
     def setup(self):
         self.pattern_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
@@ -39,7 +39,6 @@ class PatternTab(QtWidgets.QWidget):
                     combo = self.pattern_table.cellWidget(index, 2) 
                     index = combo.findText(tuple[1])
                     combo.setCurrentIndex(index)
-
 
     def add_pattern_items(self, test_name: str):
         if self._is_assigned(test_name):
@@ -68,7 +67,10 @@ class PatternTab(QtWidgets.QWidget):
             pattern_item.setFlags(flags)
             self.pattern_table.setItem(self.pattern_table.rowCount() - 1, 1, pattern_item)
 
-            self.pattern_table.setCellWidget(self.pattern_table.rowCount() - 1, 2, self._generate_dropdown_item())
+            dropdown = self._generate_dropdown_item()
+            if self.read_only:
+                dropdown.setEnabled(flags)
+            self.pattern_table.setCellWidget(self.pattern_table.rowCount() - 1, 2, dropdown)
 
     def _generate_dropdown_item(self):
         combo = QtWidgets.QComboBox()
@@ -136,7 +138,7 @@ class PatternTab(QtWidgets.QWidget):
             pattern_name = self.pattern_table.item(index, 1).text()
             pattern_path = self.pattern_table.cellWidget(index, 2).currentText()
 
-            patterns.setdefault(current_test_name, []).append((pattern_name, pattern_path))
+            patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
 
         return patterns
 

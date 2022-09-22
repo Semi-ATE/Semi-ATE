@@ -25,12 +25,12 @@ sys.path.append(parent_path)
 
 from common import Context
 {% if definition['patterns'] %}
-from dataclass import dataclass
+from dataclasses import dataclass
 
 @dataclass
 class Patterns:
     {% for pattern in definition['patterns'] %}
-    {{pattern}}: str = '{{pattern}}'
+    {{pattern}}: str = '{{definition['name']}}_{{pattern}}'
     {% endfor %}
 {% endif %}
 

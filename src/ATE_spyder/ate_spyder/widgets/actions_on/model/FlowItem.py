@@ -244,6 +244,7 @@ class TestprogramTreeItem(BaseItem):
                 MenuActionTypes.View(),
                 MenuActionTypes.CopyPath(),
                 MenuActionTypes.OpenFile(),
+                MenuActionTypes.CompilePattern(),
                 None,
                 MenuActionTypes.Delete()]
 
@@ -252,6 +253,10 @@ class TestprogramTreeItem(BaseItem):
             menu.insert(2, MenuActionTypes.MoveUp())
 
         return menu
+
+    def compile_pattern_files(self):
+        program_patterns = self.project_info.get_program_patterns(self.text())
+        # TODO: invoke still file compilation
 
     @staticmethod
     def is_valid_functionality(functionality):

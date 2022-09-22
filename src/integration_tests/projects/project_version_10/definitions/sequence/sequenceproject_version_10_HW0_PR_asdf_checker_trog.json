@@ -1,0 +1,48 @@
+[
+  {
+    "owner_name": "HW0_PR_asdf_checker",
+    "prog_name": "project_version_10_HW0_PR_asdf_checker_trog",
+    "test": "fae",
+    "test_order": 0,
+    "definition": {
+      "is_selected": true,
+      "description": "fae_1",
+      "name": "fae",
+      "sbin": "60000",
+      "test_num": 100,
+      "input_parameters": {
+        "Temperature": {
+          "value": "25",
+          "type": "static",
+          "content": "25",
+          "min": -40.0,
+          "max": 170.0,
+          "fmt": ".0f",
+          "unit": "\u00b0C",
+          "exp10": 0,
+          "default": "25",
+          "shmoo": true
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "utl": NaN,
+          "ltl": NaN,
+          "lsl": -Infinity,
+          "usl": Infinity,
+          "Binning": {
+            "bin": 11,
+            "result": 2,
+            "name": "Bin_11",
+            "group": "Contact Fail",
+            "description": ""
+          },
+          "fmt": ".3f",
+          "unit": "\u02fd",
+          "exp10": 0,
+          "test_num": 101
+        }
+      }
+    }
+  }
+]
