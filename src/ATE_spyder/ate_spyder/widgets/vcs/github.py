@@ -7,7 +7,10 @@ Local Git repository initialization.
 """
 
 # Standard library imports
+import os
+import os.path as osp
 import time
+import shutil
 from functools import partial
 from queue import Queue
 from threading import Semaphore
@@ -15,14 +18,14 @@ from typing import Optional, List, Dict, Tuple, Any, Callable, Union
 
 # Qt imports
 from qtpy.QtCore import (Qt, QAbstractListModel, Signal, QObject, QModelIndex,
-                         QThread, QMetaObject)
+                         QThread)
 from qtpy.QtWidgets import (QWidget, QLabel, QLineEdit, QHBoxLayout, QComboBox,
                             QVBoxLayout, QDialog, QCheckBox, QGroupBox,
                             QDialogButtonBox)
 
 # Third-party imports
 import requests
-from pygit2 import init_repository, Repository, reference_is_valid_name
+from pygit2 import clone_repository, RemoteCallbacks, UserPass
 from spyder.api.translations import get_translation
 
 # Local imports
@@ -359,6 +362,9 @@ class GitHubBranchModel(QAbstractListModel, HTTPRequestPerformer):
 
     def rowCount(self, parent: QModelIndex = None) -> int:
         return len(self.branches)
+
+    def __getitem__(self, idx: int) -> GitHubBranch:
+        return self.branches[idx]
 
 
 class GitHubLicenseModel(QAbstractListModel):
@@ -748,3 +754,29 @@ class GitHubInitialization(VCSInitializationProvider):
                     'least 40 characters')
             return False, msg
         return True, None
+
+    def create_repository(self, project_path: str):
+        pat = self.pat_text.text()
+        current_repo_index = self.repo_combobox.currentIndex()
+        branch_idx = self.branch_combobox.currentIndex()
+        repo = self.github_repo_model[current_repo_index - 1]
+        branch = self.github_branch_model[branch_idx]
+
+        clone_url = repo['clone_url']
+        auth_method = 'x-access-token'
+        callbacks = RemoteCallbacks(UserPass(auth_method, pat))
+        new_path = osp.join(project_path, f'repo_clone_{int(time.time())}')
+        clone_repository(clone_url, new_path,
+                         checkout_branch=branch['name'],
+                         callbacks=callbacks)
+
+        for root, dirs, files in os.walk(new_path):
+            plain_root = root.replace(new_path, project_path)
+            for folder in dirs:
+                os.makedirs(osp.join(plain_root, folder), exist_ok=True)
+            for file in files:
+                new_file_path = osp.join(plain_root, file)
+                file_path = osp.join(root, file)
+                shutil.copy2(file_path, new_file_path)
+
+        shutil.rmtree(new_path)
