@@ -53,6 +53,14 @@ class VCSInitializationProvider(QWidget):
         Optional message to display.
     """
 
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self.ate_project_name: str = ''
+
+    def set_ate_project_name(self, name: str):
+        """Set the current ATE project name."""
+        self.ate_project_name = name
+
     @classmethod
     def get_name(cls) -> str:
         """Retrieve the name of the VCS provider."""

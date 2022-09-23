@@ -11,13 +11,14 @@ import time
 from functools import partial
 from queue import Queue
 from threading import Semaphore
-from typing import Optional, List, Dict, Tuple, Any, Callable
+from typing import Optional, List, Dict, Tuple, Any, Callable, Union
 
 # Qt imports
 from qtpy.QtCore import (Qt, QAbstractListModel, Signal, QObject, QModelIndex,
-                         QThread)
+                         QThread, QMetaObject)
 from qtpy.QtWidgets import (QWidget, QLabel, QLineEdit, QHBoxLayout, QComboBox,
-                            QVBoxLayout, QDialog)
+                            QVBoxLayout, QDialog, QCheckBox, QGroupBox,
+                            QDialogButtonBox)
 
 # Third-party imports
 import requests
@@ -28,7 +29,10 @@ from spyder.api.translations import get_translation
 from ate_spyder.widgets.vcs import VCSInitializationProvider
 from ate_spyder.widgets.vcs.schema import (
     GitHubUser, GitHubOrganization, GitHubOrganizationInfo,
-    GitHubRepository, GitHubBranch)
+    GitHubRepository, GitHubBranch, GitHubLicenses)
+
+# Spyder imports
+from spyder.widgets.simplecodeeditor import SimpleCodeEditor
 
 # Localization
 _ = get_translation('spyder')
@@ -39,22 +43,42 @@ BASE_HEADERS = {
     "Accept": "application/vnd.github+json"
 }
 
+ReqResultError = Tuple[Any, Optional[str]]
+ReqResultStatusErr = Tuple[Any, Optional[str], int]
 
-def perform_http_call(url: str, headers: Dict) -> Tuple[Any, Optional[str]]:
+
+def perform_http_call(
+        url: str, headers: Dict,
+        return_status_code: bool = False,
+        verb: str = 'GET',
+        body: Optional[dict] = None) -> Union[
+            ReqResultError, ReqResultStatusErr]:
     try:
-        req = requests.get(url, headers=headers)
+        req = requests.request(verb, url, headers=headers, json=body)
     except requests.ConnectionError as e:
         msg = e.strerror
-        return None, msg
+        ret = None, msg
+        if return_status_code:
+            ret += (-1,)
+        return ret
     except requests.exceptions.InvalidHeader:
-        return None, _('Invalid token format')
+        ret = None, _('Invalid token format')
+        if return_status_code:
+            ret += (400,)
+        return ret
 
     try:
         req.raise_for_status()
     except requests.HTTPError as e:
-        return None, e.strerror
+        ret = None, e.strerror
+        if return_status_code:
+            ret += (req.status_code,)
+        return ret
 
-    return req.json(), None
+    ret = req.json(), None
+    if return_status_code:
+        ret += (req.status_code,)
+    return ret
 
 
 class HTTPThreadRequestThread(QThread):
@@ -63,16 +87,25 @@ class HTTPThreadRequestThread(QThread):
     def __init__(self, parent: Optional[QObject] = None,
                  url: Optional[str] = None,
                  headers: Optional[Dict] = None,
-                 queue: Optional[Queue] = None) -> None:
+                 queue: Optional[Queue] = None,
+                 return_status_code: bool = False,
+                 verb: str = 'GET',
+                 body: Optional[dict] = None) -> None:
         super().__init__(parent)
         self.url = url
         self.headers = headers
         self.queue = queue
+        self.return_status_code = return_status_code
+        self.verb = verb
+        self.body = body
 
     def run(self) -> None:
-        print('**************************', self.url)
-        body, err_msg = perform_http_call(self.url, self.headers)
-        self.queue.put((body, err_msg))
+        print('**************************', self.verb, self.url)
+        ret = perform_http_call(
+            self.url, self.headers, self.return_status_code,
+            self.verb, self.body)
+        self.queue.put(ret)
+
 
 class HTTPRequestPerformer:
     MAX_CONCURRENT_REQUESTS = 5
@@ -83,21 +116,25 @@ class HTTPRequestPerformer:
 
     def perform_http_call(self, url: str, headers: Dict,
                           callback: Callable[[Any, Optional[str]], Any],
-                          queue: Optional[Queue] = None):
+                          queue: Optional[Queue] = None,
+                          return_status_code: bool = False,
+                          verb: str = 'GET',
+                          body: Optional[dict] = None):
         with self.http_semaphore:
             use_queue = queue or Queue()
-            thread = HTTPThreadRequestThread(None, url, headers, use_queue)
+            thread = HTTPThreadRequestThread(
+                None, url, headers, use_queue, return_status_code, verb, body)
             thread.start()
             self.http_threads |= {thread}
 
             if queue is None:
                 print(f'Awaiting response for {url}')
-                msg, err_msg = use_queue.get()
+                ret = use_queue.get()
                 print(f'Got response for {url}')
 
         if queue is None:
             print(f'Calling {callback}')
-            callback(msg, err_msg)
+            callback(*ret)
 
 
 class GitHubOrgRetrieverThread(QThread, HTTPRequestPerformer):
@@ -167,7 +204,8 @@ class GitHubOrgModel(QAbstractListModel, HTTPRequestPerformer):
         user_org = {
             'login': user['login'],
             'repos_url': f'{GITHUB_API_URL}/user/repos'
-                         '?affiliation=owner,collaborator&sort=pushed'
+                         '?affiliation=owner,collaborator&sort=pushed',
+            'members_can_create_private_repositories': True
         }
         self.organizations.append(user_org)
 
@@ -259,7 +297,7 @@ class GitHubRepoModel(QAbstractListModel, HTTPRequestPerformer):
            if row == 0:
                 return _('Create new repository...')
 
-           repo = self.repositories[row]
+           repo = self.repositories[row - 1]
            repo_name = repo['full_name']
            return repo_name
 
@@ -269,6 +307,11 @@ class GitHubRepoModel(QAbstractListModel, HTTPRequestPerformer):
     def clear(self):
         self.beginResetModel()
         self.repositories = []
+        self.endResetModel()
+
+    def prepend_repository(self, repo: GitHubRepository):
+        self.beginResetModel()
+        self.repositories = [repo] + self.repositories
         self.endResetModel()
 
     def __getitem__(self, index: int) -> GitHubRepository:
@@ -318,6 +361,216 @@ class GitHubBranchModel(QAbstractListModel, HTTPRequestPerformer):
         return len(self.branches)
 
 
+class GitHubLicenseModel(QAbstractListModel):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
+        super().__init__(parent)
+        self.index_mapping = list(GitHubLicenses.keys())
+
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> str:
+        row = index.row()
+        if row == 0:
+            if role == Qt.DisplayRole:
+                return _('No license specified')
+            return
+
+        license_name = self.index_mapping[row - 1]
+        if role == Qt.DisplayRole:
+           return license_name
+        elif role == Qt.ToolTipRole:
+            license_identifier = GitHubLicenses[license_name]
+            return license_identifier
+
+    def rowCount(self, parent: QModelIndex = None) -> int:
+        return len(GitHubLicenses) + 1
+
+    def __getitem__(self, idx: int) -> Optional[str]:
+        if idx == 0:
+            return None
+
+        license_name = self.index_mapping[idx - 1]
+        license_identifier = GitHubLicenses[license_name]
+        return license_identifier
+
+
+class GitHubNewRepoDialog(QDialog, HTTPRequestPerformer):
+    sig_dialog_enabled = Signal(bool)
+    sig_dlg_complete = Signal()
+
+    def __init__(self, parent: Optional[QWidget] = None,
+                 org: Optional[GitHubOrganization] = None,
+                 repo_name: Optional[str] = None,
+                 headers: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(parent)
+        HTTPRequestPerformer.__init__(self)
+
+        self.org = org
+        self.headers = headers
+        self.new_repo_info: Optional[GitHubRepository] = None
+
+        self.setWindowTitle(_('New GitHub repository'))
+
+        # Organization name
+        org_label = QLabel(_('Organization name'))
+        org_name = QLabel(org['login'])
+
+        org_layout = QHBoxLayout()
+        org_layout.addWidget(org_label)
+        org_layout.addWidget(org_name)
+
+        # Repository name
+        repo_name_label = QLabel(_('Repository name'))
+        self.repo_name_text = QLineEdit()
+
+        repo_name_layout = QHBoxLayout()
+        repo_name_layout.addWidget(repo_name_label)
+        repo_name_layout.addWidget(self.repo_name_text)
+
+        # Repository URL
+        repo_url_label = QLabel(_('Homepage (optional)'))
+        self.repo_url_text = QLineEdit()
+
+        repo_url_layout = QHBoxLayout()
+        repo_url_layout.addWidget(repo_url_label)
+        repo_url_layout.addWidget(self.repo_url_text)
+
+        # Repository description
+        repo_description_group = QGroupBox(_('Description (optional)'))
+        self.repo_description_text = SimpleCodeEditor(self)
+
+        repo_description_layout = QHBoxLayout()
+        repo_description_layout.addWidget(self.repo_description_text)
+        repo_description_group.setLayout(repo_description_layout)
+
+        # Repository visibility
+        self.repo_private_check = QCheckBox(_('Private repository'))
+
+        # Initialize README
+        self.repo_init_readme_check = QCheckBox(_('Initialize with README'))
+
+        # Repository license template
+        repo_license_label = QLabel(_('License (optional)'))
+        self.repo_license_combobox = QComboBox()
+
+        repo_license_layout = QHBoxLayout()
+        repo_license_layout.addWidget(repo_license_label)
+        repo_license_layout.addWidget(self.repo_license_combobox)
+
+        # Feedback label
+        self.status_msg = QLabel()
+
+        # Dialog layout
+        layout = QVBoxLayout()
+        layout.addLayout(org_layout)
+        layout.addLayout(repo_name_layout)
+        layout.addLayout(repo_url_layout)
+        layout.addWidget(repo_description_group)
+        layout.addWidget(self.repo_private_check)
+        layout.addWidget(self.repo_init_readme_check)
+        layout.addLayout(repo_license_layout)
+        layout.addWidget(self.status_msg)
+        self.setLayout(layout)
+
+        # Setup, models and initialization
+        self.add_button_box(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+
+        self.license_model = GitHubLicenseModel(self)
+        self.repo_license_combobox.setModel(self.license_model)
+
+        self.repo_name_text.textChanged.connect(self.check_repo_name)
+        self.repo_name_text.setText(repo_name)
+
+        self.repo_description_text.setup_editor(language='md')
+
+        allow_private = org.get(
+            'members_can_create_private_repositories', False)
+        self.repo_private_check.setChecked(False)
+        self.repo_private_check.setVisible(allow_private)
+
+        self.sig_dlg_complete.connect(self.accept)
+
+    def add_button_box(self, stdbtns):
+        """Create dialog button box and add it to the dialog layout"""
+        self.bbox = QDialogButtonBox(stdbtns)
+        self.bbox.accepted.connect(self.create_repository)
+        self.bbox.rejected.connect(self.reject)
+        btnlayout = QHBoxLayout()
+        btnlayout.addStretch(1)
+        btnlayout.addWidget(self.bbox)
+        self.layout().addLayout(btnlayout)
+
+        ok_button = self.bbox.button(QDialogButtonBox.Ok)
+        self.sig_dialog_enabled.connect(ok_button.setEnabled)
+
+    def check_repo_name(self, repo_name: str):
+        if repo_name == '':
+            self.status_msg.setText(_('Repository name must be non-empty'))
+            self.sig_dialog_enabled.emit(False)
+            return
+
+        def gather_repo_existence(body: Optional[GitHubRepository],
+                                  err_msg: Optional[str],
+                                  status_code: int):
+            if status_code == 404:
+                self.status_msg.setText(_('Repository name is available'))
+                self.sig_dialog_enabled.emit(True)
+            elif status_code == 200:
+                self.status_msg.setText(
+                    _('A repository named %s already exists' % repo_name))
+                self.sig_dialog_enabled.emit(False)
+            elif err_msg is not None:
+                self.status_msg.setText(err_msg)
+                self.sig_dialog_enabled.emit(False)
+            else:
+                self.status_msg.setText(_('An unexpected error has occurred'))
+                self.sig_dialog_enabled.emit(False)
+
+        api_url = f'{GITHUB_API_URL}/repos/{self.org["login"]}/{repo_name}'
+        self.perform_http_call(
+            api_url, self.headers, gather_repo_existence,
+            return_status_code=True)
+
+    def create_repository(self) -> None:
+        repo_name = self.repo_name_text.text()
+        repo_url = self.repo_url_text.text() or None
+        repo_description = self.repo_description_text.toPlainText() or None
+        repo_is_private = self.repo_private_check.isChecked()
+        repo_init_readme = self.repo_init_readme_check.isChecked()
+        license_idx = self.repo_license_combobox.currentIndex()
+        repo_license_identifier = self.license_model[license_idx]
+
+        body = {
+            'name': repo_name,
+            'description': repo_description,
+            'homepage': repo_url,
+            'private': repo_is_private,
+            'auto_init': repo_init_readme,
+            'license_template': repo_license_identifier
+        }
+
+        def handle_repo_creation(body: Optional[GitHubRepository],
+                                 err_msg: Optional[str],
+                                 status_code: int):
+            print('?????????????????????', body)
+            if err_msg is not None:
+                self.status_msg.setText(err_msg)
+
+            if status_code == 201:
+                self.new_repo_info = body
+                self.accept()
+            else:
+                print('***********************', body, status_code)
+
+        print(body)
+        post_url = self.org['repos_url'].split('?')[0]
+        # post_url = f'{GITHUB_API_URL}/orgs/{self.org["login"]}/repos'
+        self.perform_http_call(post_url, self.headers,
+                               handle_repo_creation, return_status_code=True,
+                               verb='POST', body=body)
+
+    def accept(self) -> None:
+        print('.................. Accepting')
+        return super().accept()
+
 class GitHubInitialization(VCSInitializationProvider):
     """Widget used to clone/create a git repository hosted in GitHub."""
 
@@ -358,6 +611,9 @@ class GitHubInitialization(VCSInitializationProvider):
         branch_layout = QHBoxLayout()
         branch_layout.addWidget(branch_label)
         branch_layout.addWidget(self.branch_combobox)
+
+        # Create new repository dialog
+        self.create_new_repo_dlg: Optional[GitHubNewRepoDialog] = None
 
         # Widget layout
         layout = QVBoxLayout()
@@ -440,13 +696,21 @@ class GitHubInitialization(VCSInitializationProvider):
 
     def org_selected(self, index: int):
         print('---------------------------', index)
+        if not self.org_combobox.isEnabled():
+            return
         org = self.github_org_model[index]
         self.repo_combobox.setEnabled(True)
         self.github_repo_model.set_repositories(org, self.headers)
         self.select_first_defined_repo = True
 
     def repo_selected(self, index: int):
-        print('////////////////////', index)
+        if index < 0:
+            return
+
+        print('////////////////////', index, self.select_first_defined_repo)
+        if not self.repo_combobox.isEnabled():
+            return
+
         if index == 0:
             if self.select_first_defined_repo:
                 self.select_first_defined_repo = False
@@ -456,11 +720,26 @@ class GitHubInitialization(VCSInitializationProvider):
             self.github_branch_model.clear()
             self.branch_combobox.setEnabled(False)
             # Create new repository
-            return
+            org = self.github_org_model[self.org_combobox.currentIndex()]
+            self.create_new_repo_dlg = GitHubNewRepoDialog(
+                self, org, self.ate_project_name, self.headers)
+            self.create_new_repo_dlg.finished.connect(
+                self.new_repository_created)
+            self.create_new_repo_dlg.open()
+        else:
+            self.select_first_defined_repo = False
+            repo = self.github_repo_model[index - 1]
+            self.branch_combobox.setEnabled(True)
+            self.github_branch_model.set_branches(repo, self.headers)
 
-        repo = self.github_repo_model[index]
-        self.branch_combobox.setEnabled(True)
-        self.github_branch_model.set_branches(repo, self.headers)
+    def new_repository_created(self, status: int):
+        if status == QDialog.Accepted:
+            new_repo = self.create_new_repo_dlg.new_repo_info
+            if new_repo:
+                # self.repo_combobox.setCurrentIndex(-1)
+                self.select_first_defined_repo = True
+                self.github_repo_model.prepend_repository(new_repo)
+                # self.repo_combobox.setCurrentIndex(0)
 
     def validate(self) -> Tuple[bool, Optional[str]]:
         pat = self.pat_text.text()

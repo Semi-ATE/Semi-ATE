@@ -10,6 +10,7 @@ Some Git service repository initialization schemas.
 from __future__ import annotations
 
 import sys
+from types import MappingProxyType
 from typing import Optional, Tuple, List
 
 # PEP 589 and 544 are available from Python 3.8 onwards
@@ -17,6 +18,28 @@ if sys.version_info >= (3, 8):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
+
+
+GitHubLicenses = MappingProxyType({
+    'Apache license 2.0': 'apache-2.0',
+    'Boost Software License 1.0': 'bsl-1.0',
+    'BSD 2-clause "Simplified" license': 'bsd-2-clause',
+    'BSD 3-clause "New" or "Revised" license': 'bsd-3-clause',
+    'BSD 3-clause Clear license': 'bsd-3-clause-clear',
+    'Eclipse Public License 1.0': 'epl-1.0',
+    'Eclipse Public License 2.0': 'epl-2.0',
+    'European Union Public License 1.1': 'eupl-1.1',
+    'GNU Affero General Public License v3.0': 'agpl-3.0',
+    'GNU General Public License v2.0': 'gpl-2.0',
+    'GNU General Public License v3.0': 'gpl-3.0',
+    'GNU Lesser General Public License v2.1': 'lgpl-2.1',
+    'GNU Lesser General Public License v3.0': 'lgpl-3.0',
+    'Microsoft Public License': 'ms-pl',
+    'MIT': 'mit',
+    'Mozilla Public License 2.0': 'mpl-2.0',
+    'The Unlicense': 'unlicense',
+    'zLib License': 'zlib',
+})
 
 
 class GitHubUser(TypedDict):

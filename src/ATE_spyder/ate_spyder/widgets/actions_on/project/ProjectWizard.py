@@ -183,6 +183,7 @@ class ProjectWizard(QDialog):
 
         # Validate VCS widget
         if self.vcs_conf_widget is not None:
+            self.vcs_conf_widget.set_ate_project_name(project_name)
             vcs_valid, msg = self.vcs_conf_widget.validate()
             if not vcs_valid:
                 feedback_text = msg
