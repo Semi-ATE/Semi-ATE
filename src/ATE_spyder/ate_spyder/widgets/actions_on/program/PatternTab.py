@@ -35,8 +35,8 @@ class PatternTab(QtWidgets.QWidget):
                 continue
 
             for tuple in assigned_tuples:
-                if tuple[0] == pattern_name:
-                    combo = self.pattern_table.cellWidget(index, 2) 
+                if tuple[0] == f'{current_test_name}_{pattern_name}':
+                    combo = self.pattern_table.cellWidget(index, 2)
                     index = combo.findText(tuple[1])
                     combo.setCurrentIndex(index)
 
@@ -96,7 +96,7 @@ class PatternTab(QtWidgets.QWidget):
 
     def _get_pattern_files(self, path: Path) -> List[str]:
         for dir_path, _, files in walk(path):
-            return [str(Path(dir_path, file)) for file in files if file.endswith('.stil') or file.endswith('.wav')]
+            return [str(Path(dir_path, file).relative_to(self.project_navigation.project_directory)) for file in files if file.endswith('.stil') or file.endswith('.wav')]
 
         return []
 

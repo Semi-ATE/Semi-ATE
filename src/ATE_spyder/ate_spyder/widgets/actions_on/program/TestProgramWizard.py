@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import re
 from typing import Dict
 
@@ -12,6 +13,7 @@ from ate_spyder.widgets.actions_on.program.Binning.BinningHandler import Binning
 from ate_spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinTableGenerator
 from ate_spyder.widgets.actions_on.program.ExecutionWidget import ExecutionWidget
 from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
+from ate_spyder.widgets.actions_on.program.SignalToChannelTab import SignalToChannelTab
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_common.program_utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
                                       ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
@@ -64,6 +66,7 @@ class TestProgramWizard(BaseDialog):
         self.tab_layout.addTab(self.execution_widget, "Execution")
 
         self.pattern_tab = PatternTab(self, self.project_info, self.read_only)
+        self.signal_to_channel = SignalToChannelTab(self, self.read_only)
 
         self._setup()
         self._view()
@@ -107,6 +110,7 @@ class TestProgramWizard(BaseDialog):
         self.temperature.setValidator(integer_validator)
 
         self.pattern_tab.setup()
+        self.signal_to_channel.setup()
 
     def _connect_event_handler(self):
         self.tab_layout.currentChanged.connect(self._tab_changed_handler)
@@ -885,6 +889,9 @@ class TestProgramWizard(BaseDialog):
     def load_patterns(self, assigned_patterns: dict):
         self.pattern_tab.fill_pattern_table([test.get_test_base() for test in self._custom_parameter_handler.get_tests()], assigned_patterns)
 
+    def load_signal_to_channel_table(self, sig_ch_yml_file: Path):
+        self.signal_to_channel.load_table(sig_ch_yml_file)
+
     def _insert_tests_to_selected_list(self):
         self.selectedTests.blockSignals(True)
         self.selectedTests.setRowCount(len(self._custom_parameter_handler.get_test_names()))
@@ -1221,7 +1228,17 @@ class TestProgramWizard(BaseDialog):
                                                          self.base.currentText(),
                                                          f'{self.prog_name}_binning.json'))
 
+        self.signal_to_channel.generate_yml_file(
+            self._program_path())
+
         self.accept()
+
+    def _program_path(self) -> Path:
+        return Path(self.project_info.project_directory,
+                    self.project_info.project_name,
+                    self.hardware.currentText(),
+                    self.base.currentText(),
+                    f'{self.prog_name}.yaml')
 
     def _get_test_program_infos(self):
         owner = f"{self.hardware.currentText()}_{self.base.currentText()}_{self.target.currentText()}_{self.owner_section_name}"

@@ -25,6 +25,6 @@ class MigrationVersion10(MigratorBase):
     def _migrate_program(self, program_folder: str):
         programs = self.read_configuration(program_folder)
         for program in programs:
-            program['patterns'] = []
+            program['patterns'] = {}
 
         self.write_configuration(program_folder, programs)

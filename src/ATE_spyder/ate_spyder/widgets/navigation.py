@@ -844,6 +844,7 @@ class ProjectNavigation(QObject):
         self._remove_file(self._generate_program_path(program_name))
         self._remove_file(self._generate_bin_table_path(program_name))
         self._remove_file(self._generate_strategy_file_path(program_name))
+        self._remove_file(self._generate_signal_to_channel_path(program_name))
 
         self._remove_testprogram_form_group_list(program_name, owner_name)
 
@@ -876,6 +877,9 @@ class ProjectNavigation(QObject):
 
     def _generate_path_for_program(self, program_name: str) -> Path:
         return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name)
+
+    def _generate_signal_to_channel_path(self, program_name):
+        return self._generate_path_for_program(f'{program_name}.yaml')
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
@@ -1317,6 +1321,10 @@ class ProjectNavigation(QObject):
     def get_program_patterns(self, prog_name: str) -> dict:
         program = Program.get(self.get_file_operator(), prog_name)
         pattern_data = {}
+
+        if not program.patterns:
+            return pattern_data
+
         for _, patterns in program.patterns.items():
             for pattern_tuple in patterns:
                 if pattern_data.get(pattern_tuple[0]):
