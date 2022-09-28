@@ -176,8 +176,8 @@ def test_create_new_project_cancel_before_enter_name(project, qtbot):
 
 
 def test_create_new_project_ok(project, qtbot):
-    project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
-    qtbot.mouseClick(project.OKButton, QtCore.Qt.LeftButton)
+    # project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
+    qtbot.mouseClick(project.ok_button, QtCore.Qt.LeftButton)
 
 
 def test_check_settings_quality_grade(project_navigation):

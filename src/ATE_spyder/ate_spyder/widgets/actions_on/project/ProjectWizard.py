@@ -152,6 +152,7 @@ class ProjectWizard(QDialog):
         self.layout().addLayout(btnlayout)
 
         ok_button = self.bbox.button(QDialogButtonBox.Ok)
+        self.ok_button = ok_button
         self.sig_dialog_enabled.connect(ok_button.setEnabled)
 
     def provider_changed(self, index: int):
