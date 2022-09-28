@@ -1,18 +1,20 @@
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.model.BaseFolderItem import BaseFolderItem
+
+from ate_spyder.widgets.navigation import ProjectNavigation
 from PyQt5 import QtCore
 
 import os
 
 
 class FileItem(BaseFolderItem):
-    def __init__(self, name, path, project_info, parent=None):
+    def __init__(self, name: str, path: str, project_info: ProjectNavigation, parent=None):
         super().__init__(name, path, project_info, parent=parent)
         self.path = path
         self.name = name
         self.hide()
 
-    def set_pattern_directory(self, hardware, base):
+    def set_pattern_directory(self, hardware: str, base: str):
         self._show()
         path = os.path.join(self.path, hardware, base, self.name)
         self.file_system_operator.path = path

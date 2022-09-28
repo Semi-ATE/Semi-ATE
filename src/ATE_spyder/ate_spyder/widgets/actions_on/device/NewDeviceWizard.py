@@ -231,7 +231,7 @@ class NewDeviceWizard(BaseDialog):
         at the parent level is also changed, the dies in device list is cleared,
         and the available dies is reloaded.
         '''
-        self.parent.hardware_activated.emit(self.hardware.currentText())
+        self.project_info.parent.hardware_activated.emit(self.hardware.currentText())
 
         self.diesInDevice.clear()
         self.existing_dies = self.project_info.get_active_die_names_for_hardware(self.project_info.active_hardware)
