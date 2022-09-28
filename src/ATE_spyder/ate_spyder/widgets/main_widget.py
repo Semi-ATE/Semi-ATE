@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 from functools import partial
 from typing import Type, Dict
-
+from ate_spyder.widgets.actions_on.utils.MenuDialog import StandardDialog
 # Qt-related imports
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
@@ -235,21 +235,33 @@ $ sammy migrate\n
 Running the generate all command shall refresh the generated code based on the template files\n
 $ sammy generate all\n
                     ''')
-                    except Exception as e:
-                        from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
-                        report_exception(self.project_info.parent, "migration required")
-                        self.close_project()
+                    except Exception as _:
+                        diag = StandardDialog(self.project_info.parent, 'migrate the project automatically ?')
+                        if not diag.exec_():
+                            from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
+                            report_exception(self.project_info.parent, "migration required")
+                            self.close_project()
+                        else:
+                            self.project_info.run_build_tool('migrate', '', project_path)
+                            self.project_info.run_build_tool('generate', 'all', project_path)
+                            self.open_project(project_path, parent_instance)
+                            self.init_project()
+                            return True
+
                         return False
 
-                self.toolbar(self.project_info)
-                self.set_tree()
-                self.init_done.emit()
+                self.init_project()
                 return True
             else:
                 print(f'project type is not: {ATEProject.ID}')
 
         return False
 
+    def init_project(self):
+        self.toolbar(self.project_info)
+        self.set_tree()
+        self.init_done.emit()
+        
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
         with open(config_file_path, 'r') as file:
             for line in file.readlines():
