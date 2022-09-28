@@ -1,5 +1,5 @@
 semi-ate-common
 semi-ate-plugins
-# pluggy
+# pluggy # pypi to conda complains on this one 
 requests
 pydantic
