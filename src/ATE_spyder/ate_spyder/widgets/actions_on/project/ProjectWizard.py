@@ -173,6 +173,7 @@ class ProjectWizard(QDialog):
 
     def validate(self):
         is_valid = True
+        check_vcs = self.vcs_checkbox.isChecked()
         self.feedback_label.setText('')
 
         # Validate project name
@@ -182,7 +183,7 @@ class ProjectWizard(QDialog):
             is_valid = False
 
         # Validate VCS widget
-        if self.vcs_conf_widget is not None:
+        if check_vcs and self.vcs_conf_widget is not None:
             self.vcs_conf_widget.set_ate_project_name(project_name)
             vcs_valid, msg = self.vcs_conf_widget.validate()
             if not vcs_valid:
@@ -203,7 +204,8 @@ class ProjectWizard(QDialog):
         self.feedback_label.setText(text)
 
     def accept(self) -> None:
-        if self.vcs_conf_widget is not None:
+        check_vcs = self.vcs_checkbox.isChecked()
+        if check_vcs and self.vcs_conf_widget is not None:
             self.vcs_conf_widget.create_repository(self.project_path)
 
         project_name = self.project_text.text()
@@ -217,6 +219,7 @@ class ProjectWizard(QDialog):
         self.project_info.add_settings(
             quality_grade=configuration['quality_grade']
         )
+        self.setResult(QDialog.Accepted)
         return super().accept()
 
     def _get_current_configuration(self):

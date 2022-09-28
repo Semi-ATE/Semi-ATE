@@ -164,7 +164,9 @@ def model(project_navigation):
 
 @pytest.fixture
 def project(qtbot, project_navigation):
-    dialog = ProjectWizard(project_navigation, Path(__file__).parent.joinpath(PROJECT_NAME))
+    dialog = ProjectWizard(
+        None, {}, project_navigation,
+        Path(__file__).parent.joinpath(PROJECT_NAME))
     qtbot.addWidget(dialog)
     return dialog
 
@@ -498,7 +500,7 @@ def test_mpr_checkbox_of_output_parameter(project_navigation, qtbot):
     y_pos_mpr = output_parameter_table_view.rowViewportPosition(0);
     qtbot.mouseClick(output_parameter_table_view.viewport(), QtCore.Qt.LeftButton, pos=QtCore.QPoint(x_pos_mpr, y_pos_mpr))
     qtbot.keyClick( output_parameter_table_view.viewport(), QtCore.Qt.Key_Space );
-    
+
     # now mpr should be checked
     check_state = MPR_item.data(QtCore.Qt.CheckStateRole)
     assert( check_state == QtCore.Qt.Checked)
