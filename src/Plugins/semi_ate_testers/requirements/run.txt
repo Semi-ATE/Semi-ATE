@@ -1,4 +1,5 @@
 semi-ate-common
 semi-ate-plugins
-pluggy
+# pluggy
 requests
+pydantic
