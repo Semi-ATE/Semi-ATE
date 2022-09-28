@@ -167,17 +167,21 @@ def project(qtbot, project_navigation):
     dialog = ProjectWizard(
         None, {}, project_navigation,
         Path(__file__).parent.joinpath(PROJECT_NAME))
+    dialog.open()
+    dialog.project_text.setText(PROJECT_NAME)
     qtbot.addWidget(dialog)
     return dialog
 
 
 def test_create_new_project_cancel_before_enter_name(project, qtbot):
-    qtbot.mouseClick(project.CancelButton, QtCore.Qt.LeftButton)
+    qtbot.mouseClick(project.cancel_button, QtCore.Qt.LeftButton)
 
 
 def test_create_new_project_ok(project, qtbot):
     # project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
-    qtbot.mouseClick(project.ok_button, QtCore.Qt.LeftButton)
+    with qtbot.waitSignal(project.finished, timeout=20000):
+        # qtbot.wait(20000)
+        qtbot.mouseClick(project.ok_button, QtCore.Qt.LeftButton)
 
 
 def test_check_settings_quality_grade(project_navigation):

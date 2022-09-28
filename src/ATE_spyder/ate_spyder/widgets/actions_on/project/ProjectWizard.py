@@ -152,6 +152,7 @@ class ProjectWizard(QDialog):
         self.layout().addLayout(btnlayout)
 
         ok_button = self.bbox.button(QDialogButtonBox.Ok)
+        self.cancel_button = self.bbox.button(QDialogButtonBox.Cancel)
         self.ok_button = ok_button
         self.sig_dialog_enabled.connect(ok_button.setEnabled)
 
@@ -217,6 +218,7 @@ class ProjectWizard(QDialog):
         # config step shall be done first after the re-initialization
         # of the project_info is done
         configuration = self._get_current_configuration()
+        print(configuration)
         self.project_info.add_settings(
             quality_grade=configuration['quality_grade']
         )
