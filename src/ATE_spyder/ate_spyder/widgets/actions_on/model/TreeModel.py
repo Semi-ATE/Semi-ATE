@@ -1,3 +1,4 @@
+from ate_spyder.widgets.navigation import ProjectNavigation
 from qtpy import QtCore
 from qtpy import QtGui
 from qtpy.QtCore import Signal
@@ -8,8 +9,6 @@ from ate_spyder.widgets.constants import TableIds
 from ate_semiateplugins.pluginmanager import get_plugin_manager
 from ate_spyder.widgets.actions_on.model.sections.TestSection import TestSection
 
-from ate_spyder.widgets.actions_on.model.FileItemHandler import FileItemHandler
-
 
 QualificationFlow = 'qualification'
 
@@ -19,7 +18,7 @@ class TreeModel(QtGui.QStandardItemModel):
     delete_file = Signal(str)
     edit_test_params = Signal(str)
 
-    def __init__(self, project_info, parent=None):
+    def __init__(self, project_info: ProjectNavigation, parent=None):
         super().__init__(parent)
         self.parent = parent
         self.setHorizontalHeaderLabels([self.tr("Project")])
@@ -39,7 +38,6 @@ class TreeModel(QtGui.QStandardItemModel):
         self.doc_path = os.path.join(self.project_info.project_directory, "doc")
         self.base_path = os.path.join(self.project_info.project_directory, self.project_info.project_name)
 
-        self.file_item_handler = FileItemHandler(self.project_info, self.base_path)
         self._setup()
         self._connect_action_handler()
 
@@ -110,6 +108,9 @@ class TreeModel(QtGui.QStandardItemModel):
         self.flows.update()
         self._update_tests()
 
+        self.pattern_section.removeRows(0, self.pattern_section.row_count())
+        self.pattern_observer._init_section()
+
         if rebuild_flows:
             self._reset_flows(self.project_info)
 
@@ -139,7 +140,7 @@ class TreeModel(QtGui.QStandardItemModel):
         self._setup_definitions()
         self._setup_documentation()
         self._setup_flow_items(self.project_info)
-        self._setup_file_collector_items()
+        self._setup_pattern()
         self._setup_protocol_item()
         self._setup_tests()
         self.appendRow(self.root_item)
@@ -210,14 +211,24 @@ class TreeModel(QtGui.QStandardItemModel):
         from ate_spyder.widgets.actions_on.documentation.DocumentationObserver import DocumentationObserver
         from ate_spyder.widgets.actions_on.documentation.DocumentationItem import DocumentationItem
         # TODO: do we need a sorting-order (alphabetic, etc...) ?
-        self.documentation_section = DocumentationItem("documentation", self.doc_path, self.project_info, is_editable=False)
-        self.doc_observer = DocumentationObserver(self.doc_path, self.documentation_section)
+        documentation_section = DocumentationItem("documentation", self.doc_path, self.project_info, is_editable=False)
+        self.doc_observer = DocumentationObserver(self.doc_path, documentation_section)
         self.doc_observer.start_observer()
 
-        self.root_item.insert_item(self.documentation_section)
+        self.root_item.insert_item(documentation_section)
 
     def _update_definitions(self):
         self.definition_section.update()
+
+    def _setup_pattern(self):
+        from ate_spyder.widgets.actions_on.documentation.DocumentationObserver import DocumentationObserver
+        from ate_spyder.widgets.actions_on.patterns.PatternItem import PatternItem
+        pattern_path = self.project_info.project_directory.joinpath('pattern')
+        self.pattern_section = PatternItem("pattern", str(pattern_path), self.project_info, is_editable=False)
+        self.pattern_observer = DocumentationObserver(str(pattern_path), self.pattern_section)
+        self.pattern_observer.start_observer()
+
+        self.root_item.appendRow(self.pattern_section)
 
     def _setup_definitions(self):
         from ate_spyder.widgets.actions_on.hardwaresetup.HardwaresetupItem import HardwaresetupItem
@@ -285,12 +296,6 @@ class TreeModel(QtGui.QStandardItemModel):
                 self.product.set_children_hidden(True)
 
     def _update_file_collector_section(self):
-        for folder_section in self.file_item_handler.items():
-            if len(self.target) and len(self.base):
-                folder_section.set_pattern_directory(self.hardware, self.base)
-            else:
-                folder_section.hide()
-
         self._reset_flows(self.project_info)
 
     def _update_die_section(self):
@@ -338,18 +343,14 @@ class TreeModel(QtGui.QStandardItemModel):
 
     def clean_up(self):
         self.doc_observer.stop_observer()
+        self.pattern_observer.stop_observer()
         self.tests_section.observer.stop_observer()
-        self.file_item_handler.clean_up()
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         self.clean_up()
-
-    def _setup_file_collector_items(self):
-        for file_item in self.file_item_handler.items():
-            self.root_item.appendRow(file_item)
 
     def _setup_protocol_item(self):
         from ate_spyder.widgets.actions_on.protocol.ProtocolItem import ProtocolItem
