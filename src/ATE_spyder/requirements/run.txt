@@ -6,3 +6,5 @@ semi-ate-common
 semi-ate-plugins
 semi-ate-project-database
 semi-ate-sammy
+pygit2
+requests
