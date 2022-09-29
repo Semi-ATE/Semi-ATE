@@ -65,7 +65,7 @@ class dummy_test_case(DutTestCaseBase):
 
 class test(dummy_test_case):
     class IP:
-        def __init__(self, input_param: InputParameter) -> None:
+        def __init__(self, input_param: InputParameter):
             self.input_param = input_param
 
     def __init__(self, shmoo):

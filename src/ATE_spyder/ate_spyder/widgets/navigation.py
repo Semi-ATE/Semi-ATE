@@ -13,6 +13,7 @@ from typing import Dict, List
 
 from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
 from ate_common.parameter import InputColumnKey
+from ate_projectdatabase.Utils import BaseType
 
 from qtpy.QtCore import QObject
 from ate_spyder.widgets.constants import TableIds as TableId
@@ -85,11 +86,11 @@ class ProjectNavigation(QObject):
             self.active_base = ''
             self.project_name = ''
         else:
-            self.project_directory = project_directory
+            self.project_directory = Path(project_directory)
             self.active_target = ''
             self.active_hardware = ''
             self.active_base = ''
-            self.project_name = os.path.basename(self.project_directory)
+            self.project_name = self.project_directory.name
 
             settings_file = os.path.join(project_directory, ".lastsettings")
 
@@ -102,6 +103,7 @@ class ProjectNavigation(QObject):
             self._set_folder_structure()
             self.file_operator = FileOperator(self.project_directory)
             self._store_default_groups()
+            self._validate_pattern_folder_structure()
 
         if self.verbose:
             print("Navigator:")
@@ -130,6 +132,27 @@ class ProjectNavigation(QObject):
         doc_path = os.path.join(self.project_directory, "doc")
         os.makedirs(os.path.join(doc_path, "audits"), exist_ok=True)
         os.makedirs(os.path.join(doc_path, "exports"), exist_ok=True)
+
+    def _validate_pattern_folder_structure(self):
+        pattern_path = self.project_directory.joinpath("pattern")
+        pattern_path.mkdir(exist_ok=True)
+        hws = self.get_hardware_names()
+        for hw in hws:
+            hw_path = pattern_path.joinpath(hw)
+            hw_path.mkdir(exist_ok=True)
+            hw_path.joinpath(BaseType.PR()).mkdir(exist_ok=True)
+            hw_path.joinpath(BaseType.FT()).mkdir(exist_ok=True)
+
+            dies = self.get_active_die_names_for_hardware(hw)
+            for die in dies:
+                die_path = hw_path.joinpath(BaseType.PR(), die)
+                die_path.mkdir(exist_ok=True)
+
+            devices = self.get_active_device_names_for_hardware(hw)
+            for device in devices:
+                device_path = hw_path.joinpath(BaseType.FT(), device)
+                device_path.mkdir(exist_ok=True)
+
 
     def _store_default_groups(self):
         groups = [group.name for group in self.get_groups()]
@@ -240,7 +263,7 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Hardware())
         self.parent.hardware_removed.emit(name)
         import shutil
-        shutil.rmtree(os.path.join(self.project_directory, 'src', name))
+        shutil.rmtree(os.path.join(self.project_directory, self.project_name, name))
 
     def add_maskset(self, name, customer, definition, is_enabled=True):
         '''
@@ -326,6 +349,8 @@ class ProjectNavigation(QObject):
         and it must reference another (existing) die with grade 'A'!
         '''
         Die.add(self.get_file_operator(), name, hardware, maskset, quality, grade, grade_reference, type, customer, is_enabled)
+
+        self.project_directory.joinpath('pattern', hardware, BaseType.PR(), name).mkdir(exist_ok=True)
 
         self.parent.database_changed.emit(TableId.Die())
 
@@ -435,6 +460,9 @@ class ProjectNavigation(QObject):
         if 'package' doesn't exist, a KeyError is raised
         '''
         Device.add(self.get_file_operator(), name, hardware, package, definition, is_enabled)
+
+        self.project_directory.joinpath('pattern', hardware, BaseType.FT(), name).mkdir(exist_ok=True)
+
         self.parent.database_changed.emit(TableId.Device())
 
     def update_device(self, name, hardware, package, definition):
@@ -632,7 +660,7 @@ class ProjectNavigation(QObject):
             'all' --> standard + custom tests
         '''
         retval = {}
-        tests_directory = os.path.join(self.project_directory, 'src', 'tests', hardware, base)
+        tests_directory = os.path.join(self.project_directory, self.project_name, 'tests', hardware, base)
         potential_tests = os.listdir(tests_directory)
         from ate_spyder.widgets.actions_on.tests import standard_test_names
 
@@ -809,7 +837,6 @@ class ProjectNavigation(QObject):
 
         self._remove_file(self._generate_program_path(program_name))
         self._remove_file(self._generate_bin_table_path(program_name))
-        self._remove_file(self._generate_auto_script_path(program_name))
         self._remove_file(self._generate_strategy_file_path(program_name))
 
         self._remove_testprogram_form_group_list(program_name, owner_name)
@@ -830,19 +857,19 @@ class ProjectNavigation(QObject):
         os.remove(file_name)
 
     def _generate_program_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '.py')
+        return self._generate_path_for_program(f'{program_name}.py')
 
     def _generate_bin_table_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_binning.json')
+        return self._generate_path_for_program(f'{program_name}_binning.json')
 
     def _generate_auto_script_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_auto_script.py')
+        return self._generate_path_for_program(f'{program_name}_auto_script.py')
 
     def _generate_strategy_file_path(self, program_name):
-        return self._generate_path_for_program_with_suffix(program_name, '_execution_strategy.json')
+        return self._generate_path_for_program(f'{program_name}_execution_strategy.json')
 
-    def _generate_path_for_program_with_suffix(self, program_name, suffix: str) -> Path:
-        return Path(self.project_directory).joinpath('src', self.active_hardware, self.active_base, program_name + suffix)
+    def _generate_path_for_program(self, program_name: str) -> Path:
+        return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name)
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
@@ -1179,13 +1206,13 @@ class ProjectNavigation(QObject):
         return Test.get(self.get_file_operator(), name, hardware, base)
 
     def store_plugin_cfg(self, hw, object_name, cfg):
-        file_dir = os.path.join(self.project_directory, "src", hw)
+        file_dir = os.path.join(self.project_directory, self.project_name, hw)
         file_path = os.path.join(file_dir, f"{object_name}.json")
         with open(file_path, 'w+') as writer:
             writer.write(json.dumps(cfg))
 
     def load_plugin_cfg(self, hw, object_name):
-        file_path = os.path.join(self.project_directory, "src", hw, f"{object_name}.json")
+        file_path = os.path.join(self.project_directory, self.project_name, hw, f"{object_name}.json")
         if os.path.exists(file_path):
             with open(file_path, 'r') as reader:
                 raw = reader.read()
@@ -1213,7 +1240,7 @@ class ProjectNavigation(QObject):
             pass
 
     def last_project_setting(self):
-        return Path(self.project_directory, '.lastsettings')
+        return Path(self.project_directory).joinpath('.lastsettings')
 
     def store_settings(self, hardware, base, target):
         import json
@@ -1252,4 +1279,8 @@ class ProjectNavigation(QObject):
         return Test.get_one_or_none(self.get_file_operator(), name, hardware, base) is not None
 
     def get_test_path(self, name, hardware, base):
-        return Path(self.project_directory).joinpath('src', hardware, base, name, name)
+        return Path(self.project_directory).joinpath(self.project_name, hardware, base, name, name)
+
+    def create_test_runner_main(self, file_path: Path, test_configuration: Test):
+        hardware_definition = self.get_hardware_definition(test_configuration.hardware)
+        _ = self.run_build_tool('generate', 'test_runner', Path(self.project_directory), file_path, test_configuration, hardware_definition)

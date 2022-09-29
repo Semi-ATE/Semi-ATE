@@ -3,11 +3,13 @@ from semi_ate_testers.testers.tester_interface import TesterInterface
 
 # TODO: substitute print by logger, see issue #161
 
+class Test(TesterInterface):
+    def hello():
+        pass
 
-class DummyMiniSCT(TesterInterface):
 
-    def get_sites_count(self):
-        return 1
+class DummyMiniSCT(Test):
+    SITE_COUNT = 1
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True

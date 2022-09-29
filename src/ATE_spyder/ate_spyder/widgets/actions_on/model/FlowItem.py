@@ -78,6 +78,9 @@ class FlowItem(BaseItem):
         for index in range(self.rowCount()):
             flow_item = self.child(index)
 
+            if not flow_item:
+                continue
+
             if flow_item.text() != name:
                 continue
 
@@ -299,7 +302,7 @@ class TestprogramTreeItem(BaseItem):
         clip_board.clear(mode=clip_board.Clipboard)
         from pathlib import Path
         file_path = os.fspath(Path(os.path.join(self.project_info.project_directory,
-                                                'src',
+                                                self.project_info.project_name,
                                                 self.project_info.active_hardware,
                                                 self.project_info.active_base,
                                                 f'{self.program_name}.py')))

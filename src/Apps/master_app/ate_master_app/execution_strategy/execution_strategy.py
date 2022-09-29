@@ -30,7 +30,7 @@ class IExecutionStrategy(ABC):
 
 
 class SimpleExecutionStrategy(IExecutionStrategy):
-    def __init__(self, tester: object) -> None:
+    def __init__(self, tester: object):
         self.tester = tester
 
     @staticmethod

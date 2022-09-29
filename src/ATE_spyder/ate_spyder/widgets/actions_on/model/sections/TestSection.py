@@ -4,7 +4,7 @@ from qtpy.QtGui import QStandardItemModel, QStandardItem
 
 
 class TestSection(TestItem):
-    def __init__(self, project_nav: ProjectNavigation, label: str, path: str, parent: QStandardItemModel) -> None:
+    def __init__(self, project_nav: ProjectNavigation, label: str, path: str, parent: QStandardItemModel):
         super().__init__(project_nav, label, path, parent)
 
     def remove_test_target_item(self, target_name: str, test_name: str):

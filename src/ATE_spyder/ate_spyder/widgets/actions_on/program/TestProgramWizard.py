@@ -13,7 +13,7 @@ from ate_spyder.widgets.actions_on.program.Binning.BinTableGenerator import BinT
 from ate_spyder.widgets.actions_on.program.ExecutionWidget import ExecutionWidget
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_common.program_utils import (BINGROUPS, ParameterEditability, ResolverTypes, Action, Sequencer, Result,
-                                                         ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
+                                      ErrorMessage, ParameterState, InputFieldsPosition, OutputFieldsPosition, GRADES)
 from ate_spyder.widgets.actions_on.program.Parameters.TestProgram import (TestProgram, TestParameters)
 from ate_spyder.widgets.actions_on.program.PingPongWidget import PingPongWidget
 from ate_spyder.widgets.navigation import ProjectNavigation
@@ -1110,7 +1110,7 @@ class TestProgramWizard(BaseDialog):
 
     @QtCore.pyqtSlot()
     def _import_bin_table(self):
-        import_file = FileSystemOperator(os.path.join(self.project_info.project_directory, 'src',
+        import_file = FileSystemOperator(os.path.join(self.project_info.project_directory, self.project_info.project_name,
                                                       self.hardware.currentText(), self.base.currentText()), self.project_info.parent)
         file_name = import_file.get_path()
         if not file_name:
@@ -1202,7 +1202,7 @@ class TestProgramWizard(BaseDialog):
             )
 
         self._bin_table.create_binning_file(os.path.join(self.project_info.project_directory,
-                                                         'src',
+                                                         self.project_info.project_name,
                                                          self.hardware.currentText(),
                                                          self.base.currentText(),
                                                          f'{self.prog_name}_binning.json'))

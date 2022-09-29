@@ -129,6 +129,13 @@ class Plugin:
             return DummyParallelTester()
 
     @hookimpl
+    def get_tester_type(tester_name: str):
+        if tester_name == "DummySingleTester":
+            return DummySingleTester
+        elif tester_name == "DummyParallelTester":
+            return DummyParallelTester
+
+    @hookimpl
     def get_tester_master(tester_name: str):
         if tester_name == "DummyMasterSingleTester":
             return DummyMasterSingleTester()

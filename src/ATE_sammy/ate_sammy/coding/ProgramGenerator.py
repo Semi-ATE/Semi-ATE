@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from ate_common.parameter import InputColumnKey, OutputColumnKey
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
@@ -26,9 +27,10 @@ class test_program_generator(BaseGenerator):
         template = env.get_template(template_name)
         file_name = f"{prog_name}.py"
 
+        self.project_path = Path(project_path)
         rel_path_to_dir = self._generate_relative_path(program_configuration.hardware, program_configuration.base)
-        abs_path_to_dir = os.path.join(project_path, rel_path_to_dir)
-        self.abs_path_to_file = os.path.join(abs_path_to_dir, file_name)
+        abs_path_to_dir = self.project_path.joinpath(rel_path_to_dir)
+        self.abs_path_to_file = abs_path_to_dir.joinpath(file_name)
 
         if not os.path.exists(abs_path_to_dir):
             os.makedirs(abs_path_to_dir)
@@ -87,7 +89,7 @@ class test_program_generator(BaseGenerator):
         raise Exception(f"Cannot resolve module for test {test_name}")
 
     def _generate_relative_path(self, hardware, base):
-        return os.path.join('src', hardware, base)
+        return self.project_path.joinpath(self.project_path.name, hardware, base)
 
     def _generate_render_data(self, abs_path=''):
         pass

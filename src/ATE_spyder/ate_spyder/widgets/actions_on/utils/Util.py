@@ -8,13 +8,14 @@ def get_changed_dir_item(section_root, path, base_path):
 
     for index in range(len(items) - 1):
         item = parent_item.get_child(items[index])
+        if not item:
+            continue
         parent_item = item
 
     return parent_item
     # kursiv Fall
     # name = items[len(items) - 2]
     # return self._get_parent(parent_item, items, 0, name)
-
 
 def _get_parent(self, item, items, index, name):
     parent = item.get_child(items[index])

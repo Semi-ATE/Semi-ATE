@@ -59,9 +59,6 @@ class NewDeviceWizard(BaseDialog):
             self.package_changed(package)
 
     def _setup_pins(self):
-        # remove 'pins' tab for now as there are still some issue while validating the data
-        # will be resolve in #190
-        self.tabWidget.setTabVisible(1, False)
         if self.hardware.currentText() == '':
             self.tabWidget.setEnabled(False)
             self.available_dies = []
@@ -74,7 +71,7 @@ class NewDeviceWizard(BaseDialog):
         self.maskset_used = {maskset: self.project_info.get_maskset_definition(maskset)['BondpadTable'] for maskset in masksets}
         self.pinsTable.setAcceptDrops(True)
         self.pinsTable.setDragEnabled(True)
-        self.pinsTable.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.pinsTable.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.pinsTable.setColumnWidth(0, 200)
         self.pinsTable.header().setStretchLastSection(False)
         self.pinsTable.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
@@ -234,7 +231,7 @@ class NewDeviceWizard(BaseDialog):
         at the parent level is also changed, the dies in device list is cleared,
         and the available dies is reloaded.
         '''
-        self.parent.hardware_activated.emit(self.hardware.currentText())
+        self.project_info.parent.hardware_activated.emit(self.hardware.currentText())
 
         self.diesInDevice.clear()
         self.existing_dies = self.project_info.get_active_die_names_for_hardware(self.project_info.active_hardware)
@@ -289,7 +286,13 @@ class NewDeviceWizard(BaseDialog):
             temp.append(die.text())
         if len(temp) == 2:
             self.dualDie.setCheckState(QtCore.Qt.Unchecked)
-            if temp[0] == temp[1]:
+            die1 = temp[0]
+            die2 = temp[1]
+            def base_name(name: str):
+                prefix_start = len(name) - name[::-1].index('_') - 1
+                return name[:prefix_start]
+
+            if base_name(die1) == base_name(die2):
                 self.dualDie.setEnabled(True)
             else:
                 self.dualDie.setEnabled(False)

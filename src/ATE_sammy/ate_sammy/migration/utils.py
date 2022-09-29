@@ -13,4 +13,4 @@ def generate_path(cwd: str, dir_name: str) -> str:
 
 def write_version_to_file(file_path: str, version: dict):
     with open(file_path, 'w') as f:
-        json.dump(version, f, indent=4)
+        json.dump([version], f, indent=4)

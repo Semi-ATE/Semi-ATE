@@ -1,15 +1,12 @@
 from SCT8.tester import Tester as sct8
+from semi_ate_testers.testers.tester_interface import TesterInterface
 
 
 # TODO: substitute print by logger, see issue #161
 
 
-class MiniSCT(sct8):
-    def __init__(self):
-        self.tester = sct8()
-
-    def get_sites_count(self):
-        return 1
+class MiniSCT(TesterInterface, sct8):
+    SITE_COUNT = 1
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True
