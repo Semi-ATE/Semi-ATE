@@ -63,7 +63,7 @@ class ATEWidget(PluginMainWidget):
     ate_project_loaded: bool
         True if an ATE project was loaded, False otherwise.
     """
-    
+
     sig_project_created = Signal()
 
 
@@ -85,15 +85,9 @@ class ATEWidget(PluginMainWidget):
     groups_update = Signal(str, list)
     init_done = Signal()
 
-    # --- PluginMainWidget API
-    # ------------------------------------------------------------------------
-    def get_title(self):
-        return _('ATE')
+    def __init__(self, name, plugin, parent=None):
+        super().__init__(name, plugin, parent)
 
-    def get_focus_widget(self):
-        return self.tree
-
-    def setup(self):
         self.model = None
 
         self.tree = QTreeView()
@@ -118,6 +112,17 @@ class ATEWidget(PluginMainWidget):
         self.vcs_handlers: Dict[str, Type[VCSInitializationProvider]] = {}
         self.register_version_control_provider(LocalGitProvider)
         self.register_version_control_provider(GitHubInitialization)
+
+    # --- PluginMainWidget API
+    # ------------------------------------------------------------------------
+    def get_title(self):
+        return _('ATE')
+
+    def get_focus_widget(self):
+        return self.tree
+
+    def setup(self):
+        pass
 
     # --- PluginMainWidget API
     # ------------------------------------------------------------------------
