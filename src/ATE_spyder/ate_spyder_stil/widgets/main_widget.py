@@ -8,17 +8,25 @@
 
 # Standard library imports
 import os
+import sys
 import os.path as osp
 from datetime import datetime
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union, Literal, Dict
+
+# PEP 589 and 544 are available from Python 3.8 onwards
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 # Third-party imports
 import zmq
 from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
-from qtpy.QtWidgets import QWidget, QVBoxLayout
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QTreeWidgetItem
 
 # Spyder imports
+from spyder.utils.icon_manager import ima
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 from spyder.widgets.tabs import Tabs
@@ -37,8 +45,158 @@ _ = get_translation("spyder")
 logger = logging.getLogger(__name__)
 
 
+class STILBasePayload(TypedDict):
+    message: str
+
+
+class STILErrWarnPayload(STILBasePayload):
+    filename: str
+    row: int
+    col: int
+
+
+class STILCompilerMsg(TypedDict):
+    kind: Union[Literal['info'], Literal['error'], Literal['warning']]
+    payload: Union[STILBasePayload, STILErrWarnPayload]
+
+
+class CategoryItem(QTreeWidgetItem):
+    """
+    Category item for results.
+
+    Notes
+    -----
+    Possible categories are Convention, Refactor, Warning and Error.
+    """
+
+    CATEGORIES = {
+        "Warning": {
+            'translation_string': _("Warning"),
+            'icon': ima.icon("warning")
+        },
+        "Error": {
+            'translation_string': _("Error"),
+            'icon': ima.icon("error")
+        }
+    }
+
+    def __init__(self, parent, category, number_of_messages=0):
+        # Messages string to append to category.
+        self.num_msgs = number_of_messages
+        self.category = category
+        title = self.gather_title()
+
+        super().__init__(parent, [title], QTreeWidgetItem.Type)
+
+        # Set icon
+        icon = self.CATEGORIES[category]['icon']
+        self.setIcon(0, icon)
+
+    def increase_num_messages(self):
+        self.num_msgs += 1
+
+        title = self.gather_title()
+        self.setText(0, title)
+
+    def gather_title(self):
+        if self.num_msgs > 1 or self.num_msgs == 0:
+            messages = _('messages')
+        else:
+            messages = _('message')
+
+        # Category title.
+        title = self.CATEGORIES[self.category]['translation_string']
+        title += f" ({self.num_msgs} {messages})"
+        return title
+
+
+class MessageItem(QTreeWidgetItem):
+    def __init__(self, parent: QWidget, filename: str, msg:
+                 str, row: int, col: int):
+        super().__init__(parent, [msg], QTreeWidgetItem.Type)
+
+        self.filename = filename
+        self.row = row
+        self.col = col
+
+
+class STILTreeData(TypedDict):
+    error: CategoryItem
+    warning: CategoryItem
+
+
 class STILTree(OneColumnTree):
-    pass
+    sig_edit_goto_requested = Signal(str, int, int)
+    """
+    This signal will request to open a file in a given row and column
+    using a code editor.
+
+    Parameters
+    ----------
+    path: str
+        Path to file.
+    row: int
+        Cursor starting row position.
+    column: int
+        Cursor starting column position.
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.results = None
+        self.data: Dict[str, STILTreeData] = {}
+        title = _("STIL compilation results")
+        self.set_title(title)
+
+    def activated(self, item: MessageItem):
+        """Double-click event"""
+        # data = self.data.get(id(item))
+        filename = item.filename
+        row = item.row
+        column = item.col
+        self.sig_edit_goto_requested.emit(filename, row, column)
+
+    def clicked(self, item):
+        """Click event."""
+        if (isinstance(item, CategoryItem) and
+                not isinstance(item, MessageItem)):
+            if item.isExpanded():
+                self.collapseItem(item)
+            else:
+                self.expandItem(item)
+        else:
+            self.activated(item)
+
+    def clear_results(self):
+        self.clear()
+        self.data = {}
+
+    def add_file(self, filename):
+        if filename not in self.data:
+            file_node = QTreeWidgetItem(self, [filename], QTreeWidgetItem.Type)
+            err_node = CategoryItem(file_node, 'Error')
+            warn_node = CategoryItem(file_node, 'Warning')
+
+            file_node.setIcon(0, ima.get_icon('GridFileIcon'))
+
+            self.data[filename] = {
+                'error': err_node,
+                'warning': warn_node
+            }
+
+    def append_file_msg(self, msg: STILCompilerMsg):
+        kind = msg['kind']
+
+        payload: STILErrWarnPayload
+        payload = msg['payload']
+        filename = payload['filename']
+        msg = payload['message']
+        row = payload['row']
+        col = payload['col']
+
+        self.add_file(filename)
+        kind_node = self.data[filename][kind]
+        MessageItem(kind_node, filename, msg, row, col)
 
 
 class STILContainer(PluginMainWidget):
@@ -179,6 +337,7 @@ class STILContainer(PluginMainWidget):
 
     def on_stil_msg_received(self):
         try:
+            response: STILCompilerMsg
             response = self.stil_sock.recv_json(flags=zmq.NOBLOCK)
         except zmq.ZMQError:
             return
@@ -188,6 +347,8 @@ class STILContainer(PluginMainWidget):
             message = payload['message']
             logger.info(message)
             self.publish_to_log(message, level='INFO')
+        else:
+            self.output_tree.append_file_msg(response)
 
     # --- Public API
     # ------------------------------------------------------------------------
