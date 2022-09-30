@@ -78,6 +78,11 @@ class STIL(SpyderDockablePlugin):
         widget.sig_stil_compilation_stopped.connect(
             self.sig_stil_compilation_stopped)
 
+    def update_font(self):
+        color_scheme = self.get_color_scheme()
+        font = self.get_font()
+        self.get_widget().update_font(font, color_scheme)
+
     # -------------------- Plugin initialization ------------------------------
 
     @on_plugin_available(plugin=ATE.NAME)
