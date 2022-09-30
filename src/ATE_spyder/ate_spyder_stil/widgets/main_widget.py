@@ -21,16 +21,23 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 from spyder.widgets.tabs import Tabs
+from spyder.widgets.simplecodeeditor import SimpleCodeEditor
 
 # Local imports
 from ate_spyder_stil.api import STILActions
 from ate_spyder.widgets.navigation import ProjectNavigation
+from spyder.widgets.onecolumntree import OneColumnTree, OneColumnTreeActions
+
 
 # Localization
 _ = get_translation("spyder")
 
 # Logging
 logger = logging.getLogger(__name__)
+
+
+class STILTree(OneColumnTree):
+    pass
 
 
 class STILContainer(PluginMainWidget):
@@ -72,6 +79,16 @@ class STILContainer(PluginMainWidget):
 
         # Widgets
         self.tabwidget = Tabs(self)
+        self.tabwidget.setTabsClosable(False)
+
+        self.output_log = SimpleCodeEditor(self)
+        self.output_log.setup_editor(language='None', wrap=True)
+        self.output_log.setReadOnly(True)
+
+        self.output_tree = STILTree(self)
+
+        self.tabwidget.addTab(self.output_tree, _('Warnings/Errors'))
+        self.tabwidget.addTab(self.output_log, _('Compilation log'))
 
         layout = QVBoxLayout()
         layout.addWidget(self.tabwidget)
