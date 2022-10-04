@@ -21,7 +21,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
         flags = QtCore.Qt.NoItemFlags
         with open(path) as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
-            if data is None:
+            if not data:
                 self.num_channels.setValue(0)
                 return
             num_channels = max(data.values())
