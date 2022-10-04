@@ -85,9 +85,11 @@ class PatternTab(QtWidgets.QWidget):
     def _collect_patterns_from_file_structure(self):
         project_root: Path = self.project_navigation.project_directory
         pattern_files = []
-        hw_path = project_root.joinpath('pattern', self.project_navigation.active_hardware)
+        pattern_root = project_root.joinpath('pattern')
+        hw_path = pattern_root.joinpath(self.project_navigation.active_hardware)
         base_path = hw_path.joinpath(self.project_navigation.active_base)
         target_path = base_path.joinpath(self.project_navigation.active_target)
+        pattern_files.extend(self._get_pattern_files(pattern_root))
         pattern_files.extend(self._get_pattern_files(hw_path))
         pattern_files.extend(self._get_pattern_files(base_path))
         pattern_files.extend(self._get_pattern_files(target_path))
