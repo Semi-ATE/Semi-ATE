@@ -49,7 +49,7 @@ from ate_spyder.widgets.validation import is_valid_python_class_name
 from ate_spyder.widgets.actions_on.tests import TestWizard
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
-from ate_common.parameter import InputColumnKey, OutputColumnKey
+from ate_common.parameter import OutputColumnKey
 
 from ate_spyder.widgets.constants import UpdateOptions
 
@@ -142,7 +142,6 @@ class NameDelegator(TestWizard.Delegator):
         # TODO: implement
         if editor.text() in self.existing_names:
             pass
-
 
 
 class ExcelTestWizard(BaseDialog):
@@ -380,6 +379,7 @@ class ExcelTestWizard(BaseDialog):
             return True if string[0].isnumeric() else False
 
         def addMenuOverwrite(item):
+            # todo:
             #menu = QtWidgets.QMenu(self)
             #overwrite = menu.addAction("overwrite")
             #action = menu.exec_(self.table.mapToGlobal(item))
