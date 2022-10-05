@@ -431,7 +431,6 @@ class ExcelTestWizard(BaseDialog):
                 if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
                     for index in range(1, self.table.rowCount()):
                         text = self.table.item(index, self.table.mapping[key]).text()
-                        #check([text], is_valid_test_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
                         # check(testNames, self._does_test_exist, True, "parameter name already exists!")
@@ -531,6 +530,7 @@ class ExcelTestWizard(BaseDialog):
                 output_parameters['lsl'] = -np.inf
                 output_parameters['usl'] = np.inf
                 output_parameters['fmt'] = ".3f"
+                output_parameters['exp10'] = 0
 
                 for parameterName in mappingATEDic.values():
                     parameterName_split = parameterName.split('.')
@@ -538,7 +538,7 @@ class ExcelTestWizard(BaseDialog):
                         if parameterName_split[1] != 'name':
                             value = searchAndAssign(parameterName, write_content=False)
                             if parameterName_split[1] == 'unit':
-                                if value == '' or value == ' ' or (type(value) == float and np.isnan(value)):
+                                if (type(value) == str and value.strip() == '') or (type(value) == float and np.isnan(value)):
                                     value = '˽'
                                 if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
                                     output_parameters['exp10'] = POWER[value[0]]
@@ -638,7 +638,7 @@ if __name__ == "__main__":
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     app.references = set()
     main = QMainWindow()
-    project_directory = r'C:\Users\jung\ATE\packages\envs\semi-ate-4\tb_ate'
+    project_directory = r'C:\Users\jung\ATE\packages\envs\semi-ate-5\HATB'
     homedir = os.path.expanduser("~")
     project_info = ProjectNavigation(project_directory, homedir, main)
     project_info.active_hardware = 'HW0'
