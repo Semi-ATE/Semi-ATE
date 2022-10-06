@@ -44,7 +44,7 @@ from ate_spyder.widgets.validation import valid_default_float_regex
 from ate_spyder.widgets.validation import valid_fmt_regex
 from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
-from ate_spyder.widgets.validation import valid_name_regex
+# from ate_spyder.widgets.validation import valid_name_regex                 # TODO: add for validation
 from ate_spyder.widgets.validation import is_valid_python_class_name
 from ate_spyder.widgets.actions_on.tests import TestWizard
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
@@ -88,6 +88,7 @@ class InputColumnIndex(Enum):
 
     def __call__(self):
         return self.value
+
 
 @unique
 class OutputColumnIndex(Enum):
@@ -139,7 +140,7 @@ class NameDelegator(TestWizard.Delegator):
 
     def validate_name(self, editor):
         """Make sure the entered name does not exist already."""
-        # TODO: implement
+        # TODO: implement, e.q use valid_name_regex
         if editor.text() in self.existing_names:
             pass
 
@@ -175,16 +176,16 @@ class ExcelTestWizard(BaseDialog):
             self.WithBase.setText(test_content['base'])
 
     # Delegators
-        self.fmtDelegator = TestWizard.Delegator(valid_fmt_regex, self)                             # todo: selectionModel isn't available!
+        self.fmtDelegator = TestWizard.Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
         self.minDelegator = TestWizard.Delegator(valid_min_float_regex, self)
         self.defaultDelegator = TestWizard.Delegator(valid_default_float_regex, self)
         self.maxDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        self.lslDelegator = CDelegator(valid_min_float_regex, self)                                 # todo: in work, try to switch color to default value after editing a wrong value...
+        self.lslDelegator = CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
         self.ltlDelegator = CDelegator(valid_min_float_regex, self)
         self.nomDelegator = TestWizard.Delegator(valid_default_float_regex, self)
         self.utlDelegator = TestWizard.Delegator(valid_max_float_regex, self)
         self.uslDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())
+        # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())  # TODO: not running correcty
 
     # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
@@ -285,7 +286,7 @@ class ExcelTestWizard(BaseDialog):
         create mapping Dictionary excel to table columns
         """
         col = 0
-        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()        # todo: color is not corrrect, how I get the used color?
+        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()        # TODO: color is not corrrect, how I get the used color?
         self.table.mapping = {}
         for header in self.workpage.columns:
             # self.table.setItem(0, col, QtWidgets.QTableWidgetItem(''))          #removeItem
@@ -379,14 +380,15 @@ class ExcelTestWizard(BaseDialog):
             return True if string[0].isnumeric() else False
 
         def addMenuOverwrite(item):
-            # todo:
-            #menu = QtWidgets.QMenu(self)
-            #overwrite = menu.addAction("overwrite")
-            #action = menu.exec_(self.table.mapToGlobal(item))
+            # TODO: add ability for  overwriting
+            # menu = QtWidgets.QMenu(self)
+            # overwrite = menu.addAction("overwrite")
+            # action = menu.exec_(self.table.mapToGlobal(item))
             print(item.text())
 
         self.Feedback.setText("")
 
+        # TODO:  following code is an example if testname already exist,   add this ability in a future version
         # if self.read_only:
         #     dependant_programs = self.project_info.get_dependant_objects_for_test(self.TestName)
         #     # we don't care if the test not used yet !
@@ -499,7 +501,7 @@ class ExcelTestWizard(BaseDialog):
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                # if TestName not exist:
+                # if TestName not exist:                      # TODO: add
                 self.project_info.add_custom_test(test_content)
                 # else:
                 #     update_option = self.__have_parameters_changed(test_content)
@@ -549,7 +551,6 @@ class ExcelTestWizard(BaseDialog):
                 else:
                     test_content['output_parameters'][name] = output_parameters
 
-            # self._update_power_with_correct_value(attributes)
         if test_content != {}:
             self.project_info.add_custom_test(test_content)
 
@@ -638,8 +639,8 @@ if __name__ == "__main__":
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     app.references = set()
     main = QMainWindow()
-    project_directory = r'C:\Users\jung\ATE\packages\envs\semi-ate-5\HATB'
     homedir = os.path.expanduser("~")
+    project_directory = homedir + r'\ATE\packages\envs\semi-ate-5\HATB'       # path to your semi-ate project
     project_info = ProjectNavigation(project_directory, homedir, main)
     project_info.active_hardware = 'HW0'
     project_info.active_base = 'FT'
