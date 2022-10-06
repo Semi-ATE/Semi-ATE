@@ -5,6 +5,9 @@ class BaseType(Enum):
     PR = 'PR'
     FT = 'FT'
 
+    def __call__(self):
+        return self.value
+
 
 class DB_KEYS:
     class HARDWARE:

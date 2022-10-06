@@ -164,18 +164,24 @@ def model(project_navigation):
 
 @pytest.fixture
 def project(qtbot, project_navigation):
-    dialog = ProjectWizard(project_navigation, Path(__file__).parent.joinpath(PROJECT_NAME))
+    dialog = ProjectWizard(
+        None, {}, project_navigation,
+        Path(__file__).parent.joinpath(PROJECT_NAME))
+    dialog.open()
+    dialog.project_text.setText(PROJECT_NAME)
     qtbot.addWidget(dialog)
     return dialog
 
 
 def test_create_new_project_cancel_before_enter_name(project, qtbot):
-    qtbot.mouseClick(project.CancelButton, QtCore.Qt.LeftButton)
+    qtbot.mouseClick(project.cancel_button, QtCore.Qt.LeftButton)
 
 
 def test_create_new_project_ok(project, qtbot):
-    project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
-    qtbot.mouseClick(project.OKButton, QtCore.Qt.LeftButton)
+    # project.qualityGrade.setCurrentText(SETTING_QUALITY_GRADE)
+    with qtbot.waitSignal(project.finished, timeout=20000):
+        # qtbot.wait(20000)
+        qtbot.mouseClick(project.ok_button, QtCore.Qt.LeftButton)
 
 
 def test_check_settings_quality_grade(project_navigation):
@@ -490,23 +496,24 @@ def test_mpr_checkbox_of_output_parameter(project_navigation, qtbot):
     output_parameter_table_view: QtWidgets.QTableView = new_test.findChild(QtWidgets.QTableView, 'outputParameterView')
     MPR_item = output_parameter_table_view.model().item(0, 8)
     check_state = MPR_item.data(QtCore.Qt.CheckStateRole)
-    assert( check_state == QtCore.Qt.Unchecked)
+    assert(check_state == QtCore.Qt.Unchecked)
 
     # Click MPR checkbox by 1st selecting the table cell via mouse-click, and 2nd by
     # sending space-key to the table
-    x_pos_mpr = output_parameter_table_view.columnViewportPosition(8);
-    y_pos_mpr = output_parameter_table_view.rowViewportPosition(0);
+    x_pos_mpr = output_parameter_table_view.columnViewportPosition(8)
+    y_pos_mpr = output_parameter_table_view.rowViewportPosition(0)
     qtbot.mouseClick(output_parameter_table_view.viewport(), QtCore.Qt.LeftButton, pos=QtCore.QPoint(x_pos_mpr, y_pos_mpr))
-    qtbot.keyClick( output_parameter_table_view.viewport(), QtCore.Qt.Key_Space );
-    
+    qtbot.keyClick(output_parameter_table_view.viewport(), QtCore.Qt.Key_Space)
+
     # now mpr should be checked
     check_state = MPR_item.data(QtCore.Qt.CheckStateRole)
-    assert( check_state == QtCore.Qt.Checked)
+    assert(check_state == QtCore.Qt.Checked)
 
     qtbot.mouseClick(new_test.OKButton, QtCore.Qt.LeftButton)
 
     output_parameters = new_test.getOutputParameters()
-    assert( output_parameters['new_parameter1']['mpr'] == True )
+    assert(output_parameters['new_parameter1']['mpr'] == True)
+
 
 def test_does_test_exist(project_navigation):
     assert project_navigation.get_test(definitions['test'], definitions['hardware'], 'PR')
@@ -597,3 +604,14 @@ def edit_test_program(qtbot, project_navigation):
     dialog = EditTestProgramWizard(test_configruation['prog_name'], project_navigation, "HW0_PR_Die1_production_PR")
     qtbot.addWidget(dialog)
     return dialog
+
+
+# test runs based on the configuration:
+# 'hardware': 'HW0',
+# 'die': 'Die1',
+# 'device': 'Device1',
+def test_pattern_folder_exists(project_navigation: ProjectNavigation):
+    hw_path = project_navigation.project_directory.joinpath('pattern', 'HW0')
+
+    assert hw_path.joinpath('PR', 'Die1').exists()
+    assert hw_path.joinpath('FT', 'Device1').exists()
