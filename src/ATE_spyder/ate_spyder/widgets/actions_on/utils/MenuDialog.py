@@ -1,6 +1,6 @@
-from enum import IntEnum
 import os
 import shutil
+from pathlib import Path
 
 import qtawesome as qta
 from PyQt5 import QtCore
@@ -78,8 +78,8 @@ class DeleteDirDialog(DeleteFileDialog):
 class RenameDialog(MenuDialog):
     def __init__(self, path, action, parent):
         super().__init__(RENAME_DIALOG, action, parent)
-        self.path = path
-        self.fileName.setText(os.path.basename(self.path))
+        self.path = Path(path)
+        self.fileName.setText(Path(self.path).stem)
         self.fileName.textChanged.connect(self.validate)
         self.fileName.setFocus(QtCore.Qt.MouseFocusReason)
 
@@ -94,7 +94,8 @@ class RenameDialog(MenuDialog):
         self.ok_button.setDisabled(False)
 
     def _accept(self):
-        shutil.move(self.path, os.path.join(os.path.dirname(self.path), self.fileName.text()))
+        self.new_path = self.path.parent.joinpath(f'{self.fileName.text()}.{self.path.suffix}')
+        shutil.move(self.path, self.new_path)
         self.accept()
 
 

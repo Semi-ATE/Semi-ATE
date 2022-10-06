@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 
 from PyQt5 import QtWidgets
 
@@ -88,9 +89,12 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         delete = DeleteDirDialog(self.path, "Remove", self.parent)
         delete.show()
 
-    def rename(self):
+    def rename(self) -> Optional[RenameDialog]:
         rename = RenameDialog(self.path, "Rename", self.parent)
-        rename.show()
+        if not rename.show():
+            return None
+
+        return rename
 
     def get_path(self):
         selected, _ = self.getOpenFileName(self, "Import File", self.path, options=self.options(), filter='JSON(*.json)')

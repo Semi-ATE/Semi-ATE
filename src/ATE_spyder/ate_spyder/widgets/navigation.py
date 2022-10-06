@@ -1333,3 +1333,20 @@ class ProjectNavigation(QObject):
                 pattern_data[pattern_tuple[0]] = pattern_tuple[1]
 
         return pattern_data
+
+    def update_pattern_names_for_programs(self, old: str, new: str):
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            relative_path_old = Path(old).relative_to(self.project_directory)
+            relative_path_new = Path(new).relative_to(self.project_directory)
+
+            for test_name, test_patterns in program.patterns.items():
+                updated_list = []
+                for pattern_name, pattern_path in test_patterns:
+                    if pattern_path != str(relative_path_old):
+                        updated_list.append((pattern_name, str(pattern_path)))
+                        continue
+
+                    updated_list.append((pattern_name, str(relative_path_new)))
+
+                Program.update_patterns(self.get_file_operator(), program.prog_name, test_name, updated_list)

@@ -94,13 +94,6 @@ class Program:
         prog.prog_order = order
         session.commit()
 
-    def update_program_order(session: FileOperator, program_name: str, owner_name: str, order: int):
-        program = session.query(Types.Program())\
-                         .filter(lambda Program: Program.prog_name == program_name and Program.owner_name == owner_name)\
-                         .one()
-        program.prog_order = order
-        session.commit()
-
     @staticmethod
     def get_programs_for_owner(session: FileOperator, owner_name: str) -> list:
         return session.query(Types.Program())\
@@ -173,3 +166,8 @@ class Program:
         program = Program.get(session, program_name)
         return program.patterns
 
+    @staticmethod
+    def update_patterns(session: FileOperator, program_name: str, test_name: str, patterns: list):
+        program = Program.get(session, program_name)
+        program.patterns[test_name] = patterns
+        session.commit()

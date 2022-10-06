@@ -83,20 +83,27 @@ class PatternItemChild(BaseFolderStructureItemChild):
 
     def _get_menu_items(self) -> List[MenuActionTypes]:
         options = [MenuActionTypes.OpenFile(),
-                MenuActionTypes.Rename(),
-                MenuActionTypes.Move(),
-                MenuActionTypes.Trace()]
+                   MenuActionTypes.Rename(),
+                   MenuActionTypes.Move(),
+                   MenuActionTypes.Trace()]
         if not self.project_info.is_pattern_used(self.text()):
             options.extend([None, MenuActionTypes.Delete()])
 
         return options
-    
+
     def open_file_item(self):
         self.model().edit_file.emit(str(self.path))
 
     def trace_item(self):
         from ate_spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
         ItemTrace(self.dependency_list, self.text(), self.project_info.parent).exec_()
+
+    def rename_item(self):
+        rename_res = super().rename_item()
+        if not rename_res:
+            return
+        old, new = rename_res
+        self.project_info.update_pattern_names_for_programs(old, new)
 
     @property
     def dependency_list(self):
