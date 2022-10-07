@@ -3,7 +3,6 @@ from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.actions_on.tests.NewStandardTestWizard import new_standard_test_dialog
 from ate_spyder.widgets.actions_on.tests.TestWizard import new_test_dialog
-from ate_spyder.widgets.actions_on.tests.ExcelTestWizard import excel_test_dialog
 from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 from ate_spyder.widgets.actions_on.tests.TestsObserver import TestsObserver
 from ate_spyder.widgets.actions_on.tests.TestItems.TestItemChild import TestItemChild
@@ -18,7 +17,6 @@ import os
 from ate_spyder.widgets.navigation import ProjectNavigation
 
 FILE_FILTER = '*.ate'
-FILE_FILTER_EXCEL = '*.xlsx'
 TESTS_COLUMN = 0
 
 
@@ -101,14 +99,6 @@ class TestItem(TestContainerBase):
 
         self._import_test(selected_file)
 
-    def excel_test_import(self):
-        selected_file = self.file_system_operator.get_file(FILE_FILTER_EXCEL)
-        if not selected_file:
-            return
-        handle_exceptions(self.project_info.parent,
-                          lambda: excel_test_dialog(self.project_info, selected_file),
-                          ExceptionTypes.Test())
-
     def _import_test(self, path: str):
         current_version = self.project_info.get_version()
         import_content(Path(path), self.project_info, self.parent.parent, current_version)
@@ -147,7 +137,6 @@ class TestItem(TestContainerBase):
         return [MenuActionTypes.Add(),
                 MenuActionTypes.AddStandardTest(),
                 MenuActionTypes.Import(),
-                MenuActionTypes.ExcelTestImport(),
                 MenuActionTypes.AddGroup()]
 
     @staticmethod
