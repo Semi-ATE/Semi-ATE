@@ -132,8 +132,8 @@ class BaseFolderStructureItemChild(BaseFolderItem):
         self.setText(os.path.basename(path))
         self.file_system_operator(path)
 
-    def rename_item(self) -> Optional[Tuple[str, str]]:
-        rename_view = self.file_system_operator.rename()
+    def rename_item(self, available_names: list = []) -> Optional[Tuple[str, str]]:
+        rename_view = self.file_system_operator.rename(available_names)
         return None if rename_view is None else (rename_view.path, rename_view.new_path)
 
     def delete_item(self):

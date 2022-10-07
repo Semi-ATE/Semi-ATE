@@ -89,8 +89,8 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         delete = DeleteDirDialog(self.path, "Remove", self.parent)
         delete.show()
 
-    def rename(self) -> Optional[RenameDialog]:
-        rename = RenameDialog(self.path, "Rename", self.parent)
+    def rename(self, available_names: list = []) -> Optional[RenameDialog]:
+        rename = RenameDialog(self.path, "Rename", self.parent, available_names)
         if not rename.show():
             return None
 

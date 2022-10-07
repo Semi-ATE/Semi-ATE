@@ -107,7 +107,7 @@ class PatternItemChild(BaseFolderStructureItemChild):
         ItemTrace(self.dependency_list, self.text(), self.project_info.parent).exec_()
 
     def rename_item(self):
-        rename_res = super().rename_item()
+        rename_res = super().rename_item(self.project_info.get_available_patterns(Path(self.path).parent))
         if not rename_res:
             return
         old, new = rename_res

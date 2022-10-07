@@ -78,16 +78,17 @@ class DeleteDirDialog(DeleteFileDialog):
 
 
 class RenameDialog(MenuDialog):
-    def __init__(self, path, action, parent):
+    def __init__(self, path: str, action: str, parent: object, available_names: list):
         super().__init__(RENAME_DIALOG, action, parent)
         self.path = Path(path)
         self.fileName.setText(Path(self.path).stem)
         self.fileName.textChanged.connect(self.validate)
         self.fileName.setFocus(QtCore.Qt.MouseFocusReason)
+        self.available_names = available_names
 
     def validate(self, text):
-        if not text:
-            self.feedback.setText("name field is empty")
+        if not text or text.lower() in [name.lower() for name in self.available_names]:
+            self.feedback.setText("name is invalid or already available")
             self.feedback.setStyleSheet("color: orange")
             self.ok_button.setDisabled(True)
             return
