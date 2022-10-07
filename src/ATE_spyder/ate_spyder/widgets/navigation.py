@@ -4,6 +4,7 @@ Created on Tue Mar  3 14:08:04 2020
 @author: hoeren
 """
 from argparse import Namespace
+from glob import glob
 from pathlib import Path
 from ate_common.program_utils import Sequencer
 import json
@@ -1350,3 +1351,9 @@ class ProjectNavigation(QObject):
                     updated_list.append((pattern_name, str(relative_path_new)))
 
                 Program.update_patterns(self.get_file_operator(), program.prog_name, test_name, updated_list)
+
+    def get_available_patterns(self, path: Path):
+        pattern_files = []
+        pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.stil')])
+        pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.wav')])
+        return pattern_files

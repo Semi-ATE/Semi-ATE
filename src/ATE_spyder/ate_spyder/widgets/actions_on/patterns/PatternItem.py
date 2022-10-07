@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 import os
 
 from ate_spyder.widgets.actions_on.documentation.BaseFolderStructureItem import BaseFolderStructureItem, BaseFolderStructureItemChild
+from ate_spyder.widgets.actions_on.utils.MenuDialog import new_pattern
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
@@ -75,6 +76,13 @@ class PatternItem(BaseFolderStructureItem):
 
     def supported_file_extension(self) -> List[str]:
         return ['.stil', '.wav']
+
+    def add_file__item(self, file_types: str = ''):
+        pattern_res = new_pattern(self.project_info, self.project_info.get_available_patterns(self.root))
+        if not pattern_res:
+            return
+
+        open(Path(self.root).joinpath(pattern_res), 'w').close()
 
 
 class PatternItemChild(BaseFolderStructureItemChild):
