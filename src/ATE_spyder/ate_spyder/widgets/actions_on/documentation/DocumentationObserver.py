@@ -77,6 +77,9 @@ class DocumentationObserver(ObserverBase):
         event_handler = EventHandler(self.section_root, path)
         super().__init__(event_handler)
 
+    def __call__(self, project_path: str):
+        self.path = project_path
+
     def _generate_dir_item(self, name, path, parent):
         return DocumentationItem(name, path, parent)
 

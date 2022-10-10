@@ -109,6 +109,8 @@ class TreeModel(QtGui.QStandardItemModel):
         self._update_tests()
 
         self.pattern_section.removeRows(0, self.pattern_section.row_count())
+        pattern_path = self.project_info.project_directory.joinpath('pattern')
+        self.pattern_observer(str(pattern_path))
         self.pattern_observer._init_section()
 
         if rebuild_flows:
