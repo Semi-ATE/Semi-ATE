@@ -92,7 +92,6 @@ class PatternItemChild(BaseFolderStructureItemChild):
     def _get_menu_items(self) -> List[MenuActionTypes]:
         options = [MenuActionTypes.OpenFile(),
                    MenuActionTypes.Rename(),
-                   MenuActionTypes.Move(),
                    MenuActionTypes.Trace()]
         if not self.project_info.is_pattern_used(self.text()):
             options.extend([None, MenuActionTypes.Delete()])
