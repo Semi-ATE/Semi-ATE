@@ -133,12 +133,16 @@ class ProjectWizard(QDialog):
 
         # Signals and configuration
         self.add_button_box(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+
         self.vcs_checkbox.toggled.connect(vcs_group.setEnabled)
+        self.vcs_checkbox.toggled.connect(lambda _: self.validate())
         self.vcs_checkbox.setChecked(True)
 
         self.vcs_prov_combo.currentIndexChanged.connect(self.provider_changed)
         self.vcs_prov_combo.setModel(self.vcs_prov_model)
+
         self.project_text.textChanged.connect(lambda _: self.validate())
+        self.project_text.setText(osp.basename(project_path))
         self.validate()
 
     def add_button_box(self, stdbtns):
@@ -212,7 +216,10 @@ class ProjectWizard(QDialog):
 
         project_name = self.project_text.text()
         new_path = Path(osp.dirname(self.project_path)).joinpath(project_name)
-        Path(self.project_path).rename(new_path)
+        cur_path = Path(self.project_path)
+
+        if cur_path != new_path:
+            Path(self.project_path).rename(new_path)
 
         self.project_info(str(new_path))
         # config step shall be done first after the re-initialization
