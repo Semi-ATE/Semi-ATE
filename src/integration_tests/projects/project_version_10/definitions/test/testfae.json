@@ -1,0 +1,44 @@
+[
+  {
+    "name": "fae",
+    "hardware": "HW0",
+    "base": "PR",
+    "type": "custom",
+    "definition": {
+      "name": "fae",
+      "type": "custom",
+      "hardware": "HW0",
+      "base": "PR",
+      "docstring": [
+        ""
+      ],
+      "input_parameters": {
+        "Temperature": {
+          "shmoo": true,
+          "min": -40.0,
+          "default": 25.0,
+          "max": 170.0,
+          "exp10": 0,
+          "unit": "\u00b0C",
+          "fmt": ".0f"
+        }
+      },
+      "output_parameters": {
+        "new_parameter1": {
+          "lsl": -Infinity,
+          "ltl": NaN,
+          "nom": 0.0,
+          "utl": NaN,
+          "usl": Infinity,
+          "exp10": 0,
+          "unit": "\u02fd",
+          "fmt": ".3f",
+          "mpr": false
+        }
+      },
+      "dependencies": {},
+      "patterns": []
+    },
+    "is_enabled": true
+  }
+]

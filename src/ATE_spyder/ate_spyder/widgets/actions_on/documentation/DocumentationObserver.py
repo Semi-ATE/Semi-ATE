@@ -1,9 +1,12 @@
+from pathlib import Path
 from ate_spyder.widgets.actions_on.documentation.DocumentationItem import DocumentationItem
 from ate_spyder.widgets.actions_on.utils.Util import get_changed_dir_item
 from ate_spyder.widgets.actions_on.utils.ObserverBase import ObserverBase
 from ate_spyder.widgets.actions_on.utils.ObserverBase import EventHandlerBase
 
 import os
+
+from ate_spyder.widgets.navigation import ProjectNavigation
 
 
 class EventHandler(EventHandlerBase):
@@ -68,16 +71,23 @@ class DocumentationObserver(ObserverBase):
     '''
     create doc content observer
     '''
-    def __init__(self, path, section_root):
+    def __init__(self, path, section_root, project_info: ProjectNavigation):
         self.section_root = section_root
+        self.project_info = project_info
         event_handler = EventHandler(self.section_root, path)
         super().__init__(event_handler)
+
+    def __call__(self, project_path: str):
+        self.path = project_path
 
     def _generate_dir_item(self, name, path, parent):
         return DocumentationItem(name, path, parent)
 
     def _init_section(self):
         tree_elements = []
+        if not self.path.startswith(str(self.project_info.project_directory)):
+            return
+
         for root, _, files in os.walk(self.path):
             root_basename = os.path.basename(os.path.normpath(root))
             parent = os.path.basename(os.path.abspath(os.path.join(root, os.pardir)))

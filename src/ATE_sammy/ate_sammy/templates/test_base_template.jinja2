@@ -24,6 +24,15 @@ parent_path = str(Path(__file__).joinpath('..', '..').resolve())
 sys.path.append(parent_path)
 
 from common import Context
+{% if definition['patterns'] %}
+from dataclasses import dataclass
+
+@dataclass
+class Patterns:
+    {% for pattern in definition['patterns'] %}
+    {{pattern}}: str = '{{definition['name']}}_{{pattern}}'
+    {% endfor %}
+{% endif %}
 
 
 class {{ definition['name'] }}_OP:

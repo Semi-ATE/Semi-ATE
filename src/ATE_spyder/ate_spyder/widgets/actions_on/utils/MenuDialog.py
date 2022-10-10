@@ -1,6 +1,7 @@
-from enum import IntEnum
 import os
 import shutil
+from pathlib import Path
+from typing import Optional
 
 import qtawesome as qta
 from PyQt5 import QtCore
@@ -14,6 +15,7 @@ from ate_spyder.widgets.navigation import ProjectNavigation
 STANDARD_DIALOG = 'Standard.ui'
 DELETE_DIALOG = 'Delete.ui'
 RENAME_DIALOG = 'Rename.ui'
+NEW_PATTERN_DIALOG = 'NewPattern.ui'
 ORANGE_LABEL = 'color: orange'
 
 
@@ -76,16 +78,17 @@ class DeleteDirDialog(DeleteFileDialog):
 
 
 class RenameDialog(MenuDialog):
-    def __init__(self, path, action, parent):
+    def __init__(self, path: str, action: str, parent: object, available_names: list):
         super().__init__(RENAME_DIALOG, action, parent)
-        self.path = path
-        self.fileName.setText(os.path.basename(self.path))
+        self.path = Path(path)
+        self.fileName.setText(Path(self.path).stem)
         self.fileName.textChanged.connect(self.validate)
         self.fileName.setFocus(QtCore.Qt.MouseFocusReason)
+        self.available_names = available_names
 
     def validate(self, text):
-        if not text:
-            self.feedback.setText("name field is empty")
+        if not text or text.lower() in [name.lower() for name in self.available_names]:
+            self.feedback.setText("name is invalid or already available")
             self.feedback.setStyleSheet("color: orange")
             self.ok_button.setDisabled(True)
             return
@@ -94,21 +97,25 @@ class RenameDialog(MenuDialog):
         self.ok_button.setDisabled(False)
 
     def _accept(self):
-        shutil.move(self.path, os.path.join(os.path.dirname(self.path), self.fileName.text()))
+        self.new_path = self.path.parent.joinpath(f'{self.fileName.text()}{self.path.suffix}')
+        shutil.move(self.path, self.new_path)
         self.accept()
 
 
-class NewGroupDialog(MenuDialog):
-    def __init__(self, path: str, action: str, parent, project_info: ProjectNavigation, group_parent: str):
-        super().__init__(RENAME_DIALOG, action, parent)
-        self.path = path
+class NewTextItemDialog(MenuDialog):
+    def __init__(self, ui_file: str, action: str, parent, project_info: ProjectNavigation):
+        super().__init__(ui_file, action, parent)
         from ate_spyder.widgets.validation import valid_name_regex
         name_validator = QtGui.QRegExpValidator(QtCore.QRegExp(valid_name_regex), self)
         self.fileName.setValidator(name_validator)
-        self.fileName.setText(os.path.basename(self.path))
         self.fileName.textChanged.connect(self.validate)
         self.fileName.setFocus(QtCore.Qt.MouseFocusReason)
         self.project_info = project_info
+
+
+class NewGroupDialog(NewTextItemDialog):
+    def __init__(self, action: str, parent, project_info: ProjectNavigation, group_parent: str):
+        super().__init__(RENAME_DIALOG, action, parent, project_info)
         self.groups = project_info.get_groups()
         self.group_parent = group_parent
         self.group_name = None
@@ -129,7 +136,7 @@ class NewGroupDialog(MenuDialog):
 
 
 def new_group(project_info: ProjectNavigation, group_parent: str):
-    new_dialog = NewGroupDialog('', 'New Group', project_info.parent, project_info, group_parent)
+    new_dialog = NewGroupDialog('New Group', project_info.parent, project_info, group_parent)
     if not new_dialog.exec_():
         return None
     name = new_dialog.group_name
@@ -168,3 +175,33 @@ class StandardDialog(MenuDialog):
         self.icon_label.setPixmap(qta.icon('mdi.alert-outline', color='orange').pixmap(50, 50))
         self.ok_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)
         self.cancel_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Cancel)
+
+
+class NewPatternDialog(NewTextItemDialog):
+    def __init__(self, action: str, parent, project_info: ProjectNavigation, available_pattern_names: list):
+        super().__init__(NEW_PATTERN_DIALOG, action, parent, project_info)
+        self.available_pattern_names = available_pattern_names
+        self.group_name = None
+
+    def validate(self, text):
+        if not text or text.lower() in [name.lower() for name in self.available_pattern_names]:
+            self.feedback.setText("name is not valid or already used")
+            self.feedback.setStyleSheet("color: orange")
+            self.ok_button.setDisabled(True)
+            return
+
+        self.feedback.setText("")
+        self.ok_button.setDisabled(False)
+
+    def _accept(self):
+        self.pattern_name = f'{self.fileName.text()}{self.fileType.currentText()}'
+        self.accept()
+
+
+def new_pattern(project_info: ProjectNavigation, available_patterns) -> Optional[str]:
+    new_dialog = NewPatternDialog('New Pattern', project_info.parent, project_info, available_patterns)
+    if not new_dialog.exec_():
+        return None
+    name = new_dialog.pattern_name
+    del(new_dialog)
+    return name

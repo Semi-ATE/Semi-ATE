@@ -69,8 +69,6 @@ class TestParameters:
     def serialize_definition(self) -> Dict[str, any]:
         struct = {}
         struct['is_selected'] = self.get_selectability()
-        struct['input_parameters'] = {}
-        struct['output_parameters'] = {}
         struct['description'] = self.get_test_name()
         struct['name'] = self.get_test_base()
         struct['sbin'] = self.get_sbin()
@@ -197,7 +195,7 @@ class TestParameters:
         # test instance are in this case invalid
         if not test_nums:
             return -1
-        
+
         multiplier = int(test_nums[0] / MAX_TEST_RANGE)
         for index, test_num in enumerate(test_nums):
             # index 0 is reserved for test instance number

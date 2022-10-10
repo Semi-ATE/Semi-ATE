@@ -20,6 +20,6 @@ def program():
 
 
 def test_can_create_program(fsoperator, program: Program):
-    program.add(fsoperator, "foo", "hw0", "PR", "some target", "A", "B", "ASIC", "Evil Monkey", 1, "cache", "cachepolicy", "101", 0, {})
+    program.add(fsoperator, "foo", "hw0", "PR", "some target", "A", "B", "ASIC", "Evil Monkey", 1, "cache", "cachepolicy", "101", 0, {}, {})
     pkg = program.get(fsoperator, "foo")
     assert(pkg.base == "PR")

@@ -274,13 +274,9 @@ class ToolBar(ApplicationToolbar):
         self.parent.select_target.emit(selected_target)
 
         if self.active_target in self.project_info.get_active_device_names_for_hardware(self.active_hardware):
-            self.base_combo.blockSignals(True)
             self.base_combo.setCurrentText('FT')
-            self.base_combo.blockSignals(False)
         elif self.active_target in self.project_info.get_active_die_names_for_hardware(self.active_hardware):
-            self.base_combo.blockSignals(True)
             self.base_combo.setCurrentText('PR')
-            self.base_combo.blockSignals(False)
         else:
             pass
 

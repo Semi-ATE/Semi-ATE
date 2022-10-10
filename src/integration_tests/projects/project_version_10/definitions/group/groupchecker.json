@@ -1,0 +1,13 @@
+[
+  {
+    "name": "checker",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [
+      "project_version_10_HW0_PR_asdf_checker_trog"
+    ],
+    "tests": [
+      "fae"
+    ]
+  }
+]

@@ -347,6 +347,13 @@ class test_proper_generator(BaseTestGenerator):
         output_table_content = prepare_output_parameters_table(self.definition['output_parameters'])
 
         sec = '    ' + self.do_not_touch_start + '\n'
+        if self.definition['patterns']:
+            sec += '    ' + 'import Pattern class if missing' + '\n'
+            sec += '    ' + f'  from {self.definition["name"]}_BC import Patterns' + '\n'
+            sec += '    ' + 'get patterns id:' + '\n'
+
+            for pattern in self.definition['patterns']:
+                sec += '    ' + f'{pattern} = Patterns.{pattern} \n'
 
         for doc in self.definition['docstring'][0].split('\n'):
             sec += '    ' + doc + '\n'

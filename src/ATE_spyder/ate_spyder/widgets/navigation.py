@@ -4,6 +4,7 @@ Created on Tue Mar  3 14:08:04 2020
 @author: hoeren
 """
 from argparse import Namespace
+from glob import glob
 from pathlib import Path
 from ate_common.program_utils import Sequencer
 import json
@@ -636,6 +637,10 @@ class ProjectNavigation(QObject):
         self.parent.database_changed.emit(TableId.Test())
         self.parent.database_changed.emit(TableId.Flow())
 
+    def get_pattern_list_for_test(self, test_name: str, hardware: str, base: str):
+        test = Test.get(self.get_file_operator(), test_name, hardware, base)
+        return test.definition['patterns']
+
     def is_test_program_valid(self, program_name):
         program = Program.get(self.get_file_operator(), program_name)
         return program.is_valid
@@ -749,7 +754,8 @@ class ProjectNavigation(QObject):
     def insert_program(
         self, name, hardware, base, target, usertext, sequencer_typ, temperature,
         definition, owner_name, order, test_target, cache_type, caching_policy,
-        test_ranges, group, instance_count: int, execution_sequence: ExecutionSequenceType
+        test_ranges, group, instance_count: int, execution_sequence: ExecutionSequenceType,
+        patterns: dict
     ):
         for _, test in enumerate(definition):
             base_test_name = test['name']
@@ -757,7 +763,8 @@ class ProjectNavigation(QObject):
 
         Program.add(
             self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
-            temperature, owner_name, order, cache_type, caching_policy, test_ranges, instance_count, execution_sequence
+            temperature, owner_name, order, cache_type, caching_policy, test_ranges, instance_count, execution_sequence,
+            patterns
         )
         self._insert_sequence_informations(owner_name, name, definition)
         self._generate_program_code(name, owner_name)
@@ -777,14 +784,14 @@ class ProjectNavigation(QObject):
     def update_program(
         self, name, hardware, base, target, usertext, sequencer_typ, temperature,
         definition, owner_name, test_target, cache_type, caching_policy, test_ranges,
-        instance_count: int, execution_sequence: ExecutionSequenceType
+        instance_count: int, execution_sequence: ExecutionSequenceType, patterns: dict
     ):
         self._update_test_targets_list(name, test_target, hardware, base, definition)
         Program.set_program_validity(self.get_file_operator(), name, True)
         Program.update(
             self.get_file_operator(), name, hardware, base, target, usertext, sequencer_typ,
             temperature, owner_name, cache_type, caching_policy, test_ranges,
-            instance_count, execution_sequence
+            instance_count, execution_sequence, patterns
         )
 
         self._delete_program_sequence(name, owner_name)
@@ -838,6 +845,7 @@ class ProjectNavigation(QObject):
         self._remove_file(self._generate_program_path(program_name))
         self._remove_file(self._generate_bin_table_path(program_name))
         self._remove_file(self._generate_strategy_file_path(program_name))
+        self._remove_file(self._generate_signal_to_channel_path(program_name))
 
         self._remove_testprogram_form_group_list(program_name, owner_name)
 
@@ -870,6 +878,9 @@ class ProjectNavigation(QObject):
 
     def _generate_path_for_program(self, program_name: str) -> Path:
         return Path(self.project_directory).joinpath(self.project_name, self.active_hardware, self.active_base, program_name)
+
+    def _generate_signal_to_channel_path(self, program_name):
+        return self._generate_path_for_program(f'{program_name}.yaml')
 
     def _update_test_program_sequence(self, program_order, owner_name):
         # program order starts counting by one but program_order is basically the order
@@ -1284,3 +1295,65 @@ class ProjectNavigation(QObject):
     def create_test_runner_main(self, file_path: Path, test_configuration: Test):
         hardware_definition = self.get_hardware_definition(test_configuration.hardware)
         _ = self.run_build_tool('generate', 'test_runner', Path(self.project_directory), file_path, test_configuration, hardware_definition)
+
+    def is_pattern_used(self, name: str) -> bool:
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            for _, patterns in program.patterns.items():
+                for pattern_tuple in patterns:
+                    if pattern_tuple[1].endswith(name):
+                        return True
+
+        return False
+
+    def get_dependant_program_for_pattern(self, name: str) -> dict:
+        program_list = []
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            for _, patterns in program.patterns.items():
+                for pattern_tuple in patterns:
+                    if not pattern_tuple[1].endswith(name):
+                        continue
+
+                    program_list.append(program.prog_name)
+
+        return {name: list(set(program_list))}
+
+    def get_program_patterns(self, prog_name: str) -> dict:
+        program = Program.get(self.get_file_operator(), prog_name)
+        pattern_data = {}
+
+        if not program.patterns:
+            return pattern_data
+
+        for _, patterns in program.patterns.items():
+            for pattern_tuple in patterns:
+                if pattern_data.get(pattern_tuple[0]):
+                    continue
+
+                pattern_data[pattern_tuple[0]] = pattern_tuple[1]
+
+        return pattern_data
+
+    def update_pattern_names_for_programs(self, old: str, new: str):
+        programs = Program.get_all(self.get_file_operator())
+        for program in programs:
+            relative_path_old = Path(old).relative_to(self.project_directory)
+            relative_path_new = Path(new).relative_to(self.project_directory)
+
+            for test_name, test_patterns in program.patterns.items():
+                updated_list = []
+                for pattern_name, pattern_path in test_patterns:
+                    if pattern_path != str(relative_path_old):
+                        updated_list.append((pattern_name, str(pattern_path)))
+                        continue
+
+                    updated_list.append((pattern_name, str(relative_path_new)))
+
+                Program.update_patterns(self.get_file_operator(), program.prog_name, test_name, updated_list)
+
+    def get_available_patterns(self, path: Path):
+        pattern_files = []
+        pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.stil')])
+        pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.wav')])
+        return pattern_files

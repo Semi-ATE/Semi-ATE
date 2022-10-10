@@ -8,3 +8,4 @@ semi-ate-project-database
 semi-ate-sammy
 pygit2
 requests
+pyyaml
