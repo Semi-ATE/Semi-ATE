@@ -146,7 +146,11 @@ class RunTab(TabInterface):
     def _start_execution(self):
         # TODO: the code generation may be the same as generating a test program but with only one test
         # TODO: emit signal to spyder
-        self.parent.feedback.setText('not implemented yet')
+        configured_test = self._collect_data()
+        file_path = Path(self.parent.project_info.project_directory).joinpath('runner', f'{self.test_name}_{self.hardware}_{self.base}_test_runner.py')
+        self.parent.project_info.create_test_runner_main(file_path, configured_test)
+
+        # self.parent.feedback.setText('not implemented yet')
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
