@@ -193,7 +193,6 @@ class ATEWidget(PluginMainWidget):
             print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
             self.sig_project_created.emit()
 
-
     def open_project(self, project_path, parent_instance) -> bool:
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
@@ -229,7 +228,7 @@ class ATEWidget(PluginMainWidget):
                     # older projects doesn't have the database structure supported by the current Semi-ATE Plugin version
                     # For those the auto migration is disabled and shall be done manually
                     raise Exception(f'''\n
-Project: '{project_path}' cannot be migrated manually!
+Project: '{project_path}' cannot be migrated automatically!
 Execute the following commands inside the project root\n
 $ sammy migrate\n
 Running the generate all command shall refresh the generated code based on the template files\n
