@@ -46,7 +46,7 @@ from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
 # from ate_spyder.widgets.validation import valid_name_regex                 # TODO: add for validation
 from ate_spyder.widgets.validation import is_valid_python_class_name
-from ate_spyder.widgets.actions_on.tests import TestWizard
+from ate_spyder.widgets.actions_on.utils import Delegator
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
 from ate_common.parameter import OutputColumnKey
@@ -75,7 +75,7 @@ SI = ['s', 'm', 'g', 'A', 'K', 'mol', 'cd', 'rad', 'sr', 'Hz', 'N', 'Pa', 'J', '
       'lx', 'Bq', 'Gy', 'Sv', 'kat', '°C', 'Gs', '˽', '', ' ']
 
 
-class CDelegator(TestWizard.Delegator):
+class CDelegator(Delegator):
     """in work isn't running correctly....
 
     It works with regex AND verifies that the name doesn't exist
@@ -95,7 +95,7 @@ class CDelegator(TestWizard.Delegator):
             item.setText("")
 
 
-class NameDelegator(TestWizard.Delegator):
+class NameDelegator(Delegator):
     """Custom Delegator Class for 'Name'.
 
     It works with regex AND verifies that the name doesn't exist
@@ -144,15 +144,15 @@ class ExcelTestWizard(BaseDialog):
             self.WithBase.setText(test_content['base'])
 
     # Delegators
-        self.fmtDelegator = TestWizard.Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
-        self.minDelegator = TestWizard.Delegator(valid_min_float_regex, self)
-        self.defaultDelegator = TestWizard.Delegator(valid_default_float_regex, self)
-        self.maxDelegator = TestWizard.Delegator(valid_max_float_regex, self)
+        self.fmtDelegator = Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
+        self.minDelegator = Delegator(valid_min_float_regex, self)
+        self.defaultDelegator = Delegator(valid_default_float_regex, self)
+        self.maxDelegator = Delegator(valid_max_float_regex, self)
         self.lslDelegator = CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
         self.ltlDelegator = CDelegator(valid_min_float_regex, self)
-        self.nomDelegator = TestWizard.Delegator(valid_default_float_regex, self)
-        self.utlDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        self.uslDelegator = TestWizard.Delegator(valid_max_float_regex, self)
+        self.nomDelegator = Delegator(valid_default_float_regex, self)
+        self.utlDelegator = Delegator(valid_max_float_regex, self)
+        self.uslDelegator = Delegator(valid_max_float_regex, self)
         # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())  # TODO: not running correcty
 
     # table
