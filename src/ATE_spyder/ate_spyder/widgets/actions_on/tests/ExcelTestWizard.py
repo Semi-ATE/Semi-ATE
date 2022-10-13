@@ -330,27 +330,9 @@ class ExcelTestWizard(BaseDialog):
             return True if string[0].isnumeric() else False
 
         def addMenuOverwrite(item):
-            # TODO: add ability for  overwriting
-            # menu = QtWidgets.QMenu(self)
-            # overwrite = menu.addAction("overwrite")
-            # action = menu.exec_(self.table.mapToGlobal(item))
             print(item.text())
 
         self.Feedback.setText("")
-
-        # TODO:  following code is an example if testname already exist,   add this ability in a future version
-        # if self.read_only:
-        #     dependant_programs = self.project_info.get_dependant_objects_for_test(self.TestName)
-        #     # we don't care if the test not used yet !
-        #     if len(dependant_programs):
-        #         text = "edit test can invalidate the following test-program(s):\n"
-        #         for _, programs in dependant_programs.items():
-        #             for program in programs:
-        #                 text += f"{ program }"
-
-        #             text += ", "
-
-        #         self.edit_feedback.setText(text)
 
         # 1. Check that we have a hardware selected
         if self.ForHardwareSetup.text() == '':
@@ -451,11 +433,7 @@ class ExcelTestWizard(BaseDialog):
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                # if TestName not exist:                      # TODO: add
                 self.project_info.add_custom_test(test_content)
-                # else:
-                #     update_option = self.__have_parameters_changed(test_content)
-                #     self.project_info.update_custom_test(test_content, update_option)
             if TestName != '':
                 test_content = {}
                 test_content['type'] = "custom"
