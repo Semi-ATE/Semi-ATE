@@ -4,29 +4,9 @@ Created on Mon Sep  5 18:56:05 2022
 
 @author: Zlin526F
 
-References:
-    TestWizard
-
-
-todo:  dieser Wizard stellt zur Zeit nur einen einfachen Import von einer Exel liste zur Verfügung.
-       es wird die datenbank und die zugehörigen python files für die einzelnen Test erzeugt.
-
-       es fehlt:
-           - parameter.name wird nicht auf fehlerhafte zeichen überprüft!
-           - falsche einträge werden farbig dargestellt, nach dem editieren sollte die Farbe wieder auf den Default wert gesetzt werden
-           - wenn Item ediert wird, muss danach automatisch der verify aktualisiert werden.
-           - wenn ein Test name existiert, sollte ein Menü angeboten werden, für overwrite oder disable des Tests
-           - Mapping file von Exel Paramter spalten zu Semi-ATE Parameter name sollte speicher und ladbar sein, im Moment nur fest kodiert
-               siehe mappingATEDic
-           - Mappjng file interactive erstellen
-           - die erste Zeile, in der ein Wert in einer Spalte steht,  wird in dem Excel file genommen als Header. Es sollte über ein Menue
-             auch andere Zeile gesetzt werden können
-           - bei Änderung von Units sollte ein Menue angeboten werden mit möglichen SI-Einheiten
-           - bei Import von Units, check if POWER.key exist, if yes dann zusätzliche Spalte erzeugen
-           - Excel liste abspeicherbar nach Änderung
+Starting from TestWizard.py
 
 """
-from enum import Enum, unique
 import os
 import re
 
@@ -46,7 +26,7 @@ from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
 # from ate_spyder.widgets.validation import valid_name_regex                 # TODO: add for validation
 from ate_spyder.widgets.validation import is_valid_python_class_name
-from ate_spyder.widgets.actions_on.utils import Delegator
+import ate_spyder.widgets.actions_on.tests.Utils as utils
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
 from ate_common.parameter import OutputColumnKey
@@ -75,7 +55,7 @@ SI = ['s', 'm', 'g', 'A', 'K', 'mol', 'cd', 'rad', 'sr', 'Hz', 'N', 'Pa', 'J', '
       'lx', 'Bq', 'Gy', 'Sv', 'kat', '°C', 'Gs', '˽', '', ' ']
 
 
-class CDelegator(Delegator):
+class CDelegator(utils.Delegator):
     """in work isn't running correctly....
 
     It works with regex AND verifies that the name doesn't exist
@@ -102,7 +82,7 @@ class ExcelTestWizard(BaseDialog):
         super().__init__(__file__, parent=project_info.parent)
         self.project_info = project_info
 
-        test_content = TestWizard.make_blank_definition(project_info)
+        test_content = utils.make_blank_definition(project_info)
         self.test_content = test_content
 
         self.Feedback.setStyleSheet(ORANGE_LABEL)
@@ -126,15 +106,15 @@ class ExcelTestWizard(BaseDialog):
             self.WithBase.setText(test_content['base'])
 
     # Delegators
-        self.fmtDelegator = Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
-        self.minDelegator = Delegator(valid_min_float_regex, self)
-        self.defaultDelegator = Delegator(valid_default_float_regex, self)
-        self.maxDelegator = Delegator(valid_max_float_regex, self)
-        self.lslDelegator = CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
-        self.ltlDelegator = CDelegator(valid_min_float_regex, self)
-        self.nomDelegator = Delegator(valid_default_float_regex, self)
-        self.utlDelegator = Delegator(valid_max_float_regex, self)
-        self.uslDelegator = Delegator(valid_max_float_regex, self)
+        self.fmtDelegator = utils.Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
+        self.minDelegator = utils.Delegator(valid_min_float_regex, self)
+        self.defaultDelegator = utils.Delegator(valid_default_float_regex, self)
+        self.maxDelegator = utils.Delegator(valid_max_float_regex, self)
+        self.lslDelegator = utils.CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
+        self.ltlDelegator = utils.CDelegator(valid_min_float_regex, self)
+        self.nomDelegator = utils.Delegator(valid_default_float_regex, self)
+        self.utlDelegator = utils.Delegator(valid_max_float_regex, self)
+        self.uslDelegator = utils.Delegator(valid_max_float_regex, self)
         # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())  # TODO: not running correcty
 
     # table
@@ -352,7 +332,6 @@ class ExcelTestWizard(BaseDialog):
                 self.Feedback.setText("No test names found")
 
         # 4. make some checks with the test names
-# todo: allow edit or overwrite
         if self.Feedback.text() == "":
             check(testNames, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
             check(testNames, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
@@ -446,7 +425,7 @@ class ExcelTestWizard(BaseDialog):
 
                 searchAndAssign('docstring', [''])
                 searchAndAssign('dependencies', {})
-                test_content['input_parameters'] = {'Temperature': TestWizard.make_default_input_parameter(temperature=True)}
+                test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
 
             column = searchmapping('input_parameters.name')
@@ -456,7 +435,7 @@ class ExcelTestWizard(BaseDialog):
             column = searchmapping('output_parameters.name')
             if column is not None:
                 name = searchAndAssign('output_parameters.name', write_content=False)
-                output_parameters = TestWizard.make_default_output_parameter(empty=True)
+                output_parameters = utils.make_default_output_parameter(empty=True)
                 output_parameters['lsl'] = -np.inf
                 output_parameters['usl'] = np.inf
                 output_parameters['fmt'] = ".3f"
