@@ -24,7 +24,6 @@ from ate_spyder.widgets.validation import valid_default_float_regex
 from ate_spyder.widgets.validation import valid_fmt_regex
 from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
-# from ate_spyder.widgets.validation import valid_name_regex                 # TODO: add for validation
 from ate_spyder.widgets.validation import is_valid_python_class_name
 import ate_spyder.widgets.actions_on.tests.Utils as utils
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
@@ -91,7 +90,7 @@ class ExcelTestWizard(BaseDialog):
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
     # TestName
-        self.TestName = ''     # todo: change self._init_group()
+        self.TestName = ''
 
     # ForHardwareSetup
         self.ForHardwareSetup.setStyleSheet("font-weight: bold;")
@@ -106,16 +105,15 @@ class ExcelTestWizard(BaseDialog):
             self.WithBase.setText(test_content['base'])
 
     # Delegators
-        self.fmtDelegator = utils.Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
+        self.fmtDelegator = utils.Delegator(valid_fmt_regex, self)
         self.minDelegator = utils.Delegator(valid_min_float_regex, self)
         self.defaultDelegator = utils.Delegator(valid_default_float_regex, self)
         self.maxDelegator = utils.Delegator(valid_max_float_regex, self)
-        self.lslDelegator = utils.CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
+        self.lslDelegator = utils.CDelegator(valid_min_float_regex, self)
         self.ltlDelegator = utils.CDelegator(valid_min_float_regex, self)
         self.nomDelegator = utils.Delegator(valid_default_float_regex, self)
         self.utlDelegator = utils.Delegator(valid_max_float_regex, self)
         self.uslDelegator = utils.Delegator(valid_max_float_regex, self)
-        # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())  # TODO: not running correcty
 
     # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
@@ -123,7 +121,7 @@ class ExcelTestWizard(BaseDialog):
         self.get_excel_pages(filename)
         self.create_excel_table(filename)
 
-        self._init_group()      # todo: if one test in a group, all other test will be enabled for this group :-(
+        self._init_group()
 
     # Tabs
     # buttons
@@ -216,7 +214,7 @@ class ExcelTestWizard(BaseDialog):
         create mapping Dictionary excel to table columns
         """
         col = 0
-        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()        # TODO: color is not corrrect, how I get the used color?
+        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()
         self.table.mapping = {}
         for header in self.workpage.columns:
             # self.table.setItem(0, col, QtWidgets.QTableWidgetItem(''))          #removeItem
@@ -324,7 +322,7 @@ class ExcelTestWizard(BaseDialog):
                 self.Feedback.setText("Select a 'base'")
 
         # 3. Check if we have a test name
-        table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]                     # todo: use it from table
+        table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
         testNames = [str(x).strip() for x in table_name if not pd.isnull(x) and x != '']
 
         if self.Feedback.text() == "":
@@ -430,7 +428,7 @@ class ExcelTestWizard(BaseDialog):
 
             column = searchmapping('input_parameters.name')
             if column is not None:
-                pass                      # todo: create input_parameters from the excel workpage
+                pass
 
             column = searchmapping('output_parameters.name')
             if column is not None:
