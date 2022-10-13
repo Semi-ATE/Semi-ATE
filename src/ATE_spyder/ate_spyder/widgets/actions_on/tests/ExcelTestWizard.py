@@ -75,38 +75,6 @@ SI = ['s', 'm', 'g', 'A', 'K', 'mol', 'cd', 'rad', 'sr', 'Hz', 'N', 'Pa', 'J', '
       'lx', 'Bq', 'Gy', 'Sv', 'kat', '°C', 'Gs', '˽', '', ' ']
 
 
-@unique
-class InputColumnIndex(Enum):
-    SHMOO = 0
-    NAME = 1
-    MIN = 2
-    DEFAULT = 3
-    MAX = 4
-    POWER = 5
-    UNIT = 6
-    FMT = 7
-
-    def __call__(self):
-        return self.value
-
-
-@unique
-class OutputColumnIndex(Enum):
-    NAME = 0
-    LSL = 1
-    LTL = 2
-    NOM = 3
-    UTL = 4
-    USL = 5
-    POWER = 6
-    UNIT = 7
-    MPR = 8
-    FMT = 9
-
-    def __call__(self):
-        return self.value
-
-
 class CDelegator(TestWizard.Delegator):
     """in work isn't running correctly....
 
