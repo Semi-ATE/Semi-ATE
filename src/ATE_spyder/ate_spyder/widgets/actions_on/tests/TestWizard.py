@@ -97,24 +97,6 @@ INPUT_PARAMETER_COLUMN_MAP = [
 ]
 
 
-class NameDelegator(Delegator):
-    """Custom Delegator Class for 'Name'.
-
-    It works with regex AND verifies that the name doesn't exist
-    """
-
-    def __init__(self, regex, existing_names, parent=None):
-        self.super().__init__(regex, parent)
-        self.existing_names = existing_names
-        self.commitData.commitData.connect(self.validate_name)
-
-    def validate_name(self, editor):
-        """Make sure the entered name does not exist already."""
-        # TODO: implement
-        if editor.text() in self.existing_names:
-            pass
-
-
 class TestWizard(BaseDialog):
     """Wizard to work with 'Test' definition."""
 

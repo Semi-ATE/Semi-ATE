@@ -95,24 +95,6 @@ class CDelegator(Delegator):
             item.setText("")
 
 
-class NameDelegator(Delegator):
-    """Custom Delegator Class for 'Name'.
-
-    It works with regex AND verifies that the name doesn't exist
-    """
-
-    def __init__(self, regex, existing_names, parent=None):
-        self.super().__init__(regex, parent)
-        self.existing_names = existing_names
-        self.commitData.commitData.connect(self.validate_name)
-
-    def validate_name(self, editor):
-        """Make sure the entered name does not exist already."""
-        # TODO: implement, e.q use valid_name_regex
-        if editor.text() in self.existing_names:
-            pass
-
-
 class ExcelTestWizard(BaseDialog):
     """Wizard to import an Exel-file with the 'Test' definitions."""
 
