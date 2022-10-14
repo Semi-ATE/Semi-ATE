@@ -12,6 +12,7 @@ References:
 from enum import Enum, unique
 import os
 import re
+from ate_spyder.widgets.actions_on.tests.PatternTab import PatternTab
 
 import numpy as np
 import keyword
@@ -303,6 +304,9 @@ class TestWizard(BaseDialog):
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.OKButton.setEnabled(False)
+
+        self.pattern_tab = PatternTab(self)
+        self.pattern_tab.setup(test_content['patterns'])
 
         self._connect_event_handler()
         self.resize(735, 400)
@@ -1748,6 +1752,7 @@ class TestWizard(BaseDialog):
         test_content['input_parameters'] = self.getInputParameters()
         test_content['output_parameters'] = self.getOutputParameters()
         test_content['dependencies'] = {}  # TODO: implement this
+        test_content['patterns'] = self.pattern_tab.collect_pattern_names()
         if not self.read_only:
             self.project_info.add_custom_test(test_content)
         else:
@@ -1776,7 +1781,11 @@ class TestWizard(BaseDialog):
            or self._check_content(self.test_content['output_parameters'], content['output_parameters']):
             return UpdateOptions.Code_Update()
 
-        if not (set(self.project_info.get_groups_for_test(self.TestName.text())) & set(self._get_groups())):
+        if self.pattern_tab.is_updated(self.test_content['patterns']):
+            return UpdateOptions.Code_Update()
+
+        group_names = set([group.name for group in self.project_info.get_groups_for_test(self.TestName.text())])
+        if not (group_names & set(self._get_groups())):
             return UpdateOptions.Group_Update()
 
         return UpdateOptions.DB_Update()
@@ -1853,6 +1862,7 @@ def make_blank_definition(project_info):
     retval['input_parameters'] = {'Temperature': make_default_input_parameter(temperature=True) }
     retval['output_parameters'] = { 'new_parameter1': make_default_output_parameter() }
     retval['dependencies'] = {}
+    retval['patterns'] = []
     return retval
 
 def make_default_input_parameter(temperature: bool = False):

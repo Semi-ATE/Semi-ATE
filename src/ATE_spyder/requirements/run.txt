@@ -9,3 +9,4 @@ semi-ate-sammy
 semi-ate-stil-tools
 pygit2
 requests
+pyyaml

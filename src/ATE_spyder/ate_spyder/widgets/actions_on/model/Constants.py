@@ -33,6 +33,7 @@ class MenuActionTypes(Enum):
     Export = "export_item"
     ExecuteTestRunner = "execute_test_runner" 
     OpenAutoScriptFile = "open_auto_script_file_item" 
+    CompilePattern = "compile_pattern_files" 
 
     def __call__(self):
         return self.value

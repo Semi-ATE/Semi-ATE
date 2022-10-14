@@ -1,0 +1,9 @@
+[
+  {
+    "name": "production",
+    "is_selected": true,
+    "is_standard": true,
+    "programs": [],
+    "tests": []
+  }
+]

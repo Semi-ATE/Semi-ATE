@@ -109,6 +109,8 @@ class TreeModel(QtGui.QStandardItemModel):
         self._update_tests()
 
         self.pattern_section.removeRows(0, self.pattern_section.row_count())
+        pattern_path = self.project_info.project_directory.joinpath('pattern')
+        self.pattern_observer(str(pattern_path))
         self.pattern_observer._init_section()
 
         if rebuild_flows:
@@ -163,11 +165,6 @@ class TreeModel(QtGui.QStandardItemModel):
         self._append_flows()
 
         if self.base == "FT":
-
-            package = ''
-            if self.target != '':
-                package = self.project_info.get_device_package(self.target)
-
             self.quali_flows = FlowItem.FlowItem(project_info, "qualification", self.flows)
             self.quali_flows.appendRow(FlowItem.SimpleFlowItem(project_info, "ZHM", "Zero Hour Measurements"))
             self.quali_flows.appendRow(FlowItem.SimpleFlowItem(project_info, "ABSMAX", "Absolute Maximum Ratings"))
@@ -184,9 +181,12 @@ class TreeModel(QtGui.QStandardItemModel):
             self.quali_flows.appendRow(self._make_single_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.TC.tcwizard"))
             self.quali_flows.appendRow(self._make_single_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.THB.thbwizard"))
 
-            if not self.project_info.is_package_a_naked_die(package):
-                self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.ESD.esdwizard"))
-                self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.RSH.rshwizard"))
+            if self.target != '':
+                package = self.project_info.get_device_package(self.target)
+
+                if not self.project_info.is_package_a_naked_die(package):
+                    self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.ESD.esdwizard"))
+                    self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.RSH.rshwizard"))
 
             self.flows.appendRow(self.quali_flows)
 
@@ -212,7 +212,7 @@ class TreeModel(QtGui.QStandardItemModel):
         from ate_spyder.widgets.actions_on.documentation.DocumentationItem import DocumentationItem
         # TODO: do we need a sorting-order (alphabetic, etc...) ?
         documentation_section = DocumentationItem("documentation", self.doc_path, self.project_info, is_editable=False)
-        self.doc_observer = DocumentationObserver(self.doc_path, documentation_section)
+        self.doc_observer = DocumentationObserver(self.doc_path, documentation_section, self.project_info)
         self.doc_observer.start_observer()
 
         self.root_item.insert_item(documentation_section)
@@ -225,7 +225,7 @@ class TreeModel(QtGui.QStandardItemModel):
         from ate_spyder.widgets.actions_on.patterns.PatternItem import PatternItem
         pattern_path = self.project_info.project_directory.joinpath('pattern')
         self.pattern_section = PatternItem("pattern", str(pattern_path), self.project_info, is_editable=False)
-        self.pattern_observer = DocumentationObserver(str(pattern_path), self.pattern_section)
+        self.pattern_observer = DocumentationObserver(str(pattern_path), self.pattern_section, self.project_info)
         self.pattern_observer.start_observer()
 
         self.root_item.appendRow(self.pattern_section)

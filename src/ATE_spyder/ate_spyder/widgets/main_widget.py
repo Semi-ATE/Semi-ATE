@@ -255,7 +255,7 @@ class ATEWidget(PluginMainWidget):
                     try:
                         raise Exception(f'''\n
 Migration required:\n
-Project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
+Project: '{project_path}' with project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
 To prevent any inconsistencies the project must be migrated\n
 Execute the following commands inside the project root\n
 $ sammy migrate\n

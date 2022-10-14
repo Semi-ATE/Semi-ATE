@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 import os
 
 from ate_spyder.widgets.actions_on.documentation.BaseFolderStructureItem import BaseFolderStructureItem, BaseFolderStructureItemChild
+from ate_spyder.widgets.actions_on.utils.MenuDialog import new_pattern
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 
@@ -52,7 +53,6 @@ class PatternItem(BaseFolderStructureItem):
         self.insertRow(index, item)
 
     def add_file_item(self, name: str, path: str, index: int=0):
-        # TODO: what extension shall we support
         if Path(path).suffix not in self.supported_file_extension():
             return
 
@@ -77,17 +77,41 @@ class PatternItem(BaseFolderStructureItem):
     def supported_file_extension(self) -> List[str]:
         return ['.stil', '.wav']
 
+    def add_file__item(self, file_types: str = ''):
+        pattern_res = new_pattern(self.project_info, self.project_info.get_available_patterns(self.root))
+        if not pattern_res:
+            return
+
+        open(Path(self.root).joinpath(pattern_res), 'w').close()
+
 
 class PatternItemChild(BaseFolderStructureItemChild):
     def __init__(self, name: str, path: str, parent: PatternItem, project_info: ProjectNavigation):
         super().__init__(name, path, parent, project_info)
 
     def _get_menu_items(self) -> List[MenuActionTypes]:
-        return [MenuActionTypes.OpenFile(),
-                MenuActionTypes.Rename(),
-                MenuActionTypes.Move(),
-                None,
-                MenuActionTypes.Delete()]
-    
+        options = [MenuActionTypes.OpenFile(),
+                   MenuActionTypes.Rename(),
+                   MenuActionTypes.Trace()]
+        if not self.project_info.is_pattern_used(self.text()):
+            options.extend([None, MenuActionTypes.Delete()])
+
+        return options
+
     def open_file_item(self):
         self.model().edit_file.emit(str(self.path))
+
+    def trace_item(self):
+        from ate_spyder.widgets.actions_on.utils.ItemTrace import ItemTrace
+        ItemTrace(self.dependency_list, self.text(), self.project_info.parent).exec_()
+
+    def rename_item(self):
+        rename_res = super().rename_item(self.project_info.get_available_patterns(Path(self.path).parent))
+        if not rename_res:
+            return
+        old, new = rename_res
+        self.project_info.update_pattern_names_for_programs(old, new)
+
+    @property
+    def dependency_list(self):
+        return self.project_info.get_dependant_program_for_pattern(self.text())

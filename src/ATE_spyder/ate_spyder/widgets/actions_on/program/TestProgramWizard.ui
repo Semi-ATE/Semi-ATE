@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1286</width>
-    <height>878</height>
+    <height>869</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1418,6 +1418,147 @@
              <string>Description</string>
             </property>
            </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="PatternMap">
+        <property name="accessibleName">
+         <string>patternmap</string>
+        </property>
+        <attribute name="title">
+         <string>Pattern</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>Pattern Map</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="0" column="0">
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="0" column="0">
+                <widget class="QTableWidget" name="pattern_table">
+                 <column>
+                  <property name="text">
+                   <string>Test Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Pattern Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Pattern Path</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_3">
+            <attribute name="title">
+             <string>Signal To Channel</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="2" column="0">
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="0">
+                <widget class="QTableWidget" name="signal_to_channel_table">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>200</number>
+                 </attribute>
+                 <column>
+                  <property name="text">
+                   <string>Signal Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Channel Number</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="minimumSize">
+                  <size>
+                   <width>50</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>80</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>max channels:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="num_channels">
+                 <property name="maximumSize">
+                  <size>
+                   <width>40</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="add">
+                 <property name="minimumSize">
+                  <size>
+                   <width>1000</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>add</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <widget class="QPushButton" name="remove">
+                 <property name="text">
+                  <string>remove</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
