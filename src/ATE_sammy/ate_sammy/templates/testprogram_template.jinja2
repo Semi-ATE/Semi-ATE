@@ -13,6 +13,8 @@ from ate_test_app.stages_sequence_generator.stages_sequence_generator import Sta
 from ate_test_app.sequencers.mqtt.MqttConnection import MqttConnection
 from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
+from ate_common.pattern.tool_factory import get_stil_tool
+
 # setup the include path manually as the project is not a package
 import os
 import sys
@@ -49,10 +51,13 @@ if __name__ == '__main__':
     auto_script.set_logger(context.get_logger())
     auto_script.before_start_setup()
 
+    stil_tool = get_stil_tool()
+    stil_tool.load_pattern({{compiled_patterns}})
+
     {% for testinstance in test_list %}
 
     from {{ testinstance.test_module }} import {{ testinstance.test_class }}
-    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context)
+    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context, stil_tool)
     {% for ip in testinstance.input_parameters %}
     {% if testinstance.input_parameters[ip]['type'] == 'static' or testinstance.input_parameters[ip]['type'] ==  'local' %}
     _ate_var_{{ testinstance.instance_name }}.ip.set_parameter('{{ip}}', '{{testinstance.input_parameters[ip]['type']}}', {{testinstance.input_parameters[ip]['value']}}, {{testinstance.input_parameters[ip][InputColumnKey.MIN()]}}, {{testinstance.input_parameters[ip][InputColumnKey.MAX()]}}, {{testinstance.input_parameters[ip][InputColumnKey.POWER()]}}, context, {{testinstance.input_parameters[ip][InputColumnKey.SHMOO()]}})
