@@ -61,7 +61,7 @@ if __name__ == '__main__':
     {% endif %}
     {% endfor %}
     {% for op in output_parameters %}
-    _ate_var_{{ test_name }}.op.set_parameter('{{op}}', 0, {{output_parameters[op][OutputColumnKey.LTL()]}}, {{output_parameters[op][OutputColumnKey.UTL()]}}, 12, 2, '{{ test_name }}')
+    _ate_var_{{ test_name }}.op.set_parameter('{{op}}', 0, {{output_parameters[op][OutputColumnKey.LTL()]}}, {{output_parameters[op][OutputColumnKey.UTL()]}}, 0, 2, '{{ test_name }}')
     {% endfor %}
     sequencer.register_test(_ate_var_{{ test_name }})
 
