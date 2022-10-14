@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 from functools import partial
 from typing import Type, Dict
-
+from ate_spyder.widgets.actions_on.utils.MenuDialog import StandardDialog
 # Qt-related imports
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
@@ -193,7 +193,6 @@ class ATEWidget(PluginMainWidget):
             print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
             self.sig_project_created.emit()
 
-
     def open_project(self, project_path, parent_instance) -> bool:
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
@@ -223,7 +222,19 @@ class ATEWidget(PluginMainWidget):
                 self.project_info(project_path)
 
                 from ate_projectdatabase import latest_semi_ate_project_db_version
-                project_version = self.project_info.get_version()
+                try:
+                    project_version = self.project_info.get_version()
+                except Exception:
+                    # older projects doesn't have the database structure supported by the current Semi-ATE Plugin version
+                    # For those the auto migration is disabled and shall be done manually
+                    raise Exception(f'''\n
+Project: '{project_path}' cannot be migrated automatically!
+Execute the following commands inside the project root\n
+$ sammy migrate\n
+Running the generate all command shall refresh the generated code based on the template files\n
+$ sammy generate all\n
+                    ''')
+
                 if (project_version != latest_semi_ate_project_db_version):
                     try:
                         raise Exception(f'''\n
@@ -235,20 +246,32 @@ $ sammy migrate\n
 Running the generate all command shall refresh the generated code based on the template files\n
 $ sammy generate all\n
                     ''')
-                    except Exception as e:
-                        from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
-                        report_exception(self.project_info.parent, "migration required")
-                        self.close_project()
+                    except Exception:
+                        diag = StandardDialog(self.project_info.parent, 'migrate the project automatically?')
+                        if not diag.exec_():
+                            from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
+                            report_exception(self.project_info.parent, "migration required")
+                            self.close_project()
+                        else:
+                            self.project_info.run_build_tool('migrate', '', project_path)
+                            self.project_info.run_build_tool('generate', 'all', project_path)
+                            self.open_project(project_path, parent_instance)
+                            self.init_project()
+                            return True
+
                         return False
 
-                self.toolbar(self.project_info)
-                self.set_tree()
-                self.init_done.emit()
+                self.init_project()
                 return True
             else:
                 print(f'project type is not: {ATEProject.ID}')
 
         return False
+
+    def init_project(self):
+        self.toolbar(self.project_info)
+        self.set_tree()
+        self.init_done.emit()
 
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
         with open(config_file_path, 'r') as file:
