@@ -97,8 +97,13 @@ class dummy_cache():
         self.read_called = True
 
 
+def mock_hbin(self, sbin: int):
+    return 0
+
+
 @pytest.fixture
-def sequencer():
+def sequencer(mocker):
+    mocker.patch('ate_test_app.sequencers.binning.BinStrategy.BinStrategy.get_hard_bin', mock_hbin)
     bin_strategy = BinStrategy(CONFIG_FILE)
     ret_val = SequencerBase("Testprog", bin_strategy)
     ret_val.set_logger(LoggerStub())
