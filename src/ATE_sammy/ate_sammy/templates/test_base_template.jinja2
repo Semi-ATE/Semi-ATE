@@ -17,6 +17,7 @@ from ate_test_app.sequencers.DutTesting.DutTestCaseABC import DutTestCaseBase
 from ate_test_app.sequencers.DutTesting.Result import Result
 from ate_test_app.parameters.ResolverFactory import create_parameter_resolver
 from ate_common.logger import (LogLevel, Logger)
+from ate_common.pattern.stil_tool_base import StilToolBase
 
 import sys
 from pathlib import Path
@@ -75,11 +76,13 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     base = '{{ definition['base'] }}'
     Type = '{{ definition['type'] }}'
 
-    def __init__(self, instance_name: str, sbin, test_num, context):
+    def __init__(self, instance_name: str, sbin, test_num, context, stil_tool: StilToolBase):
         super().__init__(None, None, instance_name, sbin, test_num, context)
         self.context: Context = context
         self.ip = {{ definition['name'] }}_IP()
         self.op = {{ definition['name'] }}_OP()
+
+        self.stil_tool = stil_tool
 
     def aggregate_test_result(self, site_num: int, exception: bool):
         stdf_data = []

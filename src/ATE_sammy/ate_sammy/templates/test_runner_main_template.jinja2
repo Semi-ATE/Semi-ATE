@@ -10,6 +10,8 @@ from ate_test_app.stages_sequence_generator.stages_sequence_generator import Sta
 from ate_test_app.sequencers.mqtt.MqttConnection import MqttConnection
 from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
+from ate_common.pattern.tool_factory import get_stil_tool
+
 # setup the include path manually as the project is not a package
 import os
 import sys
@@ -51,8 +53,11 @@ if __name__ == '__main__':
     auto_script.set_logger(context.get_logger())
     auto_script.before_start_setup()
 
+    stil_tool = get_stil_tool()
+    stil_tool.load_pattern({{compiled_patterns}})
+
     from {{ test_name }}.{{ test_name }} import {{ test_name }}
-    _ate_var_{{ test_name }} = {{ test_name }}("{{ test_name }}", 60000, 0, context)
+    _ate_var_{{ test_name }} = {{ test_name }}("{{ test_name }}", 60000, 0, context, stil_tool)
     {% for ip in input_parameters %}
     {% if input_parameters[ip]['type'] == 'static' or input_parameters[ip]['type'] ==  'local' %}
     _ate_var_{{ test_name }}.ip.set_parameter('{{ip}}', 'static', {{input_parameters[ip]['value']}}, {{input_parameters[ip][InputColumnKey.MIN()]}}, {{input_parameters[ip][InputColumnKey.MAX()]}}, {{input_parameters[ip][InputColumnKey.POWER()]}}, context, {{input_parameters[ip][InputColumnKey.SHMOO()]}})

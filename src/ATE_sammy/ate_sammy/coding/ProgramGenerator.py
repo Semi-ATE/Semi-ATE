@@ -40,15 +40,32 @@ class test_program_generator(BaseGenerator):
 
         test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
+        compiled_patterns = self._collect_compiled_patterns(program_configuration.patterns)
+
         output = template.render(
             test_list=test_list,
             test_imports=test_imports,
             program_configuration=program_configuration,
+            compiled_patterns=compiled_patterns,
             InputColumnKey=InputColumnKey,
             OutputColumnKey=OutputColumnKey)
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
+
+    def _collect_compiled_patterns(self, patterns: dict):
+        compiled_patterns = {}
+        for _, pattern_list in patterns.items():
+            for pattern_tuple in pattern_list:
+                name = pattern_tuple[0]
+                compiled_file_path = self.project_path.joinpath('pattern', 'output', f'{name}.bin')
+
+                if not compiled_file_path.exists():
+                    raise Exception(f'compiled pattern file could not be found: {str(compiled_file_path)}')
+
+                compiled_patterns[name] = str(compiled_file_path)
+
+        return compiled_patterns
 
     def build_test_entry_list(self, tests_in_program, test_targets):
         test_list = []

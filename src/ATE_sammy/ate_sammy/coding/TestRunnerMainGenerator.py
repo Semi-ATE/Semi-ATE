@@ -18,6 +18,8 @@ class test_runner_generator(BaseGenerator):
         env.rstrip_blocks = True
         template_name = 'test_runner_main_template.jinja2'
 
+        self.project_path = project_path
+
         if not template_dir.joinpath(template_name).exists():
             raise Exception(f"couldn't find the template : {template_name}")
 
@@ -28,6 +30,9 @@ class test_runner_generator(BaseGenerator):
 
         if file_path.exists():
             os.remove(file_path)
+
+        compiled_patterns = self._collect_compiled_patterns(test_configuration.definition['patterns'])
+
         hardware_definition['base'] = test_configuration.base
         output = template.render(
             project_name=project_path.name,
@@ -37,6 +42,7 @@ class test_runner_generator(BaseGenerator):
             input_parameters=test_configuration.definition['input_parameters'],
             output_parameters=test_configuration.definition['output_parameters'],
             hardware_definition=hardware_definition,
+            compiled_patterns=compiled_patterns,
             InputColumnKey=InputColumnKey,
             OutputColumnKey=OutputColumnKey)
 
@@ -48,6 +54,20 @@ class test_runner_generator(BaseGenerator):
         self._create_binning_config(file_path.parent.joinpath(f'{file_path.stem}_binning.json'))
         self._create_execution_strategy_config(file_path.parent.joinpath(f'{file_path.stem}_execution_strategy.json'))
         self._store_config(file_path.parent.joinpath(f'{file_path.stem}_config.json'), test_configuration)
+
+    def _collect_compiled_patterns(self, patterns: dict):
+        compiled_patterns = {}
+        for _, pattern_list in patterns.items():
+            for pattern_tuple in pattern_list:
+                name = pattern_tuple[0]
+                compiled_file_path = self.project_path.joinpath('pattern', 'output', f'{name}.bin')
+
+                if not compiled_file_path.exists():
+                    raise Exception(f'compiled pattern file could not be found: {str(compiled_file_path)}')
+
+                compiled_patterns[name] = str(compiled_file_path)
+
+        return compiled_patterns
 
     def _store_config(self, path: Path, test_configuration: object):
         test_runner_generator._dump(path, {
