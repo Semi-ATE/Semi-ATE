@@ -344,6 +344,43 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="patternTab">
+              <attribute name="title">
+               <string>Pattern</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_9">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_8">
+                 <item row="1" column="0">
+                  <widget class="QTableWidget" name="pattern_table">
+                   <column>
+                    <property name="text">
+                     <string>Test Name</string>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>Pattern Name</string>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>Pattern Path</string>
+                    </property>
+                   </column>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="compile">
+                   <property name="text">
+                    <string>compile</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
              <widget class="QWidget" name="trendTab">
               <attribute name="title">
                <string>Trends</string>

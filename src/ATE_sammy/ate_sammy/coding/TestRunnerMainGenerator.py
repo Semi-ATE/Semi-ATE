@@ -56,6 +56,7 @@ class test_runner_generator(BaseGenerator):
             'base': test_configuration.base,
             'input_parameters': test_configuration.definition['input_parameters'],
             'output_parameters': test_configuration.definition['output_parameters'],
+            'patterns': test_configuration.definition['patterns'],
         })
 
     def _create_execution_strategy_config(self, path: Path):
