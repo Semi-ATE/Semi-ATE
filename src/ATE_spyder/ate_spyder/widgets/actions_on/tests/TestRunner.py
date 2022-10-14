@@ -9,6 +9,7 @@ import re
 from typing import Callable, List, Optional, Tuple
 
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.validation import valid_float_regex
 from ate_common.parameter import InputColumnKey, OutputColumnKey
@@ -115,11 +116,17 @@ class RunTab(TabInterface):
         self.current_cell_info: Optional[CellInfo] = None
         self.input_table_data = InputTable()
         self.output_table_data = []
+        self.pattern_tab = PatternTab(parent, self.parent.project_info, read_only=False)
+        self.pattern_tab.setup()
+        self.pattern_tab.add_pattern_items(parent.test_name)
 
     def setup_view(self):
         # the running tab doesn't support both Trends and Statistics in the current version
-        self.parent.tabWidget.setTabVisible(2, False)
         self.parent.tabWidget.setTabVisible(3, False)
+        self.parent.tabWidget.setTabVisible(4, False)
+
+        self.parent.maxIteration.setEnabled(False)
+        self.parent.maxIteration.setToolTip('no supported yet')
 
         self.parent.base.currentIndexChanged.connect(lambda index: self._base_changed(index))
 
@@ -142,9 +149,15 @@ class RunTab(TabInterface):
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
+        self.parent.compile.clicked.connect(self._compile_patterns)
+
+    def _compile_patterns(self):
+        self.pattern_tab.collect_pattern()
+        # TODO: do the compilation
 
     def _start_execution(self):
         configured_test = self._collect_data()
+
         self.parent.project_info.create_test_runner_main(self.test_runner_path, configured_test)
 
         # send signal to spyder to open the generated file inside the editor
@@ -439,6 +452,10 @@ class RunTab(TabInterface):
             output_parameters[name]['ltl'] = ltl
             output_parameters[name]['utl'] = utl
 
+        # patterns config is not part of the test configuration but is needed to store
+        # test specific configuration that could be loaded at any time
+        data.definition['patterns'] = self.pattern_tab.collect_pattern()
+
         return data
 
     def _get_input_table_values(self) -> List[Tuple[str, float]]:
@@ -515,6 +532,8 @@ class RunTab(TabInterface):
                 self.output_table.item(row, OutputColumn.LTL).setText(str(ltl_value))
                 self.output_table.item(row, OutputColumn.UTL).setText(str(utl_value))
 
+            self.pattern_tab.fill_pattern_table([self.parent.test_name], configuration['patterns'])
+
     @property
     def input_table(self) -> QtWidgets.QTableWidget:
         return self.parent.inputParameter
@@ -586,3 +605,6 @@ class TestRunner(BaseDialog):
 
         setup = Setup(self.widget, self.run_tab)
         setup.setup_view().setup_callback()
+
+    def _verify(self):
+        pass
