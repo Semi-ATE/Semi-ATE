@@ -113,6 +113,14 @@ class DutTestCaseBase(DutTestCaseABC):
         if current_bin in range(1, 10) and test_result_tuple[1] >= 10:
             return test_result_tuple[1]
 
+        # bin 0 is used to signalize that the test has failed with an unknown reason
+        # (e.g failed to contact dut)
+        if test_result_tuple[1] == 0:
+            if current_bin >= 10:
+                return current_bin
+
+            return test_result_tuple[1]
+
         return current_bin
 
     @staticmethod
