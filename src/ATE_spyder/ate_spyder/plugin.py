@@ -3,6 +3,7 @@ ATE Plugin.
 """
 # Standard library imports
 import os
+from typing import Type
 
 # Third party imports
 from qtpy.QtCore import Signal
@@ -16,6 +17,7 @@ from spyder.api.plugin_registration.decorators import (
 from ate_spyder.project import ATEProject, ATEPluginProject
 from ate_spyder.widgets.main_widget import ATEWidget
 from ate_spyder.widgets.navigation import ProjectNavigation
+from ate_spyder.widgets.vcs import VCSInitializationProvider
 from ate_spyder.widgets.constants import ATEActions, ATEToolbars, ATEStatusBars
 
 # Localization
@@ -49,6 +51,18 @@ class ATE(SpyderDockablePlugin):
         True if an ATE project was loaded, False otherwise.
     """
 
+    sig_compile_pattern = Signal(list)
+    """
+    Compile STIL pattern
+
+    Parameters
+    ---------
+    stil_path: List[str]
+        List containing all the full paths to the STIL patterns to compile.
+    """
+
+    sig_ate_project_created = Signal()
+
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
     @staticmethod
@@ -66,7 +80,11 @@ class ATE(SpyderDockablePlugin):
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
         widget.sig_close_file.connect(self.sig_close_file)
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
+
         widget.sig_ate_project_changed.connect(self.sig_ate_project_changed)
+        widget.sig_compile_pattern.connect(self.sig_compile_pattern)
+        widget.sig_project_created.connect(self.project_created)
+        widget.sig_project_created.connect(self.sig_ate_project_created)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
@@ -127,8 +145,11 @@ class ATE(SpyderDockablePlugin):
     # ------------------------------------------------------------------------
     def create_project(self, project_root):
         self.project_root = project_root
-        if self.get_widget().create_project(project_root):
-            print(f"Plugin : Creating ATE project '{os.path.basename(project_root)}'")
+        self.get_widget().create_project(project_root)
+
+    def project_created(self):
+        print("Plugin : Creating ATE project "
+              f"'{os.path.basename(self.project_root)}'")
 
     def open_project(self, project_root):
         self.project_root = project_root
@@ -144,7 +165,7 @@ class ATE(SpyderDockablePlugin):
         print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
 
     def close_project(self):
-        print("Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
+        print(f"Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
 
     def get_project_navigation(self) -> ProjectNavigation:
@@ -153,6 +174,19 @@ class ATE(SpyderDockablePlugin):
     def add_item_to_toolbar(self, item):
         widget = self.get_widget()
         widget.toolbar.add_item(item)
+
+    def register_version_control_provider(
+            self, VCSProviderClass: Type[VCSInitializationProvider]):
+        """
+        Register a new version control system (VCS) provider.
+
+        Parameters
+        ----------
+        VCSProviderClass: Type[VCSInitializationProvider]
+            The class that implements the `VCSInitializationProvider`
+            interface to be registered.
+        """
+        self.get_widget().register_version_control_provider(VCSProviderClass)
 
     @staticmethod
     def close_file(path, editor):

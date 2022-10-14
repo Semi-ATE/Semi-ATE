@@ -64,6 +64,16 @@ class ATEWidget(PluginMainWidget):
         True if an ATE project was loaded, False otherwise.
     """
 
+    sig_compile_pattern = Signal(list)
+    """
+    Compile STIL pattern
+
+    Parameters
+    ---------
+    stil_path: List[str]
+        List containing all the full paths to the STIL patterns to compile.
+    """
+
     sig_project_created = Signal()
 
 
@@ -100,6 +110,7 @@ class ATEWidget(PluginMainWidget):
         # TODO: simplify the navigator to get ride of 'workspace_path'
         homedir = os.path.expanduser("~")
         self.project_info = ProjectNavigation('', homedir, self)
+        self.project_info.sig_compile_pattern.connect(self.sig_compile_pattern)
 
         self.toolbar = ToolBar(self.project_info, self, "ATE Plugin toolbar")
 

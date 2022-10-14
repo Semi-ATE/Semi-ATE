@@ -279,7 +279,7 @@ class STILContainer(PluginMainWidget):
 
     # --- Private API
     # ------------------------------------------------------------------------
-    def compile_stil(self):
+    def compile_stil(self, stil_files: Optional[List[str]] = None):
         if self.stil_process_running:
             self.stil_process.kill()
             return
@@ -304,7 +304,8 @@ class STILContainer(PluginMainWidget):
 
         # TODO: Determine STIL file location adequately
         project_path = self.project_info.project_directory
-        cwd = osp.join(project_path, 'patterns')
+        cwd = project_path
+        # cwd = osp.join(project_path, 'patterns')
         env = self.stil_process.processEnvironment()
 
         for var in os.environ:
@@ -314,13 +315,14 @@ class STILContainer(PluginMainWidget):
         self.stil_process.setWorkingDirectory(cwd)
 
         # Find STIL files recursively
-        stil_files = []
-        for root, _, files in os.walk(cwd):
-            for file in files:
-                _, ext = osp.splitext(file)
-                ext = ext[1:]
-                if ext == 'stil':
-                    stil_files.append(osp.join(root, file))
+        if stil_files is None:
+            stil_files = []
+            for root, _, files in os.walk(cwd):
+                for file in files:
+                    _, ext = osp.splitext(file)
+                    ext = ext[1:]
+                    if ext == 'stil':
+                        stil_files.append(osp.join(root, file))
 
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
         args += stil_files

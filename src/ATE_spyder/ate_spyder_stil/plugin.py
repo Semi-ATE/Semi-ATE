@@ -94,6 +94,8 @@ class STIL(SpyderDockablePlugin):
         widget.set_project_information(project_info)
         ate.sig_ate_project_changed.connect(widget.notify_project_status)
 
+        ate.sig_compile_pattern.connect(self.compile_patterns)
+
         stil_action = self.get_action(STILActions.RunSTIL)
         ate.add_item_to_toolbar(stil_action)
 
@@ -133,3 +135,6 @@ class STIL(SpyderDockablePlugin):
     @on_plugin_teardown(plugin=Plugins.MainMenu)
     def on_mainmenu_teardown(self):
         pass
+
+    def compile_patterns(self, patterns: list[str]):
+        self.get_container().compile_patterns(patterns)

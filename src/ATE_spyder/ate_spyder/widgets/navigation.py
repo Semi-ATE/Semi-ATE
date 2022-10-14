@@ -16,7 +16,7 @@ from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
 from ate_common.parameter import InputColumnKey
 from ate_projectdatabase.Utils import BaseType
 
-from qtpy.QtCore import QObject
+from qtpy.QtCore import QObject, Signal
 from ate_spyder.widgets.constants import TableIds as TableId
 from ate_spyder.widgets.constants import UpdateOptions
 
@@ -57,6 +57,16 @@ class ProjectNavigation(QObject):
     '''
     # The parameter contains the type of the dbchange (i.e. which table was altered)
     verbose = True
+
+    sig_compile_pattern = Signal(list)
+    """
+    Compile STIL pattern
+
+    Arguments
+    ---------
+    stil_path: List[str]
+        List containing all the full paths to the STIL patterns to compile.
+    """
 
     def __init__(self, project_directory, workspace_path, parent):
         super().__init__(parent)
@@ -1357,3 +1367,8 @@ class ProjectNavigation(QObject):
         pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.stil')])
         pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.wav')])
         return pattern_files
+
+    def compile_program_patterns(self, prog_name: str):
+        patterns_info = self.get_program_patterns(prog_name)
+        patterns = list(patterns_info.values())
+        self.sig_compile_pattern.emit(patterns)
