@@ -2,6 +2,7 @@
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
 from enum import IntEnum, unique, auto
+import json
 import math
 from pathlib import Path
 import re
@@ -64,13 +65,13 @@ class TabIds(IntEnum):
 @unique
 class InputColumn(IntEnum):
     Name = 0
-    Shmoo = auto()
-    Min = auto()
-    Call = auto()
-    Step = auto()
-    Max = auto()
-    Power = auto()
-    Unit = auto()
+    Shmoo = 1
+    Min = 2
+    Call = 3
+    Step = 4
+    Max = 5
+    Power = 6
+    Unit = 7
 
     def __call__(self):
         return self.value
@@ -139,18 +140,46 @@ class RunTab(TabInterface):
         self.parent.outputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.outputParameter))
 
     def setup_callbacks(self):
-        # TODO: the implementation of this part shall be done in #239
         self.parent.start.clicked.connect(self._start_execution)
-        ''''''
+        self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
 
     def _start_execution(self):
-        # TODO: the code generation may be the same as generating a test program but with only one test
-        # TODO: emit signal to spyder
         configured_test = self._collect_data()
-        file_path = Path(self.parent.project_info.project_directory).joinpath('runner', f'{self.test_name}_{self.hardware}_{self.base}_test_runner.py')
-        self.parent.project_info.create_test_runner_main(file_path, configured_test)
+        self.parent.project_info.create_test_runner_main(self.test_runner_path, configured_test)
 
-        # self.parent.feedback.setText('not implemented yet')
+        # send signal to spyder to open the generated file inside the editor
+        self.parent.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
+
+        # TODO: emit signal to run the generate code
+
+        self.parent.accept()
+
+    def _start_execution_in_debug_mode(self):
+        configured_test = self._collect_data()
+        self.parent.project_info.create_test_runner_main(self.test_runner_path, configured_test)
+
+        # send signal to spyder to open the generated file inside the editor
+        self.parent.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
+
+        # TODO: emit signal to run the debugger
+
+        self.parent.accept()
+
+    @property
+    def test_runner_file_name(self) -> str:
+        return f'{self.test_name}_{self.hardware}_{self.base}_test_runner.py'
+
+    @property
+    def test_runner_path(self) -> Path:
+        return Path(self.parent.project_info.project_directory).joinpath('runner', self.test_runner_file_name)
+
+    @property
+    def test_runner_config_file_name(self) -> str:
+        return f'{self.test_name}_{self.hardware}_{self.base}_test_runner_config.json'
+
+    @property
+    def test_runner_config_path(self) -> Path:
+        return Path(self.parent.project_info.project_directory).joinpath('runner', self.test_runner_config_file_name)
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
@@ -334,9 +363,17 @@ class RunTab(TabInterface):
         item = QtWidgets.QTableWidgetItem(value)
         table.setItem(row, col, item)
 
+        # any invalid parameter configuration will be automatically rejected
+        # and the default value is set
+        self.parent.start.setEnabled(True)
+        self.parent.feedback.setText('')
+
     @QtCore.pyqtSlot(str, int, int, float, float)
     def _call_value_changed(self, text: str, row: int, col: int, min: float, max: float, validate_callback: Callable):
-        _ = validate_callback(text, row, col, min, max)
+        if validate_callback(text, row, col, min, max):
+            self.parent.start.setEnabled(True)
+        else:
+            self.parent.start.setEnabled(False)
 
     def _validate_value(self, text: str, row: int, col: int, min: float, max: float) -> bool:
         self.parent.feedback.setText('')
@@ -392,8 +429,11 @@ class RunTab(TabInterface):
         output_parameters = data.definition['output_parameters']
         output_value_tuples = self._get_output_table_values()
 
-        for name, value in input_value_tuples:
+        for name, value, step, is_shmoo in input_value_tuples:
             input_parameters[name]['value'] = value
+            input_parameters[name]['step'] = step
+            input_parameters[name]['is_shmoo'] = is_shmoo
+            input_parameters[name]['type'] = 'static'
 
         for name, ltl, utl in output_value_tuples:
             output_parameters[name]['ltl'] = ltl
@@ -406,8 +446,10 @@ class RunTab(TabInterface):
         for row in range(self.input_table.rowCount()):
             name = self.input_table.item(row, InputColumn.Name).text()
             value = self.input_table.item(row, InputColumn.Call).text()
+            step = self.input_table.item(row, InputColumn.Step).text()
+            is_shmoo = True if self.input_table.item(row, InputColumn.Shmoo).checkState() == QtCore.Qt.Checked else False
 
-            value_tuples.append((name, float(value)))
+            value_tuples.append((name, float(value), float(step), is_shmoo))
 
         return value_tuples
 
@@ -446,6 +488,32 @@ class RunTab(TabInterface):
 
         self._fill_input_parameter_table()
         self._fill_output_parameter_table()
+
+        if self.test_runner_config_path.exists():
+            self._fill_with_custom_values()
+
+    def _fill_with_custom_values(self):
+        with open(self.test_runner_config_path, 'r') as f:
+            configuration = json.load(f)
+
+            for row in range(self.input_table.rowCount()):
+                name_item = self.input_table.item(row, InputColumn.Name)
+                value = configuration['input_parameters'][name_item.text()]['value']
+                step = configuration['input_parameters'][name_item.text()]['step']
+                is_shmoo = configuration['input_parameters'][name_item.text()]['is_shmoo']
+                self.input_table.item(row, InputColumn.Call).setText(str(value))
+                self.input_table.item(row, InputColumn.Step).setText(str(step))
+
+                shmoo_item = self.input_table.item(row, InputColumn.Shmoo)
+                shmoo_item.setCheckState(QtCore.Qt.Checked if is_shmoo else QtCore.Qt.Unchecked)
+                self._update_row(shmoo_item.row(), shmoo_item.checkState() == QtCore.Qt.Checked)
+
+            for row in range(self.output_table.rowCount()):
+                name_item = self.output_table.item(row, OutputColumn.Name)
+                ltl_value = configuration['output_parameters'][name_item.text()]['ltl']
+                utl_value = configuration['output_parameters'][name_item.text()]['utl']
+                self.output_table.item(row, OutputColumn.LTL).setText(str(ltl_value))
+                self.output_table.item(row, OutputColumn.UTL).setText(str(utl_value))
 
     @property
     def input_table(self) -> QtWidgets.QTableWidget:

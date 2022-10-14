@@ -47,6 +47,16 @@ class test_runner_generator(BaseGenerator):
         # thus the test flow could be executed
         self._create_binning_config(file_path.parent.joinpath(f'{file_path.stem}_binning.json'))
         self._create_execution_strategy_config(file_path.parent.joinpath(f'{file_path.stem}_execution_strategy.json'))
+        self._store_config(file_path.parent.joinpath(f'{file_path.stem}_config.json'), test_configuration)
+
+    def _store_config(self, path: Path, test_configuration: object):
+        test_runner_generator._dump(path, {
+            'test_name': test_configuration.name,
+            'hardware': test_configuration.hardware,
+            'base': test_configuration.base,
+            'input_parameters': test_configuration.definition['input_parameters'],
+            'output_parameters': test_configuration.definition['output_parameters'],
+        })
 
     def _create_execution_strategy_config(self, path: Path):
         execution_strategy = {
@@ -73,11 +83,18 @@ class test_runner_generator(BaseGenerator):
         binning_config = {
             "bin-table": [
                 {
-                    "SBIN": "0",
+                    "SBIN": "11",
                     "GROUP": "Contact Fail",
                     "DESCRIPTION": "",
                     "HBIN": "0",
                     "SBINNAME": "Bin_11"
+                },
+                {
+                    "SBIN": "0",
+                    "GROUP": "Bad",
+                    "DESCRIPTION": "",
+                    "HBIN": "0",
+                    "SBINNAME": "Bad"
                 },
                 {
                     "SBIN": "1",
@@ -85,6 +102,13 @@ class test_runner_generator(BaseGenerator):
                     "DESCRIPTION": "",
                     "HBIN": "1",
                     "SBINNAME": "Good_1"
+                },
+                {
+                    "SBIN": "60000",
+                    "GROUP": "Alarm",
+                    "DESCRIPTION": "",
+                    "HBIN": "0",
+                    "SBINNAME": "er_1_ALARM"
                 }
             ]
         }
