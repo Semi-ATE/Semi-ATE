@@ -50,6 +50,17 @@ class ATE(SpyderDockablePlugin):
     ate_project_loaded: bool
         True if an ATE project was loaded, False otherwise.
     """
+
+    sig_compile_pattern = Signal(list)
+    """
+    Compile STIL pattern
+
+    Parameters
+    ---------
+    stil_path: List[str]
+        List containing all the full paths to the STIL patterns to compile.
+    """
+
     sig_ate_project_created = Signal()
 
     # --- SpyderDockablePlugin API
@@ -71,6 +82,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
 
         widget.sig_ate_project_changed.connect(self.sig_ate_project_changed)
+        widget.sig_compile_pattern.connect(self.sig_compile_pattern)
         widget.sig_project_created.connect(self.project_created)
         widget.sig_project_created.connect(self.sig_ate_project_created)
 
