@@ -309,3 +309,6 @@ $ sammy generate all\n
         """
         vcs_name = VCSProviderClass.NAME
         self.vcs_handlers[vcs_name] = VCSProviderClass
+
+    def get_project_navigation(self) -> ProjectNavigation:
+        return self.project_info
