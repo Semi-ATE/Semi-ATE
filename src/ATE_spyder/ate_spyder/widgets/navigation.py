@@ -1370,4 +1370,7 @@ class ProjectNavigation(QObject):
                 self.active_base,
                 f'{prog_name}.yaml'))
 
-        self.parent.sig_compile_pattern.emit(pattern_abs_paths, sig_to_chan_path)
+        self.compile_stil_patterns(pattern_abs_paths, sig_to_chan_path)
+
+    def compile_stil_patterns(self, patterns: List[str], sig_to_chan_path: str):
+        self.parent.sig_compile_pattern.emit(patterns, sig_to_chan_path)

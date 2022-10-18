@@ -60,7 +60,8 @@ class test_runner_generator(BaseGenerator):
         for _, pattern_list in patterns.items():
             for pattern_tuple in pattern_list:
                 name = pattern_tuple[0]
-                compiled_file_path = self.project_path.joinpath('pattern', 'output', f'{name}.bin')
+                rel_path = Path(pattern_tuple[1]).name
+                compiled_file_path = self.project_path.joinpath('pattern_output', f'{rel_path}.hdf5')
 
                 if not compiled_file_path.exists():
                     raise Exception(f'compiled pattern file could not be found: {str(compiled_file_path)}')

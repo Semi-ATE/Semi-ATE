@@ -10,6 +10,8 @@ from typing import Callable, List, Optional, Tuple
 from qtpy.QtWidgets import QVBoxLayout
 
 from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
+from ate_spyder.widgets.actions_on.program.SignalToChannelTab import SignalToChannelTab
+
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.validation import valid_float_regex
 from ate_common.parameter import InputColumnKey, OutputColumnKey
@@ -127,6 +129,7 @@ class RunTab(TabInterface):
         self.pattern_tab = PatternTab(parent, self.project_info, read_only=False)
         self.pattern_tab.setup()
         self.pattern_tab.add_pattern_items(test_name)
+        self.signal_to_channel = SignalToChannelTab(parent, read_only=False)
 
     def setup_view(self):
         # the running tab doesn't support both Trends and Statistics in the current version
@@ -162,6 +165,9 @@ class RunTab(TabInterface):
         self.parent.inputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.inputParameter))
         self.parent.outputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.outputParameter))
 
+        self.parent.patternLayout.addTab(self.signal_to_channel, "Signal To Channel")
+        self.signal_to_channel.setup()
+
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
@@ -194,26 +200,28 @@ class RunTab(TabInterface):
         self._base_changed(base_index)
 
     def _compile_patterns(self):
-        self.pattern_tab.collect_pattern()
-        # TODO: do the compilation
+        patterns = self.pattern_tab.collect_pattern()
+        pattern_path_list = set([pattern[1] for pattern in patterns[self.test_name]])
 
-    def _start_execution(self):
+        self.project_info.compile_stil_patterns(
+                [str(Path(self.project_info.project_directory).joinpath(pattern_rel_path)) for pattern_rel_path in pattern_path_list],
+                str(self.test_runner_sig_to_channel_file_path))
+
+    def _setup_before_run(self):
         configured_test = self._collect_data()
 
         self.project_info.create_test_runner_main(self.test_runner_path, configured_test)
+        self.signal_to_channel.generate_yml_file(self.test_runner_sig_to_channel_file_path)
 
         # send signal to spyder to open the generated file inside the editor
         self.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
 
+    def _start_execution(self):
+        self._setup_before_run()
         # TODO: emit signal to run the generate code
 
     def _start_execution_in_debug_mode(self):
-        configured_test = self._collect_data()
-        self.project_info.create_test_runner_main(self.test_runner_path, configured_test)
-
-        # send signal to spyder to open the generated file inside the editor
-        self.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
-
+        self._setup_before_run()
         # TODO: emit signal to run the debugger
 
     @property
@@ -233,8 +241,16 @@ class RunTab(TabInterface):
         return Path(self.project_info.project_directory).joinpath('runner', self.test_runner_config_file_name)
 
     @property
+    def test_runner_sig_to_channel_file_path(self) -> Path:
+        return Path(self.project_info.project_directory).joinpath('runner', f'{self.test_name}_{self.hardware}_{self.base}_test_runner.yaml')
+
+    @property
     def semi_ate_main_widget(self) -> QtWidgets.QWidget:
         return self.project_info.parent
+
+    @property
+    def feedback(self) -> QtWidgets.QLabel:
+        return self.parent.feedback
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
@@ -552,6 +568,7 @@ class RunTab(TabInterface):
 
         if not self.parent.testName.currentText() or not test_names:
             self.pattern_tab.pattern_table.setRowCount(0)
+            self.signal_to_channel.signal_to_channel_table.setRowCount(0)
             self.parent.testTabs.setEnabled(False)
             return
 
@@ -561,8 +578,17 @@ class RunTab(TabInterface):
         self._fill_input_parameter_table()
         self._fill_output_parameter_table()
 
+        # reset table to update the new content
+        self.pattern_tab.pattern_table.setRowCount(0)
         if self.test_runner_config_path.exists():
             self._fill_with_custom_values()
+        else:
+            self.pattern_tab.add_pattern_items(self.test_name)
+
+        # reset table to update the new content
+        self.signal_to_channel.signal_to_channel_table.setRowCount(0)
+        if self.test_runner_sig_to_channel_file_path.exists():
+            self.signal_to_channel.load_table(self.test_runner_sig_to_channel_file_path)
 
     def _fill_with_custom_values(self):
         if not self.test_name:
