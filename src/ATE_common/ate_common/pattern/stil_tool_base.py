@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class StilToolBase(ABC):
     @abstractmethod
-    def load_pattern(self, compiled_patterns: dict):
+    def _load_patterns(self, compiled_patterns: dict):
         pass
 
     @abstractmethod
