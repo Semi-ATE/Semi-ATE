@@ -136,5 +136,5 @@ class STIL(SpyderDockablePlugin):
     def on_mainmenu_teardown(self):
         pass
 
-    def compile_patterns(self, patterns: list[str]):
-        self.get_container().compile_patterns(patterns)
+    def compile_patterns(self, patterns: list[str], sig_to_chan_path: str):
+        self.get_container().compile_stil(patterns, sig_to_chan_path)

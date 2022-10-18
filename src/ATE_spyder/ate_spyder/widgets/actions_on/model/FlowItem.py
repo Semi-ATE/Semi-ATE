@@ -262,7 +262,6 @@ class TestprogramTreeItem(BaseItem):
 
     def compile_pattern_files(self):
         self.project_info.compile_program_patterns(self.text())
-        # _program_patterns = self.project_info.get_program_patterns()
 
     @staticmethod
     def is_valid_functionality(functionality):

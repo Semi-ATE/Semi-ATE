@@ -51,7 +51,7 @@ class ATE(SpyderDockablePlugin):
         True if an ATE project was loaded, False otherwise.
     """
 
-    sig_compile_pattern = Signal(list)
+    sig_compile_pattern = Signal(list, str)
     """
     Compile STIL pattern
 
@@ -119,21 +119,10 @@ class ATE(SpyderDockablePlugin):
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
 
-    @on_plugin_available(plugin=Plugins.StatusBar)
-    def on_statusbar_available(self):
-        statusbar = self.get_plugin(Plugins.StatusBar)
-        container = self.get_container()
-        # statusbar.add_status_widget(container.statusbar)
-
     @on_plugin_teardown(plugin=Plugins.Toolbar)
     def on_toolbar_teardown(self):
         toolbar = self.get_plugin(Plugins.Toolbar)
         toolbar.remove_application_toolbar(ATEToolbars.ATE)
-
-    @on_plugin_teardown(plugin=Plugins.StatusBar)
-    def on_statusbar_teardown(self):
-        statusbar = self.get_plugin(Plugins.StatusBar)
-        # statusbar.remove_status_widget(ATEStatusBars.ATE)
 
     def on_mainwindow_visible(self):
         # Hide by default the first time the plugin is loaded.

@@ -58,16 +58,6 @@ class ProjectNavigation(QObject):
     # The parameter contains the type of the dbchange (i.e. which table was altered)
     verbose = True
 
-    sig_compile_pattern = Signal(list)
-    """
-    Compile STIL pattern
-
-    Arguments
-    ---------
-    stil_path: List[str]
-        List containing all the full paths to the STIL patterns to compile.
-    """
-
     def __init__(self, project_directory, workspace_path, parent):
         super().__init__(parent)
         self.parent = parent
@@ -1370,5 +1360,14 @@ class ProjectNavigation(QObject):
 
     def compile_program_patterns(self, prog_name: str):
         patterns_info = self.get_program_patterns(prog_name)
-        patterns = list(patterns_info.values())
-        self.sig_compile_pattern.emit(patterns)
+        patterns = set(patterns_info.values())
+
+        pattern_abs_paths = [str(self.project_directory.joinpath(pattern_rel_path)) for pattern_rel_path in patterns]
+        sig_to_chan_path = \
+            str(self.project_directory.joinpath(
+                self.project_name,
+                self.active_hardware,
+                self.active_base,
+                f'{prog_name}.yaml'))
+
+        self.parent.sig_compile_pattern.emit(pattern_abs_paths, sig_to_chan_path)

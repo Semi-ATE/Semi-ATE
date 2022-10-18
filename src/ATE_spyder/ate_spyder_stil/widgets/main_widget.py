@@ -279,7 +279,7 @@ class STILContainer(PluginMainWidget):
 
     # --- Private API
     # ------------------------------------------------------------------------
-    def compile_stil(self, stil_files: Optional[List[str]] = None):
+    def compile_stil(self, stil_files: Optional[List[str]] = None, sig_to_chan_path: str = None):
         if self.stil_process_running:
             self.stil_process.kill()
             return
@@ -312,20 +312,23 @@ class STILContainer(PluginMainWidget):
             env.insert(var, os.environ[var])
 
         self.stil_process.setProcessEnvironment(env)
-        self.stil_process.setWorkingDirectory(cwd)
+        self.stil_process.setWorkingDirectory(str(cwd))
 
         # Find STIL files recursively
         if stil_files is None:
             stil_files = []
-            for root, _, files in os.walk(cwd):
+            for root, _, files in os.walk(cwd.joinpath('pattern')):
                 for file in files:
                     _, ext = osp.splitext(file)
                     ext = ext[1:]
-                    if ext == 'stil':
+                    if ext == 'stil' or ext == 'wav':
                         stil_files.append(osp.join(root, file))
 
+        output_folder = str(cwd.joinpath('pattern_output'))
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
         args += stil_files
+        args += ['-m', sig_to_chan_path]
+        args += ['-o', output_folder]
 
         self.stil_process.setProcessChannelMode(QProcess.SeparateChannels)
         self.stil_process.start(args[0], args[1:])
