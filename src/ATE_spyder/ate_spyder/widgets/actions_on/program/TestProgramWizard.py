@@ -802,6 +802,10 @@ class TestProgramWizard(BaseDialog):
     def sequencer_type(self):
         return self.sequencerType.currentText()
 
+    @property
+    def feedback(self):
+        return self.Feedback
+
     def _update_feedback(self, message=''):
         self.Feedback.setText(message)
 

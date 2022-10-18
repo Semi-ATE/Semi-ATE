@@ -95,6 +95,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="generate_button">
+       <property name="text">
+        <string>generate file</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

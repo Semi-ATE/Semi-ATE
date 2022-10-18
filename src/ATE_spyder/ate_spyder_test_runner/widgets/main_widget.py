@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 from typing import Callable, List, Optional, Tuple
+import qtawesome as qta
 
 from qtpy.QtWidgets import QVBoxLayout
 
@@ -168,10 +169,21 @@ class RunTab(TabInterface):
         self.parent.patternLayout.addTab(self.signal_to_channel, "Signal To Channel")
         self.signal_to_channel.setup()
 
+        # the manual generation of the signal to channel yaml file is only available for the
+        # test runner as it is generated differently than a test flow
+        self.signal_to_channel.generate_button.setVisible(True)
+        self.signal_to_channel.generate_button.setIcon(qta.icon('mdi.file-cog-outline', color='orange'))
+        self.signal_to_channel.generate_button.clicked.connect(self._generate_signal_to_channel_yaml_file)
+
+    def _generate_signal_to_channel_yaml_file(self):
+        self.signal_to_channel.generate_yml_file(self.test_runner_sig_to_channel_file_path)
+
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
         self.parent.compile.clicked.connect(self._compile_patterns)
+
+        self.parent.compile.setIcon(qta.icon('mdi.file-cog-outline', color='orange'))
         self.parent.testName.currentIndexChanged.connect(self._fill_test_config)
 
         self.parent.base.currentIndexChanged.connect(lambda index: self._base_changed(index))
@@ -200,18 +212,25 @@ class RunTab(TabInterface):
         self._base_changed(base_index)
 
     def _compile_patterns(self):
+        self.feedback.setText('')
+
+        if not self.test_runner_sig_to_channel_file_path.exists():
+            self.feedback.setText('signal to channel yaml file is required for the compilation, generate it first!')
+            self.parent.patternLayout.setCurrentIndex(1)
+            return
+
         patterns = self.pattern_tab.collect_pattern()
         pattern_path_list = set([pattern[1] for pattern in patterns[self.test_name]])
 
         self.project_info.compile_stil_patterns(
-                [str(Path(self.project_info.project_directory).joinpath(pattern_rel_path)) for pattern_rel_path in pattern_path_list],
-                str(self.test_runner_sig_to_channel_file_path))
+            [str(Path(self.project_info.project_directory).joinpath(pattern_rel_path)) for pattern_rel_path in pattern_path_list],
+            str(self.test_runner_sig_to_channel_file_path)
+        )
 
     def _setup_before_run(self):
         configured_test = self._collect_data()
 
         self.project_info.create_test_runner_main(self.test_runner_path, configured_test)
-        self.signal_to_channel.generate_yml_file(self.test_runner_sig_to_channel_file_path)
 
         # send signal to spyder to open the generated file inside the editor
         self.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")

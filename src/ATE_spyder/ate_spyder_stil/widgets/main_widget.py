@@ -262,13 +262,13 @@ class STILContainer(PluginMainWidget):
         return self.tabwidget.currentWidget()
 
     def setup(self):
-        # Actions
+        # stil file compilation shall only be triggered from the test flow action
+        # we want to compile only the stil files required by a specific test flow
         self.run_stil_action = self.create_action(
-            STILActions.RunSTIL, _('Compile STIL files'),
-            self.create_icon('run_again'), tip=_('Compile STIL files'),
-            triggered=self.compile_stil
+            STILActions.RunSTIL, _('STIL files Compilation Status'),
+            self.create_icon('run_again'), triggered=lambda: ()
         )
-
+        self.run_stil_action.setToolTip('STIL files Compilation Status: Idle')
         self.run_stil_action.setEnabled(False)
 
     def update_actions(self):
@@ -333,11 +333,16 @@ class STILContainer(PluginMainWidget):
         self.stil_process.setProcessChannelMode(QProcess.SeparateChannels)
         self.stil_process.start(args[0], args[1:])
         self.stil_process_running = True
+
+        self.run_stil_action.setToolTip('STIL files Compilation Status: Running')
+        self.run_stil_action.setEnabled(True)
         self.run_stil_action.setIcon(self.create_icon('stop'))
 
     def stil_process_finished(self, exit_code, exit_status):
         self.stil_process_running = False
         self.stil_process = None
+        self.run_stil_action.setToolTip('STIL files Compilation Status: Idle')
+        self.run_stil_action.setEnabled(False)
         self.run_stil_action.setIcon(self.create_icon('run_again'))
 
     def on_stil_msg_received(self):
@@ -362,7 +367,7 @@ class STILContainer(PluginMainWidget):
         self.project_info = project_info
 
     def notify_project_status(self, ate_project_loaded: bool):
-        self.run_stil_action.setEnabled(ate_project_loaded)
+        self.run_stil_action.setEnabled(False)
 
     def update_font(self, font, color_scheme):
         """

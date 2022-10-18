@@ -17,6 +17,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
 
     def setup(self):
         self.signal_to_channel_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.generate_button.setVisible(False)
         if not self.read_only:
             self._connect_event_handler()
 
