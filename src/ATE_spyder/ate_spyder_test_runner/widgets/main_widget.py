@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
-from enum import IntEnum, unique, auto
+from enum import IntEnum, unique
 import json
 import math
 from pathlib import Path
-import re
 from typing import Callable, List, Optional, Tuple
 
-from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QTreeWidgetItem
+from qtpy.QtWidgets import QVBoxLayout
 
-from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
 from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.validation import valid_float_regex
@@ -20,12 +17,10 @@ from ate_common.parameter import InputColumnKey, OutputColumnKey
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5 import uic
 
-from spyder.utils.icon_manager import ima
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
-from spyder.widgets.tabs import Tabs
-from spyder.widgets.simplecodeeditor import SimpleCodeEditor
 
 # Localization
 _ = get_translation("spyder")
@@ -131,7 +126,7 @@ class RunTab(TabInterface):
         self.project_info = project_info
         self.pattern_tab = PatternTab(parent, self.project_info, read_only=False)
         self.pattern_tab.setup()
-        # self.pattern_tab.add_pattern_items(test_name)
+        self.pattern_tab.add_pattern_items(test_name)
 
     def setup_view(self):
         # the running tab doesn't support both Trends and Statistics in the current version
@@ -141,12 +136,20 @@ class RunTab(TabInterface):
         self.parent.maxIteration.setEnabled(False)
         self.parent.maxIteration.setToolTip('no supported yet')
 
-        self.parent.base.currentIndexChanged.connect(lambda index: self._base_changed(index))
+        available_hardwares = self.project_info.get_active_hardware_names()
+        self.parent.hardware.blockSignals(True)
+        self.parent.hardware.addItems(available_hardwares)
+        self.parent.hardware.blockSignals(False)
+        hw_index = self.parent.hardware.findText(self.project_info.active_hardware)
+        self.parent.hardware.setCurrentIndex(hw_index)
 
-        # available_hardwares = self.project_info.get_active_hardware_names()
-        # self.parent.hardware.currentIndexChanged.connect(lambda index: self._hardware_changed(index))
-        # self.parent.hardware.addItems(available_hardwares)
-        # self.parent.hardware.setCurrentIndex(0)
+        self._update_hardware(self.project_info.active_hardware)
+        self._update_base(self.project_info.active_base)
+
+        # the hardware and base setup shall be inherited from the Semi-ATE Toolbar Plugin
+        # uncomment these two lines to setup independently
+        self.parent.hardware.setEnabled(False)
+        self.parent.base.setEnabled(False)
 
         self.parent.feedback.setStyleSheet('color: orange')
 
@@ -163,6 +166,32 @@ class RunTab(TabInterface):
         self.parent.start.clicked.connect(self._start_execution)
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
         self.parent.compile.clicked.connect(self._compile_patterns)
+        self.parent.testName.currentIndexChanged.connect(self._fill_test_config)
+
+        self.parent.base.currentIndexChanged.connect(lambda index: self._base_changed(index))
+        self.parent.hardware.currentIndexChanged.connect(lambda index: self._hardware_changed(index))
+
+        self.semi_ate_main_widget.select_hardware.connect(self._update_hardware)
+        self.semi_ate_main_widget.select_base.connect(self._update_base)
+
+    def _update_hardware(self, hw: str):
+        self.parent.hardware.blockSignals(True)
+        self.parent.hardware.clear()
+        available_hardwares = self.project_info.get_active_hardware_names()
+        self.parent.hardware.addItems(available_hardwares)
+        hw_index = self.parent.hardware.findText(hw)
+        self.parent.hardware.setCurrentIndex(hw_index)
+        self.parent.hardware.blockSignals(False)
+
+        self._hardware_changed(hw_index)
+
+    def _update_base(self, base: str):
+        self.parent.base.blockSignals(True)
+        base_index = self.parent.base.findText(base)
+        self.parent.base.setCurrentIndex(base_index)
+        self.parent.base.blockSignals(False)
+
+        self._base_changed(base_index)
 
     def _compile_patterns(self):
         self.pattern_tab.collect_pattern()
@@ -178,8 +207,6 @@ class RunTab(TabInterface):
 
         # TODO: emit signal to run the generate code
 
-        self.parent.accept()
-
     def _start_execution_in_debug_mode(self):
         configured_test = self._collect_data()
         self.project_info.create_test_runner_main(self.test_runner_path, configured_test)
@@ -188,8 +215,6 @@ class RunTab(TabInterface):
         self.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
 
         # TODO: emit signal to run the debugger
-
-        self.parent.accept()
 
     @property
     def test_runner_file_name(self) -> str:
@@ -206,6 +231,10 @@ class RunTab(TabInterface):
     @property
     def test_runner_config_path(self) -> Path:
         return Path(self.project_info.project_directory).joinpath('runner', self.test_runner_config_file_name)
+
+    @property
+    def semi_ate_main_widget(self) -> QtWidgets.QWidget:
+        return self.project_info.parent
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
@@ -392,14 +421,17 @@ class RunTab(TabInterface):
         # any invalid parameter configuration will be automatically rejected
         # and the default value is set
         self.parent.start.setEnabled(True)
+        self.parent.debug.setEnabled(True)
         self.parent.feedback.setText('')
 
     @QtCore.pyqtSlot(str, int, int, float, float)
     def _call_value_changed(self, text: str, row: int, col: int, min: float, max: float, validate_callback: Callable):
         if validate_callback(text, row, col, min, max):
             self.parent.start.setEnabled(True)
+            self.parent.debug.setEnabled(True)
         else:
             self.parent.start.setEnabled(False)
+            self.parent.debug.setEnabled(False)
 
     def _validate_value(self, text: str, row: int, col: int, min: float, max: float) -> bool:
         self.parent.feedback.setText('')
@@ -516,6 +548,16 @@ class RunTab(TabInterface):
         self.parent.testName.addItems(test_names)
         self.parent.testName.setCurrentIndex(0)
 
+        self.parent.testTabs.setEnabled(True)
+
+        if not self.parent.testName.currentText() or not test_names:
+            self.pattern_tab.pattern_table.setRowCount(0)
+            self.parent.testTabs.setEnabled(False)
+            return
+
+        self._fill_test_config()
+
+    def _fill_test_config(self):
         self._fill_input_parameter_table()
         self._fill_output_parameter_table()
 
@@ -523,6 +565,9 @@ class RunTab(TabInterface):
             self._fill_with_custom_values()
 
     def _fill_with_custom_values(self):
+        if not self.test_name:
+            return
+
         with open(self.test_runner_config_path, 'r') as f:
             configuration = json.load(f)
 
@@ -545,7 +590,7 @@ class RunTab(TabInterface):
                 self.output_table.item(row, OutputColumn.LTL).setText(str(ltl_value))
                 self.output_table.item(row, OutputColumn.UTL).setText(str(utl_value))
 
-            self.pattern_tab.fill_pattern_table([self.parent.test_name], configuration['patterns'])
+            self.pattern_tab.fill_pattern_table([self.test_name], configuration['patterns'])
 
     @property
     def input_table(self) -> QtWidgets.QTableWidget:
@@ -605,46 +650,44 @@ class Setup:
         return SetupCallback(self.tabs)
 
 
-class TestRunner(PluginMainWidget):
-    def __init__(self, name, plugin, parent=None):
-        super().__init__(name, plugin, parent)
-
-        self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', Path(__file__).name.replace('.py', ''))))
-        self.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, on=False)
-        self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, on=False)
-        self.setWindowFlag(QtCore.Qt.WindowMinimizeButtonHint, on=False)
-        self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, on=False)
-        self.ui_file = __file__
-
-        self.project_info = None
-        self.test_name = None
-
-        # Widgets
-        self.tab_widget = QtWidgets.QDialog()
-        from PyQt5 import uic
-        uic.loadUi(self.ui_file.replace('.py', '.ui'), self.tab_widget)
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.tab_widget)
-        self.setLayout(layout)
-
-    def setup_widget(self, project_info: ProjectNavigation):
-        self.project_info = project_info
-
-        self.run_tab = RunTab(self.tab_widget, self.project_info)
-        self.widget = Widget(self.tab_widget)
-
-        setup = Setup(self.widget, self.run_tab)
-        setup.setup_view().setup_callback()
+class TestRunnerDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(__file__.replace('.py', '.ui'), self)
 
     def _verify(self):
         pass
 
-    def get_title(self):
-        return _('Test_Runner')
+
+# Test Runner Plugin main widget
+class TestRunner(PluginMainWidget):
+    def __init__(self, name, plugin, parent=None):
+        super().__init__(name, plugin, parent)
 
     def setup(self):
-        pass
+        # TODO: use a signal to setup the test name from a tree option
+        self.test_name = None
+
+        self.test_runner_widget = TestRunnerDialog()
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.test_runner_widget)
+        self.setLayout(layout)
+
+    def setup_widget(self, project_info: ProjectNavigation):
+        # since Test Runner Plugin depends on the Semi-ATE Main Plugin
+        # the widget setup could only be done is this stage after
+        # the project initialization is done
+        self.project_info = project_info
+
+        self.run_tab = RunTab(self.test_runner_widget, self.project_info)
+        self.widget = Widget(self.test_runner_widget)
+
+        setup = Setup(self.widget, self.run_tab)
+        setup.setup_view().setup_callback()
+
+    def get_title(self):
+        return _('Test Runner')
 
     def update_actions(self):
         pass

@@ -11,7 +11,6 @@
 
 # Spyder imports
 from spyder.api.plugins import SpyderDockablePlugin
-from spyder.api.exceptions import SpyderAPIError
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import (
@@ -51,33 +50,22 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         return self.create_icon('mdi.chip')
 
     def on_initialize(self):
-        widget: TestRunner = self.get_widget()
+        pass
 
     def update_font(self):
         pass
 
     # -------------------- Plugin initialization ------------------------------
-
     @on_plugin_available(plugin=ATE.NAME)
     def on_ate_available(self):
+        ate: ATE = self.get_plugin(ATE.NAME)
+        ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
+
+    def _setup_test_runner_widget(self):
         widget: TestRunner = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
-
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
-        # ate.sig_ate_project_changed.connect(widget.notify_project_status)
-
-    @on_plugin_available(plugin=Plugins.Toolbar)
-    def on_toolbar_available(self):
-        pass
-
-    @on_plugin_available(plugin=Plugins.StatusBar)
-    def on_statusbar_available(self):
-        pass
-
-    @on_plugin_available(plugin=Plugins.MainMenu)
-    def on_mainmenu_available(self):
-        pass
 
     # ----------------------- Plugin teardown ---------------------------------
 
@@ -88,18 +76,6 @@ class TestRunnerPlugin(SpyderDockablePlugin):
 
         widget.set_project_information(None)
         ate.sig_ate_project_changed.disconnect(widget.notify_project_status)
-
-    @on_plugin_teardown(plugin=Plugins.Toolbar)
-    def on_toolbar_teardown(self):
-        toolbar: Toolbar = self.get_plugin(Plugins.Toolbar)
-
-    @on_plugin_teardown(plugin=Plugins.StatusBar)
-    def on_statusbar_teardown(self):
-        pass
-
-    @on_plugin_teardown(plugin=Plugins.MainMenu)
-    def on_mainmenu_teardown(self):
-        pass
 
     def compile_patterns(self, patterns: list[str]):
         self.get_container().compile_patterns(patterns)

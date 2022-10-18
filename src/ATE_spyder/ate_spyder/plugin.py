@@ -41,6 +41,7 @@ class ATE(SpyderDockablePlugin):
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
     sig_ate_project_created = Signal()
+    sig_ate_project_loaded = Signal()
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -61,6 +62,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
         widget.sig_project_created.connect(self.project_created)
         widget.sig_project_created.connect(self.sig_ate_project_created)
+        widget.sig_project_loaded.connect(self.sig_ate_project_loaded)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):

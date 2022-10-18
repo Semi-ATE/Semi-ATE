@@ -49,6 +49,7 @@ class ATEWidget(PluginMainWidget):
     sig_save_all = Signal()
     sig_exception_occurred = Signal(dict)
     sig_project_created = Signal()
+    sig_project_loaded = Signal()
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -257,11 +258,13 @@ $ sammy generate all\n
                             self.project_info.run_build_tool('generate', 'all', project_path)
                             self.open_project(project_path, parent_instance)
                             self.init_project()
+                            self.sig_project_loaded.emit()
                             return True
 
                         return False
 
                 self.init_project()
+                self.sig_project_loaded.emit()
                 return True
             else:
                 print(f'project type is not: {ATEProject.ID}')
