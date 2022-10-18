@@ -4,6 +4,7 @@ from pathlib import Path
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ate_sammy.coding.generators import BaseGenerator
+from ate_sammy.coding.utils import collect_compiled_patterns
 from ate_common.parameter import InputColumnKey, OutputColumnKey
 from ate_projectdatabase import Test
 
@@ -31,9 +32,8 @@ class test_runner_generator(BaseGenerator):
         if file_path.exists():
             os.remove(file_path)
 
-        compiled_patterns = self._collect_compiled_patterns(test_configuration.definition['patterns'])
+        compiled_patterns = collect_compiled_patterns(test_configuration.definition['patterns'], self.project_path)
 
-        hardware_definition['base'] = test_configuration.base
         output = template.render(
             project_name=project_path.name,
             hardware=test_configuration.hardware,
@@ -41,7 +41,6 @@ class test_runner_generator(BaseGenerator):
             test_name=test_configuration.name,
             input_parameters=test_configuration.definition['input_parameters'],
             output_parameters=test_configuration.definition['output_parameters'],
-            hardware_definition=hardware_definition,
             compiled_patterns=compiled_patterns,
             InputColumnKey=InputColumnKey,
             OutputColumnKey=OutputColumnKey)
@@ -54,21 +53,6 @@ class test_runner_generator(BaseGenerator):
         self._create_binning_config(file_path.parent.joinpath(f'{file_path.stem}_binning.json'))
         self._create_execution_strategy_config(file_path.parent.joinpath(f'{file_path.stem}_execution_strategy.json'))
         self._store_config(file_path.parent.joinpath(f'{file_path.stem}_config.json'), test_configuration)
-
-    def _collect_compiled_patterns(self, patterns: dict):
-        compiled_patterns = {}
-        for _, pattern_list in patterns.items():
-            for pattern_tuple in pattern_list:
-                name = pattern_tuple[0]
-                rel_path = Path(pattern_tuple[1]).name
-                compiled_file_path = self.project_path.joinpath('pattern_output', f'{rel_path}.hdf5')
-
-                if not compiled_file_path.exists():
-                    raise Exception(f'compiled pattern file could not be found: {str(compiled_file_path)}')
-
-                compiled_patterns[name] = str(compiled_file_path)
-
-        return compiled_patterns
 
     def _store_config(self, path: Path, test_configuration: object):
         test_runner_generator._dump(path, {

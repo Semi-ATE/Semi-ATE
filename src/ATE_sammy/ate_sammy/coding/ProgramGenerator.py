@@ -4,6 +4,7 @@ from ate_common.parameter import InputColumnKey, OutputColumnKey
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ate_sammy.coding.generators import BaseGenerator
+from ate_sammy.coding.utils import collect_compiled_patterns
 
 
 class test_program_generator(BaseGenerator):
@@ -40,7 +41,7 @@ class test_program_generator(BaseGenerator):
 
         test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
-        compiled_patterns = self._collect_compiled_patterns(program_configuration.patterns)
+        compiled_patterns = collect_compiled_patterns(program_configuration.patterns, self.project_path)
 
         output = template.render(
             test_list=test_list,
@@ -52,21 +53,6 @@ class test_program_generator(BaseGenerator):
 
         with open(self.abs_path_to_file, 'w', encoding='utf-8') as fd:
             fd.write(output)
-
-    def _collect_compiled_patterns(self, patterns: dict):
-        compiled_patterns = {}
-        for _, pattern_list in patterns.items():
-            for pattern_tuple in pattern_list:
-                name = pattern_tuple[0]
-                rel_path = Path(pattern_tuple[1]).name
-                compiled_file_path = self.project_path.joinpath('pattern_output', f'{rel_path}.hdf5')
-
-                if not compiled_file_path.exists():
-                    raise Exception(f'compiled pattern file could not be found: {str(compiled_file_path)}')
-
-                compiled_patterns[name] = str(compiled_file_path)
-
-        return compiled_patterns
 
     def build_test_entry_list(self, tests_in_program, test_targets):
         test_list = []
