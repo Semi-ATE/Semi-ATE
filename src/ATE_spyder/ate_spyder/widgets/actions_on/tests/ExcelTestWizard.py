@@ -203,6 +203,8 @@ class ExcelTestWizard(BaseDialog):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText(str(val).strip())
                 self.table.setItem(row, col, item)
+                if col != 0:
+                    item.setFlags(QtCore.Qt.NoItemFlags)
                 row += 1
             col += 1
         self.table.resizeColumnsToContents()
