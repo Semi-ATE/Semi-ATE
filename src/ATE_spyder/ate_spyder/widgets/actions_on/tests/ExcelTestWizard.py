@@ -203,8 +203,7 @@ class ExcelTestWizard(BaseDialog):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText(str(val).strip())
                 self.table.setItem(row, col, item)
-                if col != 0:
-                    item.setFlags(QtCore.Qt.NoItemFlags)
+                item.setFlags(QtCore.Qt.NoItemFlags)
                 row += 1
             col += 1
         self.table.resizeColumnsToContents()
@@ -219,11 +218,10 @@ class ExcelTestWizard(BaseDialog):
         backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()
         self.table.mapping = {}
         for header in self.workpage.columns:
-            # self.table.setItem(0, col, QtWidgets.QTableWidgetItem(''))          #removeItem
-            # self.table.removeCellWidget(0, col)
             if header in mappingATEDic.keys() and mappingATEDic[header] != 'NaN':
                 self.table.setItem(0, col, QtWidgets.QTableWidgetItem(str(mappingATEDic[header])))
                 self.table.item(0, col).setForeground(QtGui.QColor(0, 255, 0))
+                self.table.item(0, col).setFlags(QtCore.Qt.NoItemFlags)
                 self.table.mapping[str(mappingATEDic[header])] = col
                 delegatorname = mappingATEDic[header].split('.')[1] if len(mappingATEDic[header].split('.')) > 1 else None
                 if delegatorname is not None and delegatorname != 'name' and delegatorname != 'unit':
