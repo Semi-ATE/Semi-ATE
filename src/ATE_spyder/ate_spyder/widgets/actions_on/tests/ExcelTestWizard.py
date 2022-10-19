@@ -310,7 +310,7 @@ class ExcelTestWizard(BaseDialog):
             return True if string[0].isnumeric() else False
 
         def addMenuOverwrite(item):
-            print(item.text())
+            pass
 
         self.Feedback.setText("")
 
@@ -532,26 +532,3 @@ def excel_test_dialog(project_info, selected_file):
     newTestWizard = ExcelTestWizard(project_info, selected_file)
     newTestWizard.exec_()
     del(newTestWizard)
-
-
-if __name__ == "__main__":
-    from ate_spyder.widgets.navigation import ProjectNavigation
-    from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-    from PyQt5.QtWidgets import QApplication
-    from qtpy.QtWidgets import QMainWindow
-    import qdarkstyle
-    import sys
-
-    app = QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    app.references = set()
-    main = QMainWindow()
-    homedir = os.path.expanduser("~")
-    project_directory = homedir + r'\ATE\packages\envs\semi-ate-5\HATB'       # path to your semi-ate project
-    project_info = ProjectNavigation(project_directory, homedir, main)
-    project_info.active_hardware = 'HW0'
-    project_info.active_base = 'FT'
-    project_info.active_target = 'Device1'
-    file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-    selected_file = file_system_operator.get_file('*.xlsx')
-    excel_test_dialog(project_info, selected_file)
