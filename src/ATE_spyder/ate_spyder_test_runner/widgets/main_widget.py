@@ -137,8 +137,13 @@ class RunTab(TabInterface):
         self.parent.tabWidget.setTabVisible(3, False)
         self.parent.tabWidget.setTabVisible(4, False)
 
+        self.parent.start.setToolTop('run without debugging')
+        self.parent.debug.setToolTop('run in debug mode')
+
         self.parent.maxIteration.setEnabled(False)
         self.parent.maxIteration.setToolTip('no supported yet')
+
+        self.parent.refresh_button.setToolTip('refresh configuration')
 
         available_hardwares = self.project_info.get_active_hardware_names()
         self.parent.hardware.blockSignals(True)
@@ -182,6 +187,7 @@ class RunTab(TabInterface):
         self.parent.start.clicked.connect(self._start_execution)
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
         self.parent.compile.clicked.connect(self._compile_patterns)
+        self.parent.refresh_button.clicked.connect(self._fill_test_config)
 
         self.parent.compile.setIcon(qta.icon('mdi.file-cog-outline', color='orange'))
         self.parent.testName.currentIndexChanged.connect(self._fill_test_config)
