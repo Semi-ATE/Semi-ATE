@@ -64,6 +64,9 @@ class InputTable:
     def get_row(self, row: int) -> InputRow:
         return self.rows[row]
 
+    def clear(self):
+        self.rows.clear()
+
 
 @unique
 class TabIds(IntEnum):
@@ -137,8 +140,8 @@ class RunTab(TabInterface):
         self.parent.tabWidget.setTabVisible(3, False)
         self.parent.tabWidget.setTabVisible(4, False)
 
-        self.parent.start.setToolTop('run without debugging')
-        self.parent.debug.setToolTop('run in debug mode')
+        self.parent.start.setToolTip('run without debugging')
+        self.parent.debug.setToolTip('run in debug mode')
 
         self.parent.maxIteration.setEnabled(False)
         self.parent.maxIteration.setToolTip('no supported yet')
@@ -197,6 +200,23 @@ class RunTab(TabInterface):
 
         self.semi_ate_main_widget.select_hardware.connect(self._update_hardware)
         self.semi_ate_main_widget.select_base.connect(self._update_base)
+
+        self.parent.inputParameter.itemClicked.connect(self._shmoo_state_update)
+        self.parent.inputParameter.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
+            self.parent.inputParameter,
+            row,
+            col,
+            float(self.parent.inputParameter.item(row, InputColumn.Min).text()),
+            float(self.parent.inputParameter.item(row, InputColumn.Max).text()))
+        )
+
+        self.parent.outputParameter.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
+            self.parent.outputParameter,
+            row,
+            col,
+            float(self.parent.outputParameter.item(row, OutputColumn.LSL).text()),
+            float(self.parent.outputParameter.item(row, OutputColumn.USL).text()))
+        )
 
     def _update_hardware(self, hw: str):
         self.parent.hardware.blockSignals(True)
@@ -279,6 +299,7 @@ class RunTab(TabInterface):
 
     def _fill_output_parameter_table(self):
         output_table = self.parent.outputParameter
+        # reset table
         output_table.setRowCount(0)
 
         if not self.test_name:
@@ -286,14 +307,6 @@ class RunTab(TabInterface):
 
         data = self.project_info.get_test(self.test_name, self.hardware, self.base)
         output_parameters = data.definition['output_parameters']
-
-        output_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
-            output_table,
-            row,
-            col,
-            float(self.parent.outputParameter.item(row, OutputColumn.LSL).text()),
-            float(self.parent.outputParameter.item(row, OutputColumn.USL).text()))
-        )
 
         output_table.blockSignals(True)
         for index, (key, value) in enumerate(output_parameters.items()):
@@ -324,22 +337,15 @@ class RunTab(TabInterface):
 
     def _fill_input_parameter_table(self):
         input_table = self.parent.inputParameter
+        # reset table
         input_table.setRowCount(0)
+        self.input_table_data.clear()
 
         if not self.test_name:
             return
 
         data = self.project_info.get_test(self.test_name, self.hardware, self.base)
         input_parameters = data.definition['input_parameters']
-
-        input_table.itemClicked.connect(self._shmoo_state_update)
-        input_table.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
-            input_table,
-            row,
-            col,
-            float(self.parent.inputParameter.item(row, InputColumn.Min).text()),
-            float(self.parent.inputParameter.item(row, InputColumn.Max).text()))
-        )
 
         input_table.blockSignals(True)
         for index, (key, value) in enumerate(input_parameters.items()):
@@ -359,6 +365,7 @@ class RunTab(TabInterface):
                 item.setToolTip('parameter is not shmooable')
             else:
                 item.setCheckState(QtCore.Qt.Checked if row.is_shmooable() else QtCore.Qt.Unchecked)
+                item.setFlags(QtCore.Qt.ItemIsSelectable)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.MIN()]))
             item.setFlags(QtCore.Qt.ItemIsSelectable)
@@ -372,15 +379,9 @@ class RunTab(TabInterface):
             item.setToolTip('call is only enabled when shmoo is not set')
             input_table.setItem(index, InputColumn.Call, item)
 
-            if row.is_shmooable():
-                item.setFlags(QtCore.Qt.ItemIsSelectable)
-
             item = QtWidgets.QTableWidgetItem('0.0')
             input_table.setItem(index, InputColumn.Step, item)
             item.setToolTip('step is only enabled when shmoo is set')
-
-            if not row.is_shmooable():
-                item.setFlags(QtCore.Qt.ItemIsSelectable)
 
             item = QtWidgets.QTableWidgetItem(str(value[InputColumnKey.POWER()]))
             item.setFlags(QtCore.Qt.ItemIsSelectable)
