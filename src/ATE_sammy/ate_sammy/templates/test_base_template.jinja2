@@ -119,3 +119,12 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
 
     def get_input_parameter(self, parameter_name: str):
         return getattr(self.ip, parameter_name)
+
+    @property
+    def tester(self):
+        return self.context.tester
+
+    def run_pattern(self, pattern_virtual_name: str, start_label: str = '', stop_label: str = '', timeout_in_ms: int = 1000):
+        pattern_name = self.stil_tool._get_pattern_name(pattern_virtual_name)
+
+        self.tester.run_pattern(pattern_name, start_label, stop_label, timeout_in_ms)

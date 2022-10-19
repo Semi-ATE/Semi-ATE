@@ -618,6 +618,9 @@ class RunTab(TabInterface):
 
             for row in range(self.input_table.rowCount()):
                 name_item = self.input_table.item(row, InputColumn.Name)
+                if not configuration['input_parameters'].get(name_item.text()):
+                    # skip this parameter as it's probably newly created while updating the current test
+                    continue
                 value = configuration['input_parameters'][name_item.text()]['value']
                 step = configuration['input_parameters'][name_item.text()]['step']
                 is_shmoo = configuration['input_parameters'][name_item.text()]['is_shmoo']
@@ -630,6 +633,9 @@ class RunTab(TabInterface):
 
             for row in range(self.output_table.rowCount()):
                 name_item = self.output_table.item(row, OutputColumn.Name)
+                if not configuration['output_parameters'].get(name_item.text()):
+                    # skip this parameter as it's probably newly created while updating the current test
+                    continue
                 ltl_value = configuration['output_parameters'][name_item.text()]['ltl']
                 utl_value = configuration['output_parameters'][name_item.text()]['utl']
                 self.output_table.item(row, OutputColumn.LTL).setText(str(ltl_value))
@@ -666,10 +672,6 @@ class Widget(TabInterface):
         self.parent.testName.setEnabled(True)
         self.parent.hardware.setEnabled(True)
         self.parent.base.setEnabled(True)
-
-        # Timing and Console are not supported yet
-        self.parent.testTabs.setTabVisible(2, False)
-        self.parent.testTabs.setTabVisible(3, False)
 
     def setup_callbacks(self):
         pass
