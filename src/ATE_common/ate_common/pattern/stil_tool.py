@@ -9,5 +9,5 @@ class StilTool(StilToolBase):
     def __init__(self):
         self._loader = SLoader()
 
-    def _load_patterns_impl(self, compiled_pattern: dict):
-        self._loader.load(list(compiled_pattern.values()), OUTPUT_DIR)
+    def _load_patterns_impl(self, compiled_patterns: list):
+        self._loader.load(compiled_patterns, OUTPUT_DIR)
