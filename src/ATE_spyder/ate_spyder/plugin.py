@@ -4,6 +4,7 @@ ATE Plugin.
 # Standard library imports
 import os
 from typing import Type
+from ate_spyder.widgets.navigation import ProjectNavigation
 
 # Third party imports
 from qtpy.QtCore import Signal
@@ -62,6 +63,7 @@ class ATE(SpyderDockablePlugin):
     """
 
     sig_ate_project_created = Signal()
+    sig_ate_project_loaded = Signal()
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -85,6 +87,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_compile_pattern.connect(self.sig_compile_pattern)
         widget.sig_project_created.connect(self.project_created)
         widget.sig_project_created.connect(self.sig_ate_project_created)
+        widget.sig_project_loaded.connect(self.sig_ate_project_loaded)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
@@ -183,3 +186,6 @@ class ATE(SpyderDockablePlugin):
             return
 
         editor.close_file_in_all_editorstacks(str(id(editor)), path)
+
+    def get_project_navigation(self) -> ProjectNavigation:
+        return self.get_widget().get_project_navigation()

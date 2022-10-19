@@ -9,7 +9,7 @@ import shutil
 import logging
 from functools import partial
 from typing import Type, Dict
-
+from ate_spyder.widgets.actions_on.utils.MenuDialog import StandardDialog
 # Qt-related imports
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Signal
@@ -75,7 +75,7 @@ class ATEWidget(PluginMainWidget):
     """
 
     sig_project_created = Signal()
-
+    sig_project_loaded = Signal()
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)
@@ -231,7 +231,6 @@ class ATEWidget(PluginMainWidget):
             print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
             self.sig_project_created.emit()
 
-
     def open_project(self, project_path, parent_instance) -> bool:
         project_loaded = False
         if not os.path.exists(project_path):
@@ -260,33 +259,59 @@ class ATEWidget(PluginMainWidget):
                 self.project_info(project_path)
 
                 from ate_projectdatabase import latest_semi_ate_project_db_version
-                project_version = self.project_info.get_version()
+                try:
+                    project_version = self.project_info.get_version()
+                except Exception:
+                    # older projects doesn't have the database structure supported by the current Semi-ATE Plugin version
+                    # For those the auto migration is disabled and shall be done manually
+                    raise Exception(f'''\n
+Project: '{project_path}' cannot be migrated automatically!
+Execute the following commands inside the project root\n
+$ sammy migrate\n
+Running the generate all command shall refresh the generated code based on the template files\n
+$ sammy generate all\n
+                    ''')
+
                 if (project_version != latest_semi_ate_project_db_version):
                     try:
                         raise Exception(f'''\n
 Migration required:\n
-Project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
+Project: '{project_path}' with project version: '{project_version}' differs from Semi-ATE Plugin version: '{latest_semi_ate_project_db_version}'\n
 To prevent any inconsistencies the project must be migrated\n
 Execute the following commands inside the project root\n
 $ sammy migrate\n
 Running the generate all command shall refresh the generated code based on the template files\n
 $ sammy generate all\n
                     ''')
-                    except Exception as e:
-                        from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
-                        report_exception(self.project_info.parent, "migration required")
-                        self.close_project()
+                    except Exception:
+                        diag = StandardDialog(self.project_info.parent, 'migrate the project automatically?')
+                        if not diag.exec_():
+                            from ate_spyder.widgets.actions_on.utils.ExceptionHandler import report_exception
+                            report_exception(self.project_info.parent, "migration required")
+                            self.close_project()
+                        else:
+                            self.project_info.run_build_tool('migrate', '', project_path)
+                            self.project_info.run_build_tool('generate', 'all', project_path)
+                            self.open_project(project_path, parent_instance)
+                            self.init_project()
+                            self.sig_project_loaded.emit()
+                            project_loaded = True
+
                         return False
 
-                self.toolbar(self.project_info)
-                self.set_tree()
-                self.init_done.emit()
+                self.init_project()
+                self.sig_project_loaded.emit()
                 project_loaded = True
             else:
                 print(f'project type is not: {ATEProject.ID}')
 
         self.sig_ate_project_changed.emit(project_loaded)
         return project_loaded
+
+    def init_project(self):
+        self.toolbar(self.project_info)
+        self.set_tree()
+        self.init_done.emit()
 
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
         with open(config_file_path, 'r') as file:
@@ -327,3 +352,4 @@ $ sammy generate all\n
         """
         vcs_name = VCSProviderClass.NAME
         self.vcs_handlers[vcs_name] = VCSProviderClass
+
