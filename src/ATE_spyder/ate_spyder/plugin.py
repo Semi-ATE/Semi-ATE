@@ -65,6 +65,9 @@ class ATE(SpyderDockablePlugin):
     sig_ate_project_created = Signal()
     sig_ate_project_loaded = Signal()
 
+    sig_run_cell = Signal()
+    sig_debug_cell = Signal()
+
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
     @staticmethod
@@ -80,6 +83,12 @@ class ATE(SpyderDockablePlugin):
     def on_initialize(self):
         widget = self.get_widget()
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+
+        widget.sig_run_cell.connect(self.sig_run_cell)
+        widget.sig_debug_cell.connect(self.sig_debug_cell)
+
+        widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+
         widget.sig_close_file.connect(self.sig_close_file)
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
 
@@ -119,6 +128,10 @@ class ATE(SpyderDockablePlugin):
         widget = self.get_widget()
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
+
+        self.sig_run_cell.connect(editor.run_cell)
+        self.sig_debug_cell.connect(editor.debug_cell)
+
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
 

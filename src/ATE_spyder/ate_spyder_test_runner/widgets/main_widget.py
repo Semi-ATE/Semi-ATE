@@ -267,11 +267,11 @@ class RunTab(TabInterface):
 
     def _start_execution(self):
         self._setup_before_run()
-        # TODO: emit signal to run the generate code
+        self.project_info.parent.sig_run_cell.emit()
 
     def _start_execution_in_debug_mode(self):
         self._setup_before_run()
-        # TODO: emit signal to run the debugger
+        self.project_info.parent.sig_debug_cell.emit()
 
     @property
     def test_runner_file_name(self) -> str:

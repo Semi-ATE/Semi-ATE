@@ -95,6 +95,9 @@ class ATEWidget(PluginMainWidget):
     groups_update = Signal(str, list)
     init_done = Signal()
 
+    sig_run_cell = Signal()
+    sig_debug_cell = Signal()
+
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
 
