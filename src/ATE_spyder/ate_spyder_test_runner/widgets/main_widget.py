@@ -246,6 +246,10 @@ class RunTab(TabInterface):
             return
 
         patterns = self.pattern_tab.collect_pattern()
+        if not patterns:
+            self.feedback.setText('pattern list is empty')
+            return
+
         pattern_path_list = set([pattern[1] for pattern in patterns[self.test_name]])
 
         self.project_info.compile_stil_patterns(
