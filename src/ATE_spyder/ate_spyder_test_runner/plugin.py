@@ -13,9 +13,9 @@
 from spyder.api.plugins import SpyderDockablePlugin
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
-from spyder.api.plugin_registration.decorators import (
-    on_plugin_available, on_plugin_teardown)
-from spyder.plugins.toolbar.plugin import Toolbar
+from spyder.api.plugin_registration.decorators import on_plugin_available, on_plugin_teardown
+
+from qtpy.QtCore import Signal
 
 # Local imports
 from ate_spyder_test_runner.widgets.main_widget import TestRunner
@@ -32,9 +32,14 @@ class TestRunnerPlugin(SpyderDockablePlugin):
     WIDGET_CLASS = TestRunner
     CONF_SECTION = NAME
     REQUIRES = [ATE.NAME]
-    OPTIONAL = [Plugins.Toolbar, Plugins.StatusBar, Plugins.MainMenu]
+    OPTIONAL = [Plugins.MainMenu, Plugins.Editor, Plugins.Projects]
     CONF_FILE = False
     TABIFY = [Plugins.Help]
+
+    sig_edit_goto_requested = Signal(str, int, str)
+    sig_run_cell = Signal()
+    sig_debug_cell = Signal()
+    sig_stop_debugging = Signal()
 
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
@@ -50,7 +55,12 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         return self.create_icon('mdi.chip')
 
     def on_initialize(self):
-        pass
+        widget = self.get_widget()
+        widget.sig_run_cell.connect(self.sig_run_cell)
+        widget.sig_debug_cell.connect(self.sig_debug_cell)
+        widget.sig_stop_debugging.connect(self.sig_stop_debugging)
+
+        widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
 
     def update_font(self):
         pass
@@ -66,6 +76,24 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         ate: ATE = self.get_plugin(ATE.NAME)
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
+
+    @on_plugin_available(plugin=Plugins.Projects)
+    def on_projects_available(self):
+        projects = self.get_plugin(Plugins.Projects)
+        projects.sig_project_closed.connect(self.project_closed)
+
+    def project_closed(self):
+        widget: TestRunner = self.get_widget()
+        widget.teardown()
+
+    @on_plugin_available(plugin=Plugins.Editor)
+    def on_editor_available(self):
+        editor = self.get_plugin(Plugins.Editor)
+        self.sig_edit_goto_requested.connect(editor.load)
+
+        self.sig_run_cell.connect(editor.run_cell)
+        self.sig_debug_cell.connect(editor.debug_cell)
+        self.sig_stop_debugging.connect(editor.stop_debugging)
 
     # ----------------------- Plugin teardown ---------------------------------
 

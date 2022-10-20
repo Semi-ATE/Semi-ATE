@@ -9,6 +9,7 @@ from typing import Callable, List, Optional, Tuple
 import qtawesome as qta
 
 from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtCore import Signal
 
 from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
 from ate_spyder.widgets.actions_on.program.SignalToChannelTab import SignalToChannelTab
@@ -124,8 +125,9 @@ class TabInterface(ABC):
 
 
 class RunTab(TabInterface):
-    def __init__(self, parent: 'TestRunner', project_info: ProjectNavigation, test_name: str = ''):
+    def __init__(self, plugin, parent: 'TestRunner', project_info: ProjectNavigation, test_name: str = ''):
         super().__init__(parent)
+        self.plugin = plugin
         self.current_cell_info: Optional[CellInfo] = None
         self.input_table_data = InputTable()
         self.output_table_data = []
@@ -188,7 +190,11 @@ class RunTab(TabInterface):
 
     def setup_callbacks(self):
         self.parent.start.clicked.connect(self._start_execution)
+        self.parent.start.setIcon(qta.icon('mdi.play', color='orange'))
+
         self.parent.debug.clicked.connect(self._start_execution_in_debug_mode)
+        self.parent.debug.setIcon(qta.icon('mdi.play-circle', color='orange'))
+
         self.parent.compile.clicked.connect(self._compile_patterns)
         self.parent.refresh_button.clicked.connect(self._fill_test_config)
 
@@ -200,6 +206,9 @@ class RunTab(TabInterface):
 
         self.semi_ate_main_widget.select_hardware.connect(self._update_hardware)
         self.semi_ate_main_widget.select_base.connect(self._update_base)
+
+        self.parent.stop_button.clicked.connect(self._stop_debugging)
+        self.parent.stop_button.setIcon(qta.icon('mdi.square', color='orange'))
 
         self.parent.inputParameter.itemClicked.connect(self._shmoo_state_update)
         self.parent.inputParameter.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
@@ -217,6 +226,9 @@ class RunTab(TabInterface):
             float(self.parent.outputParameter.item(row, OutputColumn.LSL).text()),
             float(self.parent.outputParameter.item(row, OutputColumn.USL).text()))
         )
+
+    def _stop_debugging(self):
+        self.plugin.sig_stop_debugging.emit()
 
     def _update_hardware(self, hw: str):
         self.parent.hardware.blockSignals(True)
@@ -240,14 +252,14 @@ class RunTab(TabInterface):
     def _compile_patterns(self):
         self.feedback.setText('')
 
-        if not self.test_runner_sig_to_channel_file_path.exists():
-            self.feedback.setText('signal to channel yaml file is required for the compilation, generate it first!')
-            self.parent.patternLayout.setCurrentIndex(1)
-            return
-
         patterns = self.pattern_tab.collect_pattern()
         if not patterns:
             self.feedback.setText('pattern list is empty')
+            return
+
+        if not self.test_runner_sig_to_channel_file_path.exists():
+            self.feedback.setText('signal to channel yaml file is required for the compilation, generate it first!')
+            self.parent.patternLayout.setCurrentIndex(1)
             return
 
         pattern_path_list = set([pattern[1] for pattern in patterns[self.test_name]])
@@ -263,15 +275,15 @@ class RunTab(TabInterface):
         self.project_info.create_test_runner_main(self.test_runner_path, configured_test)
 
         # send signal to spyder to open the generated file inside the editor
-        self.project_info.parent.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
+        self.plugin.sig_edit_goto_requested.emit(str(self.test_runner_path), 1, "")
 
     def _start_execution(self):
         self._setup_before_run()
-        self.project_info.parent.sig_run_cell.emit()
+        self.plugin.sig_run_cell.emit()
 
     def _start_execution_in_debug_mode(self):
         self._setup_before_run()
-        self.project_info.parent.sig_debug_cell.emit()
+        self.plugin.sig_debug_cell.emit()
 
     @property
     def test_runner_file_name(self) -> str:
@@ -587,6 +599,9 @@ class RunTab(TabInterface):
     def _base_changed(self, _: int):
         self._update_test_names()
 
+    def project_changed(self):
+        self._update_test_names()
+
     def _update_test_names(self):
         self.parent.testName.clear()
         tests = self.project_info.get_tests_from_db(self.hardware, self.base)
@@ -719,8 +734,14 @@ class TestRunnerDialog(QtWidgets.QDialog):
 
 # Test Runner Plugin main widget
 class TestRunner(PluginMainWidget):
+    sig_edit_goto_requested = Signal(str, int, str)
+    sig_run_cell = Signal()
+    sig_debug_cell = Signal()
+    sig_stop_debugging = Signal()
+
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
+        self.setEnabled(False)
 
     def setup(self):
         # TODO: use a signal to setup the test name from a tree option
@@ -738,11 +759,15 @@ class TestRunner(PluginMainWidget):
         # the project initialization is done
         self.project_info = project_info
 
-        self.run_tab = RunTab(self.test_runner_widget, self.project_info)
+        self.setEnabled(True)
+        self.run_tab = RunTab(self, self.test_runner_widget, self.project_info)
         self.widget = Widget(self.test_runner_widget)
 
         setup = Setup(self.widget, self.run_tab)
         setup.setup_view().setup_callback()
+
+    def teardown(self):
+        self.setEnabled(False)
 
     def get_title(self):
         return _('Test Runner')

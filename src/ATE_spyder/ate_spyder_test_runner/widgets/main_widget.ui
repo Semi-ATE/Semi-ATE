@@ -218,7 +218,7 @@
             <item>
              <widget class="QPushButton" name="start">
               <property name="text">
-               <string>Start</string>
+               <string>Run</string>
               </property>
              </widget>
             </item>
@@ -241,6 +241,13 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="stop_button">
+              <property name="text">
+               <string>Stop</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

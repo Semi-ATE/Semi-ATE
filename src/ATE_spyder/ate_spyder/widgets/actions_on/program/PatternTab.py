@@ -42,7 +42,7 @@ class PatternTab(QtWidgets.QWidget):
                     combo.setCurrentIndex(index)
 
     def add_pattern_items(self, test_name: str):
-        if not test_name:
+        if not test_name or not self.project_navigation.active_hardware or not self.project_navigation.active_base:
             return
 
         if self._is_assigned(test_name):
