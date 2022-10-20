@@ -609,12 +609,12 @@ class RunTab(TabInterface):
         self.parent.testName.addItems(test_names)
         self.parent.testName.setCurrentIndex(0)
 
-        self.parent.testTabs.setEnabled(True)
+        self.parent.setEnabled(True)
 
         if not self.parent.testName.currentText() or not test_names:
             self.pattern_tab.pattern_table.setRowCount(0)
             self.signal_to_channel.signal_to_channel_table.setRowCount(0)
-            self.parent.testTabs.setEnabled(False)
+            self.parent.setEnabled(False)
             return
 
         self._fill_test_config()
