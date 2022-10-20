@@ -150,7 +150,6 @@ class STILTree(OneColumnTree):
 
     def activated(self, item: MessageItem):
         """Double-click event"""
-        # data = self.data.get(id(item))
         filename = item.filename
         row = item.row
         column = item.col
@@ -299,13 +298,11 @@ class STILContainer(PluginMainWidget):
         )
 
         self.stil_process = QProcess(self)
-        # self.stil_process.errorOccurred.connect(self.stil_process_failed)
         self.stil_process.finished.connect(self.stil_process_finished)
 
         # TODO: Determine STIL file location adequately
         project_path = self.project_info.project_directory
         cwd = project_path
-        # cwd = osp.join(project_path, 'patterns')
         env = self.stil_process.processEnvironment()
 
         for var in os.environ:

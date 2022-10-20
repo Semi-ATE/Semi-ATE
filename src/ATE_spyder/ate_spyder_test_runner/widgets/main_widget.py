@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 import qtawesome as qta
 
-from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QVBoxLayout, QHBoxLayout
 from qtpy.QtCore import Signal
 
 from ate_spyder.widgets.actions_on.program.PatternTab import PatternTab
@@ -124,6 +124,9 @@ class TabInterface(ABC):
         pass
 
 
+PATTERN_TAB_INDEX = 2
+
+
 class RunTab(TabInterface):
     def __init__(self, plugin, parent: 'TestRunner', project_info: ProjectNavigation, test_name: str = ''):
         super().__init__(parent)
@@ -147,8 +150,6 @@ class RunTab(TabInterface):
 
         self.parent.maxIteration.setEnabled(False)
         self.parent.maxIteration.setToolTip('no supported yet')
-
-        self.parent.refresh_button.setToolTip('refresh configuration')
 
         available_hardwares = self.project_info.get_active_hardware_names()
         self.parent.hardware.blockSignals(True)
@@ -176,7 +177,7 @@ class RunTab(TabInterface):
         self.parent.inputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.inputParameter))
         self.parent.outputParameter.selectionModel().selectionChanged.connect(lambda selected, deselected: self._update_cell(selected, deselected, self.parent.outputParameter))
 
-        self.parent.patternLayout.addTab(self.signal_to_channel, "Signal To Channel")
+        self.parent.patternLayout.addTab(self.signal_to_channel, 'Signal to Channel')
         self.signal_to_channel.setup()
 
         # the manual generation of the signal to channel yaml file is only available for the
@@ -186,6 +187,7 @@ class RunTab(TabInterface):
         self.signal_to_channel.generate_button.clicked.connect(self._generate_signal_to_channel_yaml_file)
 
     def _generate_signal_to_channel_yaml_file(self):
+        self.feedback.setText('')
         self.signal_to_channel.generate_yml_file(self.test_runner_sig_to_channel_file_path)
 
     def setup_callbacks(self):
@@ -209,6 +211,8 @@ class RunTab(TabInterface):
 
         self.parent.stop_button.clicked.connect(self._stop_debugging)
         self.parent.stop_button.setIcon(qta.icon('mdi.square', color='orange'))
+
+        self.parent.refresh_button.setIcon(qta.icon('mdi.refresh', color='orange'))
 
         self.parent.inputParameter.itemClicked.connect(self._shmoo_state_update)
         self.parent.inputParameter.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
@@ -252,15 +256,12 @@ class RunTab(TabInterface):
     def _compile_patterns(self):
         self.feedback.setText('')
 
-        patterns = self.pattern_tab.collect_pattern()
-        if not patterns:
-            self.feedback.setText('pattern list is empty')
-            return
-
         if not self.test_runner_sig_to_channel_file_path.exists():
             self.feedback.setText('signal to channel yaml file is required for the compilation, generate it first!')
             self.parent.patternLayout.setCurrentIndex(1)
             return
+
+        patterns = self.pattern_tab.collect_pattern()
 
         pattern_path_list = set([pattern[1] for pattern in patterns[self.test_name]])
 
@@ -635,6 +636,15 @@ class RunTab(TabInterface):
         if self.test_runner_sig_to_channel_file_path.exists():
             self.signal_to_channel.load_table(self.test_runner_sig_to_channel_file_path)
 
+        # check if pattern list is empty
+        # if so, disable
+        if self.pattern_tab.pattern_table.rowCount() == 0:
+            self.parent.tabWidget.setTabEnabled(PATTERN_TAB_INDEX, False)
+            self.parent.tabWidget.setTabToolTip(PATTERN_TAB_INDEX, 'pattern list is empty')
+        else:
+            self.parent.tabWidget.setTabEnabled(PATTERN_TAB_INDEX, True)
+            self.parent.tabWidget.setTabToolTip(PATTERN_TAB_INDEX, '')
+
     def _fill_with_custom_values(self):
         if not self.test_name:
             return
@@ -749,7 +759,7 @@ class TestRunner(PluginMainWidget):
 
         self.test_runner_widget = TestRunnerDialog()
 
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         layout.addWidget(self.test_runner_widget)
         self.setLayout(layout)
 

@@ -1,7 +1,7 @@
 from ate_common.pattern.stil_tool_base import StilToolBase
 from STIL_Tools.sc_loader import SLoader
 
-
+# stil tool use this path to do the loading work
 OUTPUT_DIR = '/tmp/mem'
 
 

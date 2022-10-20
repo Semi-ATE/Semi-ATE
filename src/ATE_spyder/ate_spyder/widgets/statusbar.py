@@ -21,5 +21,5 @@ class ATEStatusBar(StatusBarWidget):
         super().__init__(parent, show_icon, show_label, show_spinner)
         self.sig_update_value.connect(self.set_value)
 
-    def get_tooltip(self):
+    def get_tooltip(self) -> str:
         return 'ATE plugin status messages'
