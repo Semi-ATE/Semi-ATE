@@ -3,6 +3,8 @@ include ate_spyder/README.md
 recursive-include ate_spyder/widgets *.ui
 recursive-include ate_spyder/widgets *.png
 recursive-exclude tests *
+recursive-include ate_spyder_test_runner/widgets *.png
+recursive-include ate_spyder_test_runner/widgets *.ui
 exclude ate_spyder/widgets/actions_on/hardwaresetup/README.md     
 exclude ate_spyder/widgets/actions_on/maskset/NewMasksetWizard.xcf
 exclude ate_spyder/widgets/actions_on/program/README.md
