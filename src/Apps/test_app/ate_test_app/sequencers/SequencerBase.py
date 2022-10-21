@@ -218,7 +218,7 @@ class SequencerBase:
     def after_cycle_cb(self, execution_time: float, num_tests: int, test_result: Result):
         """
         This function is called after the execution
-        of a complete cylce of all tests the execution policy
+        of a complete cycle of all tests
         """
         # TODO: map correct field values instead of using hard codded values
         is_pass = test_result == Result.Pass()

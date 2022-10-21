@@ -67,6 +67,7 @@ class TestProgramWizard(BaseDialog):
 
         self.pattern_tab = PatternTab(self, self.project_info, self.read_only)
         self.signal_to_channel = SignalToChannelTab(self, self.read_only)
+        self.tabWidget.addTab(self.signal_to_channel, "Signal To Channel")
 
         self._setup()
         self._view()
@@ -800,6 +801,10 @@ class TestProgramWizard(BaseDialog):
     @property
     def sequencer_type(self):
         return self.sequencerType.currentText()
+
+    @property
+    def feedback(self):
+        return self.Feedback
 
     def _update_feedback(self, message=''):
         self.Feedback.setText(message)

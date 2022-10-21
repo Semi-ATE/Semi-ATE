@@ -3,21 +3,26 @@ from typing import Dict
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+from PyQt5 import uic
 import yaml
 
 
 class SignalToChannelTab(QtWidgets.QWidget):
-    def __init__(self, parent: QtWidgets.QTabWidget, read_only: bool = False):
+    def __init__(self, parent: QtWidgets.QWidget, read_only: bool = False):
         super().__init__(parent=parent)
+        uic.loadUi(__file__.replace('.py', '.ui'), self)
+
         self.parent = parent
         self.read_only = read_only
 
     def setup(self):
         self.signal_to_channel_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.generate_button.setVisible(False)
         if not self.read_only:
             self._connect_event_handler()
 
     def load_table(self, path: Path):
+        self.signal_to_channel_table.setRowCount(0)
         flags = QtCore.Qt.NoItemFlags
         with open(path) as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
@@ -64,6 +69,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
         return item
 
     def _add_row(self):
+        self.feedback.setText('')
         self.signal_to_channel_table.insertRow(self.signal_to_channel_table.rowCount())
         self.signal_to_channel_table.setItem(self.signal_to_channel_table.rowCount() - 1, 0, self._generate_item(''))
         self.signal_to_channel_table.setCellWidget(self.signal_to_channel_table.rowCount() - 1, 1, self._generate_dropdown_item())
@@ -79,6 +85,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
         return combo
 
     def _remove_row(self):
+        self.feedback.setText('')
         if self.signal_to_channel_table.rowCount() == 0:
             self.feedback.setText('no patterns available')
             return
@@ -164,21 +171,5 @@ class SignalToChannelTab(QtWidgets.QWidget):
             f.write(data)
 
     @property
-    def add_button(self) -> QtWidgets.QPushButton:
-        return self.parent.add
-
-    @property
-    def remove_button(self) -> QtWidgets.QPushButton:
-        return self.parent.remove
-
-    @property
-    def signal_to_channel_table(self) -> QtWidgets.QTableWidget:
-        return self.parent.signal_to_channel_table
-
-    @property
     def feedback(self) -> QtWidgets.QLineEdit:
-        return self.parent.Feedback
-
-    @property
-    def num_channels(self) -> QtWidgets.QSpinBox:
-        return self.parent.num_channels
+        return self.parent.feedback
