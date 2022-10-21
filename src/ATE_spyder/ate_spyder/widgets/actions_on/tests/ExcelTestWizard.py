@@ -417,6 +417,7 @@ class ExcelTestWizard(BaseDialog):
                 test_content['hardware'] = self.ForHardwareSetup.text()
                 test_content['base'] = self.WithBase.text()
                 test_content['groups'] = self._get_groups()
+                test_content['patterns'] = {}
 
                 # assign name
                 test_content['name'] = TestName
