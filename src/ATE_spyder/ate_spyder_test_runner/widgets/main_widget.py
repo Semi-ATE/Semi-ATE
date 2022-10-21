@@ -760,6 +760,9 @@ class TestRunnerDialog(QtWidgets.QDialog):
         super().__init__()
         uic.loadUi(__file__.replace('.py', '.ui'), self)
 
+    def reject(self):
+        pass
+
     def _verify(self):
         pass
 
