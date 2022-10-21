@@ -1,0 +1,12 @@
+sphinx_rtd_theme
+xlrd
+h5py
+lxml
+openpyxl
+tables
+hightime
+QtAwesome
+QDarkStyle
+svgelements
+semi-ate-common
+Semi-ATE-Metis
