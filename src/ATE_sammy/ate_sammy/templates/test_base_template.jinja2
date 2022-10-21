@@ -21,10 +21,12 @@ from ate_common.pattern.stil_tool_base import StilToolBase
 
 import sys
 from pathlib import Path
-parent_path = str(Path(__file__).joinpath('..', '..').resolve())
+
+# get to project root directory
+parent_path = str(Path(__file__).joinpath('..', '..', '..', '..', '..').resolve())
 sys.path.append(parent_path)
 
-from common import Context
+from {{project_name}}.{{definition['hardware']}}.{{definition['base']}}.common import Context
 {% if definition['patterns'] %}
 from dataclasses import dataclass
 
