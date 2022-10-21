@@ -296,9 +296,7 @@ $ sammy generate all\n
                             self.project_info.run_build_tool('migrate', '', project_path)
                             self.project_info.run_build_tool('generate', 'all', project_path)
                             self.open_project(project_path, parent_instance)
-                            self.init_project()
-                            self.sig_project_loaded.emit()
-                            project_loaded = True
+                            return True
 
                         return False
 
