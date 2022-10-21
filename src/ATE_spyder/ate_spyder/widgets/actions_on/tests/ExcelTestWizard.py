@@ -9,6 +9,7 @@ Starting from TestWizard.py
 """
 import os
 import re
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -28,9 +29,6 @@ from ate_spyder.widgets.validation import is_valid_python_class_name
 import ate_spyder.widgets.actions_on.tests.Utils as utils
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
-from ate_common.parameter import OutputColumnKey
-
-from ate_spyder.widgets.constants import UpdateOptions
 
 minimal_docstring_length = 80
 
@@ -89,22 +87,22 @@ class ExcelTestWizard(BaseDialog):
 
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
-    # TestName
+        # TestName
         self.TestName = ''
 
-    # ForHardwareSetup
+        # ForHardwareSetup
         self.ForHardwareSetup.setStyleSheet("font-weight: bold;")
         self.ForHardwareSetup.setText(self.project_info.active_hardware)
         if test_content['hardware'] != '':
             self.ForHardwareSetup.setText(test_content['hardware'])
 
-    # WithBase
+        # WithBase
         self.WithBase.setStyleSheet("font-weight: bold")
         self.WithBase.setText(self.project_info.active_base)
         if test_content['base'] != '':
             self.WithBase.setText(test_content['base'])
 
-    # Delegators
+        # Delegators
         self.fmtDelegator = utils.Delegator(valid_fmt_regex, self)
         self.minDelegator = utils.Delegator(valid_min_float_regex, self)
         self.defaultDelegator = utils.Delegator(valid_default_float_regex, self)
@@ -115,7 +113,7 @@ class ExcelTestWizard(BaseDialog):
         self.utlDelegator = utils.Delegator(valid_max_float_regex, self)
         self.uslDelegator = utils.Delegator(valid_max_float_regex, self)
 
-    # table
+        # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
 
         self.get_excel_pages(filename)
@@ -123,8 +121,8 @@ class ExcelTestWizard(BaseDialog):
 
         self._init_group()
 
-    # Tabs
-    # buttons
+        # Tabs
+        # buttons
         self.mapping_load.setIcon(qta.icon('mdi.file-import', color='orange'))
         self.mapping_load.setToolTip('load mapping file')
         self.mapping_load.setEnabled(False)
@@ -141,8 +139,8 @@ class ExcelTestWizard(BaseDialog):
 
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
-        self.fillMappingList()
-        self.mappATE2Excel()
+        self.fill_mapping_list()
+        self.map_ATE_2_excel()
         self.verify()
 
     def get_excel_pages(self, filename):
@@ -175,23 +173,24 @@ class ExcelTestWizard(BaseDialog):
             wp = read_excel()
         self.headerindex = headerindex
 
-        wp.dropna(how='all', axis=1, inplace=True)      # remove empty columns
+        # remove empty columns
+        wp.dropna(how='all', axis=1, inplace=True)
         tb = self.table
         if tb.rowCount() > 0:
             tb.setRowCount(0)
         if tb.columnCount() > 0:
             tb.setColumnCount(0)
 
-    # set headerline
+        # set headerline
         for column in wp.columns:
             tb.insertColumn(tb.columnCount())
             tb.setHorizontalHeaderItem(tb.columnCount()-1, QtWidgets.QTableWidgetItem(str(column)))
-    # add an empty row for the mappings
+        # add an empty row for the mappings
         wp.loc[-1] = np.array([0] * wp.columns, dtype=str)
         wp.index += 1
         wp.sort_index(inplace=True)
 
-    # fill the rows from the table with the excel-workpage
+        # fill the rows from the table with the excel-workpage
         col = 0
         for column in wp.columns:
             row = 0
@@ -209,7 +208,7 @@ class ExcelTestWizard(BaseDialog):
         self.table.resizeColumnsToContents()
         self.workpage = wp
 
-    def mappATE2Excel(self):
+    def map_ATE_2_excel(self):
         """map header to the ATE test_content and coloration the used parameters in the table
 
         create mapping Dictionary excel to table columns
@@ -233,7 +232,7 @@ class ExcelTestWizard(BaseDialog):
             col += 1
         self.table.resizeColumnsToContents()
 
-    def fillMappingList(self):
+    def fill_mapping_list(self):
         testContent = self.test_content
         if 'hardware' in testContent:
             testContent.pop('hardware')
@@ -253,36 +252,12 @@ class ExcelTestWizard(BaseDialog):
 
     def testTabChanged(self, activatedTabIndex):
         """Slot for when the Tab is changed."""
-        pass
-
-    def resizeEvent(self, event):
-        """Overload of Slot for when the Wizard is resized."""
-
-        QtWidgets.QWidget.resizeEvent(self, event)
-
-    def _update_power_with_correct_value(self, attributes):
-        try:
-            attributes[OutputColumnKey.POWER()] = POWER[attributes[OutputColumnKey.POWER()]]
-        except KeyError:
-            attributes[OutputColumnKey.POWER()] = self.get_key(attributes[OutputColumnKey.POWER()])
-
-    # hack til the testwizard is refactored
-    @staticmethod
-    def get_key(attribute):
-        for key, value in POWER.items():
-            if value != attribute:
-                continue
-
-            return key
-
-        return attribute
 
     @staticmethod
-    def get_dicKey(dict, attribute):
+    def get_dicKey(dict, attribute) -> Optional[str]:
         for key, value in dict.items():
             if attribute == value:
                 return key
-        # return attribute
 
     @staticmethod
     def _generate_color(color: tuple):
@@ -472,32 +447,6 @@ class ExcelTestWizard(BaseDialog):
             groups.append(item.text())
 
         return groups
-
-    def __have_parameters_changed(self, content: dict) -> UpdateOptions:
-        if len(content['input_parameters']) != len(self.test_content['input_parameters']) \
-           or len(content['output_parameters']) != len(self.test_content['output_parameters']):
-            return UpdateOptions.Code_Update()
-
-        if self._check_content(self.test_content['input_parameters'], content['input_parameters']) \
-           or self._check_content(self.test_content['output_parameters'], content['output_parameters']):
-            return UpdateOptions.Code_Update()
-
-        if not (set(self.project_info.get_groups_for_test(self.TestName)) & set(self._get_groups())):
-            return UpdateOptions.Group_Update()
-
-        return UpdateOptions.DB_Update()
-
-    @staticmethod
-    def _check_content(old_data, new_data):
-        for key, value in old_data.items():
-            if not new_data.get(key):
-                return True
-
-            for k, v in new_data[key].items():
-                if str(value[k]) != str(v):
-                    return True
-
-        return False
 
     def _init_group(self):
         self.group_combo.blockSignals(True)
