@@ -68,6 +68,7 @@ class ATE(SpyderDockablePlugin):
     sig_run_cell = Signal()
     sig_debug_cell = Signal()
 
+    sig_test_tree_update = Signal()
     # --- SpyderDockablePlugin API
     # ------------------------------------------------------------------------
     @staticmethod
@@ -97,6 +98,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_project_created.connect(self.project_created)
         widget.sig_project_created.connect(self.sig_ate_project_created)
         widget.sig_project_loaded.connect(self.sig_ate_project_loaded)
+        widget.sig_test_tree_update.connect(self.sig_test_tree_update)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
