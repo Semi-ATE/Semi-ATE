@@ -411,7 +411,7 @@ class LabControl(PluginMainWidget):
         self.gui.CBstopauto.clicked.connect(self.saveconfig)
         self.gui.CBstoponfail.clicked.connect(
             lambda: self.changeconfig(
-                self.CBstoponfail.isChecked(),
+                self.gui.CBstoponfail.isChecked(),
                 "command.next.job_data.stop_on_fail.active",
             )
         )
@@ -744,7 +744,7 @@ class LabControl(PluginMainWidget):
         if cmd == "clear":
             self.gui.TElogging.clear()
         elif cmd == "debug":
-            self.logger.enable = self.gui.actiondebug.isChecked()
+            self.logger.enable = self.actiondebug.isChecked()
         elif cmd == "mqtt":
             if self.gui.actionsave_mqtt_to_file.isChecked():
                 self.mqttsave = open(
@@ -780,7 +780,7 @@ class LabControl(PluginMainWidget):
             self.logger.info("Reset semi-control done")
         elif cmd == "sequencer":
             self.logger.debug("change View Sequencer")
-            if self.gui.actionSequencer_Parameters.isChecked():
+            if self.actionSequencer_Parameters.isChecked():
                 self.gui.Gsequencer.show()
             else:
                 self.gui.Gsequencer.hide()
@@ -788,7 +788,7 @@ class LabControl(PluginMainWidget):
             self.sequencer.load(self.project_info.project_directory, self.test_program_name)
         elif cmd == "progress":
             self.logger.debug("change View Progress")
-            if self.gui.actionProgress.isChecked():
+            if self.actionProgress.isChecked():
                 self.gui.Gprogress.show()
             else:
                 self.gui.Gprogress.hide()
@@ -800,7 +800,7 @@ class LabControl(PluginMainWidget):
             "lognotexist",
         ]:
             last = True
-            if self.gui.actionSequencer_Parameters.isChecked():  # if sequencer window visible?
+            if self.actionSequencer_Parameters.isChecked():  # if sequencer window visible?
                 (
                     self.command["SetParameter"]["parameters"],
                     last,
@@ -813,12 +813,12 @@ class LabControl(PluginMainWidget):
                 self.command["SetParameter"]["parameters"] = []
             self.logger.debug(f"guiclicked('next') with {self.command['SetParameter']['parameters']}, last={last}")
             if (
-                not self.gui.actionSequencer_Parameters.isChecked()
-                or (not last and self.gui.actionSequencer_Parameters.isChecked())
+                not self.actionSequencer_Parameters.isChecked()
+                or (not last and self.actionSequencer_Parameters.isChecked())
                 and self.command["SetParameter"]["parameters"] != []
             ):
                 self.mqtt_send("cmd", "next")
-            elif last and self.gui.actionSequencer_Parameters.isChecked() and self.command["SetParameter"]["parameters"] == []:
+            elif last and self.actionSequencer_Parameters.isChecked() and self.command["SetParameter"]["parameters"] == []:
                 self.state = "nothing_seq"
         else:
             self.state = (
@@ -1031,7 +1031,7 @@ class LabControl(PluginMainWidget):
         elif (
             value == "idle"
             and oldstate in ("reset", "config", "testing")
-            and self.gui.actionSequencer_Parameters.isChecked()
+            and self.actionSequencer_Parameters.isChecked()
             and self.gui.CBautoseq.isChecked()
         ):  # testprogramm runs through
             self.logger.debug("semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)")
@@ -1140,9 +1140,9 @@ class LabControl(PluginMainWidget):
             self.gui.CBstartauto.setChecked(data["config"]["startauto"])
             self.gui.CBstopauto.setChecked(data["config"]["stopauto"])
             self.gui.CBstoponfail.setChecked(data["config"]["stoponfail"])
-            self.gui.actiondebug.setChecked(data["config"]["debug"])
-            self.gui.actionSequencer_Parameters.setChecked(data["view"]["sequencer"])
-            self.gui.actionProgress.setChecked(data["view"]["progress"])
+            self.actiondebug.setChecked(data["config"]["debug"])
+            self.actionSequencer_Parameters.setChecked(data["view"]["sequencer"])
+            self.actionProgress.setChecked(data["view"]["progress"])
             self.logfilename = data["result"]["logfilename"]
             self.sequencer.parameters = data["config"]["sequencer"]
             self.set_Geometry("semi-ctrl", self.gui, data["config"]["geometry"])
@@ -1196,7 +1196,7 @@ class LabControl(PluginMainWidget):
                 "stopauto": self.gui.CBstopauto.isChecked(),
                 "stoponfail": self.gui.CBstoponfail.isChecked(),
                 "progname": self.test_program_name,
-                "debug": self.gui.actiondebug.isChecked(),
+                "debug": self.actiondebug.isChecked(),
                 "geometry": (
                     self.gui.geometry().x(),
                     self.gui.geometry().y(),
@@ -1212,8 +1212,8 @@ class LabControl(PluginMainWidget):
                 "break": self.gui.CBholdonbreak.isChecked(),
             },
             "view": {
-                "sequencer": self.gui.actionSequencer_Parameters.isChecked(),
-                "progress": self.gui.actionProgress.isChecked(),
+                "sequencer": self.actionSequencer_Parameters.isChecked(),
+                "progress": self.actionProgress.isChecked(),
             },
             "menu": {},
         }
@@ -1314,23 +1314,3 @@ class LabControl(PluginMainWidget):
         print("Semicontrol.__del__")
         self.close()
         super().__del__
-
-
-if __name__ == "__main__":
-    import sys
-    from ate_spyder.widgets.navigation import ProjectNavigation
-
-    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
-    app = QtWidgets.QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    app.references = set()
-
-    window = QtWidgets.QMainWindow()
-    homedir = os.path.expanduser("~")
-    homedir = r"C:\Users\jung\'Work Folders'\Projecte\Repository\hatc\0203\units\lab\source\python\tb_ate"
-    project_info = ProjectNavigation("", homedir, window)
-    ctrl = Control(project_info)
-    window.setWindowTitle(f' {os.path.basename(__file__).split(".")[0]}     (Version: {__version__})')
-    app.references.add(window)
-    ctrl.show()
-    sys.exit(app.exec_())

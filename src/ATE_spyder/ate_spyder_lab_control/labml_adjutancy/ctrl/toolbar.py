@@ -34,25 +34,32 @@ class ControlToolBar(ApplicationToolbar):
         super().__init__(parent, identifier)
         self.parent = parent
         self.project_info: ProjectNavigation = parent.project_info
-        self.control = Control(self.project_info)
 
         self._setup()
         self._connect_event_handler()
 
     def get_items(self):
-        run_action = self.parent.create_action(name="rune", text="RunControl", icon=self.parent.create_icon("run"), triggered=self.control.show)
-
-        return [run_action, self.rungroup_label, self.rungroup_combo, self.runflow_label, self.runflow_combo]
+        self.run_action = self.parent.create_action(name="rune", text="RunControl", icon=self.parent.create_icon("run"), triggered=self._run_flow)
+        return [self.run_action, self.rungroup_label, self.rungroup_combo, self.runflow_label, self.runflow_combo]
 
     def _setup(self):
         self._setup_rungroup()
         self._setup_runflow()
 
+    def _run_flow(self):
+        prog_path = self.project_info.project_directory.joinpath(
+            self.project_info.project_directory.name,
+            self.project_info.active_hardware,
+            self.project_info.active_base, f'{self.runflow_combo.currentText()}.py'
+        )
+
+        self.project_info.parent.sig_edit_goto_requested.emit(str(prog_path), 1, "")
+        self.project_info.parent.sig_run_cell.emit()
+
     @QtCore.pyqtSlot()
     def _post_main_plugin_init(self):
         self._update_rungroup()
         self._update_runflow()
-        self.control.update_control(self.runflow_combo.currentText())
 
     def _setup_rungroup(self):
         self.rungroup_label = QtWidgets.QLabel("Flow Group:")
@@ -86,13 +93,11 @@ class ControlToolBar(ApplicationToolbar):
         self.rungroup_combo.setCurrentText(selected_group)
         self._update_runflow()
         self.rungroup_combo.blockSignals(False)
-        self.control.update_control(self.runflow_combo.currentText())
         self.sig_run_changed.emit(self.runflow_combo.currentText())
 
     @QtCore.pyqtSlot(str)
     def _runflow_changed(self, selected_flow: str):
         self.runflow_combo.setCurrentText(selected_flow)
-        self.control.update_control(self.runflow_combo.currentText())
         self.sig_run_changed.emit(self.runflow_combo.currentText())
 
     def _update_rungroup(self):
@@ -104,17 +109,19 @@ class ControlToolBar(ApplicationToolbar):
         self.rungroup_combo.blockSignals(False)
 
     def _update_runflow(self):
+        self.run_action.setEnabled(True)
         self.runflow_combo.clear()
         active_group = self.rungroup_combo.currentText()
         for program in self.project_info.get_programs():
-            if (
-                program.hardware == self.project_info.active_hardware
-                and program.base == self.project_info.active_base
-                and program.target == self.project_info.active_target
-            ):
+            if program.hardware == self.project_info.active_hardware \
+               and program.base == self.project_info.active_base \
+               and program.target == self.project_info.active_target:
 
                 if active_group != program.owner_name[-len(active_group) :]:
                     continue
                 self.runflow_combo.blockSignals(True)
                 self.runflow_combo.addItem(program.prog_name)
                 self.runflow_combo.blockSignals(False)
+
+        if self.runflow_combo.count() == 0:
+            self.run_action.setEnabled(False)
