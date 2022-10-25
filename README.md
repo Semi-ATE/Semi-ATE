@@ -44,9 +44,51 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 
 
-## Installation
 
+
+
+
+## Installation (on a MiniSCT)
+
+## Run (on a MiniSCT)
+
+1. Make sure you have a "test cell" configured as follows :
+![image](https://user-images.githubusercontent.com/3516972/197773673-df64bc5f-b9aa-4166-a585-014dad2d617d.png)
+
+
+
+
+
+
+
+
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===
 Installation of the packages can be achieved via `conda` or [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/#use-pip-for-installing).
+
+
+
+
+
+
 
 ### Installation using pip
 
