@@ -201,8 +201,17 @@ class ToolBar(ApplicationToolbar):
     def _settings_update(self, hardware, base, target):
         self.hardware_combo.setCurrentText(hardware)
         self.base_combo.setCurrentText(base)
+
         self._update_target()
         self.target_combo.setCurrentText(target)
+
+        self.project_info.active_hardware = hardware
+        self.project_info.active_base = base
+        self.project_info.active_target = target
+
+        self.parent.select_hardware.emit(hardware)
+        self.parent.select_base.emit(base)
+        self.parent.select_target.emit(target)
 
     @QtCore.pyqtSlot(str)
     def _add_new_hardware(self, hardware):
