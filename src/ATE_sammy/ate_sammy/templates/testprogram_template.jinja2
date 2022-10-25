@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     {% for testinstance in test_list %}
 
-    from {{ testinstance.test_module }} import {{ testinstance.test_class }}
+    from {{project_name}}.{{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
     _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context, stil_tool)
     {% for ip in testinstance.input_parameters %}
     {% if testinstance.input_parameters[ip]['type'] == 'static' or testinstance.input_parameters[ip]['type'] ==  'local' %}
