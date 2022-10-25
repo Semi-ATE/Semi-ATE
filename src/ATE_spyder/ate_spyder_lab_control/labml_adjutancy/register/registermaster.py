@@ -49,7 +49,7 @@ except ImportError:
     has_mqttc = False
 
 
-__copyright__ = "Copyright 2021, LAB"
+__copyright__ = "Copyright 2021, Lab"
 __version__ = "0.0.1"
 
 mylogger = None

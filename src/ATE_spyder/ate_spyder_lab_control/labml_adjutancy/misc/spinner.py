@@ -11,7 +11,7 @@ import time
 import threading
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2021, LAB"
+__copyright__ = "Copyright 2021, Lab"
 __credits__ = ["Zlin526F"]
 __email__ = "Zlin526F@github"
 

@@ -11,9 +11,9 @@ from time import time
 from threading import Timer
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2021, LAB"
+__copyright__ = "Copyright 2021, Lab"
 __credits__ = ["Zlin526F"]
-__email__ = "christian.jung@tdk.com"
+__email__ = "Zlin526F@github"
 
 
 class Softscope(mqtt_deviceattributes):

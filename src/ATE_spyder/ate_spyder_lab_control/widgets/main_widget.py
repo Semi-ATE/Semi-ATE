@@ -42,10 +42,10 @@ from spyder.api.widgets.main_widget import PluginMainWidget
 _ = get_translation("spyder")
 
 
-__author__ = "Christian Jung"
-__copyright__ = "Copyright 2021, TDK Micronas"
-__credits__ = ["Christan Jung"]
-__email__ = "christian.jung@tdk.com"
+__author__ = "Zlin526F"
+__copyright__ = "Copyright 2021, Lab"
+__credits__ = ["Zlin526F"]
+__email__ = "Zlin526F@github"
 __version__ = "0.0.17"
 
 

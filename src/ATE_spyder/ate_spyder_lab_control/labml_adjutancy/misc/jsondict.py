@@ -16,9 +16,9 @@ from labml_adjutancy.misc import file_io
 
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2020, LAB"
+__copyright__ = "Copyright 2020, Lab"
 __credits__ = ["Zlin526F"]
-__email__ = "christian.jung@tdk.com"
+__email__ = "Zlin526F@github"
 
 
 class JsonDecoder(json.JSONDecoder):

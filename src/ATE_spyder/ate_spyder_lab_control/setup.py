@@ -15,7 +15,7 @@ with readme_path.open('r') as f:
 setup( 
     name="LabMl-adjutancy",
     version=version,
-	description="adjutancy lib for the TDK Micronas labor Measurement library",
+	description="adjutancy lib for the Lab labor Measurement library",
     author = "Semi-ATE",
     author_email="info@Semi-ATE.org",
     maintainer='Semi-ATE',  
@@ -24,7 +24,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     license="GPL-2.0-only",
-    keywords="Semiconductor ATE Automatic Test Equipment TDK Micronas Labor",
+    keywords="Semiconductor ATE Automatic Test Equipment Lab Labor",
     platforms=["Windows", "Linux", "Mac OS-X"],
     packages=find_packages(),
     install_requires=install_requires,
