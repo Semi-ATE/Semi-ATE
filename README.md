@@ -50,6 +50,12 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 ## Installation (on a MiniSCT)
 
+1. login as sct/sct
+2. in the home directory there should be a directory `repos`
+3. in `repos` there is a `Semi-ATE` directory (holding the relevant Semi-ATE git repositories)
+  - `TCC_actuators` : git clone 
+5. 
+
 ## Run (on a MiniSCT)
 
 1. Make sure you have a "test cell" configured as follows :
