@@ -86,6 +86,9 @@ class ControlToolBar(ApplicationToolbar):
         self.parent.select_hardware.connect(self._update_runflow)
         self.parent.select_base.connect(self._update_runflow)
         self.parent.select_target.connect(self._update_runflow)
+        self.parent.database_changed.connect(self._update_runflow)
+        self.parent.group_added.connect(self._update_rungroup)
+        self.parent.group_removed.connect(self._update_rungroup)
 
     @QtCore.pyqtSlot(str)
     def _rungroup_changed(self, selected_group: str):
@@ -103,13 +106,18 @@ class ControlToolBar(ApplicationToolbar):
     def _update_rungroup(self):
         groups = self.project_info.get_groups()
         self.rungroup_combo.blockSignals(True)
+        current_group = self.rungroup_combo.currentText()
         self.rungroup_combo.clear()
         for group in groups:
             self.rungroup_combo.addItem(group.name)
+
+        if current_group:
+            self.rungroup_combo.setCurrentText(current_group)
         self.rungroup_combo.blockSignals(False)
 
     def _update_runflow(self):
         self.run_action.setEnabled(True)
+        current_prog = self.runflow_combo.currentText()
         self.runflow_combo.clear()
         active_group = self.rungroup_combo.currentText()
         for program in self.project_info.get_programs():
@@ -125,3 +133,7 @@ class ControlToolBar(ApplicationToolbar):
 
         if self.runflow_combo.count() == 0:
             self.run_action.setEnabled(False)
+            return
+
+        if current_prog:
+            self.runflow_combo.setCurrentText(current_prog)
