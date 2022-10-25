@@ -66,6 +66,8 @@ class TestProgramWizard(BaseDialog):
         self.tab_layout.addTab(self.execution_widget, "Execution")
 
         self.pattern_tab = PatternTab(self, self.project_info, self.read_only)
+        self._update_pattern_table()
+
         self.signal_to_channel = SignalToChannelTab(self, self.read_only)
         self.tabWidget.addTab(self.signal_to_channel, "Signal To Channel")
 
@@ -572,6 +574,23 @@ class TestProgramWizard(BaseDialog):
 
         self.selectedTests.blockSignals(False)
 
+        self._update_pattern_table()
+
+    def _update_pattern_table(self):
+        test_names = []
+        for row in range(self.selectedTests.rowCount()):
+            test_names.append(self.selectedTests.item(row, 0).text())
+
+        self.pattern_tab.update_table(list(set(test_names)))
+
+        PATTERN_TAB_INDEX = 2
+
+        self.tab_layout.setTabEnabled(PATTERN_TAB_INDEX, True)
+        self.tab_layout.setTabToolTip(PATTERN_TAB_INDEX, '')
+        if self.pattern_tab.pattern_table.rowCount() == 0:
+            self.tab_layout.setTabEnabled(PATTERN_TAB_INDEX, False)
+            self.tab_layout.setTabToolTip(PATTERN_TAB_INDEX, 'pattern list is empty')
+
     @QtCore.pyqtSlot()
     def _add_to_testprogram(self):
         self.availableTests.blockSignals(True)
@@ -966,7 +985,7 @@ class TestProgramWizard(BaseDialog):
         bin_info = self._custom_parameter_handler.get_binning_info_for_test(indexed_test)
         self._add_tests_to_bin_table(bin_info)
 
-        self.pattern_tab.add_pattern_items(test_name)
+        self._update_pattern_table()
 
     def _generate_new_executions(self) -> Dict[str, int]:
         return {

@@ -1759,6 +1759,8 @@ class TestWizard(BaseDialog):
             update_option = self.__have_parameters_changed(test_content)
             self.project_info.update_custom_test(test_content, update_option)
 
+        self.project_info.parent.sig_test_tree_update.emit()
+
         self.accept()
 
     def _get_groups(self):
