@@ -1,6 +1,7 @@
 from typing import Callable
 import os
 import json
+import glob
 
 from ate_projectdatabase.Types import Types
 
@@ -49,9 +50,18 @@ class FileOperator:
             matches
         '''
         file_path = self.generate_path(self.current_type, self.current_subtypes)
-        import glob
-        if len(glob.glob(file_path)) > 1:
-            raise IOError("Tried to add data to multiple files")
+
+        paths = glob.glob(file_path)
+        if len(paths) > 1:
+            the_type = self.generate_path_base(self.current_type, self.current_subtypes)
+            exact_path = os.path.join(self.config_dir, self.current_type, f'{the_type}.json')
+
+            index = paths.index(exact_path)
+            if index is None:
+                raise IOError("Tried to add data to multiple files")
+
+            return paths.pop(index)
+
         if len(glob.glob(file_path)) == 1:
             return glob.glob(file_path).pop(0)
 
