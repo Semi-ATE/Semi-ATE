@@ -1,12 +1,9 @@
-from dataclasses import dataclass
 from enum import Enum
-import qtawesome as qta
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from qtpy.QtCore import Signal
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
-from labml_adjutancy.ctrl.control import Control
 from ate_spyder.widgets.navigation import ProjectNavigation
 
 
