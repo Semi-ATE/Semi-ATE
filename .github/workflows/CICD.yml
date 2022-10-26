@@ -41,7 +41,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install spyder=5.3.3
+          mamba install spyder=5.3.0
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
