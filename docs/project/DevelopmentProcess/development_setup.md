@@ -1,10 +1,23 @@
-## Setup (conda env)
+## Setup
+
+### Presumed network:
 
 ![image](https://user-images.githubusercontent.com/3516972/197995910-c7597d2f-8ab4-49ec-bb0e-c23ff92f3da4.png)
+
+### Installation on system level
+
+Goto `https://github.com/Semi-ATE/STIL-Tools/releases` and download the latest `.deb` file (sct8-stil-loader_VERSION_arm64.deb) to the home directory of the `sct` user
 
 ```
 (base)~$ sudo apt install mosquitto
 ...
+(base)~$ sudo dpkg -i sct8-stil-loader_VERSION_arm64.deb
+...
+```
+
+### Installation on (conda) environment level
+
+```
 (base)~$ mamba create -n Semi-ATE python=3.9
 (base)~$ conda activate Semi-ATE
 (Semi-ATE)~$ mamba install spyder=5.3.0
@@ -32,9 +45,6 @@
 ...
 (Semi-ATE)~/repos/Semi-ATE/STIL-Tools$ mamba install h5py 
 
----> goto `https://github.com/Semi-ATE/STIL-Tools/releases` and download the latest `.deb` file (sct8-stil-loader_VERSION_arm64.deb)
-
-(Semi-ATE)~/repos/Semi-ATE/STIL-Tools$ sudo dpkg -i sct8-stil-loader_VERSION_arm64.deb
 
 ```
 
