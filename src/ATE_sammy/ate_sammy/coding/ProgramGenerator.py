@@ -44,6 +44,8 @@ class test_program_generator(BaseGenerator):
         compiled_patterns = collect_compiled_patterns(program_configuration.patterns, self.project_path)
 
         output = template.render(
+            project_path=str(self.project_path),
+            project_name=self.project_path.name,
             test_list=test_list,
             test_imports=test_imports,
             program_configuration=program_configuration,

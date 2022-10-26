@@ -18,13 +18,13 @@ from ate_common.pattern.tool_factory import get_stil_tool
 # setup the include path manually as the project is not a package
 import os
 import sys
-from pathlib import Path
-parent_path = str(Path(__file__).joinpath('..', '..').resolve())
+
+# get to project root directory
+parent_path = os.path.join(__file__, '..', '..', '..', '..')
 sys.path.append(parent_path)
 
-import common
-from {{program_configuration['hardware']}}_auto_script import AutoScript
-
+from {{project_name}}.{{program_configuration['hardware']}}.{{program_configuration['base']}} import common
+from {{project_name}}.{{program_configuration['hardware']}}.{{program_configuration['hardware']}}_auto_script import AutoScript
 
 if __name__ == '__main__':
     params = CommandLineParser(sys.argv)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     {% for testinstance in test_list %}
 
-    from {{ testinstance.test_module }} import {{ testinstance.test_class }}
+    from {{project_name}}.{{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
     _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context, stil_tool)
     {% for ip in testinstance.input_parameters %}
     {% if testinstance.input_parameters[ip]['type'] == 'static' or testinstance.input_parameters[ip]['type'] ==  'local' %}

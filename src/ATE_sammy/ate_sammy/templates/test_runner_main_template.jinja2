@@ -16,17 +16,12 @@ from ate_common.pattern.tool_factory import get_stil_tool
 import os
 import sys
 from pathlib import Path
+# get to project root directory
+parent_path = os.path.join(__file__, '..', '..')
+sys.path.append(parent_path)
 
-includes = [
-    str(Path(__file__).joinpath('..', '..', '{{project_name}}', '{{hardware}}').resolve()),
-    str(Path(__file__).joinpath('..', '..', '{{project_name}}', '{{hardware}}', '{{base}}').resolve())
-]
-for include in includes:
-    sys.path.append(include)
-
-import common
-from {{hardware}}_auto_script import AutoScript
-
+from {{project_name}}.{{hardware}}.{{base}} import common
+from {{project_name}}.{{hardware}}.{{hardware}}_auto_script import AutoScript
 
 if __name__ == '__main__':
     params = CommandLineParser(sys.argv)
@@ -56,7 +51,7 @@ if __name__ == '__main__':
     stil_tool = get_stil_tool()
     stil_tool._load_patterns({{compiled_patterns}})
 
-    from {{ test_name }}.{{ test_name }} import {{ test_name }}
+    from {{project_name}}.{{hardware}}.{{base}}.{{ test_name }}.{{ test_name }} import {{ test_name }}
     _ate_var_{{ test_name }} = {{ test_name }}("{{ test_name }}", 60000, 0, context, stil_tool)
     {% for ip in input_parameters %}
     {% if input_parameters[ip]['type'] == 'static' or input_parameters[ip]['type'] ==  'local' %}
