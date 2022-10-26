@@ -1,4 +1,5 @@
-## Setup a conda environment
+## Setup (conda env)
+
 ![image](https://user-images.githubusercontent.com/3516972/197995910-c7597d2f-8ab4-49ec-bb0e-c23ff92f3da4.png)
 
 ```
@@ -36,3 +37,61 @@
 (Semi-ATE)~/repos/Semi-ATE/STIL-Tools$ sudo dpkg -i sct8-stil-loader_VERSION_arm64.deb
 
 ```
+
+# Setup (optional - if Semi-control can do what master does -)
+
+```
+(base)~$ mkdir master_control
+(base)~$ cd master_control
+(base)~/master_control$  echo "{
+        "broker_host": "127.0.0.1",
+        "broker_port": 1883,
+        "device_id": "SCT-81-1F",
+        "sites": [
+                "0"
+        ],
+        "Handler": "HTO92-20F",
+        "environment": "F1",
+        "webui_host": "192.168.1.2",
+        "webui_port": "8081",
+        "webui_root_path": "./msct-webui",
+        "jobsource": "filesystem",
+        "jobformat": "xml.semi-ate",
+        "skip_jobdata_verification": false,
+        "filesystemdatasource_path": ".",
+        "filesystemdatasource_jobpattern": "le123456000.xml",
+        "enable_timeouts": true,
+        "user_settings_filepath": "master_user_settings.json",
+        "site_layout": [[0, 0]],
+        "tester_type": "DummyMasterSingleTester",
+        "loglevel": 10,
+        "develop_mode": true
+}" > master_config_file.json
+
+```
+then download the ZIP file from : https://github.com/Semi-ATE/MSCT-WebUI/releases (msct-webui-x.y.z.zip)
+unpack the zip file and move the directory `msct-webui` to the `~/master_control` directory.
+
+
+# Running (in Spyder)
+
+### Start Master
+
+```
+C:> ssh sct@sct8
+(base)~$ conda activate Semi-ATE
+(Semi-ATE)~$ cd master_control
+(Semi-ATE)~/master_control$ launch_master
+...
+```
+
+### Start the TCC_actuator
+
+```
+C:> ssh sct@sct8
+(base)~$ conda activate Semi-ATE
+(Semi-ATE)~$ magfield-stl 192.168.1.2 1883 developmode 192.168.1.1 21324
+```
+Note :  192.168.1.2 = broker IP address
+
+
