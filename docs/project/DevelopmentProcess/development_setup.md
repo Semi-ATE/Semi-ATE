@@ -43,8 +43,10 @@ Goto `https://github.com/Semi-ATE/STIL-Tools/releases` and download the latest `
 (Semi-ATE)~/repos/Semi-ATE/SCT8-ML$ cd STIL-Tools
 (Semi-ATE)~/repos/Semi-ATE/STIL-Tools$ pip install -e .
 ...
+(Semi-ATE)~/repos/Semi-ATE/SCT8-ML$ mamba install semi-ate-stil
+...
 (Semi-ATE)~/repos/Semi-ATE/STIL-Tools$ mamba install h5py 
-
+...
 
 ```
 
