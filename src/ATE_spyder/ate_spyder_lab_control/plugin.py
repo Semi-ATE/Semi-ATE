@@ -85,8 +85,7 @@ class LabControlPlugin(SpyderDockablePlugin):
         projects.sig_project_closed.connect(self.project_closed)
 
     def project_closed(self):
-        widget: LabControl = self.get_widget()
-        widget.teardown()
+        pass
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
