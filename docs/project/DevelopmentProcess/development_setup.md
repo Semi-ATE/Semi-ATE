@@ -18,9 +18,8 @@ Goto `https://github.com/Semi-ATE/STIL-Tools/releases` and download the latest `
 ### Installation on (conda) environment level
 
 ```
-(base)~$ mamba create -n Semi-ATE python=3.9
+(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.3.0
 (base)~$ conda activate Semi-ATE
-(Semi-ATE)~$ mamba install spyder=5.3.0
 (Semi-ATE)~$ mkdir -p ~/repos/Semi-ATE
 (Semi-ATE)~$ cd ~/repos/Semi-ATE
 (Semi-ATE)~/repos/Semi-ATE$ git clone https://github.com/Semi-ATE/Semi-ATE.git
