@@ -75,7 +75,7 @@ unpack the zip file and move the directory `msct-webui` to the `~/master_control
 
 # Running (in Spyder)
 
-### Start Master
+### 1. Start Master
 
 ```
 C:> ssh sct@sct8
@@ -85,7 +85,7 @@ C:> ssh sct@sct8
 ...
 ```
 
-### Start the TCC_actuator
+### 2. Start the TCC_actuator
 
 ```
 C:> ssh sct@sct8
@@ -94,4 +94,10 @@ C:> ssh sct@sct8
 ```
 Note :  192.168.1.2 = broker IP address
 
+### 3. Start Spyder
 
+use GWSL to connect to the sct8 (with X forwarding) then :
+
+```
+(Semi-ATE)~$ spyder
+```
