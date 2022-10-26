@@ -1,8 +1,10 @@
 ## Setup a conda environment
 ```
+(base)~$ sudo apt install mosquitto
+...
 (base)~$ mamba create -n Semi-ATE python=3.9
 (base)~$ conda activate Semi-ATE
-(Semi-ATE)~$ mamba install spyder=5.3
+(Semi-ATE)~$ mamba install spyder=5.3.0
 (Semi-ATE)~$ mkdir ~/repos/Semi-ATE
 (Semi-ATE)~$ cd ~/repos/Semi-ATE
 (Semi-ATE)~/repos/Semi-ATE$ git clone https://github.com/Semi-ATE/Semi-ATE.git
@@ -12,7 +14,11 @@
 (Semi-ATE)~/repos/Semi-ATE$ cd Semi-ATE
 (Semi-ATE)~/repos/Semi-ATE/Semi-ATE$ python scripts/package_tool.py --change-env cicd
 ...
-(Semi-ATE)~/repos/Semi-ATE/Semi-ATE$cd ../TCC_actuators
+(Semi-ATE)~/repos/Semi-ATE/Semi-ATE$ cd src/ATE_spyder/ate_spyder_lab_control 
+(Semi-ATE) sct@sct8:~/repos/Semi-ATE/Semi-ATE/src/ATE_spyder/ate_spyder_lab_control$ pip install -e .
+...
+(Semi-ATE) sct@sct8:~/repos/Semi-ATE/Semi-ATE/src/ATE_spyder/ate_spyder_lab_control$ 
+(Semi-ATE) sct@sct8:~/repos/Semi-ATE/Semi-ATE/src/ATE_spyder/ate_spyder_lab_control$ cd ~/repos/Semi-ATE/TCC_actuators
 (Semi-ATE)~/repos/Semi-ATE/TCC_actuators$ pip install -e .
 ...
 (Semi-ATE)~/repos/Semi-ATE/TCC_actuators$ cd ../SCT8-ML
