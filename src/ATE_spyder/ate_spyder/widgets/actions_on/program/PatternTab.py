@@ -41,6 +41,11 @@ class PatternTab(QtWidgets.QWidget):
                     index = combo.findText(tuple[1])
                     combo.setCurrentIndex(index)
 
+    def update_table(self, test_names: List[str]):
+        self.pattern_table.setRowCount(0)
+        for test_name in test_names:
+            self.add_pattern_items(test_name)
+
     def add_pattern_items(self, test_name: str):
         if not test_name:
             return
@@ -142,7 +147,10 @@ class PatternTab(QtWidgets.QWidget):
                 current_test_name = test_item.text()
 
             pattern_name = self.pattern_table.item(index, 1).text()
+
             pattern_path = self.pattern_table.cellWidget(index, 2).currentText()
+            if not pattern_path:
+                continue
 
             patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
 

@@ -7,6 +7,7 @@ class MenuActionTypes(Enum):
     View = "display_item"
     Delete = "delete_item"
     Import = "import_item"
+    ExcelTestImport = "excel_test_import"
     Activate = "activate_item"
     Enable = "enable_item"
     CloneTo = "clone_to_item"

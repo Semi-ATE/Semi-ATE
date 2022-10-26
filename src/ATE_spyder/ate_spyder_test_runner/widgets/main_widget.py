@@ -198,10 +198,10 @@ class RunTab(TabInterface):
         self.parent.debug.setIcon(qta.icon('mdi.play-circle', color='orange'))
 
         self.parent.compile.clicked.connect(self._compile_patterns)
-        self.parent.refresh_button.clicked.connect(self._fill_test_config)
 
         self.parent.compile.setIcon(qta.icon('mdi.file-cog-outline', color='orange'))
         self.parent.testName.currentIndexChanged.connect(self._fill_test_config)
+        self.parent.testName.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
 
         self.parent.base.currentIndexChanged.connect(lambda index: self._base_changed(index))
         self.parent.hardware.currentIndexChanged.connect(lambda index: self._hardware_changed(index))
@@ -211,8 +211,6 @@ class RunTab(TabInterface):
 
         self.parent.stop_button.clicked.connect(self._stop_debugging)
         self.parent.stop_button.setIcon(qta.icon('mdi.square', color='orange'))
-
-        self.parent.refresh_button.setIcon(qta.icon('mdi.refresh', color='orange'))
 
         self.parent.inputParameter.itemClicked.connect(self._shmoo_state_update)
         self.parent.inputParameter.cellDoubleClicked.connect(lambda row, col: self._call_value_double_clicked(
@@ -230,6 +228,20 @@ class RunTab(TabInterface):
             float(self.parent.outputParameter.item(row, OutputColumn.LSL).text()),
             float(self.parent.outputParameter.item(row, OutputColumn.USL).text()))
         )
+
+        # receive any changes happens inside the test tree
+        self.plugin.sig_test_tree_update.connect(self._update_view)
+
+    def _update_view(self):
+        current_test = self.parent.testName.currentText()
+        self._update_test_names()
+
+        # get test index
+        index = self.parent.testName.findText(current_test)
+        if index is None:
+            return
+
+        self.parent.testName.setCurrentIndex(index)
 
     def _stop_debugging(self):
         self.plugin.sig_stop_debugging.emit()
@@ -637,13 +649,23 @@ class RunTab(TabInterface):
             self.signal_to_channel.load_table(self.test_runner_sig_to_channel_file_path)
 
         # check if pattern list is empty
-        # if so, disable
+        # if so, disable pattern tab
         if self.pattern_tab.pattern_table.rowCount() == 0:
             self.parent.tabWidget.setTabEnabled(PATTERN_TAB_INDEX, False)
             self.parent.tabWidget.setTabToolTip(PATTERN_TAB_INDEX, 'pattern list is empty')
         else:
             self.parent.tabWidget.setTabEnabled(PATTERN_TAB_INDEX, True)
             self.parent.tabWidget.setTabToolTip(PATTERN_TAB_INDEX, '')
+
+        self._validate_pattern_table()
+
+    def _validate_pattern_table(self):
+        if not self.pattern_tab.collect_pattern():
+            self.parent.compile.setEnabled(False)
+            self.parent.compile.setToolTip('no pattern files available')
+        else:
+            self.parent.compile.setEnabled(True)
+            self.parent.compile.setToolTip('')
 
     def _fill_with_custom_values(self):
         if not self.test_name:
@@ -738,6 +760,9 @@ class TestRunnerDialog(QtWidgets.QDialog):
         super().__init__()
         uic.loadUi(__file__.replace('.py', '.ui'), self)
 
+    def reject(self):
+        pass
+
     def _verify(self):
         pass
 
@@ -748,6 +773,7 @@ class TestRunner(PluginMainWidget):
     sig_run_cell = Signal()
     sig_debug_cell = Signal()
     sig_stop_debugging = Signal()
+    sig_test_tree_update = Signal()
 
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)

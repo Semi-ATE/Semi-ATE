@@ -18,18 +18,18 @@ from spyder.api.plugin_registration.decorators import on_plugin_available, on_pl
 from qtpy.QtCore import Signal
 
 # Local imports
-from ate_spyder_test_runner.widgets.main_widget import TestRunner
+from ate_spyder_lab_control.widgets.main_widget import LabControl
 from ate_spyder.plugin import ATE
 
 # Localization
 _ = get_translation("spyder")
 
 
-class TestRunnerPlugin(SpyderDockablePlugin):
+class LabControlPlugin(SpyderDockablePlugin):
     """Test Runner dockable plugin."""
 
-    NAME = 'test_runner'
-    WIDGET_CLASS = TestRunner
+    NAME = 'lab_control'
+    WIDGET_CLASS = LabControl
     CONF_SECTION = NAME
     REQUIRES = [ATE.NAME]
     OPTIONAL = [Plugins.MainMenu, Plugins.Editor, Plugins.Projects]
@@ -56,11 +56,11 @@ class TestRunnerPlugin(SpyderDockablePlugin):
 
     def on_initialize(self):
         widget = self.get_widget()
-        widget.sig_run_cell.connect(self.sig_run_cell)
-        widget.sig_debug_cell.connect(self.sig_debug_cell)
-        widget.sig_stop_debugging.connect(self.sig_stop_debugging)
+        # widget.sig_run_cell.connect(self.sig_run_cell)
+        # widget.sig_debug_cell.connect(self.sig_debug_cell)
+        # widget.sig_stop_debugging.connect(self.sig_stop_debugging)
 
-        widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+        # widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
 
     def update_font(self):
         pass
@@ -68,13 +68,13 @@ class TestRunnerPlugin(SpyderDockablePlugin):
     # -------------------- Plugin initialization ------------------------------
     @on_plugin_available(plugin=ATE.NAME)
     def on_ate_available(self):
-        widget: TestRunner = self.get_widget()
+        widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
-        ate.sig_test_tree_update.connect(widget.sig_test_tree_update)
+        # ate.sig_test_tree_update.connect(widget.sig_test_tree_update)
 
     def _setup_test_runner_widget(self):
-        widget: TestRunner = self.get_widget()
+        widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
@@ -85,8 +85,7 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         projects.sig_project_closed.connect(self.project_closed)
 
     def project_closed(self):
-        widget: TestRunner = self.get_widget()
-        widget.teardown()
+        pass
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
@@ -101,7 +100,7 @@ class TestRunnerPlugin(SpyderDockablePlugin):
 
     @on_plugin_teardown(plugin=ATE.NAME)
     def on_ate_teardown(self):
-        widget: TestRunner = self.get_widget()
+        widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
 
         widget.set_project_information(None)

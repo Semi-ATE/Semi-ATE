@@ -53,6 +53,7 @@ class MockDBObject:
 class MockATEWidgets(QMainWindow):
     # dummy Signals
     sig_edit_goto_requested = Signal(str, int, str)
+    sig_test_tree_update = Signal()
 
     database_changed = Signal(int)
     toolbar_changed = Signal(str, str, str)

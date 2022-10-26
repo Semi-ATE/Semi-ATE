@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 from pathlib import Path
-from ate_spyder import __version__
+from labml_adjutancy import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
@@ -8,23 +8,26 @@ requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
 with requirements_path.open('r') as f:
     install_requires = list(f)
 
-readme_path = Path(Path(__file__).parent, './ate_spyder/README.md')
+readme_path = Path(Path(__file__).parent, './labml_adjutancy/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
-
-setup(
-    name='semi-ate-spyder',
+	
+setup( 
+    name="LabMl-adjutancy",
     version=version,
-    description='Spyder ate plugin for working with ATE projects',
+	description="adjutancy lib for the Lab labor Measurement library",
+    author = "Semi-ATE",
+    author_email="info@Semi-ATE.org",
+    maintainer='Semi-ATE',  
+    maintainer_email='info@Semi-ATE.org', 
+    url="https://github.com/Semi-ATE",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author="The Semi-ATE Project Contributors",
-    author_email="ate.organization@gmail.com",
     license="GPL-2.0-only",
-    keywords="Semiconductor ATE Automatic Test Equipment Spyder Plugin",
+    keywords="Semiconductor ATE Automatic Test Equipment Lab Labor",
     platforms=["Windows", "Linux", "Mac OS-X"],
     packages=find_packages(),
-    install_requires = install_requires,
+    install_requires=install_requires,
     include_package_data=True,
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
@@ -34,6 +37,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
@@ -42,16 +46,14 @@ setup(
         'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
         'Topic :: Scientific/Engineering :: Human Machine Interfaces',
         'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Code Generators',
+        'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Quality Assurance',
-    ],
+    ],	
+    python_requires='>=3.7',
     entry_points={
         "spyder.plugins": [
-            "ate = ate_spyder.plugin:ATE",
-            "test_runner = ate_spyder_test_runner.plugin:TestRunnerPlugin",
-            "stil = ate_spyder_stil.plugin:STIL"
+            "lab_control = plugin:LabControlPlugin"
         ]
     }
 )
