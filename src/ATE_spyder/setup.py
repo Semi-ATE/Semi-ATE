@@ -15,7 +15,6 @@ with readme_path.open('r') as f:
 setup(
     name='semi-ate-spyder',
     version=version,
-    requires=['spyder'],
     description='Spyder ate plugin for working with ATE projects',
     long_description=long_description,
     long_description_content_type='text/markdown',

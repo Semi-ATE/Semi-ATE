@@ -30,6 +30,11 @@ distribution_packages = [
         'namespace': 'ate_spyder'
     },
     {
+        'name': 'semi-ate-spyder-lab-control',
+        'dir': Path(git_root_folder, 'src/ATE_spyder/ate_spyder_lab_control'),
+        'namespace': 'ate_spyder_lab_control'
+    },
+    {
         'name': 'semi-ate-testers',
         'dir': Path(git_root_folder, 'src/Plugins/semi_ate_testers'),
         'namespace': 'semi_ate_testers'
