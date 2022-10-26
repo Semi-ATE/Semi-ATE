@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 # get to project root directory
-parent_path = str(Path(__file__).joinpath('..', '..', '..', '..', '..').resolve())
+parent_path = str(Path(__file__).joinpath('..', '..', '..', '..').resolve())
 sys.path.append(parent_path)
 
 from {{project_name}}.{{definition['hardware']}}.{{definition['base']}}.common import Context
