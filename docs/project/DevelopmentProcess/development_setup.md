@@ -1,4 +1,6 @@
 ## Setup a conda environment
+![image](https://user-images.githubusercontent.com/3516972/197995910-c7597d2f-8ab4-49ec-bb0e-c23ff92f3da4.png)
+
 ```
 (base)~$ sudo apt install mosquitto
 ...
