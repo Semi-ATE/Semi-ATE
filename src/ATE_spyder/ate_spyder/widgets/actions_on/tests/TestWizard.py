@@ -1681,7 +1681,7 @@ class TestWizard(BaseDialog):
             return UpdateOptions.Code_Update()
 
         group_names = set([group.name for group in self.project_info.get_groups_for_test(self.TestName.text())])
-        if not (group_names & set(self._get_groups())):
+        if group_names != set(self._get_groups()):
             return UpdateOptions.Group_Update()
 
         return UpdateOptions.DB_Update()
