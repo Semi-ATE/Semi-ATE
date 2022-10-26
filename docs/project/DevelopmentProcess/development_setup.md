@@ -50,6 +50,8 @@ Goto `https://github.com/Semi-ATE/STIL-Tools/releases` and download the latest `
 
 ```
 
+Note: you should have your personal access token from github handy (you will need it)
+
 # Setup (optional - if Semi-control can do what master does -)
 
 ```
