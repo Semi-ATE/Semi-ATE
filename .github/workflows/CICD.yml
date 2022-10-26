@@ -41,6 +41,7 @@ jobs:
 
       - name: Setup environment
         run: |
+          conda install spyder
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
