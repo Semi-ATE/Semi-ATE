@@ -494,7 +494,7 @@ class LabControl(PluginMainWidget):
 
     def reset(self):
         self.logger.debug("Reset semi-control")
-        self.setButtonActive(True)
+        self.setButtonActive(False)
         self.progressbar.finish(False)
         self.cycle = 0
         self._state = "reset"
@@ -839,6 +839,7 @@ class LabControl(PluginMainWidget):
         """Activate all disabled buttons."""
         self.nextaction.setEnabled(value)
         self.terminateaction.setEnabled(value)
+        self.resetaction.setEnabled(value)
 
     # logging and display:
     def extendedbarClicked(self, index):
@@ -1214,6 +1215,8 @@ class LabControl(PluginMainWidget):
                 self.logging("clr")
             self.logfilename = logfilename
             self.gui.Llogfilename.setText(self.logfilename)
+        if value == 'terminated':
+            self.setButtonActive(False)
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)
