@@ -31,6 +31,7 @@ from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 from spyder.widgets.tabs import Tabs
 from spyder.widgets.simplecodeeditor import SimpleCodeEditor
+from spyder.utils.programs import find_program
 
 # Local imports
 from ate_spyder_stil.api import STILActions
@@ -261,8 +262,9 @@ class STILContainer(PluginMainWidget):
         return self.tabwidget.currentWidget()
 
     def setup(self):
-        # stil file compilation shall only be triggered from the test flow action
-        # we want to compile only the stil files required by a specific test flow
+        # stil file compilation shall only be triggered from the test flow
+        # action we want to compile only the stil files required by a
+        # specific test flow
         self.run_stil_action = self.create_action(
             STILActions.RunSTIL, _('STIL files Compilation Status'),
             self.create_icon('run_again'), triggered=lambda: ()
@@ -278,7 +280,8 @@ class STILContainer(PluginMainWidget):
 
     # --- Private API
     # ------------------------------------------------------------------------
-    def compile_stil(self, stil_files: Optional[List[str]] = None, sig_to_chan_path: str = None):
+    def compile_stil(self, stil_files: Optional[List[str]] = None,
+                     sig_to_chan_path: str = None):
         if self.stil_process_running:
             self.stil_process.kill()
             return
@@ -321,6 +324,17 @@ class STILContainer(PluginMainWidget):
                     if ext == 'stil' or ext == 'wav':
                         stil_files.append(osp.join(root, file))
 
+        sscl_path = find_program('sscl')
+        if sscl_path is None:
+            err_msg = 'The STIL compiler (sscl) was not found in the system'
+            self.publish_to_log(err_msg, level='ERROR')
+
+            tree_msg = STILCompilerMsg(
+                kind='error', payload=STILErrWarnPayload(
+                    message=err_msg, filename='Global', row=0, col=0))
+            self.output_tree.append_file_msg(tree_msg)
+            return
+
         output_folder = str(cwd.joinpath('pattern_output'))
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
         args += stil_files
@@ -331,14 +345,16 @@ class STILContainer(PluginMainWidget):
         self.stil_process.start(args[0], args[1:])
         self.stil_process_running = True
 
-        self.run_stil_action.setToolTip('STIL files Compilation Status: Running')
+        self.run_stil_action.setToolTip(
+            'STIL files Compilation Status: Running')
         self.run_stil_action.setEnabled(True)
         self.run_stil_action.setIcon(self.create_icon('stop'))
 
     def stil_process_finished(self, exit_code, exit_status):
         self.stil_process_running = False
         self.stil_process = None
-        self.run_stil_action.setToolTip('STIL files Compilation Status: Idle')
+        self.run_stil_action.setToolTip(
+            'STIL files Compilation Status: Idle')
         self.run_stil_action.setEnabled(False)
         self.run_stil_action.setIcon(self.create_icon('run_again'))
 
