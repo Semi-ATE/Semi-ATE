@@ -9,4 +9,4 @@ semi-ate-sammy
 pygit2
 requests
 pyyaml
-force-delete-win
+force-delete-win; os_name == "nt"
