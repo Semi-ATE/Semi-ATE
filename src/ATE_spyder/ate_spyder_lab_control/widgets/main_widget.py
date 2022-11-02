@@ -199,14 +199,10 @@ class LabControl(PluginMainWidget):
         self.broker = "127.0.0.1"
         mqttclient = mqtt_init()  # prepare mqtt for controlling
         self.mqtt_connection = True
-        if not mqttclient.init(
-            self.broker
-        ):  # mqtt client connect to default broker and default topic
+        if not mqttclient.init(self.broker):  # mqtt client connect to default broker and default topic
             print("Couln't connect to the mqtt-broker")
             self.mqtt_connection = False
-        self.mqtt = mqtt_displayattributes(
-            mqttclient, mqttclient.topic, self.mqtt_receive
-        )
+        self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.gui = LabControlDialog()
         self.logger = mylogger(self.gui.TElogging, parent="Semi-Control")
         self.logger.enable = False
@@ -226,11 +222,7 @@ class LabControl(PluginMainWidget):
         # connect to mqtt and intial (needs function mqtt_receive)
         self.mqttclient = mqttclient
         self.mqtt.mqtt_add()
-        self.computername = (
-            socket.gethostname()
-            if self.mqttclient.broker == "127.0.0.1"
-            else self.mqttclient.broker
-        )
+        self.computername = socket.gethostname() if self.mqttclient.broker == "127.0.0.1" else self.mqttclient.broker
         self.cycle = 0
         self.topinstname = ""
         self._state = "init"
@@ -257,16 +249,11 @@ class LabControl(PluginMainWidget):
         print(f"Semi-control.update_control({test_program_name})")
         self.test_program_name = test_program_name
         self.logger.debug(f"Semi-control.update_control({test_program_name})")
-        self.gui.setWindowTitle(
-            f"Semi-Control {__version__}    no connection to broker {self.computername}"
-        )
+        self.gui.setWindowTitle(f"Semi-Control {__version__}    no connection to broker {self.computername}")
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
             return
-        if (
-            self.last_project_directory != self.project_info.project_directory
-            or self.last_hardware != self.project_info.active_hardware
-        ):
+        if self.last_project_directory != self.project_info.project_directory or self.last_hardware != self.project_info.active_hardware:
             self.openconfig()  # set to last save settings
         self.last_hardware = self.project_info.active_hardware
         self.last_project_directory = self.project_info.project_directory
@@ -288,15 +275,9 @@ class LabControl(PluginMainWidget):
         self.logger.debug(f"   logfilename = {self.logfilename}")
         self.logger.debug(f"   test_program_name = {self.test_program_name}")
         if self.test_program_name != "":
-            self.sequencer.load(
-                self.project_info.project_directory, self.test_program_name
-            )
-        self.progressbar.load_testbenches_time(
-            os.path.join(path, self.timefile)
-        )
-        bin_table = self.load_json(
-            os.path.join(path, self.test_program_name + "_binning.json")
-        )
+            self.sequencer.load(self.project_info.project_directory, self.test_program_name)
+        self.progressbar.load_testbenches_time(os.path.join(path, self.timefile))
+        bin_table = self.load_json(os.path.join(path, self.test_program_name + "_binning.json"))
         if bin_table is not None:
             self.bin_table = bin_table["bin-table"]
         self.logging("!LOAD!")
@@ -323,30 +304,22 @@ class LabControl(PluginMainWidget):
         menuBar.titles = ["Logging", "View", "Tools"]
 
         nextaction = QtWidgets.QAction(self.gui)
-        nextaction.setIcon(
-            qta.icon("fa5s.step-forward", color="green", scale_factor=1.0)
-        )
+        nextaction.setIcon(qta.icon("fa5s.step-forward", color="green", scale_factor=1.0))
         nextaction.setToolTip("Next")
         nextaction.triggered.connect(lambda: self.guiclicked("next"))
         menuBar.addAction(nextaction)
         self.nextaction = nextaction
 
         terminateaction = QtWidgets.QAction(self.gui)
-        terminateaction.setIcon(
-            qta.icon("fa5s.stop", color="green", scale_factor=1.0)
-        )
+        terminateaction.setIcon(qta.icon("fa5s.stop", color="green", scale_factor=1.0))
         terminateaction.setToolTip("Stop")
         terminateaction.setStatusTip("Stop")
-        terminateaction.triggered.connect(
-            lambda: self.mqtt_send("cmd", "terminate")
-        )
+        terminateaction.triggered.connect(lambda: self.mqtt_send("cmd", "terminate"))
         menuBar.addAction(terminateaction)
         self.terminateaction = terminateaction
 
         resetaction = QtWidgets.QAction(self.gui)
-        resetaction.setIcon(
-            qta.icon("fa5s.reply", color="green", scale_factor=1.0)
-        )
+        resetaction.setIcon(qta.icon("fa5s.reply", color="green", scale_factor=1.0))
         resetaction.setToolTip("Reset")
         resetaction.setStatusTip("Reset")
         resetaction.triggered.connect(lambda: self.mqtt_send("cmd", "reset"))
@@ -371,9 +344,7 @@ class LabControl(PluginMainWidget):
         actionSequencer_Parameters.setCheckable(True)
         actionSequencer_Parameters.setEnabled(True)
         menuView.addAction(actionSequencer_Parameters)
-        actionSequencer_Parameters.triggered.connect(
-            lambda: self.guiclicked("sequencer")
-        )
+        actionSequencer_Parameters.triggered.connect(lambda: self.guiclicked("sequencer"))
         self.actionSequencer_Parameters = actionSequencer_Parameters
 
         actionTools = QtWidgets.QAction(self.gui)
@@ -428,25 +399,13 @@ class LabControl(PluginMainWidget):
         self.actiondebug = actiondebug
 
         # set connect:
-        self.gui.RBdebug.clicked.connect(
-            lambda: self.logging(self.logging_cmd_reload)
-        )
-        self.gui.RBmeasure.clicked.connect(
-            lambda: self.logging(self.logging_cmd_reload)
-        )
-        self.gui.RBinfo.clicked.connect(
-            lambda: self.logging(self.logging_cmd_reload)
-        )
-        self.gui.RBwarning.clicked.connect(
-            lambda: self.logging(self.logging_cmd_reload)
-        )
-        self.gui.RBerror.clicked.connect(
-            lambda: self.logging(self.logging_cmd_reload)
-        )
+        self.gui.RBdebug.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
+        self.gui.RBmeasure.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
+        self.gui.RBinfo.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
+        self.gui.RBwarning.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
+        self.gui.RBerror.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
         #        self.actionsave_mqtt_to_file.triggered.connect(lambda: self.guiclicked('mqtt'))
-        self.gui.CBholdonbreak.clicked.connect(
-            lambda: self.saveconfig("holdonbreak")
-        )  # CB = QCheckBox
+        self.gui.CBholdonbreak.clicked.connect(lambda: self.saveconfig("holdonbreak"))  # CB = QCheckBox
         self.gui.CBstartauto.clicked.connect(self.saveconfig)
         self.gui.CBstopauto.clicked.connect(self.saveconfig)
         self.gui.CBstoponfail.clicked.connect(
@@ -475,15 +434,9 @@ class LabControl(PluginMainWidget):
         self.gui.GBfilter.addAction(self.gui.rb_onlyerrorAction)
         self.gui.GBfilter.addAction(self.gui.rb_allAction)
         self.gui.GBfilter.addAction(self.gui.rb_lastAction)
-        self.gui.rb_onlyerrorAction.triggered.connect(
-            lambda: self.filterMenuClicked("onlyerror")
-        )
-        self.gui.rb_allAction.triggered.connect(
-            lambda: self.filterMenuClicked("all")
-        )
-        self.gui.rb_lastAction.triggered.connect(
-            lambda: self.filterMenuClicked("last")
-        )
+        self.gui.rb_onlyerrorAction.triggered.connect(lambda: self.filterMenuClicked("onlyerror"))
+        self.gui.rb_allAction.triggered.connect(lambda: self.filterMenuClicked("all"))
+        self.gui.rb_lastAction.triggered.connect(lambda: self.filterMenuClicked("last"))
 
     def _createSeqMenu(self):
         self.gui.Gsequencer.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -503,9 +456,7 @@ class LabControl(PluginMainWidget):
         self.error_cnt = 0
         self.warning_cnt = 0
         self.last_mqtt_time = time.time()
-        self.mqttsave = (
-            None  # filepointer to save all mqtt-telegrams to a file
-        )
+        self.mqttsave = None  # filepointer to save all mqtt-telegrams to a file
         self.wait4answer = False
         self.logger.debug("Reset semi-control done")
 
@@ -516,17 +467,11 @@ class LabControl(PluginMainWidget):
             msg = self.command[cmd]
             topic = self.sendtopic + topic
             self.mqtt.publish(topic, msg)
-            self.change_status_display.emit(
-                "send " + str(msg["command"] + ", wait for answer"), ""
-            )
-            self.logger.debug(
-                "semi-control.mqtt_send {}:{}".format(topic, msg)
-            )
+            self.change_status_display.emit("send " + str(msg["command"] + ", wait for answer"), "")
+            self.logger.debug("semi-control.mqtt_send {}:{}".format(topic, msg))
             self.wait4answer = True
         else:
-            self.error(
-                f"semi-control.mqtt_send {topic}:{cmd} not found in list"
-            )
+            self.error(f"semi-control.mqtt_send {topic}:{cmd} not found in list")
 
     def mqtt_receive(self, topic, msg):
         """
@@ -543,23 +488,17 @@ class LabControl(PluginMainWidget):
         notfound = False
         if self.mqttsave is not None:
             self.mqttsave.writelines(f"{topic}    {msg}\n")
-        if (
-            len(topicsplit) > 2 and topicsplit[1] == self.computername
-        ):  # received a message from an instrument ?
+        if len(topicsplit) > 2 and topicsplit[1] == self.computername:  # received a message from an instrument ?
             if topicsplit[2] == mqtt.TOPIC_INSTRUMENT:
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
-        elif (
-            type(msg) is dict and "type" in msg
-        ):  # received a message from controlling
+        elif type(msg) is dict and "type" in msg:  # received a message from controlling
             self.mqttReceiveSemictrl(topic, msg)
         else:
             notfound = True
         if notfound:
-            self.logger.warning(
-                f"mqtt_receive '{topic}: {msg}' don_t know what to do with this message"
-            )
+            self.logger.warning(f"mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
 
     def mqttReiveMyname(self, topic, msg):
         """
@@ -567,9 +506,7 @@ class LabControl(PluginMainWidget):
 
         """
         self.logger.debug(f"mqttReiveMyname {topic}, {msg}")
-        if (
-            type(msg) is dict and self.SemiCtrlinstName in msg
-        ):  # receive a message for semictrl
+        if type(msg) is dict and self.SemiCtrlinstName in msg:  # receive a message for semictrl
             msg = msg[self.SemiCtrlinstName]
             if msg["type"] == "cmd" and msg["cmd"] == "breakpoint":
                 if msg["payload"] is None:
@@ -584,29 +521,21 @@ class LabControl(PluginMainWidget):
                     self.change_status_display.emit("testing", "")
             elif msg["type"] == "cmd" and msg["cmd"] == "topinstname":
                 self.topinstname = msg["payload"]
-            if (
-                msg["type"] == "cmd" and msg["cmd"] == "menu"
-            ):  # get command to extend Menu
+            if msg["type"] == "cmd" and msg["cmd"] == "menu":  # get command to extend Menu
                 pindex = -1
                 for addmenu in msg["payload"]:
                     # the syntax is {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
                     pindex += 1
                     found = False
-                    if (
-                        pindex == 0 and addmenu not in self.gui.menuBar.titles
-                    ):  # add new Menu Title
-                        self.gui.newMenu.append(
-                            QtWidgets.QMenu(addmenu, self.gui)
-                        )
+                    if pindex == 0 and addmenu not in self.gui.menuBar.titles:  # add new Menu Title
+                        self.gui.newMenu.append(QtWidgets.QMenu(addmenu, self.gui))
                         self.gui.newMenu[-1].instance = None
                         self.gui.menuBar.addMenu(self.gui.newMenu[-1])
                         self.gui.menuBar.titles.append(addmenu)
                         mindex = pindex
                         found = True
                     elif pindex == 0:  # Menu Title already exist
-                        self.logger.debug(
-                            f"     Menu Title {addmenu} already exist, do nothing"
-                        )
+                        self.logger.debug(f"     Menu Title {addmenu} already exist, do nothing")
                         continue
                     else:  # create/update submenue
                         self.logger.debug(f"     add/update menu: {addmenu}")
@@ -620,81 +549,49 @@ class LabControl(PluginMainWidget):
                         if found:
                             self.logger.debug(f"     update menu: {addmenu}")
                             lib = msg["payload"][addmenu].split(".")[-1]
-                            self.logger.debug(
-                                f"     reload lib {lib} from {msg['payload'][addmenu]}"
-                            )
-                            self.logger.debug(
-                                f"     reload lib {str(self.gui.newMenu[mindex].lib)}"
-                            )
+                            self.logger.debug(f"     reload lib {lib} from {msg['payload'][addmenu]}")
+                            self.logger.debug(f"     reload lib {str(self.gui.newMenu[mindex].lib)}")
                             try:
                                 importlib.reload(self.gui.newMenu[mindex].lib)
                             except Exception as ex:
-                                self.logger.error(
-                                    f"    Coudn't reload lib {lib} from {msg['payload'][addmenu]}  {ex}"
-                                )
+                                self.logger.error(f"    Coudn't reload lib {lib} from {msg['payload'][addmenu]}  {ex}")
                             continue
                         else:  # create menu: {addmenu} with action to lib {msg['payload'][addmenu]}
-                            self.gui.newMenu.append(
-                                QtWidgets.QAction("   " + addmenu, self.gui)
-                            )
+                            self.gui.newMenu.append(QtWidgets.QAction("   " + addmenu, self.gui))
                             try:
                                 if msg["payload"][addmenu] != "":
-                                    self.logger.debug(
-                                        f"     importlib {msg['payload'][addmenu]}"
-                                    )
-                                    self.gui.newMenu[
-                                        -1
-                                    ].lib = importlib.import_module(
-                                        msg["payload"][addmenu]
-                                    )
+                                    self.logger.debug(f"     importlib {msg['payload'][addmenu]}")
+                                    self.gui.newMenu[-1].lib = importlib.import_module(msg["payload"][addmenu])
                             except Exception as ex:
                                 # self.gui.newMenu[-1].lib = None
-                                print(
-                                    f"    Coudn't set lib, try to load {msg['payload']}[{addmenu}]  {ex}"
-                                )
+                                print(f"    Coudn't set lib, try to load {msg['payload']}[{addmenu}]  {ex}")
                                 self.gui.newMenu.pop(-1)
                                 continue
                             self.gui.newMenu[-1].setCheckable(True)
                             self.gui.newMenu[-1].setText("     " + addmenu)
                             self.gui.newMenu[0].addAction(self.gui.newMenu[-1])
-                            self.gui.newMenu[-1].triggered.connect(
-                                lambda checked, index=len(
-                                    self.gui.newMenu
-                                ) - 1: self.extendedbarClicked(index)
-                            )
-                            print(
-                                f"         create menu: {addmenu} index = {len(self.gui.newMenu)-1}, with action to lib {msg['payload'][addmenu]}"
-                            )
-                    if not hasattr(
-                        self.gui.newMenu[mindex], "instance"
-                    ):  # GUI has not created
+                            self.gui.newMenu[-1].triggered.connect(lambda checked, index=len(self.gui.newMenu) - 1: self.extendedbarClicked(index))
+                            print(f"         create menu: {addmenu} index = {len(self.gui.newMenu)-1}, with action to lib {msg['payload'][addmenu]}")
+                    if not hasattr(self.gui.newMenu[mindex], "instance"):  # GUI has not created
                         self.gui.newMenu[mindex].instance = None
                     self.gui.newMenu[mindex].libname = msg["payload"][addmenu]
                     self.gui.newMenu[mindex].name = addmenu
                     self.gui.newMenu[mindex].subtopic = []
                     self.logger.debug("     add/update menu : done")
                     self.menuBar.adjustSize()
-        elif (
-            type(msg) is dict and len(msg.keys()) == 1
-        ):  # received a message for a application in the extended Menu
-            self.logger.debug(
-                f"   message for the extended GUI received: '{topic}= {msg}'"
-            )
+        elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a application in the extended Menu
+            self.logger.debug(f"   message for the extended GUI received: '{topic}= {msg}'")
             for app in self.gui.newMenu:
                 if not hasattr(app, "instance") or app.instance is None:
                     continue
-                self.logger.debug(
-                    f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}"
-                )
+                self.logger.debug(f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}")
                 name = None
                 app.topinstname = self.topinstname
                 if len(app.subtopic) > 0:
                     for subtopic in app.subtopic:
                         if subtopic in msg.keys():
                             name = subtopic
-                elif hasattr(
-                    app.instance, "subtopic"
-                ):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
+                elif hasattr(app.instance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
                     for subtopic in app.instance.subtopic:
                         if subtopic in msg.keys():
                             name = subtopic
@@ -704,64 +601,36 @@ class LabControl(PluginMainWidget):
                     msg = msg[name]
                     cmd = msg["cmd"]
                     value = msg["payload"]
-                    self.logger.debug(
-                        f"    message for {app.name}: {cmd} = {msg} -->   "
-                    )
+                    self.logger.debug(f"    message for {app.name}: {cmd} = {msg} -->   ")
                     try:
-                        if msg["type"] in ["set"] and hasattr(
-                            app.instance, cmd
-                        ):  # set attribute
-                            self.logger.debug(
-                                f"   begin set attribute {cmd}={value}"
-                            )
+                        if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
+                            self.logger.debug(f"   begin set attribute {cmd}={value}")
                             app.instance.__setattr__(cmd, value)
                             self.logger.debug("   --> set attribute done")
-                        elif msg["type"] in ["get"] and hasattr(
-                            app.instance, cmd
-                        ):  # get attribute/function call
+                        elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
                             if value == []:  # it is a function call?
-                                self.logger.debug(
-                                    f"   begin call function {cmd}"
-                                )
+                                self.logger.debug(f"   begin call function {cmd}")
                                 app.instance.__getattribute__(cmd)()
                                 self.logger.debug("   --> call function done")
                             else:
-                                self.logger.debug(
-                                    f"   begin get/set attribute {cmd}={value}"
-                                )
-                                app.instance.__setattr__(
-                                    cmd, value
-                                )  # get from extern is a set for displaying....
+                                self.logger.debug(f"   begin get/set attribute {cmd}={value}")
+                                app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
                                 # app.instance.__getattribute__(cmd)
-                                self.logger.debug(
-                                    "   --> begin get/set attribute done"
-                                )
+                                self.logger.debug("   --> begin get/set attribute done")
                             self.logger.debug("   function call done")
-                        elif msg["type"] in ["set", "get"] and hasattr(
-                            app.instance, "mqttreceive"
-                        ):  # implemented not as attribute/functioncall to get more information as only the payload
-                            self.logger.debug(
-                                f"   call mqttreceive with {msg}"
-                            )
+                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # implemented not as attribute/functioncall to get more information as only the payload
+                            self.logger.debug(f"   call mqttreceive with {msg}")
                             app.instance.mqttreceive(name, msg)
                             self.logger.debug("   call mqttreceive done")
                         elif not hasattr(app.instance, cmd):
-                            self.logger.warning(
-                                f"{name} hat no attribute: '{cmd} = {msg}'"
-                            )
+                            self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
                         else:
-                            self.logger.error(
-                                f"{name} I don't now what to do with this message: '{cmd} = {msg}'"
-                            )
+                            self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
                     except Exception as ex:
-                        self.logger.error(
-                            f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
-                        )
+                        self.logger.error(f"{name} something goes wrong: '{topic} = {msg}'  {ex}")
         else:
             pass
-            self.logger.info(
-                f"Info: semi_control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing...."
-            )
+            self.logger.info(f"Info: semi_control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
 
     def mqttReceiveSemictrl(self, topic, msg):
         """
@@ -775,11 +644,7 @@ class LabControl(PluginMainWidget):
             if not self.wait4answer:
                 pass
             else:
-                if (
-                    self.wait4answer
-                    and msg["command"] == "next"
-                    and self.state != "config"
-                ):
+                if self.wait4answer and msg["command"] == "next" and self.state != "config":
                     self.logging(None)
                     self.display_result()
                 self.logger.debug(f"actual state:{self.state} \n")
@@ -790,14 +655,10 @@ class LabControl(PluginMainWidget):
                 mqttstate = msg["state"]
             else:
                 mqttstate = mqttstate["state"]
-            if (
-                mqttstate.find("testing") > -1
-            ):  # test is running, so switch off the Button, function cancel is not yet implemented :-(
+            if mqttstate.find("testing") > -1:  # test is running, so switch off the Button, function cancel is not yet implemented :-(
                 self.cycle += 1
                 self.setButtonActive(False)
-            elif (
-                mqttstate.find("idle") > -1
-            ):  # testflow is starting or run through
+            elif mqttstate.find("idle") > -1:  # testflow is starting or run through
                 self.setButtonActive(True)
                 if self.state in ["unknown", "init"]:
                     self.logging(None)
@@ -808,9 +669,7 @@ class LabControl(PluginMainWidget):
                 self.state = mqttstate
         elif msgtype == "log":
             msg = str(msg["payload"])
-            msg = self.logfilter(
-                msg, True
-            )  # check the message if they should display on the gui
+            msg = self.logfilter(msg, True)  # check the message if they should display on the gui
             if msg is not None:
                 self.logging(msg)
         elif msgtype == "testresult":
@@ -821,19 +680,17 @@ class LabControl(PluginMainWidget):
                     outfile.writelines(str(index))
                     outfile.write("\n")
                 # json.dump(msg, outfile)
-        #elif topic.split('/')[2] == 'TestApp' and msgtype == "io-control-request" and "periphery_type" in msg:
-        elif msgtype.find("io-control-") == 0: # and "periphery_type" in msg:      # handle message from actuartors
-            if topic.split('/')[2] == 'TestApp' and msgtype == "io-control-request":
+        # elif topic.split('/')[2] == 'TestApp' and msgtype == "io-control-request" and "periphery_type" in msg:
+        elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuartors
+            if topic.split("/")[2] == "TestApp" and msgtype == "io-control-request":
                 newtopic = f"ate/{self.TopicName}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
-            elif topic.split('/')[2] != 'Master' and msgtype == "io-control-response":
+            elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
                 # response_topic = "ate/" + self.params.device_id + f"/Master/{actuator_type}/response"
                 newtopic = f"ate/{self.TopicName}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
         else:
-            self.logger.warning(
-                f"I don't know what should I do with this message: {msgtype}"
-            )
+            self.logger.warning(f"I don't know what should I do with this message: {msgtype}")
 
     def setButtonActive(self, value):
         """Activate all disabled buttons."""
@@ -853,41 +710,19 @@ class LabControl(PluginMainWidget):
         self.logger.info(f"     topinstname = {self.topinstname}")
         if self.gui.newMenu[index].isChecked():
             name = self.gui.newMenu[index].name
-            if (
-                not hasattr(self.gui.newMenu[index], "lib")
-                or self.gui.newMenu[index].lib is None
-            ):
-                self.logger.error(
-                    f" Gui for {name} not exist, please update the LAB-ML adjutancy lib"
-                )
+            if not hasattr(self.gui.newMenu[index], "lib") or self.gui.newMenu[index].lib is None:
+                self.logger.error(f" Gui for {name} not exist, please update the LAB-ML adjutancy lib")
                 self.gui.newMenu[index].instance = None
                 self.gui.newMenu[index].setChecked(False)
                 return
-            importlib.reload(
-                importlib.import_module(
-                    "labml_adjutancy.gui.instruments.base_instrument"
-                )
-            )
+            importlib.reload(importlib.import_module("labml_adjutancy.gui.instruments.base_instrument"))
             importlib.reload(self.gui.newMenu[index].lib)
-            self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(
-                self, name, self.project_info.parent
-            )  # start Gui
-            self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[
-                index
-            ].subtopic
+            self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(self, name, self.project_info.parent)  # start Gui
+            self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[index].subtopic
             self.gui.newMenu[index].instance.topinstname = self.topinstname
-            self.logger.debug(
-                f" create {self.gui.newMenu[index].instance} done"
-            )
-            self.logger.info(
-                f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}"
-            )
-            if (
-                "menu" in self.saveconfigdata
-                and name in self.saveconfigdata["menu"]
-                and len(self.saveconfigdata["menu"][name]) > 3
-                and self.gui.newMenu[index].instance is not None
-            ):
+            self.logger.debug(f" create {self.gui.newMenu[index].instance} done")
+            self.logger.info(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
+            if "menu" in self.saveconfigdata and name in self.saveconfigdata["menu"] and len(self.saveconfigdata["menu"][name]) > 3 and self.gui.newMenu[index].instance is not None:
                 self.set_Geometry(
                     name,
                     self.gui.newMenu[index].instance.gui,
@@ -918,9 +753,7 @@ class LabControl(PluginMainWidget):
         elif cmd == "mqtt":
             if self.gui.actionsave_mqtt_to_file.isChecked():
                 self.mqttsave = open(
-                    os.path.join(
-                        self.project_info.project_directory, "mqtt.log"
-                    ),
+                    os.path.join(self.project_info.project_directory, "mqtt.log"),
                     "w",
                 )
             elif self.mqttsave is not None:
@@ -935,17 +768,13 @@ class LabControl(PluginMainWidget):
                 )
             )
             self.logger.warning("Open explorer with: " + path)
-            logfilename = QtWidgets.QFileDialog.getOpenFileName(
-                self.gui, "Open Log", path, "log Files (*.log)"
-            )
+            logfilename = QtWidgets.QFileDialog.getOpenFileName(self.gui, "Open Log", path, "log Files (*.log)")
             if logfilename[0] != "":
                 self.logfilename = logfilename[0]
                 self.readlog(self.logfilename)
                 self.display_result()
         elif cmd == "broker":
-            self.logger.error(
-                "TODO: not yet implemented.... only default Broker"
-            )
+            self.logger.error("TODO: not yet implemented.... only default Broker")
             for group in self.project_info.get_groups():
                 self.logger.info(group.name)
         elif cmd == "reset":
@@ -961,9 +790,7 @@ class LabControl(PluginMainWidget):
             else:
                 self.gui.Gsequencer.hide()
         elif cmd == "updatesequencer":
-            self.sequencer.load(
-                self.project_info.project_directory, self.test_program_name
-            )
+            self.sequencer.load(self.project_info.project_directory, self.test_program_name)
         elif cmd == "progress":
             self.logger.debug("change View Progress")
             if self.actionProgress.isChecked():
@@ -978,36 +805,21 @@ class LabControl(PluginMainWidget):
             "lognotexist",
         ]:
             last = True
-            if (
-                self.actionSequencer_Parameters.isChecked()
-            ):  # if sequencer window visible?
+            if self.actionSequencer_Parameters.isChecked():  # if sequencer window visible?
                 (
                     self.command["SetParameter"]["parameters"],
                     last,
                 ) = self.sequencer.getnext()  # than make the sequences
-                if (
-                    not last
-                    and self.command["SetParameter"]["parameters"] != []
-                ):
+                if not last and self.command["SetParameter"]["parameters"] != []:
                     self.mqtt_send("cmd", "SetParameter")
                 if last and self.command["SetParameter"]["parameters"] != []:
                     self.state = "finish_seq"
             else:
                 self.command["SetParameter"]["parameters"] = []
-            self.logger.debug(
-                f"guiclicked('next') with {self.command['SetParameter']['parameters']}, last={last}"
-            )
-            if (
-                not self.actionSequencer_Parameters.isChecked()
-                or (not last and self.actionSequencer_Parameters.isChecked())
-                and self.command["SetParameter"]["parameters"] != []
-            ):
+            self.logger.debug(f"guiclicked('next') with {self.command['SetParameter']['parameters']}, last={last}")
+            if not self.actionSequencer_Parameters.isChecked() or (not last and self.actionSequencer_Parameters.isChecked()) and self.command["SetParameter"]["parameters"] != []:
                 self.mqtt_send("cmd", "next")
-            elif (
-                last
-                and self.actionSequencer_Parameters.isChecked()
-                and self.command["SetParameter"]["parameters"] == []
-            ):
+            elif last and self.actionSequencer_Parameters.isChecked() and self.command["SetParameter"]["parameters"] == []:
                 self.state = "nothing_seq"
         else:
             self.state = (
@@ -1070,10 +882,7 @@ class LabControl(PluginMainWidget):
             self.logger.debug("semi_control.logging: clr")
             # self.gui.TElogging.clear()
         elif msg in (self.logging_cmd_reload, "!LOAD!"):
-            if (
-                self.project_info.active_hardware != ""
-                and self.project_info.active_base != ""
-            ):
+            if self.project_info.active_hardware != "" and self.project_info.active_base != "":
                 self.logger.debug(f"semi_control.logging: {msg}")
                 if msg == "!LOAD!":
                     "logload"
@@ -1187,10 +996,7 @@ class LabControl(PluginMainWidget):
         if type(value) == tuple:
             msg = value[1]
             value = value[0]
-        if (
-            value in ["idle", "testing"]
-            and self.command["SetParameter"]["parameters"] != []
-        ):  # display the parametername if sequencer enabled
+        if value in ["idle", "testing"] and self.command["SetParameter"]["parameters"] != []:  # display the parametername if sequencer enabled
             parameters = self.command["SetParameter"]["parameters"]
             apara = []
             for parametername in parameters:
@@ -1203,9 +1009,7 @@ class LabControl(PluginMainWidget):
             for val in apara:
                 dmsg = dmsg + f"{val[0]}={val[1]}, "
             msg = dmsg[:-2] + msg
-        self.logger.debug(
-            f"semi_control.state = {value}, oldstate ={self._state}"
-        )
+        self.logger.debug(f"semi_control.state = {value}, oldstate ={self._state}")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
@@ -1215,40 +1019,23 @@ class LabControl(PluginMainWidget):
                 self.logging("clr")
             self.logfilename = logfilename
             self.gui.Llogfilename.setText(self.logfilename)
-        if value == 'terminated':
+        if value == "terminated":
             self.setButtonActive(False)
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)
-        elif value == "config" or (
-            value == "idle" and oldstate not in ("config", "testing")
-        ):  # start identify
+        elif value == "config" or (value == "idle" and oldstate not in ("config", "testing")):  # start identify
             self.logger.debug("semi_control.state: config apply")
             self.cycle = 0
             self.display_result()
             if self.gui.CBstartauto.isChecked():
-                self.logger.debug(
-                    f"semi_control.state: {value}, config apply, Auto is enabled -> send next"
-                )
+                self.logger.debug(f"semi_control.state: {value}, config apply, Auto is enabled -> send next")
                 self.guiclicked("next")
-        elif (
-            value == "idle"
-            and oldstate in ("reset", "config", "testing")
-            and self.actionSequencer_Parameters.isChecked()
-            and self.gui.CBautoseq.isChecked()
-        ):  # testprogramm runs through
-            self.logger.debug(
-                "semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)"
-            )
+        elif value == "idle" and oldstate in ("reset", "config", "testing") and self.actionSequencer_Parameters.isChecked() and self.gui.CBautoseq.isChecked():  # testprogramm runs through
+            self.logger.debug("semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)")
             self.guiclicked("next")
-        elif (
-            value == "idle"
-            and oldstate in ("reset", "config", "testing")
-            and self.gui.CBstopauto.isChecked()
-        ):  # testprogramm runs through
-            self.logger.debug(
-                "semi_control.state: idle, Auto is enabled -> send terminate"
-            )
+        elif value == "idle" and oldstate in ("reset", "config", "testing") and self.gui.CBstopauto.isChecked():  # testprogramm runs through
+            self.logger.debug("semi_control.state: idle, Auto is enabled -> send terminate")
             self.mqtt_send("cmd", "terminate")
 
     # result:
@@ -1290,13 +1077,9 @@ class LabControl(PluginMainWidget):
             self.gui.Lresult.setText(msg)
         if msg == self.passmsg:
             result = True
-            self.gui.Lresult.setStyleSheet(
-                "color: rgb(0, 0, 0);background-color: #00ff00"
-            )
+            self.gui.Lresult.setStyleSheet("color: rgb(0, 0, 0);background-color: #00ff00")
         elif msg is not None and msg != "":
-            self.gui.Lresult.setStyleSheet(
-                "color: rgb(0, 0, 0);background-color: #ff0000"
-            )
+            self.gui.Lresult.setStyleSheet("color: rgb(0, 0, 0);background-color: #ff0000")
             result = not self.gui.CBstoponfail.isChecked()
         self.progressbar.finish(result)
 
@@ -1308,25 +1091,15 @@ class LabControl(PluginMainWidget):
                 found = True
         if found:
             gui.setGeometry(geometry[0], geometry[1], geometry[2], geometry[3])
-            print(
-                f"{name}.set_Geometry({geometry[0]}, {geometry[1]}, {geometry[2]}, {geometry[3]})"
-            )
+            print(f"{name}.set_Geometry({geometry[0]}, {geometry[1]}, {geometry[2]}, {geometry[3]})")
         else:
-            self.logger.warning(
-                f"coudn't set last geometry for {name}, it is out of the actual screen"
-            )
-            print(
-                f"coudn't set last geometry for {name}, it is out of the actual screen"
-            )
+            self.logger.warning(f"coudn't set last geometry for {name}, it is out of the actual screen")
+            print(f"coudn't set last geometry for {name}, it is out of the actual screen")
 
     @QtCore.pyqtSlot(str, str)
     def _change_status_display(self, msg, extendmsg=""):
         self.logger.debug(f"       state = {msg}")
-        style = (
-            self._states[msg][1]
-            if msg in self._states
-            else "color: rgb(255, 255, 255);background-color: transparent;"
-        )
+        style = self._states[msg][1] if msg in self._states else "color: rgb(255, 255, 255);background-color: transparent;"
         msg = self._states[msg][0] if msg in self._states else msg
         self.gui.Lstatus.setText(f"{extendmsg} {msg}")
         self.gui.Lstatus.setStyleSheet(style)
@@ -1348,22 +1121,14 @@ class LabControl(PluginMainWidget):
     # configuration :
     def openconfig(self):
         """Open the configuration file c:users/$USER"""
-        settings_dir = os.path.join(
-            self.project_info.project_directory, "definitions\\semi-control"
-        )
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions\\semi-control")
         self.blockSignals(True)
         try:
-            print(
-                f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}"
-            )
-            with open(
-                os.path.join(settings_dir, self.configfile), "r"
-            ) as infile:
+            print(f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}")
+            with open(os.path.join(settings_dir, self.configfile), "r") as infile:
                 data = json.load(infile)
             if __version__ != data["version"]:
-                self.logger.warning(
-                    f'   {self.configfile}: wrong version = {data["version"]}, should be {__version__}'
-                )
+                self.logger.warning(f'   {self.configfile}: wrong version = {data["version"]}, should be {__version__}')
             self.gui.RBdebug.setChecked(data["logging"]["debug"])
             self.gui.RBinfo.setChecked(data["logging"]["info"])
             self.gui.RBmeasure.setChecked(data["logging"]["measure"])
@@ -1374,15 +1139,11 @@ class LabControl(PluginMainWidget):
             self.gui.CBstopauto.setChecked(data["config"]["stopauto"])
             self.gui.CBstoponfail.setChecked(data["config"]["stoponfail"])
             self.actiondebug.setChecked(data["config"]["debug"])
-            self.actionSequencer_Parameters.setChecked(
-                data["view"]["sequencer"]
-            )
+            self.actionSequencer_Parameters.setChecked(data["view"]["sequencer"])
             self.actionProgress.setChecked(data["view"]["progress"])
             self.logfilename = data["result"]["logfilename"]
             self.sequencer.parameters = data["config"]["sequencer"]
-            self.set_Geometry(
-                "semi-ctrl", self.gui, data["config"]["geometry"]
-            )
+            self.set_Geometry("semi-ctrl", self.gui, data["config"]["geometry"])
             self.logger.debug("   now create menu from the settings")
             if "menu" in data:
                 menu = {}
@@ -1400,18 +1161,13 @@ class LabControl(PluginMainWidget):
                 for app in self.gui.newMenu:
                     if app.libname != "":
                         app.setChecked(data["menu"][app.name][1])
-                        if (
-                            len(data["menu"][app.name]) > 3
-                            and app.instance is not None
-                        ):
+                        if len(data["menu"][app.name]) > 3 and app.instance is not None:
                             app.subtopic = data["menu"][app.name][3]
                             app.instance.subtopic = app.subtopic
                     index += 1
             self.saveconfigdata = data
         except Exception as ex:
-            print(
-                f"{self.configfile}: {ex} not found or not ok -> use rest of default config"
-            )
+            print(f"{self.configfile}: {ex} not found or not ok -> use rest of default config")
             self.saveconfig()
             self.progressbar.load_testbenches_time("")
         self.gui.Llogfilename.setText(self.logfilename)
@@ -1467,9 +1223,7 @@ class LabControl(PluginMainWidget):
                 mymenu[app.name] = ""
             elif hasattr(app, "libname"):
                 mymenu[app.name] = [app.libname, app.isChecked()]
-                if app.instance is not None and hasattr(
-                    app.instance, "geometry"
-                ):
+                if app.instance is not None and hasattr(app.instance, "geometry"):
                     mymenu[app.name].append(
                         [
                             app.instance.geometry().x(),
@@ -1481,14 +1235,10 @@ class LabControl(PluginMainWidget):
                 mymenu[app.name].append(app.subtopic)
             index += 1
         data["menu"] = mymenu
-        settings_dir = os.path.join(
-            self.project_info.project_directory, "definitions\\semi-control"
-        )
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions\\semi-control")
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
-        self.logger.debug(
-            f"write {os.path.join(settings_dir, self.configfile)}"
-        )
+        self.logger.debug(f"write {os.path.join(settings_dir, self.configfile)}")
         with open(os.path.join(settings_dir, self.configfile), "w") as outfile:
             json.dump(data, outfile, indent=2)
         if button == "holdonbreak":
@@ -1538,9 +1288,7 @@ class LabControl(PluginMainWidget):
                 if app.name == name:
                     app.setChecked(False)
                     settings = [app.libname, app.isChecked()]
-                    if app.instance is not None and hasattr(
-                        app.instance, "geometry"
-                    ):
+                    if app.instance is not None and hasattr(app.instance, "geometry"):
                         settings.append(
                             [
                                 app.instance.geometry().x(),
