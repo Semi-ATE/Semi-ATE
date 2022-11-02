@@ -760,13 +760,7 @@ class LabControl(PluginMainWidget):
                 self.mqttsave.close()
                 self.mqttsave = None
         elif cmd == "openlog":
-            path = str(
-                self.project_info.get_test_path(
-                    "log",
-                    self.project_info.active_hardware,
-                    self.project_info.active_base,
-                )
-            )
+            path = os.path.join(self.project_info.project_directory, "log")
             self.logger.warning("Open explorer with: " + path)
             logfilename = QtWidgets.QFileDialog.getOpenFileName(self.gui, "Open Log", path, "log Files (*.log)")
             if logfilename[0] != "":
@@ -869,9 +863,9 @@ class LabControl(PluginMainWidget):
         """
         path = os.path.join(
             self.project_info.project_directory,
-            os.path.split(self.project_info.project_directory)[-1],
-            self.project_info.active_hardware,
-            self.project_info.active_base,
+            # os.path.split(self.project_info.project_directory)[-1],
+            # self.project_info.active_hardware,
+            # self.project_info.active_base,
             "log",
             self.logfilename,
         )
@@ -907,15 +901,7 @@ class LabControl(PluginMainWidget):
     def getlatestlogfilename(self):
         import glob
 
-        files = glob.glob(
-            os.path.join(
-                self.project_info.project_directory,
-                os.path.split(self.project_info.project_directory)[-1],
-                self.project_info.active_hardware,
-                self.project_info.active_base,
-                "log/*.log",
-            )
-        )
+        files = glob.glob(os.path.join(self.project_info.project_directory, "log/*.log"))
         return max(files, key=os.path.getctime) if files != [] else ""
 
     def readlog(self, logfilename):
