@@ -219,7 +219,7 @@ class ProjectWizard(QDialog):
         cur_path = Path(self.project_path)
 
         if cur_path != new_path:
-            Path(self.project_path).rename(new_path)
+            cur_path.rename(new_path)
 
         self.project_info(str(new_path))
         # config step shall be done first after the re-initialization

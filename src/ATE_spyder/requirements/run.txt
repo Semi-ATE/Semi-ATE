@@ -9,3 +9,4 @@ semi-ate-sammy
 pygit2
 requests
 pyyaml
+force-delete-win
