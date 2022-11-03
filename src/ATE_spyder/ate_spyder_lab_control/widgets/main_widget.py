@@ -73,8 +73,10 @@ class LabControl(PluginMainWidget):
             use subtopic[] for the other instName in the Gui
     """
 
+    broker = "127.0.0.1"
+
     _states = {  # from extern mean: no handling from semi-control, normally you get this message if your are running the MiniSCTGui
-        "notconnect": ["no connection to broker {self.computername}", "color: rgb(0, 0, 0);background-color: #ff0000"],
+        "notconnect": [f"no connection to broker {broker}", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
         "ready": ["get ready from extern", None],
@@ -197,7 +199,6 @@ class LabControl(PluginMainWidget):
         self.logging_cmd_reload = "!RELOAD!"
         self.last_hardware = ""
         self.last_project_directory = ""
-        self.broker = "127.0.0.1"
         mqttclient = mqtt_init()  # prepare mqtt for controlling
         self.mqtt_connection = True
         if not mqttclient.init(self.broker):  # mqtt client connect to default broker and default topic
@@ -205,8 +206,8 @@ class LabControl(PluginMainWidget):
             self.mqtt_connection = False
         self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.gui = LabControlDialog()
-        self.logger = mylogger(self.gui.TElogging, parent="Semi-Control")
-        self.logger.enable = False
+        self.logger = mylogger(self.gui.TElogging, parent="Lab Control")
+        self.logger.enable = True
         self.progressbar = Barprogress(self)
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
         self.sequencer = Sequencer(self, self.gui.Fsequencer)
