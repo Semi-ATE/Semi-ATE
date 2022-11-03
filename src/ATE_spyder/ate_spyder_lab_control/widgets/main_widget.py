@@ -197,8 +197,6 @@ class LabControl(PluginMainWidget):
         self.passmsg = "Pass"
         self.SemiCtrlinstName = "semictrl"
         self.logging_cmd_reload = "!RELOAD!"
-        self.last_hardware = ""
-        self.last_project_directory = ""
         mqttclient = mqtt_init()  # prepare mqtt for controlling
         self.mqtt_connection = True
         if not mqttclient.init(self.broker):  # mqtt client connect to default broker and default topic
@@ -207,7 +205,7 @@ class LabControl(PluginMainWidget):
         self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.gui = LabControlDialog()
         self.logger = mylogger(self.gui.TElogging, parent="Lab Control")
-        self.logger.enable = True
+        self.logger.enable = False
         self.progressbar = Barprogress(self)
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
         self.sequencer = Sequencer(self, self.gui.Fsequencer)
@@ -236,6 +234,7 @@ class LabControl(PluginMainWidget):
         self.project_info = project_info
         if not self.mqtt_connection:
             self.state = "notconnect"
+        self.openconfig()
 
     def setup(self):
         layout = QHBoxLayout()
@@ -254,10 +253,6 @@ class LabControl(PluginMainWidget):
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
             return
-        if self.last_project_directory != self.project_info.project_directory or self.last_hardware != self.project_info.active_hardware:
-            self.openconfig()  # set to last save settings
-        self.last_hardware = self.project_info.active_hardware
-        self.last_project_directory = self.project_info.project_directory
         self.warning_cnt = 0
         self.error_cnt = 0
         path = os.path.join(
@@ -266,9 +261,6 @@ class LabControl(PluginMainWidget):
             self.project_info.active_hardware,
             self.project_info.active_base,
         )
-        self.logger.debug(f"   path= {path}")
-        self.logger.debug(f"   logfilename = {self.logfilename}")
-        self.logger.debug(f"   test_program_name = {self.test_program_name}")
         if self.test_program_name != "":
             self.sequencer.load(self.project_info.project_directory, self.test_program_name)
         self.progressbar.load_testbenches_time(os.path.join(path, self.timefile))

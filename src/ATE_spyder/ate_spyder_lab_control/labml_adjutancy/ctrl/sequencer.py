@@ -74,6 +74,7 @@ class Sequencer(object):
             if type(mytest) != list:
                 mytest = [mytest]
             input_paramters = mytest[0].definition.input_parameters
+
             is_selected = False
             for index in range(0, len(mytest)):
                 is_selected = (
@@ -84,8 +85,8 @@ class Sequencer(object):
             myparameter.append(is_selected)
             for key in input_paramters.keys():
                 if (
-                    hasattr(input_paramters[key], "Shmoo")
-                    and input_paramters[key].Shmoo
+                    hasattr(input_paramters[key], "shmoo")
+                    and input_paramters[key].shmoo
                     and key not in choicesParameter
                 ):
                     myparameter.append(key)
