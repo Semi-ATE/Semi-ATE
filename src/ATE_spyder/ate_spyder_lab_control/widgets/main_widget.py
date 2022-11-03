@@ -267,7 +267,7 @@ class LabControl(PluginMainWidget):
         bin_table = self.load_json(os.path.join(path, self.test_program_name + "_binning.json"))
         if bin_table is not None:
             self.bin_table = bin_table["bin-table"]
-        self.logging("!LOAD!")
+        self.logging()
 
     def show(self):
         super().show()
@@ -851,10 +851,10 @@ class LabControl(PluginMainWidget):
         path = os.path.join(self.project_info.project_directory, "log", self.logfilename)
         if msg is None or msg == "":
             self.logger.debug("semi_control.logging: clear")
-            # self.gui.TElogging.clear()
+            self.gui.TElogging.clear()
         elif msg == "clr":
             self.logger.debug("semi_control.logging: clr")
-            # self.gui.TElogging.clear()
+            self.gui.TElogging.clear()
         elif msg in (self.logging_cmd_reload, "!LOAD!"):
             if self.project_info.active_hardware != "" and self.project_info.active_base != "":
                 self.logger.debug(f"semi_control.logging: {msg}")
