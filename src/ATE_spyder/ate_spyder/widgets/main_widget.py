@@ -98,6 +98,7 @@ class ATEWidget(PluginMainWidget):
     sig_run_cell = Signal()
     sig_debug_cell = Signal()
     sig_test_tree_update = Signal()
+    sig_ate_progname = Signal(str)
 
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)

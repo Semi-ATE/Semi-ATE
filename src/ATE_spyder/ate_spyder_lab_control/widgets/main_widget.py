@@ -42,7 +42,7 @@ _ = get_translation("spyder")
 
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2021, Lab"
+__copyright__ = "Copyright 2022, Lab"
 __credits__ = ["Zlin526F"]
 __email__ = "Zlin526F@github"
 __version__ = "0.0.18"
@@ -58,7 +58,7 @@ class LabControl(PluginMainWidget):
     """
     Basic controlling from Semi-ATE.
 
-    implemented Buttons with mqtt-message (see also semi-control.ui):
+    implemented Buttons with mqtt-message (see also main_widget.ui):
       - next
       - terminate
       - reset
@@ -74,6 +74,7 @@ class LabControl(PluginMainWidget):
     """
 
     _states = {  # from extern mean: no handling from semi-control, normally you get this message if your are running the MiniSCTGui
+        "notconnect": ["no connection to broker {self.computername}", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
         "ready": ["get ready from extern", None],
@@ -97,7 +98,7 @@ class LabControl(PluginMainWidget):
         "error": ["error", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "logload": ["logging = last logfile", None],
         "lognotexist": ["couldn't found last logfile", None],
-        "reset": ["reset Semi-ctrl", None],
+        "reset": ["reset Lab Control", None],
         "terminated": ["finish, disconnect", "color: rgb(255, 165, 0)"],
         "finish_seq": ["Sequencer finish", "color: rgb(0, 255, 0)"],
         "nothing_seq": [
@@ -212,7 +213,6 @@ class LabControl(PluginMainWidget):
         self.adjustUI()
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.closeEvent = self.close
-        # self.destroyed = self.__del__
         self._createFilterMenu()
         self._createSeqMenu()
         self.reset()
@@ -233,6 +233,8 @@ class LabControl(PluginMainWidget):
 
     def setup_widget(self, project_info):
         self.project_info = project_info
+        if not self.mqtt_connection:
+            self.state = "notconnect"
 
     def setup(self):
         layout = QHBoxLayout()
@@ -248,8 +250,6 @@ class LabControl(PluginMainWidget):
     def update_control(self, test_program_name):
         print(f"Semi-control.update_control({test_program_name})")
         self.test_program_name = test_program_name
-        self.logger.debug(f"Semi-control.update_control({test_program_name})")
-        self.gui.setWindowTitle(f"Semi-Control {__version__}    no connection to broker {self.computername}")
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
             return
@@ -265,12 +265,6 @@ class LabControl(PluginMainWidget):
             self.project_info.active_hardware,
             self.project_info.active_base,
         )
-        title = (
-            f"Semi-Control {__version__}    no connection to broker {self.computername}"
-            if not self.mqtt_connection
-            else f"Semi-Control V{__version__}   connect to {self.computername}    run {self.project_info.active_hardware}/{self.project_info.active_base}/{self.test_program_name}"
-        )
-        self.gui.setWindowTitle(title)
         self.logger.debug(f"   path= {path}")
         self.logger.debug(f"   logfilename = {self.logfilename}")
         self.logger.debug(f"   test_program_name = {self.test_program_name}")
@@ -861,14 +855,7 @@ class LabControl(PluginMainWidget):
         msg could be also a cmd : '!RELOAD!' or '!LOAD!'
         if msg = None than clear the logging display
         """
-        path = os.path.join(
-            self.project_info.project_directory,
-            # os.path.split(self.project_info.project_directory)[-1],
-            # self.project_info.active_hardware,
-            # self.project_info.active_base,
-            "log",
-            self.logfilename,
-        )
+        path = os.path.join(self.project_info.project_directory, "log", self.logfilename)
         if msg is None or msg == "":
             self.logger.debug("semi_control.logging: clear")
             # self.gui.TElogging.clear()
@@ -901,7 +888,7 @@ class LabControl(PluginMainWidget):
     def getlatestlogfilename(self):
         import glob
 
-        files = glob.glob(os.path.join(self.project_info.project_directory, "log/*.log"))
+        files = glob.glob(os.path.join(self.project_info.project_directory, "log", "*.log"))
         return max(files, key=os.path.getctime) if files != [] else ""
 
     def readlog(self, logfilename):
@@ -1107,7 +1094,7 @@ class LabControl(PluginMainWidget):
     # configuration :
     def openconfig(self):
         """Open the configuration file c:users/$USER"""
-        settings_dir = os.path.join(self.project_info.project_directory, "definitions\\semi-control")
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "semi-control")
         self.blockSignals(True)
         try:
             print(f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}")
@@ -1221,7 +1208,7 @@ class LabControl(PluginMainWidget):
                 mymenu[app.name].append(app.subtopic)
             index += 1
         data["menu"] = mymenu
-        settings_dir = os.path.join(self.project_info.project_directory, "definitions\\semi-control")
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "semi-control")
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
         self.logger.debug(f"write {os.path.join(settings_dir, self.configfile)}")

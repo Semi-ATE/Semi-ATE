@@ -67,6 +67,7 @@ class ATE(SpyderDockablePlugin):
 
     sig_run_cell = Signal()
     sig_debug_cell = Signal()
+    sig_ate_progname = Signal(str)
 
     sig_test_tree_update = Signal()
     # --- SpyderDockablePlugin API
@@ -89,6 +90,7 @@ class ATE(SpyderDockablePlugin):
         widget.sig_debug_cell.connect(self.sig_debug_cell)
 
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+        widget.sig_ate_progname.connect(self.sig_ate_progname)
 
         widget.sig_close_file.connect(self.sig_close_file)
         widget.sig_exception_occurred.connect(self.sig_exception_occurred)
