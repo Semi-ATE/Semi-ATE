@@ -15,11 +15,11 @@ from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
 from ate_common.pattern.tool_factory import get_stil_tool
 
-# setup the include path manually as the project is not a package
 import os
 import sys
 from pathlib import Path
 
+# setup the include path manually as the project is not a package
 parent_path = str(Path(__file__).joinpath('..', '..', '..').resolve())
 sys.path.append(parent_path)
 
