@@ -37,3 +37,6 @@ class Magnetic_FieldProxy():
 
     def stop_curve(self):
         return self._do_request("curve_stop", {})
+
+    def read_config(self):
+        return self._do_request("read_config", {})

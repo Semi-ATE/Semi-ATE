@@ -16,7 +16,7 @@ from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
 from ate_common.parameter import InputColumnKey
 from ate_projectdatabase.Utils import BaseType
 
-from qtpy.QtCore import QObject
+from qtpy.QtCore import QObject, Signal
 from ate_spyder.widgets.constants import TableIds as TableId
 from ate_spyder.widgets.constants import UpdateOptions
 
@@ -1357,3 +1357,20 @@ class ProjectNavigation(QObject):
         pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.stil')])
         pattern_files.extend([Path(path).stem for path in glob(f'{str(path)}/*.wav')])
         return pattern_files
+
+    def compile_program_patterns(self, prog_name: str):
+        patterns_info = self.get_program_patterns(prog_name)
+        patterns = set(patterns_info.values())
+
+        pattern_abs_paths = [str(self.project_directory.joinpath(pattern_rel_path)) for pattern_rel_path in patterns]
+        sig_to_chan_path = \
+            str(self.project_directory.joinpath(
+                self.project_name,
+                self.active_hardware,
+                self.active_base,
+                f'{prog_name}.yaml'))
+
+        self.compile_stil_patterns(pattern_abs_paths, sig_to_chan_path)
+
+    def compile_stil_patterns(self, patterns: List[str], sig_to_chan_path: str):
+        self.parent.sig_compile_pattern.emit(patterns, sig_to_chan_path)

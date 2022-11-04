@@ -59,6 +59,11 @@ class PatternItem(BaseFolderStructureItem):
         if self._does_item_already_exist(name):
             return
 
+        # switching between projects doesn't update the file observer
+        # this will make sure that older project path are ignored 
+        if not Path(path).is_relative_to(Path(self.root)):
+            return
+
         diff_path = Path(path).relative_to(Path(self.root))
         items = str(diff_path).split(os.sep)
 

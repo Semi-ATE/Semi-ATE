@@ -19,3 +19,6 @@ class MiniSCT(TesterInterface, sct8):
 
     def do_init_state(self, site_id: int):
         print(f'Tester.do_init_state({site_id})')
+
+    def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
+        self.pf.run(pattern_name, start_label, stop_label, timeout)

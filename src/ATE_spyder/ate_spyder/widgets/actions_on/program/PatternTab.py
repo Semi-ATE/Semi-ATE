@@ -20,6 +20,7 @@ class PatternTab(QtWidgets.QWidget):
         self.pattern_table.horizontalHeader().setStretchLastSection(True)
 
     def fill_pattern_table(self, test_names: List[str], assinged_patterns: dict):
+        self.pattern_table.setRowCount(0)
         for test_name in test_names:
             self.add_pattern_items(test_name)
 
@@ -40,14 +41,22 @@ class PatternTab(QtWidgets.QWidget):
                     index = combo.findText(tuple[1])
                     combo.setCurrentIndex(index)
 
+    def update_table(self, test_names: List[str]):
+        self.pattern_table.setRowCount(0)
+        for test_name in test_names:
+            self.add_pattern_items(test_name)
+
     def add_pattern_items(self, test_name: str):
+        if not test_name:
+            return
+
         if self._is_assigned(test_name):
             return
 
         patterns = self.project_navigation.get_pattern_list_for_test(
             test_name,
-            self.project_navigation.active_hardware,
-            self.project_navigation.active_base
+            self.parent.hardware.currentText(),
+            self.parent.base.currentText(),
         )
 
         title_set = False
@@ -138,7 +147,10 @@ class PatternTab(QtWidgets.QWidget):
                 current_test_name = test_item.text()
 
             pattern_name = self.pattern_table.item(index, 1).text()
+
             pattern_path = self.pattern_table.cellWidget(index, 2).currentText()
+            if not pattern_path:
+                continue
 
             patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
 

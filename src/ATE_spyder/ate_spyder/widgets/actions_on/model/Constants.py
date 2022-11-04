@@ -7,6 +7,7 @@ class MenuActionTypes(Enum):
     View = "display_item"
     Delete = "delete_item"
     Import = "import_item"
+    ExcelTestImport = "excel_test_import"
     Activate = "activate_item"
     Enable = "enable_item"
     CloneTo = "clone_to_item"
@@ -31,9 +32,8 @@ class MenuActionTypes(Enum):
     CopyPath = "copy_absolute_path"
     AddGroup = "add_test_group"
     Export = "export_item"
-    ExecuteTestRunner = "execute_test_runner" 
-    OpenAutoScriptFile = "open_auto_script_file_item" 
-    CompilePattern = "compile_pattern_files" 
+    OpenAutoScriptFile = "open_auto_script_file_item"
+    CompilePattern = "compile_pattern_files"
 
     def __call__(self):
         return self.value

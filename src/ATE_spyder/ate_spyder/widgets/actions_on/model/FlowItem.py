@@ -261,9 +261,7 @@ class TestprogramTreeItem(BaseItem):
         return menu
 
     def compile_pattern_files(self):
-        _program_patterns = self.project_info.get_program_patterns(self.text())
-        # TODO: invoke still file compilation
-        raise NotImplementedError('implement me')
+        self.project_info.compile_program_patterns(self.text())
 
     @staticmethod
     def is_valid_functionality(functionality):

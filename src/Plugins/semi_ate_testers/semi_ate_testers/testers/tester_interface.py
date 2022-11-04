@@ -31,3 +31,6 @@ class TesterInterface(ABC):
 
     def teardown(self):
         pass
+
+    def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
+        pass
