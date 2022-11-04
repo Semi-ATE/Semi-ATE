@@ -74,8 +74,11 @@ class LabControl(PluginMainWidget):
     """
 
     broker = "127.0.0.1"
+    TopicName = "developmode"
+    configfile = "lab_control.json"
+    timefile = "lab_controltimes.json"
 
-    _states = {  # from extern mean: no handling from semi-control, normally you get this message if your are running the MiniSCTGui
+    _states = {  # from extern mean: no handling from Lab Control, normally you get this message if your are running the MiniSCTGui
         "notconnect": [f"no connection to broker {broker}", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
@@ -185,22 +188,17 @@ class LabControl(PluginMainWidget):
 
     change_status_display = Signal(str, str)
 
-    TopicName = "developmode"
-
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
         """Initialise the class semi_control."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         self.sendtopic = f"ate/{self.TopicName}/TestApp/"
-        self.configfile = "semi-control.json"
-        self.timefile = "semi-controltimes.json"
         self.passmsg = "Pass"
         self.SemiCtrlinstName = "semictrl"
         self.logging_cmd_reload = "!RELOAD!"
         mqttclient = mqtt_init()  # prepare mqtt for controlling
         self.mqtt_connection = True
-        if not mqttclient.init(self.broker):  # mqtt client connect to default broker and default topic
-            print("Couln't connect to the mqtt-broker")
+        if not mqttclient.init(self.broker):            # mqtt client connect to default broker and default topic
             self.mqtt_connection = False
         self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.gui = LabControlDialog()
@@ -248,7 +246,7 @@ class LabControl(PluginMainWidget):
         return _("Lab Control")
 
     def update_control(self, test_program_name):
-        print(f"Semi-control.update_control({test_program_name})")
+        print(f"Lab Control.update_control({test_program_name})")
         self.test_program_name = test_program_name
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
@@ -288,7 +286,7 @@ class LabControl(PluginMainWidget):
     def adjustUI(self):
         # set Menubar
         menuBar = QtWidgets.QMenuBar(self)
-        menuBar.titles = ["Logging", "View", "Tools"]
+        menuBar.titles = ["Logging", "View", "Preferences"]
 
         nextaction = QtWidgets.QAction(self.gui)
         nextaction.setIcon(qta.icon("fa5s.step-forward", color="green", scale_factor=1.0))
@@ -340,7 +338,7 @@ class LabControl(PluginMainWidget):
         actionTools.triggered.connect(lambda: self.guiclicked("broker"))
 
         resetTools = QtWidgets.QAction(self.gui)
-        resetTools.setText("reset Semi-Control")
+        resetTools.setText("reset Lab Control")
         menuTools.addAction(resetTools)
         resetTools.triggered.connect(self.reset)
 
@@ -378,7 +376,7 @@ class LabControl(PluginMainWidget):
         menuLog.addSeparator()
 
         actiondebug = QtWidgets.QAction(self.gui)
-        actiondebug.setText("debug Semi-Control")
+        actiondebug.setText("debug Lab Control")
         actiondebug.setCheckable(True)
         actiondebug.setEnabled(True)
         menuLog.addAction(actiondebug)
@@ -433,7 +431,7 @@ class LabControl(PluginMainWidget):
         resetSeqAction.triggered.connect(self.sequencer.setfirstvalue)
 
     def reset(self):
-        self.logger.debug("Reset semi-control")
+        self.logger.debug("Reset Lab Control")
         self.setButtonActive(False)
         self.progressbar.finish(False)
         self.cycle = 0
@@ -445,7 +443,6 @@ class LabControl(PluginMainWidget):
         self.last_mqtt_time = time.time()
         self.mqttsave = None  # filepointer to save all mqtt-telegrams to a file
         self.wait4answer = False
-        self.logger.debug("Reset semi-control done")
 
     # mqtt messages:
     def mqtt_send(self, topic, cmd):
@@ -455,10 +452,10 @@ class LabControl(PluginMainWidget):
             topic = self.sendtopic + topic
             self.mqtt.publish(topic, msg)
             self.change_status_display.emit("send " + str(msg["command"] + ", wait for answer"), "")
-            self.logger.debug("semi-control.mqtt_send {}:{}".format(topic, msg))
+            self.logger.debug("Lab Control.mqtt_send {}:{}".format(topic, msg))
             self.wait4answer = True
         else:
-            self.error(f"semi-control.mqtt_send {topic}:{cmd} not found in list")
+            self.error(f"Lab Control.mqtt_send {topic}:{cmd} not found in list")
 
     def mqtt_receive(self, topic, msg):
         """
@@ -666,14 +663,11 @@ class LabControl(PluginMainWidget):
                 for index in msg["payload"]:
                     outfile.writelines(str(index))
                     outfile.write("\n")
-                # json.dump(msg, outfile)
-        # elif topic.split('/')[2] == 'TestApp' and msgtype == "io-control-request" and "periphery_type" in msg:
         elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuartors
             if topic.split("/")[2] == "TestApp" and msgtype == "io-control-request":
                 newtopic = f"ate/{self.TopicName}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
             elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
-                # response_topic = "ate/" + self.params.device_id + f"/Master/{actuator_type}/response"
                 newtopic = f"ate/{self.TopicName}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
         else:
@@ -759,11 +753,10 @@ class LabControl(PluginMainWidget):
             for group in self.project_info.get_groups():
                 self.logger.info(group.name)
         elif cmd == "reset":
-            self.logger.debug("Reset semi-control")
+            self.logger.debug("Reset Lab Control")
             self.setButtonActive(True)
             self.state = "reset"
             self.progressbar.finish(False)
-            self.logger.info("Reset semi-control done")
         elif cmd == "sequencer":
             self.logger.debug("change View Sequencer")
             if self.actionSequencer_Parameters.isChecked():
@@ -1087,7 +1080,7 @@ class LabControl(PluginMainWidget):
     # configuration :
     def openconfig(self):
         """Open the configuration file c:users/$USER"""
-        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "semi-control")
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         self.blockSignals(True)
         try:
             print(f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}")
@@ -1201,7 +1194,7 @@ class LabControl(PluginMainWidget):
                 mymenu[app.name].append(app.subtopic)
             index += 1
         data["menu"] = mymenu
-        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "semi-control")
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
         self.logger.debug(f"write {os.path.join(settings_dir, self.configfile)}")
