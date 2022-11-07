@@ -231,7 +231,14 @@ class ATEWidget(PluginMainWidget):
             # hack: as spyder automatically create an empty project even
             # before semi-ate project validation done we need to clean up
             # after canceling creating the project
-            shutil.rmtree(project_path)
+            try:
+                shutil.rmtree(project_path)
+            except Exception:
+                # Sometimes race conditions occur on Windows
+                if os.name == 'nt':
+                    from force_delete_win import force_delete_file_folder
+                    force_delete_file_folder(project_path)
+
         elif result == QDialog.Accepted:
             print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
             self.sig_project_created.emit()

@@ -779,4 +779,4 @@ class GitHubInitialization(VCSInitializationProvider):
                 file_path = osp.join(root, file)
                 shutil.copy2(file_path, new_file_path)
 
-        shutil.rmtree(new_path)
+        shutil.rmtree(new_path, True)
