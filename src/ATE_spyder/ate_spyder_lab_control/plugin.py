@@ -26,7 +26,7 @@ _ = get_translation("spyder")
 
 
 class LabControlPlugin(SpyderDockablePlugin):
-    """Test Runner dockable plugin."""
+    """Labo Control dockable plugin."""
 
     NAME = 'lab_control'
     WIDGET_CLASS = LabControl
@@ -46,10 +46,10 @@ class LabControlPlugin(SpyderDockablePlugin):
 
     @staticmethod
     def get_name() -> str:
-        return _('TEST_RUNNER')
+        return _('Lab_CONTROL')
 
     def get_description(self) -> str:
-        return _('Test Runner integration')
+        return _('Lab Control integration')
 
     def get_icon(self):
         return self.create_icon('mdi.chip')
@@ -71,6 +71,7 @@ class LabControlPlugin(SpyderDockablePlugin):
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
+        ate.sig_ate_progname.connect(self.runflow_changed)
         # ate.sig_test_tree_update.connect(widget.sig_test_tree_update)
 
     def _setup_test_runner_widget(self):
@@ -95,6 +96,10 @@ class LabControlPlugin(SpyderDockablePlugin):
         self.sig_run_cell.connect(editor.run_cell)
         self.sig_debug_cell.connect(editor.debug_cell)
         self.sig_stop_debugging.connect(editor.stop_debugging)
+
+    def runflow_changed(self, progname: str):
+        widget: LabControl = self.get_widget()
+        widget.update_control(progname)
 
     # ----------------------- Plugin teardown ---------------------------------
 

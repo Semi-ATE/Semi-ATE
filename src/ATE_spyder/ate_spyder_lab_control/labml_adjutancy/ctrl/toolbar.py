@@ -52,6 +52,7 @@ class ControlToolBar(ApplicationToolbar):
 
         self.project_info.parent.sig_edit_goto_requested.emit(str(prog_path), 1, "")
         self.project_info.parent.sig_run_cell.emit()
+        self.project_info.parent.sig_ate_progname.emit(self.runflow_combo.currentText())
 
     @QtCore.pyqtSlot()
     def _post_main_plugin_init(self):

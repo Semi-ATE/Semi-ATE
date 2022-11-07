@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 Created on Thu Dec 23 09:17:01 2020
@@ -19,7 +18,6 @@ import json
 import qtawesome as qta
 import qdarkstyle
 import socket
-from pathlib import Path
 from PyQt5 import uic
 from qtpy.QtCore import Signal
 from PyQt5 import QtWidgets, QtCore
@@ -34,32 +32,38 @@ from labml_adjutancy.misc.mqtt_client import (
 from labml_adjutancy.ctrl.sequencer import Sequencer
 from labml_adjutancy.ctrl.barprogress import Barprogress
 
-from qtpy.QtWidgets import QVBoxLayout, QHBoxLayout
+from qtpy.QtWidgets import QHBoxLayout
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
+from pydantic import BaseModel
 
 # Localization
 _ = get_translation("spyder")
 
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2021, Lab"
+__copyright__ = "Copyright 2022, Lab"
 __credits__ = ["Zlin526F"]
 __email__ = "Zlin526F@github"
-__version__ = "0.0.17"
+__version__ = "0.0.18"
 
 
 class LabControlDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
-        uic.loadUi(__file__.replace('.py', '.ui'), self)
+        uic.loadUi(__file__.replace(".py", ".ui"), self)
+
+
+class LabConrolConfig(BaseModel):
+    broker: str
+    topic: str
 
 
 class LabControl(PluginMainWidget):
     """
     Basic controlling from Semi-ATE.
 
-    implemented Buttons with mqtt-message (see also semi-control.ui):
+    implemented Buttons with mqtt-message (see also main_widget.ui):
       - next
       - terminate
       - reset
@@ -74,7 +78,11 @@ class LabControl(PluginMainWidget):
             use subtopic[] for the other instName in the Gui
     """
 
-    _states = {  # from extern mean: no handling from semi-control, normally you get this message if your are running the MiniSCTGui
+    configfile = "lab_control.json"
+    timefile = "lab_controltimes.json"
+
+    _states = {  # from extern mean: no handling from Lab Control, normally you get this message if your are running the MiniSCTGui
+        "notconnect": ["no connection to broker ", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
         "ready": ["get ready from extern", None],
@@ -98,7 +106,7 @@ class LabControl(PluginMainWidget):
         "error": ["error", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "logload": ["logging = last logfile", None],
         "lognotexist": ["couldn't found last logfile", None],
-        "reset": ["reset Semi-ctrl", None],
+        "reset": ["reset Lab Control", None],
         "terminated": ["finish, disconnect", "color: rgb(255, 165, 0)"],
         "finish_seq": ["Sequencer finish", "color: rgb(0, 255, 0)"],
         "nothing_seq": [
@@ -183,47 +191,28 @@ class LabControl(PluginMainWidget):
 
     change_status_display = Signal(str, str)
 
-    TopicName = "developmode"
-
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
         """Initialise the class semi_control."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
-        self.sendtopic = f"ate/{self.TopicName}/TestApp/"
-        self.configfile = "semi-control.json"
-        self.timefile = "semi-controltimes.json"
+        self.plugin = plugin
         self.passmsg = "Pass"
         self.SemiCtrlinstName = "semictrl"
         self.logging_cmd_reload = "!RELOAD!"
-        self.last_hardware = ""
-        self.last_project_directory = ""
-        self.broker = "127.0.0.1"
-        mqttclient = mqtt_init()  # prepare mqtt for controlling
-        self.mqtt_connection = True
-        if not mqttclient.init(self.broker):  # mqtt client connect to default broker and default topic
-            print("Couln't connect to the mqtt-broker")
-            self.mqtt_connection = False
-        self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.gui = LabControlDialog()
-        self.logger = mylogger(self.gui.TElogging, parent="Semi-Control")
+        self.logger = mylogger(self.gui.TElogging, parent="Lab Control")
         self.logger.enable = False
         self.progressbar = Barprogress(self)
-        self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
         self.sequencer = Sequencer(self, self.gui.Fsequencer)
         self.adjustUI()
         self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.closeEvent = self.close
-        # self.destroyed = self.__del__
         self._createFilterMenu()
         self._createSeqMenu()
         self.reset()
         self.project_info = None
         self.logfilename = ""
         self.last_HW = []
-        # connect to mqtt and intial (needs function mqtt_receive)
-        self.mqttclient = mqttclient
-        self.mqtt.mqtt_add()
-        self.computername = socket.gethostname() if self.mqttclient.broker == "127.0.0.1" else self.mqttclient.broker
         self.cycle = 0
         self.topinstname = ""
         self._state = "init"
@@ -234,6 +223,23 @@ class LabControl(PluginMainWidget):
 
     def setup_widget(self, project_info):
         self.project_info = project_info
+        current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
+        default_parameter = {"broker": '127.0.0.1', "topic": 'developmode'}
+        self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
+        print(f'{self.plugin.NAME}.current config = {self.current_config}')
+
+        self.sendtopic = f"ate/{self.current_config.topic}/TestApp/"
+        self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
+        mqttclient = mqtt_init()  # prepare mqtt for controlling
+        if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
+            self.state = "notconnect"
+            return
+        self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
+        self.mqttclient = mqttclient
+        self.mqtt.mqtt_add()
+        self.computername = socket.gethostname() if self.mqttclient.broker == "127.0.0.1" else self.mqttclient.broker
+        self.openconfig()
+        self.menuBar.adjustSize()
 
     def setup(self):
         layout = QHBoxLayout()
@@ -244,20 +250,15 @@ class LabControl(PluginMainWidget):
         pass
 
     def get_title(self):
-        return _('Lab Control')
+        return _("Lab Control")
 
     def update_control(self, test_program_name):
-        print(f"Semi-control.update_control({test_program_name})")
+        print(f"Lab Control.update_control({test_program_name})")
+
         self.test_program_name = test_program_name
-        self.logger.debug(f"Semi-control.update_control({test_program_name})")
-        self.gui.setWindowTitle(f"Semi-Control {__version__}    no connection to broker {self.computername}")
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
             return
-        if self.last_project_directory != self.project_info.project_directory or self.last_hardware != self.project_info.active_hardware:
-            self.openconfig()  # set to last save settings
-        self.last_hardware = self.project_info.active_hardware
-        self.last_project_directory = self.project_info.project_directory
         self.warning_cnt = 0
         self.error_cnt = 0
         path = os.path.join(
@@ -266,22 +267,13 @@ class LabControl(PluginMainWidget):
             self.project_info.active_hardware,
             self.project_info.active_base,
         )
-        title = (
-            f"Semi-Control {__version__}    no connection to broker {self.computername}"
-            if not self.mqtt_connection
-            else f"Semi-Control V{__version__}   connect to {self.computername}    run {self.project_info.active_hardware}/{self.project_info.active_base}/{self.test_program_name}"
-        )
-        self.gui.setWindowTitle(title)
-        self.logger.debug(f"   path= {path}")
-        self.logger.debug(f"   logfilename = {self.logfilename}")
-        self.logger.debug(f"   test_program_name = {self.test_program_name}")
         if self.test_program_name != "":
             self.sequencer.load(self.project_info.project_directory, self.test_program_name)
         self.progressbar.load_testbenches_time(os.path.join(path, self.timefile))
         bin_table = self.load_json(os.path.join(path, self.test_program_name + "_binning.json"))
         if bin_table is not None:
             self.bin_table = bin_table["bin-table"]
-        self.logging("!LOAD!")
+        self.logging()
 
     def show(self):
         super().show()
@@ -292,17 +284,10 @@ class LabControl(PluginMainWidget):
             index += 1
         self.flagAppclosed = True
 
-    def loadUi(self, filename, parent):
-        if filename.split(".")[-1] == "py":
-            filename = __file__.replace(".py", ".ui")
-        if not os.path.exists(filename):
-            raise Exception("'%s' doesn't exist" % filename)
-        uic.loadUi(filename, parent)
-
     def adjustUI(self):
         # set Menubar
         menuBar = QtWidgets.QMenuBar(self)
-        menuBar.titles = ["Logging", "View", "Tools"]
+        menuBar.titles = ["Tools", "Logging", "View"]
 
         nextaction = QtWidgets.QAction(self.gui)
         nextaction.setIcon(qta.icon("fa5s.step-forward", color="green", scale_factor=1.0))
@@ -314,7 +299,6 @@ class LabControl(PluginMainWidget):
         terminateaction = QtWidgets.QAction(self.gui)
         terminateaction.setIcon(qta.icon("fa5s.stop", color="green", scale_factor=1.0))
         terminateaction.setToolTip("Stop")
-        terminateaction.setStatusTip("Stop")
         terminateaction.triggered.connect(lambda: self.mqtt_send("cmd", "terminate"))
         menuBar.addAction(terminateaction)
         self.terminateaction = terminateaction
@@ -322,15 +306,25 @@ class LabControl(PluginMainWidget):
         resetaction = QtWidgets.QAction(self.gui)
         resetaction.setIcon(qta.icon("fa5s.reply", color="green", scale_factor=1.0))
         resetaction.setToolTip("Reset")
-        resetaction.setStatusTip("Reset")
         resetaction.triggered.connect(lambda: self.mqtt_send("cmd", "reset"))
         menuBar.addAction(resetaction)
-        menuBar.addSeparator()
         self.resetaction = resetaction
 
-        menuLog = menuBar.addMenu(menuBar.titles[0])
-        menuView = menuBar.addMenu(menuBar.titles[1])
-        menuTools = menuBar.addMenu(menuBar.titles[2])
+        actionTools = QtWidgets.QAction(self.gui)
+        actionTools.setIcon(qta.icon("ei.wrench", color="white", scale_factor=1.0))
+        resetaction.setToolTip("Preferences")
+        actionTools.triggered.connect(lambda: self.guiclicked("preferences"))
+        menuBar.addAction(actionTools)
+
+        menuTools = menuBar.addMenu(menuBar.titles[0])
+        menuLog = menuBar.addMenu(menuBar.titles[1])
+        menuView = menuBar.addMenu(menuBar.titles[2])
+
+        resetTools = QtWidgets.QAction(self.gui)
+        resetTools.setIcon(qta.icon("ei.refresh", color="white", scale_factor=1.0))
+        resetTools.setText("reset Lab Control")
+        resetTools.triggered.connect(self.reset)
+        menuTools.addAction(resetTools)
 
         actionProgress = QtWidgets.QAction(self.gui)
         actionProgress.setText("    Progress")
@@ -347,16 +341,6 @@ class LabControl(PluginMainWidget):
         menuView.addAction(actionSequencer_Parameters)
         actionSequencer_Parameters.triggered.connect(lambda: self.guiclicked("sequencer"))
         self.actionSequencer_Parameters = actionSequencer_Parameters
-
-        actionTools = QtWidgets.QAction(self.gui)
-        actionTools.setText(f"Broker = {self.broker}")
-        menuTools.addAction(actionTools)
-        actionTools.triggered.connect(lambda: self.guiclicked("broker"))
-
-        resetTools = QtWidgets.QAction(self.gui)
-        resetTools.setText("reset Semi-Control")
-        menuTools.addAction(resetTools)
-        resetTools.triggered.connect(self.reset)
 
         actionClrProTime = QtWidgets.QAction(self.gui)
         actionClrProTime.setText("Clear progress timing")
@@ -392,7 +376,7 @@ class LabControl(PluginMainWidget):
         menuLog.addSeparator()
 
         actiondebug = QtWidgets.QAction(self.gui)
-        actiondebug.setText("debug Semi-Control")
+        actiondebug.setText("debug Lab Control")
         actiondebug.setCheckable(True)
         actiondebug.setEnabled(True)
         menuLog.addAction(actiondebug)
@@ -405,7 +389,6 @@ class LabControl(PluginMainWidget):
         self.gui.RBinfo.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
         self.gui.RBwarning.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
         self.gui.RBerror.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
-        #        self.actionsave_mqtt_to_file.triggered.connect(lambda: self.guiclicked('mqtt'))
         self.gui.CBholdonbreak.clicked.connect(lambda: self.saveconfig("holdonbreak"))  # CB = QCheckBox
         self.gui.CBstartauto.clicked.connect(self.saveconfig)
         self.gui.CBstopauto.clicked.connect(self.saveconfig)
@@ -415,12 +398,9 @@ class LabControl(PluginMainWidget):
                 "command.next.job_data.stop_on_fail.active",
             )
         )
-        menuBar.adjustSize()
         self.menuBar = menuBar
         self.gui.newMenu = []
         self.change_status_display.connect(self._change_status_display)
-
-        # self.gui.tabs.currentChanged.connect(self.onChangeTabs)
         self.gui.Gsequencer.hide()
         self.gui.Gprogress.hide()
 
@@ -447,8 +427,8 @@ class LabControl(PluginMainWidget):
         resetSeqAction.triggered.connect(self.sequencer.setfirstvalue)
 
     def reset(self):
-        self.logger.debug("Reset semi-control")
-        self.setButtonActive(True)
+        self.logger.debug("Reset Lab Control")
+        self.setButtonActive(False)
         self.progressbar.finish(False)
         self.cycle = 0
         self._state = "reset"
@@ -457,9 +437,7 @@ class LabControl(PluginMainWidget):
         self.error_cnt = 0
         self.warning_cnt = 0
         self.last_mqtt_time = time.time()
-        self.mqttsave = None  # filepointer to save all mqtt-telegrams to a file
         self.wait4answer = False
-        self.logger.debug("Reset semi-control done")
 
     # mqtt messages:
     def mqtt_send(self, topic, cmd):
@@ -469,10 +447,10 @@ class LabControl(PluginMainWidget):
             topic = self.sendtopic + topic
             self.mqtt.publish(topic, msg)
             self.change_status_display.emit("send " + str(msg["command"] + ", wait for answer"), "")
-            self.logger.debug("semi-control.mqtt_send {}:{}".format(topic, msg))
+            self.logger.debug("Lab Control.mqtt_send {}:{}".format(topic, msg))
             self.wait4answer = True
         else:
-            self.error(f"semi-control.mqtt_send {topic}:{cmd} not found in list")
+            self.error(f"Lab Control.mqtt_send {topic}:{cmd} not found in list")
 
     def mqtt_receive(self, topic, msg):
         """
@@ -487,8 +465,6 @@ class LabControl(PluginMainWidget):
             return
         topicsplit = topic.split("/")
         notfound = False
-        if self.mqttsave is not None:
-            self.mqttsave.writelines(f"{topic}    {msg}\n")
         if len(topicsplit) > 2 and topicsplit[1] == self.computername:  # received a message from an instrument ?
             if topicsplit[2] == mqtt.TOPIC_INSTRUMENT:
                 self.mqttReiveMyname(topic, msg)
@@ -619,9 +595,7 @@ class LabControl(PluginMainWidget):
                                 # app.instance.__getattribute__(cmd)
                                 self.logger.debug("   --> begin get/set attribute done")
                             self.logger.debug("   function call done")
-                        elif msg["type"] in ["set", "get"] and hasattr(
-                            app.instance, "mqttreceive"
-                        ):  # implemented not as attribute/functioncall to get more information as only the payload
+                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # implemented not as attribute/functioncall to get more information as only the payload
                             self.logger.debug(f"   call mqttreceive with {msg}")
                             app.instance.mqttreceive(name, msg)
                             self.logger.debug("   call mqttreceive done")
@@ -646,7 +620,6 @@ class LabControl(PluginMainWidget):
         if msgtype == "cmd":  # command received
             if not self.wait4answer:
                 pass
-                # print(f"get cmd = {msg['command']}, from exern; I don't known what to do with this message -> do nothing ")
             else:
                 if self.wait4answer and msg["command"] == "next" and self.state != "config":
                     self.logging(None)
@@ -683,7 +656,13 @@ class LabControl(PluginMainWidget):
                 for index in msg["payload"]:
                     outfile.writelines(str(index))
                     outfile.write("\n")
-                # json.dump(msg, outfile)
+        elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuartors
+            if topic.split("/")[2] == "TestApp" and msgtype == "io-control-request":
+                newtopic = f"ate/{self.current_config.topic}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
+                self.mqtt.publish(newtopic, msg)
+            elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
+                newtopic = f"ate/{self.current_config.topic}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
+                self.mqtt.publish(newtopic, msg)
         else:
             self.logger.warning(f"I don't know what should I do with this message: {msgtype}")
 
@@ -691,6 +670,7 @@ class LabControl(PluginMainWidget):
         """Activate all disabled buttons."""
         self.nextaction.setEnabled(value)
         self.terminateaction.setEnabled(value)
+        self.resetaction.setEnabled(value)
 
     # logging and display:
     def extendedbarClicked(self, index):
@@ -716,68 +696,51 @@ class LabControl(PluginMainWidget):
             self.gui.newMenu[index].instance.topinstname = self.topinstname
             self.logger.debug(f" create {self.gui.newMenu[index].instance} done")
             self.logger.info(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
-            if (
-                "menu" in self.saveconfigdata
-                and name in self.saveconfigdata["menu"]
-                and len(self.saveconfigdata["menu"][name]) > 3
-                and self.gui.newMenu[index].instance is not None
-            ):
-                self.set_Geometry(name, self.gui.newMenu[index].instance.gui, self.saveconfigdata["menu"][name][2])
+            if "menu" in self.saveconfigdata and name in self.saveconfigdata["menu"] and len(self.saveconfigdata["menu"][name]) > 3 and self.gui.newMenu[index].instance is not None:
+                self.set_Geometry(
+                    name,
+                    self.gui.newMenu[index].instance.gui,
+                    self.saveconfigdata["menu"][name][2],
+                )
             self.saveconfig()
         elif self.gui.newMenu[index].instance is not None:
             self.gui.newMenu[index].instance.close()
             self.gui.newMenu[index].instance = None
             self.saveconfig()
-            # print(f'Close GUI for {self.gui.newMenu[index].name}')
 
-    def onChangeTabs(self, index):
-        path = os.path.join(
-            self.project_info.project_directory,
-            os.path.split(self.project_info.project_directory)[-1],
-            self.project_info.active_hardware,
-            self.project_info.active_base,
-        )
-
-    # @QtCore.pyqtSlot(str)
     def guiclicked(self, cmd):
         """Handle mouseclicks on a button."""
         if cmd == "clear":
             self.gui.TElogging.clear()
         elif cmd == "debug":
             self.logger.enable = self.actiondebug.isChecked()
-        elif cmd == "mqtt":
-            if self.gui.actionsave_mqtt_to_file.isChecked():
-                self.mqttsave = open(
-                    os.path.join(self.project_info.project_directory, "mqtt.log"),
-                    "w",
-                )
-            elif self.mqttsave is not None:
-                self.mqttsave.close()
-                self.mqttsave = None
         elif cmd == "openlog":
-            path = str(
-                self.project_info.get_test_path(
-                    "log",
-                    self.project_info.active_hardware,
-                    self.project_info.active_base,
-                )
-            )
+            path = os.path.join(self.project_info.project_directory, "log")
             self.logger.warning("Open explorer with: " + path)
             logfilename = QtWidgets.QFileDialog.getOpenFileName(self.gui, "Open Log", path, "log Files (*.log)")
             if logfilename[0] != "":
                 self.logfilename = logfilename[0]
                 self.readlog(self.logfilename)
                 self.display_result()
-        elif cmd == "broker":
-            self.logger.error("TODO: not yet implemented.... only default Broker")
-            for group in self.project_info.get_groups():
-                self.logger.info(group.name)
+        elif cmd == "preferences":
+            from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
+
+            dialog = PluginConfigurationDialog(self, self.plugin.NAME, self.current_config.dict().keys(), self.project_info.active_hardware, self.project_info, self.current_config.dict(), False)
+            dialog.exec_()
+            print(dialog.get_cfg())
+            if dialog.get_cfg() is not None:
+                self.project_info.store_plugin_cfg(self.project_info.active_hardware, self.plugin.NAME, dialog.get_cfg())
+                del(dialog)
+                self.mqtt.mqtt_disconnect()
+                self.mqttclient.mqtt_disconnect()
+                self.mqttclient.close()
+                self.reset()
+                self.setup_widget(self.project_info)
         elif cmd == "reset":
-            self.logger.debug("Reset semi-control")
+            self.logger.debug("Reset Lab Control")
             self.setButtonActive(True)
             self.state = "reset"
             self.progressbar.finish(False)
-            self.logger.info("Reset semi-control done")
         elif cmd == "sequencer":
             self.logger.debug("change View Sequencer")
             if self.actionSequencer_Parameters.isChecked():
@@ -812,11 +775,7 @@ class LabControl(PluginMainWidget):
             else:
                 self.command["SetParameter"]["parameters"] = []
             self.logger.debug(f"guiclicked('next') with {self.command['SetParameter']['parameters']}, last={last}")
-            if (
-                not self.actionSequencer_Parameters.isChecked()
-                or (not last and self.actionSequencer_Parameters.isChecked())
-                and self.command["SetParameter"]["parameters"] != []
-            ):
+            if not self.actionSequencer_Parameters.isChecked() or (not last and self.actionSequencer_Parameters.isChecked()) and self.command["SetParameter"]["parameters"] != []:
                 self.mqtt_send("cmd", "next")
             elif last and self.actionSequencer_Parameters.isChecked() and self.command["SetParameter"]["parameters"] == []:
                 self.state = "nothing_seq"
@@ -866,20 +825,13 @@ class LabControl(PluginMainWidget):
         msg could be also a cmd : '!RELOAD!' or '!LOAD!'
         if msg = None than clear the logging display
         """
-        path = os.path.join(
-            self.project_info.project_directory,
-            os.path.split(self.project_info.project_directory)[-1],
-            self.project_info.active_hardware,
-            self.project_info.active_base,
-            "log",
-            self.logfilename,
-        )
+        path = os.path.join(self.project_info.project_directory, "log", self.logfilename)
         if msg is None or msg == "":
             self.logger.debug("semi_control.logging: clear")
-            # self.gui.TElogging.clear()
+            self.gui.TElogging.clear()
         elif msg == "clr":
             self.logger.debug("semi_control.logging: clr")
-            # self.gui.TElogging.clear()
+            self.gui.TElogging.clear()
         elif msg in (self.logging_cmd_reload, "!LOAD!"):
             if self.project_info.active_hardware != "" and self.project_info.active_base != "":
                 self.logger.debug(f"semi_control.logging: {msg}")
@@ -906,16 +858,8 @@ class LabControl(PluginMainWidget):
     def getlatestlogfilename(self):
         import glob
 
-        files = glob.glob(
-            os.path.join(
-                self.project_info.project_directory,
-                os.path.split(self.project_info.project_directory)[-1],
-                self.project_info.active_hardware,
-                self.project_info.active_base,
-                "log/*.log",
-            )
-        )
-        return max(files, key=os.path.getctime) if files != [] else ''
+        files = glob.glob(os.path.join(self.project_info.project_directory, "log", "*.log"))
+        return max(files, key=os.path.getctime) if files != [] else ""
 
     def readlog(self, logfilename):
         """Read the log file with logfilename."""
@@ -1018,6 +962,8 @@ class LabControl(PluginMainWidget):
                 self.logging("clr")
             self.logfilename = logfilename
             self.gui.Llogfilename.setText(self.logfilename)
+        if value == "terminated":
+            self.setButtonActive(False)
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)
@@ -1028,12 +974,7 @@ class LabControl(PluginMainWidget):
             if self.gui.CBstartauto.isChecked():
                 self.logger.debug(f"semi_control.state: {value}, config apply, Auto is enabled -> send next")
                 self.guiclicked("next")
-        elif (
-            value == "idle"
-            and oldstate in ("reset", "config", "testing")
-            and self.actionSequencer_Parameters.isChecked()
-            and self.gui.CBautoseq.isChecked()
-        ):  # testprogramm runs through
+        elif value == "idle" and oldstate in ("reset", "config", "testing") and self.actionSequencer_Parameters.isChecked() and self.gui.CBautoseq.isChecked():  # testprogramm runs through
             self.logger.debug("semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)")
             self.guiclicked("next")
         elif value == "idle" and oldstate in ("reset", "config", "testing") and self.gui.CBstopauto.isChecked():  # testprogramm runs through
@@ -1123,7 +1064,7 @@ class LabControl(PluginMainWidget):
     # configuration :
     def openconfig(self):
         """Open the configuration file c:users/$USER"""
-        settings_dir = os.path.join(self.project_info.project_directory, 'definitions\\semi-control')
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         self.blockSignals(True)
         try:
             print(f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}")
@@ -1237,7 +1178,7 @@ class LabControl(PluginMainWidget):
                 mymenu[app.name].append(app.subtopic)
             index += 1
         data["menu"] = mymenu
-        settings_dir = os.path.join(self.project_info.project_directory, 'definitions\\semi-control')
+        settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
         self.logger.debug(f"write {os.path.join(settings_dir, self.configfile)}")
@@ -1306,8 +1247,6 @@ class LabControl(PluginMainWidget):
     def close(self, event=None):
         self.saveconfig()
         self.flagAppclosed = False
-        if self.mqttsave is not None:
-            self.mqttsave.close()
         super().close()
 
     def __del__(self):
