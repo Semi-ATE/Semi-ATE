@@ -193,7 +193,7 @@ class mqtt_init(object, metaclass=Singleton):
             f"{self.__class__.__name__}.mqtt_add: add {instrument.instName} to instruments-list"
         )
 
-    def mqtt_disconnect(self, instrument, hostname=None):
+    def mqtt_disconnect(self, instrument=None, hostname=None):
         """
         Remove instrument from the instruments-list, if instruments-list is empty than remove callback.
 
@@ -204,7 +204,7 @@ class mqtt_init(object, metaclass=Singleton):
             if not hasattr(self, "hostname"):
                 return
             hostname = self.hostname
-        if instrument.instName in self.instruments.keys():
+        if instrument is not None and instrument.instName in self.instruments.keys():
             self.instruments.pop(instrument.instName)
         if self.instruments == {}:
             callback = f"{TOPIC_PREFIX}/{self.hostname}/{TOPIC_CONTROL}/#"
