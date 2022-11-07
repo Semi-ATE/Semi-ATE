@@ -17,7 +17,7 @@ import os
 import sys
 from pathlib import Path
 
-parent_path = str(Path(__file__).joinpath('..', '..', '{{project_name}}'))
+parent_path = str(Path(__file__).joinpath('..', '..', '{{project_name}}').resolve())
 sys.path.append(parent_path)
 
 from {{hardware}}.{{base}} import common
