@@ -8,6 +8,7 @@ from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
 from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
 from semi_ate_testers.testers.tester_interface import TesterInterface
 
+
 class BusinessObjectStandin:
     def __init__(self, logger: Logger = None):
         self.logger = logger
@@ -99,6 +100,12 @@ class Plugin:
                 "name": f"{Plugin.prefix()} Mini-SCT"
             },
             {
+                "display_name": f"{Plugin.prefix()} Mqtt-Mini-SCT ",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Mqtt-Mini-SCT"
+            },
+            {
                 "display_name": f"{Plugin.prefix()} Dummy Mini-SCT ",
                 "version": "0.0",
                 "manufacturer": "Semi-ATE",
@@ -151,14 +158,11 @@ class Plugin:
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester()
         elif tester_name == f"{Plugin.prefix()} Mini-SCT":
-            import platform
-            # Tester package for minisct hardware is not available on windows
-            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
-                from semi_ate_testers.testers.minisct import MiniSCT
-                return MiniSCT(logger)
-            else:
-                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
-                return DummyMiniSCT(logger)
+            from semi_ate_testers.testers.minisct import MiniSCT
+            return MiniSCT(logger)
+        elif tester_name == f"{Plugin.prefix()} Mqtt-Mini-SCT":
+            from semi_ate_testers.testers.minisct_with_mqtt import MiniSCT
+            return MiniSCT(logger)
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
             return DummyMiniSCT(logger)
@@ -170,14 +174,11 @@ class Plugin:
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester
         elif tester_name == f"{Plugin.prefix()} Mini-SCT":
-            import platform
-            # Tester package for minisct hardware is not available on windows
-            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
-                from semi_ate_testers.testers.minisct import MiniSCT
-                return MiniSCT
-            else:
-                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
-                return DummyMiniSCT
+            from semi_ate_testers.testers.minisct import MiniSCT
+            return MiniSCT
+        elif tester_name == f"{Plugin.prefix()} Mqtt-Mini-SCT":
+            from semi_ate_testers.testers.minisct_with_mqtt import MiniSCT
+            return MiniSCT
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
             return DummyMiniSCT
@@ -202,5 +203,6 @@ class Plugin:
 
         if object_name == f"{Plugin.prefix()} Dummy Instrument":
             return ["ip", "port"]
+
 
 __version__ = '0.0.0'
