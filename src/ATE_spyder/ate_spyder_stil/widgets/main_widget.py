@@ -124,6 +124,7 @@ class MessageItem(QTreeWidgetItem):
 class STILTreeData(TypedDict):
     error: CategoryItem
     warning: CategoryItem
+    node: QTreeWidgetItem
 
 
 class STILTree(OneColumnTree):
@@ -136,8 +137,8 @@ class STILTree(OneColumnTree):
     ----------
     path: str
         Path to file.
-    row: int
-        Cursor starting row position.
+    line: int
+        Cursor starting line position.
     column: int
         Cursor starting column position.
     """
@@ -177,11 +178,12 @@ class STILTree(OneColumnTree):
             err_node = CategoryItem(file_node, 'Error')
             warn_node = CategoryItem(file_node, 'Warning')
 
-            file_node.setIcon(0, ima.get_icon('GridFileIcon'))
+            file_node.setIcon(0, ima.icon('GridFileIcon'))
 
             self.data[filename] = {
                 'error': err_node,
-                'warning': warn_node
+                'warning': warn_node,
+                'node': file_node
             }
 
     def append_file_msg(self, msg: STILCompilerMsg):
@@ -196,6 +198,9 @@ class STILTree(OneColumnTree):
 
         self.add_file(filename)
         kind_node = self.data[filename][kind]
+        file_node = self.data[filename]['node']
+        kind_node.increase_num_messages()
+        file_node.setExpanded(True)
         MessageItem(kind_node, filename, msg, row, col)
 
 
@@ -218,6 +223,21 @@ class STILContainer(PluginMainWidget):
     ---------
     success: bool
         True if the compiler finished successfully. False otherwise.
+    """
+
+    sig_edit_goto_requested = Signal(str, int, int)
+    """
+    This signal will request to open a file in a given row and column
+    using a code editor.
+
+    Parameters
+    ----------
+    path: str
+        Path to file.
+    line: int
+        Cursor starting line position.
+    column: int
+        Cursor starting column position.
     """
 
     def __init__(self, name, plugin, parent=None):
@@ -245,6 +265,8 @@ class STILContainer(PluginMainWidget):
         self.output_log.setReadOnly(True)
 
         self.output_tree = STILTree(self)
+        self.output_tree.sig_edit_goto_requested.connect(
+            self.sig_edit_goto_requested)
 
         self.tabwidget.addTab(self.output_tree, _('Warnings/Errors'))
         self.tabwidget.addTab(self.output_log, _('Compilation log'))
@@ -365,12 +387,14 @@ class STILContainer(PluginMainWidget):
         except zmq.ZMQError:
             return
 
+        payload = response['payload']
+        message = payload['message']
         if response['kind'] == 'info':
-            payload = response['payload']
-            message = payload['message']
             logger.info(message)
             self.publish_to_log(message, level='INFO')
         else:
+            self.publish_to_log(message, level=response['kind'].upper())
+            self.tabwidget.setCurrentIndex(0)
             self.output_tree.append_file_msg(response)
 
     # --- Public API

@@ -38,7 +38,8 @@ class STIL(SpyderDockablePlugin):
     WIDGET_CLASS = STILContainer
     CONF_SECTION = NAME
     REQUIRES = [ATE.NAME]
-    OPTIONAL = [Plugins.Toolbar, Plugins.StatusBar, Plugins.MainMenu]
+    OPTIONAL = [Plugins.Toolbar, Plugins.StatusBar, Plugins.MainMenu,
+                Plugins.Editor]
     CONF_FILE = False
     TABIFY = [Plugins.Help]
 
@@ -56,6 +57,20 @@ class STIL(SpyderDockablePlugin):
     ---------
     success: bool
         True if the compiler finished successfully. False otherwise.
+    """
+
+    sig_open_file = Signal(str, int, int)
+    """
+    This signal is emitted whenever a STIL file should be opened.
+
+    Arguments
+    ---------
+    filename: str
+        Path to the file to open.
+    line: int
+        Line number to focus when the file is opened.
+    column: int
+        Column number to focus when the file is opened.
     """
 
     # --- SpyderDockablePlugin API
@@ -77,6 +92,7 @@ class STIL(SpyderDockablePlugin):
             self.sig_stil_compilation_started)
         widget.sig_stil_compilation_stopped.connect(
             self.sig_stil_compilation_stopped)
+        widget.sig_edit_goto_requested.connect(self.sig_open_file)
 
     def update_font(self):
         color_scheme = self.get_color_scheme()
@@ -98,6 +114,13 @@ class STIL(SpyderDockablePlugin):
 
         stil_action = self.get_action(STILActions.RunSTIL)
         ate.add_item_to_toolbar(stil_action)
+
+    @on_plugin_available(plugin=Plugins.Editor)
+    def on_editor_available(self):
+        editor = self.get_plugin(Plugins.Editor)
+        self.partial_editor_call = lambda file, line, col: editor.load(
+            [file], line, start_column=col)
+        self.sig_open_file.connect(self.partial_editor_call)
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
@@ -127,6 +150,11 @@ class STIL(SpyderDockablePlugin):
 
         toolbar.remove_item_from_application_toolbar(
             STILActions.RunSTIL, ATEToolbars.ATE)
+
+    @on_plugin_teardown(plugin=Plugins.Editor)
+    def on_editor_teardown(self):
+        self.sig_open_file.disconnect(self.partial_editor_call)
+        self.partial_editor_call = None
 
     @on_plugin_teardown(plugin=Plugins.StatusBar)
     def on_statusbar_teardown(self):
