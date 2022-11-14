@@ -27,7 +27,7 @@ jobs:
       - name: Install Environment Dependencies
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install -y libgit2 xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
+          sudo apt-get install -y libgit2-dev xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
