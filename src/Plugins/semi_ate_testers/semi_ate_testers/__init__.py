@@ -155,13 +155,13 @@ class Plugin:
             # Tester package for minisct hardware is not available on windows
             if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
                 from semi_ate_testers.testers.minisct import MiniSCT
-                return MiniSCT()
+                return MiniSCT(logger)
             else:
                 from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
-                return DummyMiniSCT()
+                return DummyMiniSCT(logger)
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
-            return DummyMiniSCT()
+            return DummyMiniSCT(logger)
 
     @hookimpl
     def get_tester_type(tester_name: str):
