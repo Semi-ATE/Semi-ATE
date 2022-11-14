@@ -117,6 +117,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update --fix-missing
+          sudo apt install -y libgit2-dev
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
