@@ -9,7 +9,6 @@ recursive-include ate_spyder_test_runner/widgets *.ui
 recursive-include ate_spyder_lab_control *.ui
 recursive-include ate_spyder_lab_control *.txt
 recursive-include ate_spyder_lab_control *.md
-recursive-include ate_spyder_lab_control *.svg
 
 exclude ate_spyder/widgets/actions_on/hardwaresetup/README.md     
 exclude ate_spyder/widgets/actions_on/maskset/NewMasksetWizard.xcf
