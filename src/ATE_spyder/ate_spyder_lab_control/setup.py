@@ -11,15 +11,15 @@ with requirements_path.open('r') as f:
 readme_path = Path(Path(__file__).parent, './labml_adjutancy/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
-	
-setup( 
+
+setup(
     name="LabMl-adjutancy",
     version=version,
-	description="adjutancy lib for the Lab labor Measurement library",
-    author = "Semi-ATE",
+    description="adjutancy lib for the Lab labor Measurement library",
+    author="Semi-ATE",
     author_email="info@Semi-ATE.org",
-    maintainer='Semi-ATE',  
-    maintainer_email='info@Semi-ATE.org', 
+    maintainer='Semi-ATE',
+    maintainer_email='info@Semi-ATE.org',
     url="https://github.com/Semi-ATE",
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -49,11 +49,12 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Quality Assurance',
-    ],	
+    ],
     python_requires='>=3.7',
     entry_points={
         "spyder.plugins": [
-            "lab_control = plugin:LabControlPlugin"
+            "lab_control = plugin_control:LabControlPlugin",
+            "lab_gui = plugin_gui:LabGuiPlugin"
         ]
     }
 )
