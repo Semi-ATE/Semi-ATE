@@ -3,7 +3,7 @@
 Call the methode read() for get, or write() for set attribute, with some checks before and after calling.
 
 :Date: |today|
-:Author: Zlin526F <jung@micronas.com>
+:Author: Zlin526F <Zlin526F@github>
 
 """
 
