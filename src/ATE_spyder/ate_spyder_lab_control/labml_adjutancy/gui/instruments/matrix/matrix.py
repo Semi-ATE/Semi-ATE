@@ -3,7 +3,6 @@
 matrix.
 
 Created on Fri Jul 10 13:43:20 2020
-@author: jung
 
 TODO:
     Bug: in discardTable funktioniert nicht
@@ -30,10 +29,10 @@ from labml_adjutancy.gui.instruments.base_instrument import Gui as Guibase
 from labml_adjutancy.gui.instruments.base_instrument import load_ui
 import functools
 
-__author__ = "Christian Jung"
-__copyright__ = "Copyright 2022, TDK Micronas"
-__credits__ = ["Christan Jung"]
-__email__ = "christian.jung@micronas.com"
+__author__ = "Zlin526F"
+__copyright__ = "Copyright 2020, Lab"
+__credits__ = ["Zlin526F"]
+__email__ = "Zlin526F@github"
 __version__ = "0.0.3"
 
 

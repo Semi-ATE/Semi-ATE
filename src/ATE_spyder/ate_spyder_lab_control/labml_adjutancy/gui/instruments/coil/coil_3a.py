@@ -3,7 +3,6 @@
 coil_3a.
 
 Created on Mon Jan  3 09:19:17 2022
-@author: C. Jung
 
 TODO:
     Bug: no bugs known, but in work.....
@@ -18,10 +17,10 @@ from PyQt5 import QtWidgets
 from labml_adjutancy.gui.instruments.base_instrument import Gui as Guibase
 from labml_adjutancy.gui.instruments.base_instrument import load_ui
 
-__author__ = "Christian Jung"
-__copyright__ = "Copyright 2022, TDK Micronas"
-__credits__ = ["Christan Jung"]
-__email__ = "christian.jung@micronas.com"
+__author__ = "Zlin526F"
+__copyright__ = "Copyright 2020, Lab"
+__credits__ = ["Zlin526F"]
+__email__ = "Zlin526F@github"
 __version__ = "0.0.1"
 
 

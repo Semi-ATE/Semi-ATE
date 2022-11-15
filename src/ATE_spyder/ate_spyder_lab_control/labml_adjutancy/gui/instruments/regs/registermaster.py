@@ -23,11 +23,11 @@ from labml_adjutancy.register.registermaster import RegisterMaster
 
 # from labml_adjutancy.misc.common import color
 
-__author__ = "Christian Jung"
-__copyright__ = "Copyright 2022, TDK Micronas"
-__credits__ = ["Christan Jung"]
-__email__ = "christian.jung@micronas.com"
-__version__ = "0.0.1b"
+__author__ = "Zlin526F"
+__copyright__ = "Copyright 2020, Lab"
+__credits__ = ["Zlin526F"]
+__email__ = "Zlin526F@github"
+__version__ = "0.0.2"
 
 
 class Gui(Guibase):
