@@ -176,11 +176,9 @@ class DummyMiniSCT(TesterInterface, create_attributes, mqtt_deviceattributes):
             self.log_info(message)
 
     def connect(self, switch, index):
-        print(f'CH{index}.connect({switch})')
         self.publish_get(f"CH{index}.connect()", switch)
 
     def disconnect(self, switch, index):
-        print(f'CH{index}.disconnect({switch})')
         self.publish_get(f"CH{index}.disconnect()", switch)
 
     @property
@@ -217,13 +215,13 @@ class DummyMiniSCT(TesterInterface, create_attributes, mqtt_deviceattributes):
         return True
 
     def test_in_progress(self, site_id: int):
-        print(f"{__class__.__name__}.test_in_progress({site_id})")
+        self.log_info(f"{__class__.__name__}.test_in_progress({site_id})")
 
     def test_done(self, site_id: int, timeout: int):
-        print(f"{__class__.__name__}.test_done({site_id})")
+        self.log_info(f"{__class__.__name__}.test_done({site_id})")
 
     def do_init_state(self, site_id: int):
-        print(f"{__class__.__name__}.do_init_state({site_id}) running")
+        self.log_info(f"{__class__.__name__}.do_init_state({site_id}) running")
         self.init_hardware()
 
 
