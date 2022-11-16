@@ -203,4 +203,5 @@ class Plugin:
         if object_name == f"{Plugin.prefix()} Dummy Instrument":
             return ["ip", "port"]
 
+
 __version__ = '0.0.0'
