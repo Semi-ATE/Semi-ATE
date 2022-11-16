@@ -17,7 +17,7 @@ jobs:
       OS: 'linux'
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
         PYTHON_VERSION: ['3.8', '3.9']
     steps:
@@ -27,17 +27,17 @@ jobs:
       - name: Install Environment Dependencies
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install -y xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
+          sudo apt-get install -y libgit2-dev xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniconda-version: "latest" 
+          miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
           channel-priority: "strict"
-          channels: "conda-forge"  
+          channels: "conda-forge"
           mamba-version: "*"
-          show-channel-urls: true 
+          show-channel-urls: true
 
       - name: Setup environment
         run: |
@@ -95,7 +95,7 @@ jobs:
         with:
           version: '1.6'
           ports: '1883:1883 8883:8883'
-        
+
       - name: Run test_integrate
         run: |
           cd src/integration_tests/
@@ -121,12 +121,12 @@ jobs:
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniconda-version: "latest" 
-          python-version: ${{ matrix.PYTHON_VERSION }}
+          miniconda-version: "latest"
+          python-version: 3.9
           channel-priority: "strict"
-          channels: "conda-forge"  
+          channels: "conda-forge"
           mamba-version: "*"
-          show-channel-urls: true 
+          show-channel-urls: true
 
       - name: Compute Version
         id: computed_version
@@ -211,7 +211,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: output
-          path: ./output 
+          path: ./output
 
   publish:
     if: ${{ github.event.release.tag_name != '' }}
@@ -220,7 +220,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-   
+
     steps:
       - name: Install
         run: |
