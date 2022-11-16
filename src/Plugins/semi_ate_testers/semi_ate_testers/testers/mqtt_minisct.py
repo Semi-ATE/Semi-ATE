@@ -2,11 +2,12 @@ import inspect
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from labml_adjutancy.misc import common
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
-from labml_adjutancy.misc.gui.minisct import mqttcmds
+from labml_adjutancy.gui.instruments.minisct.minisct import mqttcmds
 from SCT8.tester import Tester as sct8
 
 
-class Tester(TesterInterface):
+class MiniSCT(TesterInterface):
+    SITE_COUNT = 1
 
     knownAttributes = ['size', 'shape', '__len__', '__init__', 'inst', 'cmd', 'startKeywords', '_ismethod',
                        'do_init_state', 'get_sites_count', 'do_request', 'test_in_progress', 'test_done',
@@ -46,9 +47,6 @@ class Tester(TesterInterface):
     def close(self):
         # self.del_hardware()                                #TODO: not working
         mqtt_deviceattributes.close(self)
-
-    def get_sites_count(self):
-        return 1
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True
@@ -124,7 +122,7 @@ if __name__ == "__main__":
     mqttc = mqtt_init(typ="instrument")
     mqttc.init("127.0.0.1", port=1883, message_client=None)
 
-    tester = Tester(mqttc=mqttc)
+    tester = MiniSCT(mqttc=mqttc)
     tester.do_init_state(1)
     breakpoint()
     # tester.CH0.drv.vdh = 4.5
