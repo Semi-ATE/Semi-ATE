@@ -99,6 +99,12 @@ class Plugin:
                 "name": f"{Plugin.prefix()} Mini-SCT"
             },
             {
+                "display_name": f"{Plugin.prefix()} Mqtt-Mini-SCT ",
+                "version": "0.0",
+                "manufacturer": "Semi-ATE",
+                "name": f"{Plugin.prefix()} Mqtt-Mini-SCT"
+            },
+            {
                 "display_name": f"{Plugin.prefix()} Dummy Mini-SCT ",
                 "version": "0.0",
                 "manufacturer": "Semi-ATE",
@@ -159,6 +165,15 @@ class Plugin:
             else:
                 from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
                 return DummyMiniSCT()
+        elif tester_name == f"{Plugin.prefix()} Mqtt-Mini-SCT":
+            import platform
+            # Tester package for minisct hardware is not available on windows
+            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
+                from semi_ate_testers.testers.minisct import MiniSCT
+                return MiniSCT()
+            else:
+                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+                return DummyMiniSCT()
         elif tester_name == f"{Plugin.prefix()} Dummny Mini-SCT":
             from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
             return DummyMiniSCT()
@@ -174,6 +189,15 @@ class Plugin:
             # Tester package for minisct hardware is not available on windows
             if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
                 from semi_ate_testers.testers.minisct import MiniSCT
+                return MiniSCT
+            else:
+                from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
+                return DummyMiniSCT
+        elif tester_name == f"{Plugin.prefix()} Mqtt-Mini-SCT":
+            import platform
+            # Tester package for minisct hardware is not available on windows
+            if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
+                from semi_ate_testers.testers.mqtt_minsct import MiniSCT
                 return MiniSCT
             else:
                 from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
