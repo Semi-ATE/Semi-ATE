@@ -1,12 +1,18 @@
-from SCT8.tester import Tester as sct8
+import platform
 from semi_ate_testers.testers.tester_interface import TesterInterface
 
-
-# TODO: substitute print by logger, see issue #161
+if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
+    from SCT8.tester import Tester as sct8
+else:
+    from SCT8.dummy_tester import Tester as sct8
 
 
 class MiniSCT(TesterInterface, sct8):
     SITE_COUNT = 1
+
+    def __init__(self, logger=None):
+        TesterInterface.__init__(self, logger)
+        sct8.__init__(self, logger)
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True
@@ -19,6 +25,8 @@ class MiniSCT(TesterInterface, sct8):
 
     def do_init_state(self, site_id: int):
         print(f'Tester.do_init_state({site_id})')
+        if hasattr(sct8, 'do_init_state'):
+            sct8.init_hardware(self)
 
     def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
         self.pf.run(pattern_name, start_label, stop_label, timeout)
