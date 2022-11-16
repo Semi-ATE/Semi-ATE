@@ -296,7 +296,7 @@ class mqtt_init(object, metaclass=Singleton):
 
     def close(self):
         """Disconnect from broker."""
-        if self.broker is not None:
+        if hasattr(self, "broker") and self.broker is not None:
             self.client.loop_stop()
             self.client.disconnect()
             self.client.on_connect = None
