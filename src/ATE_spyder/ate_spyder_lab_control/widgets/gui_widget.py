@@ -224,7 +224,7 @@ class LabGui(PluginMainWidget):
                     mindex = pindex
                     found = True
                 elif pindex == 0:  # Menu Title already exist
-                    print(f"     Menu Title {addmenu} already exist, do nothing")
+                    # print(f"     Menu Title {addmenu} already exist, do nothing")
                     continue
                 else:  # create/update submenue
                     print(f"     add/update menu: {addmenu}")
@@ -234,12 +234,11 @@ class LabGui(PluginMainWidget):
                             found = True
                             break
                         mindex += 1
-                    print(f"     found: {found}")
                     if found:
-                        print(f"     update menu: {addmenu}")
+                        # print(f"     update menu: {addmenu}")
                         lib = msg["payload"][addmenu].split(".")[-1]
-                        print(f"     reload lib {lib} from {msg['payload'][addmenu]}")
-                        print(f"     reload lib {str(self.gui.newMenu[mindex].lib)}")
+                        # print(f"     reload lib {lib} from {msg['payload'][addmenu]}")
+                        # print(f"     reload lib {str(self.gui.newMenu[mindex].lib)}")
                         try:
                             importlib.reload(self.gui.newMenu[mindex].lib)
                         except Exception as ex:
@@ -293,30 +292,30 @@ class LabGui(PluginMainWidget):
                     print(f"    message for {app.name}: {cmd} = {msg} -->   ")
                     try:
                         if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
-                            print(f"   begin set attribute {cmd}={value}")
+                            # print(f"   begin set attribute {cmd}={value}")
                             app.instance.__setattr__(cmd, value)
-                            print("   --> set attribute done")
+                            # print("   --> set attribute done")
                         elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
                             if value == []:  # it is a function call?
-                                print(f"   begin call function {cmd}")
+                                # print(f"   begin call function {cmd}")
                                 app.instance.__getattribute__(cmd)()
-                                print("   --> call function done")
+                                # print("   --> call function done")
                             else:
-                                print(f"   begin get/set attribute {cmd}={value}")
+                                # print(f"   begin get/set attribute {cmd}={value}")
                                 app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
                                 # app.instance.__getattribute__(cmd)
-                                print("   --> begin get/set attribute done")
-                            print("   function call done")
-                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # implemented not as attribute/functioncall to get more information as only the payload
-                            print(f"   call mqttreceive with {msg}")
+                                # print("   --> begin get/set attribute done")
+                            # print("   function call done")
+                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # get more information as only the payload
                             app.instance.mqttreceive(name, msg)
-                            print("   call mqttreceive done")
                         elif not hasattr(app.instance, cmd):
                             self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
                         else:
                             self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
                     except Exception as ex:
-                        self.logger.error(f"{name} something goes wrong: '{topic} = {msg}'  {ex}")
+                        msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
+                        self.logger.error(msg)
+                        print(msg)
 
     def setButtonActive(self, value):
         """Activate all disabled buttons."""
@@ -326,12 +325,12 @@ class LabGui(PluginMainWidget):
     def extendedbarClicked(self, index):
         if index == 0:
             return
-        print(f"extendedbarClicked {index}")
-        print(f"     name = {self.gui.newMenu[index].name}")
-        print(f"     libname = {self.gui.newMenu[index].libname}")
-        print(f"     lib = {self.gui.newMenu[index].lib}")
-        print(f"     subtopic = {self.gui.newMenu[index].subtopic}")
-        print(f"     topinstname = {self.topinstname}")
+        # print(f"extendedbarClicked {index}")
+        # print(f"     name = {self.gui.newMenu[index].name}")
+        # print(f"     libname = {self.gui.newMenu[index].libname}")
+        # print(f"     lib = {self.gui.newMenu[index].lib}")
+        # print(f"     subtopic = {self.gui.newMenu[index].subtopic}")
+       #  print(f"     topinstname = {self.topinstname}")
         if self.gui.newMenu[index].isChecked():
             name = self.gui.newMenu[index].name
             if not hasattr(self.gui.newMenu[index], "lib") or self.gui.newMenu[index].lib is None:
@@ -344,8 +343,8 @@ class LabGui(PluginMainWidget):
             self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(self, name, self.project_info.parent)  # start Gui
             self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[index].subtopic
             self.gui.newMenu[index].instance.topinstname = self.topinstname
-            print(f" create {self.gui.newMenu[index].instance} done")
-            print(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
+            # print(f" create {self.gui.newMenu[index].instance} done")
+            # print(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
         elif self.gui.newMenu[index].instance is not None:
             self.gui.newMenu[index].instance.close()
             self.gui.newMenu[index].instance = None
@@ -402,7 +401,6 @@ class LabGui(PluginMainWidget):
             gui.setGeometry(geometry[0], geometry[1], geometry[2], geometry[3])
             print(f"{name}.set_Geometry({geometry[0]}, {geometry[1]}, {geometry[2]}, {geometry[3]})")
         else:
-            print(f"coudn't set last geometry for {name}, it is out of the actual screen")
             print(f"coudn't set last geometry for {name}, it is out of the actual screen")
 
     @QtCore.pyqtSlot(str, str)
