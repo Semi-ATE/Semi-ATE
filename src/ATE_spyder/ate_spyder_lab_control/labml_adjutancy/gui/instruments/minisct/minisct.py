@@ -25,15 +25,14 @@ __email__ = "christian.jung@tdk.com"
 __version__ = "0.0.3"
 
 # TODO:  in docu ch(0) but in python CH(0)
-#       disconnect('PE_50")   not switchable??
 #       "PE_F",   drv.off/pmu.off    but how works the enable
 
 mqttcmds = {
-    "relais": {
+    "relais!": {
         # svg-name :  (None, value for connect/disconnect)
         "SPST.230": (None, "termination"),  # no command connect/disconnect   use cmp.cfg_dif(termination)   :-(
         "SPST.255": (None, "FS"),
-        "SPST.323": (None, "PE_50"),  # not switchable??
+        "SPST.323": (None, "PE_50BP"),
         # "SPDT": (None, "PE_F"),          # not yet implemented,  drv.off/pmu.off    but how works the enable
         "SPST.252": (None, "PE_S"),
         "SPST.77": (None, "PBUS_F"),
@@ -53,22 +52,22 @@ mqttcmds = {
         'CH': {
             # svg-name: (command for the MiniSCT, range)
             "relais!1": ("connect()", 1),                # relais!1 means: this command have to translate with the dictionary 'relais'
-            "relais!2": ("disconnect()", 0),
+            "relais!2": ("disconnect()", 0),             # todo: do we need in LIne 157: self.mqtt_cmds.append(f"{svgfile}{channel}.{cmd.split('!')[0]}")
             # drv
-            "force_state": ("drv.force_state", "Force_state"),
-            "vdh": ("drv.vdh", [-2.0, 22.0]),
-            "vdl": ("drv.vdl", [-3.0, 18.0]),
-            "slew_pos": ("drv.slew_pos", [0.1, 1.0]),
-            "slew_neg": ("drv.slew_neg", [0.1, 1.0]),
+#            "force_state": ("drv.force_state", "Force_state"),
+#            "vdh": ("drv.vdh", [-2.0, 22.0]),
+#            "vdl": ("drv.vdl", [-3.0, 18.0]),
+#            "slew_pos": ("drv.slew_pos", [0.1, 1.0]),
+#            "slew_neg": ("drv.slew_neg", [0.1, 1.0]),
             # cmp
-            "vch": ("cmp.vch", [-4.0, 18.0]),
-            "vcl": ("cmp.vcl", [-4.0, 18.0]),
-            "termination": ("cmp.termination", "Termination"),
-            "read_state": ("cmp.read_state", None),     # in docu get_state ?   -> ask
-            "mux": ("cmp.mux", "Mux_out"),              # cfg_cpu(mux_out , dig_level)   mux_out = CA, CB, CA|CB
+#            "vch": ("cmp.vch", [-4.0, 18.0]),
+#            "vcl": ("cmp.vcl", [-4.0, 18.0]),
+#            "termination": ("cmp.termination", "Termination"),
+#            "read_state": ("cmp.read_state", None),     # in docu get_state ?   -> ask
+#            "mux": ("cmp.mux", "Mux_out"),              # cfg_cpu(mux_out , dig_level)   mux_out = CA, CB, CA|CB
             },
         'dps': {
-            "v_range": ("v_range", [-2.0, 2.0])             # todo: check the real values!!
+#            "v_range": ("v_range", [-2.0, 2.0])         # not implemented yet
         }
     }
 }
@@ -157,7 +156,8 @@ class Gui(Guibase):
                 for cmd in mqttcmds['commands'][svgfile].keys():    # Create a list with all mqtt-commands in self.mqtt_cmds
                     if channel is not None:                         # channels 0-7
                         if cmd.split("!")[0] in mqttcmds:
-                            self.mqtt_cmds.append(f"{svgfile}{channel}.{cmd.split('!')[0]}")
+                            self.mqtt_cmds.append(f"{svgfile}{channel}.{cmd.split('!')[0]}!")
+                            pass
                         else:
                             self.mqtt_cmds.append(f"{svgfile}{channel}.{cmd}")
                         self.mqtt2svgelement.append(f"{svgfile}{channel}.{mqttcmds['commands'][svgfile][cmd][0]}")
@@ -207,6 +207,8 @@ class Gui(Guibase):
             oldcmd = msg["cmd"].split('.')
             msg["cmd"] = self.mqtt_cmds[self.mqtt2svgelement.index(msg["cmd"])]
             key = msg["cmd"].split('.')[-1]
+            if key.find("!") > 0:
+                key = key[:key.find("!")+1]
             if key in mqttcmds:         # is this a function? than another translate dictionary is available
                 payload = msg["payload"] if type(msg["payload"]) == str else msg["payload"][0]
                 index = [list(mqttcmds[key].values())[x][1] for x in range(0, len(mqttcmds[key].values()))].index(payload)
@@ -217,20 +219,18 @@ class Gui(Guibase):
                             if trcmd.find(key) == 0 and mqttcmds['commands'][prefix][trcmd][0].find(oldcmd[-1]) == 0:
                                 msg["payload"] = mqttcmds['commands'][prefix][trcmd][1]
                 check = False
-            self.logger.debug(f'   {instName}.mqttreceive: translate to {msg}')
+            if check:
+                print(f"      for {key} not translation found  in = {msg['cmd']} ")   
+            print(f'   {instName}.mqttreceive: translate to {msg}')
         if super().mqttreceive(instName, msg, check):
             ch = msg["cmd"].split(".")[0]
-            self.logger.debug(
-                f"   {instName}.mqttreceive: search for tab={ch}"
-            )
+            print(f"   {instName}.mqttreceive: search for tab={ch}")
             for index in range(0, self._maxTabs):
                 if self.myframe.QTab.tabText(index) == ch:
                     self.myframe.QTab.setCurrentIndex(index)
                     break
             return
-        self.logger.debug(
-            f"    {instName}.mqttreceive: continue search ... with {msg} "
-        )
+        print(f"    {instName}.mqttreceive: continue search ... with {msg} ")
 
     # ======================================================================================
     # definitions from 'complex' mqtt commands, if you need only a connection between the mqtt-command and a widget,
@@ -252,10 +252,10 @@ class Gui(Guibase):
         rawname = name[name.find(".") + 1:]
         if name in self.mqtt_cmds:
             cmd = self.mqtt2svgelement[self.mqtt_cmds.index(name)]
-        elif rawname in mqttcmds["relais"]:
+        elif rawname in mqttcmds["relais!"]:
             cmd = name.split(".")[0]
             cmd += ".connect()" if value == "1" else ".disconnect()"
-            value = mqttcmds["relais"][rawname][1]
+            value = mqttcmds["relais!"][rawname][1]
         else:
             print(f"svg2mqtt: {name} = {value} not implemented yet")
             return

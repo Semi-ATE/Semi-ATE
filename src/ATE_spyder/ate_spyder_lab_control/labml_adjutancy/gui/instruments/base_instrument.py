@@ -201,10 +201,8 @@ class Gui(object):
                 found = True
         if found:
             self.gui.setGeometry(geometry[0], geometry[1], geometry[2], geometry[3])
-            print(f"{self.instName}.set_Geometry({geometry[0]}, {geometry[1]}, {geometry[2]}, {geometry[3]})")
         else:
-            self.logger.warning(f"coudn't set last geometry for {self.instName}, it is out of the actual screen")
-            print(f"coudn't set last geometry for {self.instName}, it is out of the actual screen")
+            print(f"Warning: coudn't set last geometry for {self.instName}, it is out of the actual screen")
 
     @property
     def subtopic(self):
@@ -275,7 +273,7 @@ class Gui(object):
     # attributes which connect to an extern call (mqtt-command)
     def mqttreceive(self, instName, msg, check=False):
         """common mqtt receive messages, get raw mqtt-Data for receiving more information"""
-        self.logger.debug(f'        {instName}.mqttreceive from base class:   search {msg["cmd"]}')
+        print(f'        {instName}.mqttreceive from base class:   search {msg["cmd"]}')
         result = False
         if "cmd" in tuple(msg.keys()) and "payload" in tuple(msg.keys()) and (msg["cmd"] in self.mqtt_cmds or not check):
             typ = msg["type"].upper()
@@ -284,33 +282,28 @@ class Gui(object):
                 f'MQTT_{typ}_{msg["cmd"]}',
                 f'MQTT_{msg["cmd"]}',
             ]:  # search for corresponding widget
-                # self.logger.debug(f'    search for {name}')
                 if hasattr(self.myframe, name):
                     widget = getattr(self.myframe, name)
                     break
             if widget is None and hasattr(self, "svgWidgets"):  # search for corresponding svg-id
-                self.logger.debug(f'        now search for {msg["cmd"]} in {self.svgWidgets}')
+                print(f'        now search for {msg["cmd"]} in {self.svgWidgets.keys()}')
                 name = msg["cmd"].split(".")
                 if name[0] in self.svgWidgets:
-                    self.logger.debug(f"        {self.instName}.mqttreceive base:  found svgWidgets: {name}")
+                    print(f"        {self.instName}.mqttreceive base:  found svgWidgets: {name}")
                     if len(name) == 1:
                         svgwidget = self.svgWidgets[name]
                     else:
                         element = msg["cmd"][msg["cmd"].find(".") + 1:]
                         svgwidget = self.svgWidgets[name[0]]
                     svgwidget.setIdText(element, msg["payload"])
-                    self.logger.debug(
-                        f"        {self.instName}.mqttreceive base:  set {name[0]}.{element}={msg['payload']}"
-                    )
+                    print(f"        {self.instName}.mqttreceive base:  set {name[0]}.{element}={msg['payload']}")
                     return True
             if widget is None:
-                self.logger.warning(
-                    f'    {self.instName}.mqttreceive base: {instName}, cmd={msg["cmd"]} type= msg["type"] not implemented yet !!!!!!'
+                print(
+                    f'    Warning {self.instName}.mqttreceive base: {instName}, cmd={msg["cmd"]} type= msg["type"] not implemented yet !'
                 )
                 return False
-            self.logger.debug(
-                f'    {self.instName}.mqttreceive base: {instName}, found {widget.objectName()}, type={type(widget)} value={msg["payload"]}'
-            )
+            print(f'    {self.instName}.mqttreceive base: {instName}, found {widget.objectName()}, type={type(widget)} value={msg["payload"]}')
             value = str2num(msg["payload"], default=-1)
             twidget = type(widget)
             result = True
@@ -327,7 +320,7 @@ class Gui(object):
                         break
                 # if index >widget.count():  self.logger.error(f'    {self.instName}.mqttreceive base: {instName}, {msg}, cmd={msg["cmd"]} type = {type(value)} not found')
                 widget.setCurrentIndex(index)
-                self.logger.debug(f'    {self.instName}.mqttreceive base: {instName}, {msg}, cmd={msg["cmd"]}  done')
+                print(f'    {self.instName}.mqttreceive base: {instName}, {msg}, cmd={msg["cmd"]}  done')
             elif twidget == QtWidgets.QPushButton:
                 widget.blockSignals(True)
                 if type(value) == bool:
@@ -345,21 +338,17 @@ class Gui(object):
                 QtWidgets.QLCDNumber,
             ]:
                 widget.blockSignals(True)
-                # if twidget == QtWidgets.QLCDNumber:
-                #    self.logger.debug(f'         {value} {type(value)}')
                 widget.setProperty("value", value)
             elif twidget == QtWidgets.QLabel:
                 widget.blockSignals(True)
                 widget.setText(value)
                 result = True
             else:
-                self.logger.debug(
-                    f'    {self.instName}.mqttreceive base: {instName}, {msg}, cmd={msg["cmd"]} widget={type(widget)}  not yet implemented -> improve it !!'
-                )
+                print(f'    {self.instName}.mqttreceive base: {instName}, {msg}, cmd={msg["cmd"]} widget={type(widget)}  not yet implemented -> improve it !')
                 result = False
             widget.blockSignals(False)
         else:
-            self.logger.debug(f'        {instName}.mqttreceive from base:  {msg["cmd"]} not found in {self.mqtt_cmds}')
+            print(f'        {instName}.mqttreceive from base:  {msg["cmd"]} not found in {self.mqtt_cmds}')
         return result
 
     @property
@@ -374,18 +363,14 @@ class Gui(object):
 
     @property
     def mqtt_status(self):
-        self.logger.debug(f"   {self.instName}.mqtt_status == {self._mqtt_status}")
-        msg = (
-            f"{self.instName} {self.instNameExtension}"
-            if self._mqtt_status == "connect"
-            else f"{self.instName}: {self._mqtt_status}"
-        )
+        print(f"   {self.instName}.mqtt_status == {self._mqtt_status}")
+        msg = f"{self.instName}: {self._mqtt_status}"
         self.gui.myInstrument.setTitle(msg)
         return self._mqtt_status
 
     @mqtt_status.setter
     def mqtt_status(self, value):
-        self.logger.debug(f"   {self.instName}.mqtt_status := {value}")
+        print(f"   {self.instName}.mqtt_status := {value}")
         self.status = value
         if value == "disconnect":
             self._mqtt_status = value
@@ -394,11 +379,12 @@ class Gui(object):
         elif value == "connect":
             self._mqtt_status = value
             self.gui.myframe.setEnabled(True)
-            self.logger.debug(f"   now ask for init values  {self.mqtt_initlist}, {self.mqtt_cmds}")
+            print(f"   now ask for init values  {self.mqtt_initlist}, {self.mqtt_cmds}")
             for attribute in self.mqtt_initlist + self.mqtt_cmds:
-                self.logger.debug(f"       {attribute}")
-                self.grandparent.mqtt.publish_get(self.instName, attribute)
-        msg = f"{self.instName} {self.instNameExtension}" if value == "connect" else f"{self.instName}: {value}"
+                if attribute.find("!") == 0:
+                    print(f"       {attribute}")
+                    self.grandparent.mqtt.publish_get(self.instName, attribute)
+        msg = f"{self.instName}: {value}"
         self.gui.myInstrument.setTitle(msg)
 
     # end extern calling attributes
@@ -437,8 +423,8 @@ class Gui(object):
                     QtWidgets.QLCDNumber,
                     QtWidgets.QLabel,
                 ]:  # the widgets in the table needs normaly only receiver
-                    self.logger.error(
-                        f"   base_instrument.mqttConnectWidgets: {objectname} with widget {type(widget)} connect not yet implemented -> improve it !!"
+                    print(
+                        f"Error:   base_instrument.mqttConnectWidgets: {objectname} with widget {type(widget)} connect not yet implemented -> improve it !!"
                     )
 
     def mqttConnectSVGWidget(self, filename, name, channel=None):
@@ -494,17 +480,17 @@ class Gui(object):
 
     def publish(self, cmd, value="", instName=None):
         instName = self.instName if instName is None else instName
-        self.logger.debug(f"{self.instName}.publish {cmd} = {value}")
+        # print(f"{self.instName}.publish {cmd} = {value}")
         if hasattr(self.grandparent, "mqtt") and hasattr(self.grandparent.mqtt, "publish_set"):
             self.grandparent.mqtt.publish_set(instName, cmd, value)
         else:
-            self.logger.error(f"{instName}.{cmd} := {value}   but no publish_set defined!")
+            print(f"Error: {instName}.{cmd} := {value}   but no publish_set defined!")
 
     def gui2mqtt(self, widget):
         """Function connect a Gui-widget to mqtt, it sends a mqtt set command with the value from the Gui-widget."""
         listen, name = self.objectName2mqttName(widget.objectName())
         name = widget.objectName() if name is None else name
-        self.logger.debug(f"{self.instName}.gui2mqtt {name}")
+        print(f"{self.instName}.gui2mqtt {name}")
         typ = type(widget)
         found = False
         if typ == QtWidgets.QComboBox:
@@ -519,8 +505,7 @@ class Gui(object):
         if found:
             self.publish(name, value)
         else:
-            self.logger.error(
-                f"{self.instName}.gui2mqtt {name}  widget={type(widget)} not yet implemented -> improve it !!!!!!"
+            print(f"Warning: {self.instName}.gui2mqtt {name}  widget={type(widget)} not yet implemented -> improve it !!!!!!"
             )
 
     def svg2mqtt(self, name, value):
@@ -531,7 +516,6 @@ class Gui(object):
         self.publish(name, value)
 
     def close(self, event=None):
-        print(f"{self.instName}.close({event})")
         self.publish("mqtt_status", "disconnect")
         if hasattr(self.grandparent, "appclosed"):
             self.grandparent.appclosed(self.instName)
