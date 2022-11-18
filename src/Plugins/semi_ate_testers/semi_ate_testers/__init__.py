@@ -169,7 +169,7 @@ class Plugin:
             import platform
             # Tester package for minisct hardware is not available on windows
             if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
-                from semi_ate_testers.testers.minisct import MiniSCT
+                from semi_ate_testers.testers.mqtt_minisct import MiniSCT
                 return MiniSCT()
             else:
                 from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
@@ -197,7 +197,7 @@ class Plugin:
             import platform
             # Tester package for minisct hardware is not available on windows
             if "linux" in platform.system().lower() and "aarch64" in platform.machine().lower():
-                from semi_ate_testers.testers.mqtt_minsct import MiniSCT
+                from semi_ate_testers.testers.mqtt_minisct import MiniSCT
                 return MiniSCT
             else:
                 from semi_ate_testers.testers.dummy_minisct import DummyMiniSCT
