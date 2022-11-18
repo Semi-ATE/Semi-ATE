@@ -3,28 +3,39 @@ from semi_ate_testers.testers.tester_interface import TesterInterface
 from labml_adjutancy.misc import common
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.gui.instruments.minisct.minisct import mqttcmds
+from labml_adjutancy.misc.mqtt_client import mqtt_init
 from SCT8.tester import Tester as sct8
+
+__author__ = "Zlin526F"
+__credits__ = ["Zlin526F"]
+__email__ = "Zlin526F@github"
+__version__ = 0.1
 
 
 class MiniSCT(TesterInterface):
     SITE_COUNT = 1
 
-    knownAttributes = ['size', 'shape', '__len__', '__init__', 'inst', 'cmd', 'startKeywords', '_ismethod',
-                       'do_init_state', 'get_sites_count', 'do_request', 'test_in_progress', 'test_done',
-                       'instName', 'setup_mqtt', 'close',
-                       'mqtt', 'debug', 'logger', 'mqtt_list'
+    knownAttributes = ['__len__', '__init__', 'inst', 'cmd',  '_ismethod',
+                       'close',
+                       'debug', 'do_init_state', 'do_request', 'get_sites_count',
+                       'instName',
+                       'mqtt', 'mqttc', 'mqtt_list', 'mqtt_status', '_mqttclient',
+                       'logger', 'log_debug', 'log_measure', 'log_info', 'log_warning', 'log_error',
+                       'run_pattern', 'on', 'off', 'publish_set',
+                       'setup', 'setup_mqtt', 'size', 'shape', 'startKeywords',
+                       'teardown', 'test_done', 'test_in_progress',
                        ]
 
-    def __init__(self, mqttc=None, instName="tester", debug=False):
-        breakpoint()
+    def __init__(self, logger=None, mqttc=None, instName="tester", debug=False):
+        TesterInterface.__init__(self, logger)
         self.cmd = ''
         self.debug = debug
         self.mqtt = mqtt_deviceattributes()
         self.instName = instName
         self.mqtt.instName = instName
-        self.mqtt.gui = "labml_adjutancy.misc.gui.minisct"
-        self.inst = sct8()
-        self.startKeywords = dir(self.inst)
+        self.mqtt.mqtt_all = ['on()', 'off()']
+        self.mqtt.gui = "labml_adjutancy.gui.instruments.minisct.minisct"
+        self.startKeywords = []
 
     def setup_mqtt(self, mqttc):
         """Setup for mqtt.
@@ -43,10 +54,18 @@ class MiniSCT(TesterInterface):
         # self.mqtt.mqtt_debug = True             # helpful for debugging
         self.mqtt.mqtt_add(mqttc, self)  # subscribe for mqtt and send information about the gui
         self.mqtt_list = self.mqtt.mqtt_list
+        self.mqttc = mqttc
 
     def close(self):
-        # self.del_hardware()                                #TODO: not working
-        mqtt_deviceattributes.close(self)
+        self.inst.close()
+        self.mqtt.close()
+        self.mqttc.close()
+
+    def on(self):
+        pass
+
+    def off(self):
+        pass
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True
@@ -58,15 +77,34 @@ class MiniSCT(TesterInterface):
         self.log_info(f"Tester.test_done({site_id})")
 
     def do_init_state(self, site_id: int):
-        breakpoint()
-        self.inst.init_hardware()
-        self.startKeywords = self.inst.startKeywords if hasattr(self.inst, 'startKeywords') else dir(self.inst)
+        self.inst = sct8()
+        self.startKeywords = dir(self.inst)
+        self.startKeywords.remove('connections')    # todo: what is this command doing
+        self.startKeywords.remove('relays')
+
+        # create the list for the allowed mqtt commands
         for index in range(0, 8):  # create mqtt-cmds for channels 0..7
             for cmd in mqttcmds['commands']['CH'].values():
                 self.mqtt.mqtt_all.append(f"CH{index}.{cmd[0]}")
         for cmd in mqttcmds['commands']['dps'].values():
             self.mqtt.mqtt_all.append(f"dps.{cmd[0]}")
+
+        mqttc = mqtt_init(typ="instrument")
+        mqttc.init("127.0.0.1", port=1883, message_client=None)
+        self.setup_mqtt(mqttc)
         self.log_info(f"Tester.do_init_state({site_id})")
+
+    def teardown(self):
+        self.close()
+
+    @property
+    def mqtt_status(self):
+        """Getter for the mqtt_status."""
+        return self.mqtt._mqtt_status
+
+    @mqtt_status.setter
+    def mqtt_status(self, value):
+        self.mqtt.mqtt_status = value
 
     def __getattribute__(self, attr):
         """Get attribute.
@@ -117,21 +155,16 @@ class MiniSCT(TesterInterface):
 
 
 if __name__ == "__main__":
-    from labml_adjutancy.misc.mqtt_client import mqtt_init
-
-    mqttc = mqtt_init(typ="instrument")
-    mqttc.init("127.0.0.1", port=1883, message_client=None)
-
-    tester = MiniSCT(mqttc=mqttc)
+    tester = MiniSCT()
     tester.do_init_state(1)
-    breakpoint()
+    #breakpoint()
+    tester.CH0.connections
     # tester.CH0.drv.vdh = 4.5
     tester.CH0.connect("PBUS_F")
     tester.CH0.connect("ABUS0_F")
     tester.CH0.connect("ABUS0_S")
     tester.CH0.disconnect("ABUS0_S")
 
-    tester.CH0.relay_status()
+    tester.CH0.relay_status
 
     tester.close()
-    mqttc.close()
