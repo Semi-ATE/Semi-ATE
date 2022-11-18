@@ -550,8 +550,7 @@ class mqtt_deviceattributes(object):
             self.publish_set("mqtt_status", "connect")
 
     def close(self):
-        if self.mqttc is not None:
-            self.mqtt_disconnect()
+        self.mqtt_disconnect()
 
 
 class mqtt_signal(QtCore.QObject):
