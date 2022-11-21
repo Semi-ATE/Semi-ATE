@@ -13,16 +13,18 @@ from ate_test_app.stages_sequence_generator.stages_sequence_generator import Sta
 from ate_test_app.sequencers.mqtt.MqttConnection import MqttConnection
 from ate_test_app.sequencers.harness.HarnessFactory import create_harness
 
-# setup the include path manually as the project is not a package
+from ate_common.pattern.tool_factory import get_stil_tool
+
 import os
 import sys
 from pathlib import Path
-parent_path = str(Path(__file__).joinpath('..', '..').resolve())
+
+# setup the include path manually as the project is not a package
+parent_path = str(Path(__file__).joinpath('..', '..', '..').resolve())
 sys.path.append(parent_path)
 
-import common
-from {{program_configuration['hardware']}}_auto_script import AutoScript
-
+from {{program_configuration['hardware']}}.{{program_configuration['base']}} import common
+from {{program_configuration['hardware']}}.{{program_configuration['hardware']}}_auto_script import AutoScript
 
 if __name__ == '__main__':
     params = CommandLineParser(sys.argv)
@@ -49,10 +51,13 @@ if __name__ == '__main__':
     auto_script.set_logger(context.get_logger())
     auto_script.before_start_setup()
 
+    stil_tool = get_stil_tool()
+    stil_tool._load_patterns({{compiled_patterns}})
+
     {% for testinstance in test_list %}
 
-    from {{ testinstance.test_module }} import {{ testinstance.test_class }}
-    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context)
+    from {{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
+    _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context, stil_tool)
     {% for ip in testinstance.input_parameters %}
     {% if testinstance.input_parameters[ip]['type'] == 'static' or testinstance.input_parameters[ip]['type'] ==  'local' %}
     _ate_var_{{ testinstance.instance_name }}.ip.set_parameter('{{ip}}', '{{testinstance.input_parameters[ip]['type']}}', {{testinstance.input_parameters[ip]['value']}}, {{testinstance.input_parameters[ip][InputColumnKey.MIN()]}}, {{testinstance.input_parameters[ip][InputColumnKey.MAX()]}}, {{testinstance.input_parameters[ip][InputColumnKey.POWER()]}}, context, {{testinstance.input_parameters[ip][InputColumnKey.SHMOO()]}})

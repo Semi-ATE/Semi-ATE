@@ -1,3 +1,4 @@
+from typing import Optional, Tuple
 from ate_spyder.widgets.actions_on.model.BaseItem import BaseItem
 from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
 
@@ -17,8 +18,8 @@ class BaseFolderItem(BaseItem):
     def delete_item(self):
         self.file_system_operator.delete_dir()
 
-    def rename_item(self):
-        self.file_system_operator.rename()
+    def rename_item(self, available_names: list = []) -> Optional[Tuple[str, str]]:
+        return self.file_system_operator.rename(available_names)
 
     def move_item(self):
         self.file_system_operator.move()

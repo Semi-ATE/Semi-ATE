@@ -13,7 +13,7 @@ class BinStrategyBase:
 
             return int(hbin)
 
-        assert False
+        raise Exception(f'sbin: {sbin} is not assigned to any hbin')
 
     def get_bin_settings(self) -> dict:
         return self.bin_mapping

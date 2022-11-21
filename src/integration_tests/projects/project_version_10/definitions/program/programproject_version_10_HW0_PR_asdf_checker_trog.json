@@ -1,0 +1,27 @@
+[
+  {
+    "id": "00b04984-3a63-11ed-8680-4cedfb445f8f",
+    "prog_name": "project_version_10_HW0_PR_asdf_checker_trog",
+    "hardware": "HW0",
+    "base": "PR",
+    "target": "asdf",
+    "usertext": "trog",
+    "sequencer_type": "Fixed Temperature",
+    "temperature": "25",
+    "owner_name": "HW0_PR_asdf_checker",
+    "prog_order": 1,
+    "is_valid": true,
+    "cache_type": "",
+    "caching_policy": "disable",
+    "test_ranges": [
+      100
+    ],
+    "instance_count": 1,
+    "execution_sequence": {
+      "PR1A": [
+        0
+      ]
+    },
+    "patterns": {}
+  }
+]

@@ -4,6 +4,7 @@ from ate_common.parameter import InputColumnKey, OutputColumnKey
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 from ate_sammy.coding.generators import BaseGenerator
+from ate_sammy.coding.utils import collect_compiled_patterns
 
 
 class test_program_generator(BaseGenerator):
@@ -40,10 +41,15 @@ class test_program_generator(BaseGenerator):
 
         test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
+        compiled_patterns = collect_compiled_patterns(program_configuration.patterns, self.project_path)
+
         output = template.render(
+            project_path=str(self.project_path),
+            project_name=self.project_path.name,
             test_list=test_list,
             test_imports=test_imports,
             program_configuration=program_configuration,
+            compiled_patterns=compiled_patterns,
             InputColumnKey=InputColumnKey,
             OutputColumnKey=OutputColumnKey)
 

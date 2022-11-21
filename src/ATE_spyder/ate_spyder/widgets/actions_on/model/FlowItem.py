@@ -247,11 +247,21 @@ class TestprogramTreeItem(BaseItem):
                 None,
                 MenuActionTypes.Delete()]
 
-        if not self.is_single:
-            menu.insert(2, MenuActionTypes.MoveDown())
-            menu.insert(2, MenuActionTypes.MoveUp())
+        # the stil file compilation option should be only enabled
+        # if the flow stil files assigned
+        if self.project_info.get_program_patterns(self.text()):
+            menu.insert(len(menu) - 2, MenuActionTypes.CompilePattern())
+
+        # TODO: moving test program up and down is buggy
+        # fix ME
+        # if not self.is_single:
+        #     menu.insert(2, MenuActionTypes.MoveDown())
+        #     menu.insert(2, MenuActionTypes.MoveUp())
 
         return menu
+
+    def compile_pattern_files(self):
+        self.project_info.compile_program_patterns(self.text())
 
     @staticmethod
     def is_valid_functionality(functionality):

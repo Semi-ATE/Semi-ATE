@@ -4,7 +4,7 @@ from ate_spyder import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
-       
+
 with requirements_path.open('r') as f:
     install_requires = list(f)
 
@@ -15,7 +15,6 @@ with readme_path.open('r') as f:
 setup(
     name='semi-ate-spyder',
     version=version,
-    requires=['spyder'],
     description='Spyder ate plugin for working with ATE projects',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -49,6 +48,10 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
     ],
     entry_points={
-        "spyder.plugins": ["ate = ate_spyder.plugin:ATE"]
+        "spyder.plugins": [
+            "ate = ate_spyder.plugin:ATE",
+            "test_runner = ate_spyder_test_runner.plugin:TestRunnerPlugin",
+            "stil = ate_spyder_stil.plugin:STIL"
+        ]
     }
 )

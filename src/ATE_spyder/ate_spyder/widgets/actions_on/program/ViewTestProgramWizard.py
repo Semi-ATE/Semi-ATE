@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import TestProgramWizard
 
@@ -64,6 +65,14 @@ class ViewTestProgramWizard(TestProgramWizard):
                                             dialog.hardware.currentText(),
                                             dialog.base.currentText(),
                                             f'{name}_binning.json'))
+        dialog.load_patterns(program_configuration['patterns'])
+
+        dialog.load_signal_to_channel_table(
+            Path(dialog.project_info.project_directory,
+                 dialog.project_info.project_name,
+                 dialog.hardware.currentText(),
+                 dialog.base.currentText(),
+                 f'{name}.yaml'))
         dialog._populate_binning_tree()
         caching_policy = program_configuration['caching_policy']
         # cacheDisable is checked by default, we just check

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1286</width>
-    <height>878</height>
+    <height>791</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1418,6 +1418,53 @@
              <string>Description</string>
             </property>
            </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="PatternMap">
+        <property name="accessibleName">
+         <string>patternmap</string>
+        </property>
+        <attribute name="title">
+         <string>Pattern</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>Pattern Map</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="0" column="0">
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="0" column="0">
+                <widget class="QTableWidget" name="pattern_table">
+                 <column>
+                  <property name="text">
+                   <string>Test Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Pattern Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Pattern Path</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>

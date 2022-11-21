@@ -4,31 +4,12 @@ Created on Mon Sep  5 18:56:05 2022
 
 @author: Zlin526F
 
-References:
-    TestWizard
-
-
-todo:  dieser Wizard stellt zur Zeit nur einen einfachen Import von einer Exel liste zur Verfügung.
-       es wird die datenbank und die zugehörigen python files für die einzelnen Test erzeugt.
-
-       es fehlt:
-           - parameter.name wird nicht auf fehlerhafte zeichen überprüft!
-           - falsche einträge werden farbig dargestellt, nach dem editieren sollte die Farbe wieder auf den Default wert gesetzt werden
-           - wenn Item ediert wird, muss danach automatisch der verify aktualisiert werden.
-           - wenn ein Test name existiert, sollte ein Menü angeboten werden, für overwrite oder disable des Tests
-           - Mapping file von Exel Paramter spalten zu Semi-ATE Parameter name sollte speicher und ladbar sein, im Moment nur fest kodiert
-               siehe mappingATEDic
-           - Mappjng file interactive erstellen
-           - die erste Zeile, in der ein Wert in einer Spalte steht,  wird in dem Excel file genommen als Header. Es sollte über ein Menue
-             auch andere Zeile gesetzt werden können
-           - bei Änderung von Units sollte ein Menue angeboten werden mit möglichen SI-Einheiten
-           - bei Import von Units, check if POWER.key exist, if yes dann zusätzliche Spalte erzeugen
-           - Excel liste abspeicherbar nach Änderung
+Starting from TestWizard.py
 
 """
-from enum import Enum, unique
 import os
 import re
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -44,14 +25,10 @@ from ate_spyder.widgets.validation import valid_default_float_regex
 from ate_spyder.widgets.validation import valid_fmt_regex
 from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
-# from ate_spyder.widgets.validation import valid_name_regex                 # TODO: add for validation
 from ate_spyder.widgets.validation import is_valid_python_class_name
-from ate_spyder.widgets.actions_on.tests import TestWizard
+import ate_spyder.widgets.actions_on.tests.Utils as utils
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
-from ate_common.parameter import OutputColumnKey
-
-from ate_spyder.widgets.constants import UpdateOptions
 
 minimal_docstring_length = 80
 
@@ -75,39 +52,7 @@ SI = ['s', 'm', 'g', 'A', 'K', 'mol', 'cd', 'rad', 'sr', 'Hz', 'N', 'Pa', 'J', '
       'lx', 'Bq', 'Gy', 'Sv', 'kat', '°C', 'Gs', '˽', '', ' ']
 
 
-@unique
-class InputColumnIndex(Enum):
-    SHMOO = 0
-    NAME = 1
-    MIN = 2
-    DEFAULT = 3
-    MAX = 4
-    POWER = 5
-    UNIT = 6
-    FMT = 7
-
-    def __call__(self):
-        return self.value
-
-
-@unique
-class OutputColumnIndex(Enum):
-    NAME = 0
-    LSL = 1
-    LTL = 2
-    NOM = 3
-    UTL = 4
-    USL = 5
-    POWER = 6
-    UNIT = 7
-    MPR = 8
-    FMT = 9
-
-    def __call__(self):
-        return self.value
-
-
-class CDelegator(TestWizard.Delegator):
+class CDelegator(utils.Delegator):
     """in work isn't running correctly....
 
     It works with regex AND verifies that the name doesn't exist
@@ -127,24 +72,6 @@ class CDelegator(TestWizard.Delegator):
             item.setText("")
 
 
-class NameDelegator(TestWizard.Delegator):
-    """Custom Delegator Class for 'Name'.
-
-    It works with regex AND verifies that the name doesn't exist
-    """
-
-    def __init__(self, regex, existing_names, parent=None):
-        self.super().__init__(regex, parent)
-        self.existing_names = existing_names
-        self.commitData.commitData.connect(self.validate_name)
-
-    def validate_name(self, editor):
-        """Make sure the entered name does not exist already."""
-        # TODO: implement, e.q use valid_name_regex
-        if editor.text() in self.existing_names:
-            pass
-
-
 class ExcelTestWizard(BaseDialog):
     """Wizard to import an Exel-file with the 'Test' definitions."""
 
@@ -152,7 +79,7 @@ class ExcelTestWizard(BaseDialog):
         super().__init__(__file__, parent=project_info.parent)
         self.project_info = project_info
 
-        test_content = TestWizard.make_blank_definition(project_info)
+        test_content = utils.make_blank_definition(project_info)
         self.test_content = test_content
 
         self.Feedback.setStyleSheet(ORANGE_LABEL)
@@ -160,43 +87,42 @@ class ExcelTestWizard(BaseDialog):
 
         self.setWindowTitle(' '.join(re.findall('.[^A-Z]*', os.path.basename(__file__).replace('.py', ''))))
 
-    # TestName
-        self.TestName = ''     # todo: change self._init_group()
+        # TestName
+        self.TestName = ''
 
-    # ForHardwareSetup
+        # ForHardwareSetup
         self.ForHardwareSetup.setStyleSheet("font-weight: bold;")
         self.ForHardwareSetup.setText(self.project_info.active_hardware)
         if test_content['hardware'] != '':
             self.ForHardwareSetup.setText(test_content['hardware'])
 
-    # WithBase
+        # WithBase
         self.WithBase.setStyleSheet("font-weight: bold")
         self.WithBase.setText(self.project_info.active_base)
         if test_content['base'] != '':
             self.WithBase.setText(test_content['base'])
 
-    # Delegators
-        self.fmtDelegator = TestWizard.Delegator(valid_fmt_regex, self)                             # TODO: selectionModel isn't available!
-        self.minDelegator = TestWizard.Delegator(valid_min_float_regex, self)
-        self.defaultDelegator = TestWizard.Delegator(valid_default_float_regex, self)
-        self.maxDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        self.lslDelegator = CDelegator(valid_min_float_regex, self)                                 # TODO: in work, try to switch color to default value after editing a wrong value...
+        # Delegators
+        self.fmtDelegator = utils.Delegator(valid_fmt_regex, self)
+        self.minDelegator = utils.Delegator(valid_min_float_regex, self)
+        self.defaultDelegator = utils.Delegator(valid_default_float_regex, self)
+        self.maxDelegator = utils.Delegator(valid_max_float_regex, self)
+        self.lslDelegator = CDelegator(valid_min_float_regex, self)
         self.ltlDelegator = CDelegator(valid_min_float_regex, self)
-        self.nomDelegator = TestWizard.Delegator(valid_default_float_regex, self)
-        self.utlDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        self.uslDelegator = TestWizard.Delegator(valid_max_float_regex, self)
-        # self.nameDelegator = TestWizard.Delegator(valid_name_regex, parent=self, table=self.inputParameterView, column=InputColumnIndex.NAME())  # TODO: not running correcty
+        self.nomDelegator = utils.Delegator(valid_default_float_regex, self)
+        self.utlDelegator = utils.Delegator(valid_max_float_regex, self)
+        self.uslDelegator = utils.Delegator(valid_max_float_regex, self)
 
-    # table
+        # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
 
         self.get_excel_pages(filename)
         self.create_excel_table(filename)
 
-        self._init_group()      # todo: if one test in a group, all other test will be enabled for this group :-(
+        self._init_group()
 
-    # Tabs
-    # buttons
+        # Tabs
+        # buttons
         self.mapping_load.setIcon(qta.icon('mdi.file-import', color='orange'))
         self.mapping_load.setToolTip('load mapping file')
         self.mapping_load.setEnabled(False)
@@ -213,8 +139,8 @@ class ExcelTestWizard(BaseDialog):
 
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
-        self.fillMappingList()
-        self.mappATE2Excel()
+        self.fill_mapping_list()
+        self.map_ATE_2_excel()
         self.verify()
 
     def get_excel_pages(self, filename):
@@ -247,23 +173,24 @@ class ExcelTestWizard(BaseDialog):
             wp = read_excel()
         self.headerindex = headerindex
 
-        wp.dropna(how='all', axis=1, inplace=True)      # remove empty columns
+        # remove empty columns
+        wp.dropna(how='all', axis=1, inplace=True)
         tb = self.table
         if tb.rowCount() > 0:
             tb.setRowCount(0)
         if tb.columnCount() > 0:
             tb.setColumnCount(0)
 
-    # set headerline
+        # set headerline
         for column in wp.columns:
             tb.insertColumn(tb.columnCount())
             tb.setHorizontalHeaderItem(tb.columnCount()-1, QtWidgets.QTableWidgetItem(str(column)))
-    # add an empty row for the mappings
+        # add an empty row for the mappings
         wp.loc[-1] = np.array([0] * wp.columns, dtype=str)
         wp.index += 1
         wp.sort_index(inplace=True)
 
-    # fill the rows from the table with the excel-workpage
+        # fill the rows from the table with the excel-workpage
         col = 0
         for column in wp.columns:
             row = 0
@@ -275,25 +202,25 @@ class ExcelTestWizard(BaseDialog):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText(str(val).strip())
                 self.table.setItem(row, col, item)
+                item.setFlags(QtCore.Qt.NoItemFlags)
                 row += 1
             col += 1
         self.table.resizeColumnsToContents()
         self.workpage = wp
 
-    def mappATE2Excel(self):
+    def map_ATE_2_excel(self):
         """map header to the ATE test_content and coloration the used parameters in the table
 
         create mapping Dictionary excel to table columns
         """
         col = 0
-        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()        # TODO: color is not corrrect, how I get the used color?
+        backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()
         self.table.mapping = {}
         for header in self.workpage.columns:
-            # self.table.setItem(0, col, QtWidgets.QTableWidgetItem(''))          #removeItem
-            # self.table.removeCellWidget(0, col)
             if header in mappingATEDic.keys() and mappingATEDic[header] != 'NaN':
                 self.table.setItem(0, col, QtWidgets.QTableWidgetItem(str(mappingATEDic[header])))
                 self.table.item(0, col).setForeground(QtGui.QColor(0, 255, 0))
+                self.table.item(0, col).setFlags(QtCore.Qt.NoItemFlags)
                 self.table.mapping[str(mappingATEDic[header])] = col
                 delegatorname = mappingATEDic[header].split('.')[1] if len(mappingATEDic[header].split('.')) > 1 else None
                 if delegatorname is not None and delegatorname != 'name' and delegatorname != 'unit':
@@ -305,7 +232,7 @@ class ExcelTestWizard(BaseDialog):
             col += 1
         self.table.resizeColumnsToContents()
 
-    def fillMappingList(self):
+    def fill_mapping_list(self):
         testContent = self.test_content
         if 'hardware' in testContent:
             testContent.pop('hardware')
@@ -325,36 +252,12 @@ class ExcelTestWizard(BaseDialog):
 
     def testTabChanged(self, activatedTabIndex):
         """Slot for when the Tab is changed."""
-        pass
-
-    def resizeEvent(self, event):
-        """Overload of Slot for when the Wizard is resized."""
-
-        QtWidgets.QWidget.resizeEvent(self, event)
-
-    def _update_power_with_correct_value(self, attributes):
-        try:
-            attributes[OutputColumnKey.POWER()] = POWER[attributes[OutputColumnKey.POWER()]]
-        except KeyError:
-            attributes[OutputColumnKey.POWER()] = self.get_key(attributes[OutputColumnKey.POWER()])
-
-    # hack til the testwizard is refactored
-    @staticmethod
-    def get_key(attribute):
-        for key, value in POWER.items():
-            if value != attribute:
-                continue
-
-            return key
-
-        return attribute
 
     @staticmethod
-    def get_dicKey(dict, attribute):
+    def get_dicKey(dict, attribute) -> Optional[str]:
         for key, value in dict.items():
             if attribute == value:
                 return key
-        # return attribute
 
     @staticmethod
     def _generate_color(color: tuple):
@@ -380,27 +283,9 @@ class ExcelTestWizard(BaseDialog):
             return True if string[0].isnumeric() else False
 
         def addMenuOverwrite(item):
-            # TODO: add ability for  overwriting
-            # menu = QtWidgets.QMenu(self)
-            # overwrite = menu.addAction("overwrite")
-            # action = menu.exec_(self.table.mapToGlobal(item))
-            print(item.text())
+            pass
 
         self.Feedback.setText("")
-
-        # TODO:  following code is an example if testname already exist,   add this ability in a future version
-        # if self.read_only:
-        #     dependant_programs = self.project_info.get_dependant_objects_for_test(self.TestName)
-        #     # we don't care if the test not used yet !
-        #     if len(dependant_programs):
-        #         text = "edit test can invalidate the following test-program(s):\n"
-        #         for _, programs in dependant_programs.items():
-        #             for program in programs:
-        #                 text += f"{ program }"
-
-        #             text += ", "
-
-        #         self.edit_feedback.setText(text)
 
         # 1. Check that we have a hardware selected
         if self.ForHardwareSetup.text() == '':
@@ -412,7 +297,7 @@ class ExcelTestWizard(BaseDialog):
                 self.Feedback.setText("Select a 'base'")
 
         # 3. Check if we have a test name
-        table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]                     # todo: use it from table
+        table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
         testNames = [str(x).strip() for x in table_name if not pd.isnull(x) and x != '']
 
         if self.Feedback.text() == "":
@@ -420,7 +305,6 @@ class ExcelTestWizard(BaseDialog):
                 self.Feedback.setText("No test names found")
 
         # 4. make some checks with the test names
-# todo: allow edit or overwrite
         if self.Feedback.text() == "":
             check(testNames, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
             check(testNames, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
@@ -501,34 +385,31 @@ class ExcelTestWizard(BaseDialog):
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                # if TestName not exist:                      # TODO: add
                 self.project_info.add_custom_test(test_content)
-                # else:
-                #     update_option = self.__have_parameters_changed(test_content)
-                #     self.project_info.update_custom_test(test_content, update_option)
             if TestName != '':
                 test_content = {}
                 test_content['type'] = "custom"
                 test_content['hardware'] = self.ForHardwareSetup.text()
                 test_content['base'] = self.WithBase.text()
                 test_content['groups'] = self._get_groups()
+                test_content['patterns'] = {}
 
                 # assign name
                 test_content['name'] = TestName
 
                 searchAndAssign('docstring', [''])
                 searchAndAssign('dependencies', {})
-                test_content['input_parameters'] = {'Temperature': TestWizard.make_default_input_parameter(temperature=True)}
+                test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
 
             column = searchmapping('input_parameters.name')
             if column is not None:
-                pass                      # todo: create input_parameters from the excel workpage
+                pass
 
             column = searchmapping('output_parameters.name')
             if column is not None:
                 name = searchAndAssign('output_parameters.name', write_content=False)
-                output_parameters = TestWizard.make_default_output_parameter(empty=True)
+                output_parameters = utils.make_default_output_parameter(empty=True)
                 output_parameters['lsl'] = -np.inf
                 output_parameters['usl'] = np.inf
                 output_parameters['fmt'] = ".3f"
@@ -567,32 +448,6 @@ class ExcelTestWizard(BaseDialog):
 
         return groups
 
-    def __have_parameters_changed(self, content: dict) -> UpdateOptions:
-        if len(content['input_parameters']) != len(self.test_content['input_parameters']) \
-           or len(content['output_parameters']) != len(self.test_content['output_parameters']):
-            return UpdateOptions.Code_Update()
-
-        if self._check_content(self.test_content['input_parameters'], content['input_parameters']) \
-           or self._check_content(self.test_content['output_parameters'], content['output_parameters']):
-            return UpdateOptions.Code_Update()
-
-        if not (set(self.project_info.get_groups_for_test(self.TestName)) & set(self._get_groups())):
-            return UpdateOptions.Group_Update()
-
-        return UpdateOptions.DB_Update()
-
-    @staticmethod
-    def _check_content(old_data, new_data):
-        for key, value in old_data.items():
-            if not new_data.get(key):
-                return True
-
-            for k, v in new_data[key].items():
-                if str(value[k]) != str(v):
-                    return True
-
-        return False
-
     def _init_group(self):
         self.group_combo.blockSignals(True)
         self.group_combo.activated.connect(self._group_selected)
@@ -625,26 +480,3 @@ def excel_test_dialog(project_info, selected_file):
     newTestWizard = ExcelTestWizard(project_info, selected_file)
     newTestWizard.exec_()
     del(newTestWizard)
-
-
-if __name__ == "__main__":
-    from ate_spyder.widgets.navigation import ProjectNavigation
-    from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-    from PyQt5.QtWidgets import QApplication
-    from qtpy.QtWidgets import QMainWindow
-    import qdarkstyle
-    import sys
-
-    app = QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    app.references = set()
-    main = QMainWindow()
-    homedir = os.path.expanduser("~")
-    project_directory = homedir + r'\ATE\packages\envs\semi-ate-5\HATB'       # path to your semi-ate project
-    project_info = ProjectNavigation(project_directory, homedir, main)
-    project_info.active_hardware = 'HW0'
-    project_info.active_base = 'FT'
-    project_info.active_target = 'Device1'
-    file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-    selected_file = file_system_operator.get_file('*.xlsx')
-    excel_test_dialog(project_info, selected_file)

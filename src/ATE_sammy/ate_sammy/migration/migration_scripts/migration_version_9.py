@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 
 from ate_sammy.migration.migration_scripts.migrate_base import MigratorBase
@@ -28,4 +29,6 @@ class MigrationVersion9(MigratorBase):
             with open(version_path, 'w') as f:
                 json.dump([data], f)
 
-        source_path.rename(project_name)
+        if source_path.exists():
+            source_path.rename(project_name)
+            shutil.rmtree(source_path, ignore_errors=True)
