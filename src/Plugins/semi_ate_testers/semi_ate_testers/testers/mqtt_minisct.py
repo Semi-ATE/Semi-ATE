@@ -25,6 +25,7 @@ class MiniSCT(TesterInterface):
                        'setup', 'setup_mqtt', 'size', 'shape', 'startKeywords',
                        'teardown', 'test_done', 'test_in_progress',
                        ]
+    gui = "labml_adjutancy.gui.instruments.minisct.minisct"
 
     def __init__(self, logger=None, mqttc=None, instName="tester", debug=False):
         TesterInterface.__init__(self, logger)
@@ -34,7 +35,6 @@ class MiniSCT(TesterInterface):
         self.instName = instName
         self.mqtt.instName = instName
         self.mqtt.mqtt_all = ['on()', 'off()']
-        self.mqtt.gui = "labml_adjutancy.gui.instruments.minisct.minisct"
         self.startKeywords = []
 
     def setup_mqtt(self, mqttc):
