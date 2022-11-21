@@ -67,6 +67,7 @@ class LabGuiPlugin(SpyderDockablePlugin):
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_ate_progname.connect(self.runflow_changed)
+        ate.sig_test_tree_update.connect(self.update_actions)
 
     def _setup_test_runner_widget(self):
         widget: LabGui = self.get_widget()
@@ -85,6 +86,10 @@ class LabGuiPlugin(SpyderDockablePlugin):
     def runflow_changed(self, progname: str):
         widget: LabGui = self.get_widget()
         widget.update_labgui(progname)
+
+    def update_actions(self):
+        widget: LabGui = self.get_widget()
+        widget.update_actions()
 
     # ----------------------- Plugin teardown ---------------------------------
 
