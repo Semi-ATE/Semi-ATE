@@ -12,7 +12,8 @@ TODO:
 import sys
 import qdarkstyle
 import os
-from PyQt5 import QtWidgets  # QtCore, QtGui
+from PyQt5 import QtWidgets
+import qtawesome as qta
 from labml_adjutancy.gui.instruments.base_instrument import Gui as Guibase
 from labml_adjutancy.gui.instruments.base_instrument import load_ui
 
@@ -26,7 +27,7 @@ __version__ = "0.0.3"
 
 # TODO:  in docu ch(0) but in python CH(0)
 #       "PE_F",   drv.off/pmu.off    but how works the enable
-
+icon = qta.icon("mdi6.remote", color="green", scale_factor=1.0)
 mqttcmds = {
     "relais!": {
         # svg-name :  (None, value for connect/disconnect)
