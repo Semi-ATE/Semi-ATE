@@ -125,10 +125,7 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_10">
-             <property name="spacing">
-              <number>0</number>
-             </property>
+            <layout class="QFormLayout" name="formLayout">
              <property name="leftMargin">
               <number>0</number>
              </property>

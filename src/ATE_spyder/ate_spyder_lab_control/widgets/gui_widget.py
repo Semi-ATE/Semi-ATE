@@ -2,7 +2,7 @@
 """
 Created on Thu Dec 23 09:17:01 2020
 
-@author: C. Jung
+@author: ZLin525F
 
 INFO:
     icons von https://github.com/spyder-ide/qtawesome
@@ -11,20 +11,11 @@ INFO:
 import os
 import time
 import importlib
-import json
 import qtawesome as qta
 import qdarkstyle
-import socket
 from PyQt5 import uic
 from qtpy.QtCore import Signal
 from PyQt5 import QtWidgets, QtCore
-
-import labml_adjutancy.misc.mqtt_client as mqtt
-
-from labml_adjutancy.misc.mqtt_client import (
-    mqtt_displayattributes,
-    mqtt_init
-)
 
 from qtpy.QtWidgets import QHBoxLayout
 from spyder.api.translations import get_translation
@@ -36,7 +27,6 @@ _ = get_translation("spyder")
 
 
 __author__ = "Zlin526F"
-__copyright__ = "Copyright 2022, Lab"
 __credits__ = ["Zlin526F"]
 __email__ = "Zlin526F@github"
 __version__ = "0.0.1"
@@ -67,6 +57,13 @@ class LabGui(PluginMainWidget):
             use subtopic[] for the other instName in the Gui
     """
 
+    default_tester_icon = qta.icon("mdi6.remote", color="green", scale_factor=1.0)
+    actuator_types = {'Temperature': None,
+                      'Magnetic Field': None,
+                      'Light': None,
+                      'Acceleration': None,
+                      'Position': None,
+                      'Pressure': None}
     _states = {  # from extern mean: no handling from Lab Gui, normally you get this message if your are running the MiniSCTGui
         "notconnect": ["no connection to broker ", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "busy": ["get busy from extern", None],
@@ -143,10 +140,12 @@ class LabGui(PluginMainWidget):
         self.topinstname = ""
         self._state = "init"
         self.state = "init"
+        self.gui_icons = {}
         self.flagAppclosed = False
 
     def setup_widget(self, project_info):
         self.project_info = project_info
+        self.update_actions()
 
     def setup(self):
         layout = QHBoxLayout()
@@ -154,16 +153,64 @@ class LabGui(PluginMainWidget):
         self.setLayout(layout)
 
     def update_actions(self):
-        pass
+        from ate_projectdatabase.Hardware import Hardware
+
+        if self.project_info is not None:
+            hw = self.project_info.active_hardware
+            base = self.project_info.active_base
+            hardware_def = Hardware.get(self.project_info.file_operator, hw).definition
+            tester_name = hardware_def['tester']
+            actuators = hardware_def['Actuator'][base]
+            print(actuators)
+            self.create_button('tester', tester_name)
+            for actuator in actuators:   # todo: actuartors see https://github.com/Semi-ATE/Semi-ATE/blob/master/docs/project/DevelopmentProcess/development_setup.md
+                self.create_button(actuator, tester_name)    # and https://github.com/Semi-ATE/TCC_actuators
+
+    def create_button(self, instance_name, name):
+        from ate_semiateplugins.pluginmanager import get_plugin_manager
+
+        if instance_name == 'tester':
+            lib_types = get_plugin_manager().hook.get_tester_type(tester_name=name)[0]
+        else:
+            lib_types = self.actuator_types[name]
+            if lib_types is None:
+                return
+        if instance_name not in self.gui_icons:
+            button = QtWidgets.QToolButton(self.gui.frame)
+            button.setGeometry(QtCore.QRect(10, 10, 42, 42))
+            button.setIconSize(QtCore.QSize(40, 40))
+            button.lib = None
+            button.instance = None
+            self.gui_icons[instance_name] = button
+        elif self.gui_icons[instance_name].lib is not None:
+            button = self.gui_icons[instance_name]
+            importlib.reload(button.lib)
+
+        button.setText(name)
+        if hasattr(lib_types, 'gui'):
+            button.lib = importlib.import_module(lib_types.gui)
+            button.setEnabled(True)
+        if button.lib is not None and hasattr(button.lib, 'icon'):
+            button.setIcon(button.lib.icon)
+        elif button.lib is None:
+            button.setEnabled(False)
+
+        button.setToolTip(name)
+        button.clicked.connect(lambda checked, name=instance_name: self.icon_button_clicked(instance_name))
+        button.subtopic = []
+        button.show()
 
     def get_title(self):
         return _("Lab Gui")
 
     def update_labgui(self, test_program_name):
+
         self.lab_control = self.project_info.lab_control
         self.lab_control.receive_msg_for_instrument.connect(self.receive_msg_for_instrument)
         self.mqtt = self.lab_control.mqtt
         self.logger = self.lab_control.logger
+
+        self.update_actions()
         self.state = 'testing'
 
     def show(self):
@@ -216,6 +263,8 @@ class LabGui(PluginMainWidget):
                 # the syntax is {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
                 pindex += 1
                 found = False
+                if addmenu == 'tester':
+                    continue
                 if pindex == 0 and addmenu not in self.menuBar.titles:  # add new Menu Title
                     self.gui.newMenu.append(QtWidgets.QMenu(addmenu, self.gui))
                     self.gui.newMenu[-1].instance = None
@@ -235,10 +284,7 @@ class LabGui(PluginMainWidget):
                             break
                         mindex += 1
                     if found:
-                        # print(f"     update menu: {addmenu}")
                         lib = msg["payload"][addmenu].split(".")[-1]
-                        # print(f"     reload lib {lib} from {msg['payload'][addmenu]}")
-                        # print(f"     reload lib {str(self.gui.newMenu[mindex].lib)}")
                         try:
                             importlib.reload(self.gui.newMenu[mindex].lib)
                         except Exception as ex:
@@ -321,6 +367,17 @@ class LabGui(PluginMainWidget):
         """Activate all disabled buttons."""
         pass
 
+    def icon_button_clicked(self, name):
+        print(name)
+        button = self.gui_icons[name]
+        if button.instance is None:
+            button.instance = button.lib.Gui(self, name, self.project_info.parent)  # start Gui
+            button.instance.subtopic = button.subtopic
+            button.instance.topinstname = name
+        else:
+            pass
+            #button.instance.show()
+
     # display:
     def extendedbarClicked(self, index):
         if index == 0:
@@ -343,16 +400,9 @@ class LabGui(PluginMainWidget):
             self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(self, name, self.project_info.parent)  # start Gui
             self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[index].subtopic
             self.gui.newMenu[index].instance.topinstname = self.topinstname
-            # print(f" create {self.gui.newMenu[index].instance} done")
-            # print(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
         elif self.gui.newMenu[index].instance is not None:
             self.gui.newMenu[index].instance.close()
             self.gui.newMenu[index].instance = None
-
-    def guiclicked(self, cmd):
-        """Handle mouseclicks on a button."""
-        pass
-       #  if cmd == "reset":
 
     @property
     def state(self):
@@ -453,9 +503,11 @@ if __name__ == "__main__":
     app.references = set()
     main = QMainWindow()
     homedir = os.path.expanduser("~")
-    project_directory = homedir + r'\ATE\packages\envs\semi-ate-6\HATB'       # path to your semi-ate project
+    project_directory = homedir + r'\ATE\packages\envs\semi-ate-awinia1\HATB'       # path to your semi-ate project
     project_info = ProjectNavigation(project_directory, homedir, main)
     project_info.active_hardware = 'HW0'
     project_info.active_base = 'PR'
     project_info.active_target = 'Device1'
-    LabGui(None, None)
+    
+    labgui = LabGui('Lab Gui', main)
+    labgui.setup_widget(project_info)
