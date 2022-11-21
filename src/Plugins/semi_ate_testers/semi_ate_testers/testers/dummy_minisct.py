@@ -26,6 +26,7 @@ class DummyMiniSCT(TesterInterface, create_attributes, mqtt_deviceattributes):
 
     """
     SITE_COUNT = 1
+    gui = "labml_adjutancy.gui.instruments.minisct.minisct"
 
     class Force_state(Enum):
         """Enum for force state."""
