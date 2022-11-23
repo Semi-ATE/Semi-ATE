@@ -180,6 +180,7 @@ class OutputParameter(ParameterBase):
         self._set_input_fields(self.unit, self.table_row, OutputFieldsPosition.Unit())
         self._set_input_fields(self.format, self.table_row, OutputFieldsPosition.Format())
         self._set_input_fields(self.test_number, self.table_row, OutputFieldsPosition.No())
+        self._set_input_fields(self.exponent, self.table_row, OutputFieldsPosition.Power())
 
     def on_edit_done_impl(self, new_text, value_index):
         self.set_limit(float(new_text), value_index)

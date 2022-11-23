@@ -142,8 +142,9 @@ class InputFieldsPosition(IntEnum):
     Value = 2
     Max = 3
     Unit = 4
-    Format = 5
-    Type = 6
+    Power = 5
+    Format = 6
+    Type = 7
 
     def __call__(self):
         return self.value
@@ -157,7 +158,8 @@ class OutputFieldsPosition(IntEnum):
     Utl = 4
     Usl = 5
     Unit = 6
-    Format = 7
+    Power = 7
+    Format = 8
 
     def __call__(self):
         return self.value
