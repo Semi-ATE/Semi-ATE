@@ -68,6 +68,7 @@ class LabGuiPlugin(SpyderDockablePlugin):
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_ate_progname.connect(self.runflow_changed)
         ate.sig_test_tree_update.connect(self.update_actions)
+        ate.sig_stop_debugging.connect(widget.debug_stop)
 
     def _setup_test_runner_widget(self):
         widget: LabGui = self.get_widget()

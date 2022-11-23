@@ -156,6 +156,10 @@ class LabGui(PluginMainWidget):
         from ate_projectdatabase.Hardware import Hardware
 
         if self.project_info is not None:
+            self.lab_control = self.project_info.lab_control
+            self.lab_control.receive_msg_for_instrument.connect(self.receive_msg_for_instrument)
+            self.mqtt = self.lab_control.mqtt
+            self.logger = self.lab_control.logger
             hw = self.project_info.active_hardware
             base = self.project_info.active_base
             hardware_def = Hardware.get(self.project_info.file_operator, hw).definition
@@ -166,29 +170,30 @@ class LabGui(PluginMainWidget):
             for actuator in actuators:   # todo: actuartors see https://github.com/Semi-ATE/Semi-ATE/blob/master/docs/project/DevelopmentProcess/development_setup.md
                 self.create_button(actuator, tester_name)    # and https://github.com/Semi-ATE/TCC_actuators
 
-    def create_button(self, instance_name, name):
+    def create_button(self, instanceName, name):
         from ate_semiateplugins.pluginmanager import get_plugin_manager
 
-        if instance_name == 'tester':
+        if instanceName == 'tester':
             lib_types = get_plugin_manager().hook.get_tester_type(tester_name=name)
             if len(lib_types) >= 1:
                 lib_types = lib_types[0]
             else:
                 return
         else:
-            lib_types = self.actuator_types[instance_name]
+            lib_types = self.actuator_types[instanceName]
             if lib_types is None:
                 return
-        if instance_name not in self.gui_icons:                      # create new icon button
+        if instanceName not in self.gui_icons:                      # create new icon button
             button = QtWidgets.QToolButton(self.gui.frame)
             button.setGeometry(QtCore.QRect(10, 10, 42, 42))
             button.setIconSize(QtCore.QSize(40, 40))
+            button.name = instanceName
             button.lib = None
             button.instance = None
-            self.gui_icons[instance_name] = button
+            self.gui_icons[instanceName] = button
         else:                                                        # use existing icon button
-            button = self.gui_icons[instance_name]
-            if self.gui_icons[instance_name].lib is not None:
+            button = self.gui_icons[instanceName]
+            if self.gui_icons[instanceName].lib is not None:
                 importlib.reload(button.lib)
 
         button.setText(name)
@@ -201,7 +206,7 @@ class LabGui(PluginMainWidget):
             button.setEnabled(False)
 
         button.setToolTip(name)
-        button.clicked.connect(lambda checked, name=instance_name: self.icon_button_clicked(instance_name))
+        button.clicked.connect(lambda checked, name=instanceName: self.icon_button_clicked(instanceName))
         button.subtopic = []
         button.show()
 
@@ -209,12 +214,6 @@ class LabGui(PluginMainWidget):
         return _("Lab Gui")
 
     def update_labgui(self, test_program_name):
-
-        self.lab_control = self.project_info.lab_control
-        self.lab_control.receive_msg_for_instrument.connect(self.receive_msg_for_instrument)
-        self.mqtt = self.lab_control.mqtt
-        self.logger = self.lab_control.logger
-
         self.update_actions()
         self.state = 'testing'
 
@@ -320,53 +319,95 @@ class LabGui(PluginMainWidget):
                 self.menuBar.adjustSize()
         elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a application in the extended Menu
             print(f"   message for the extended GUI received: '{topic}= {msg}'")
+            print(f"       {self.gui.newMenu}")
             for app in self.gui.newMenu:
-                if not hasattr(app, "instance") or app.instance is None:
-                    continue
-                print(f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}")
-                name = None
-                app.topinstname = self.topinstname
-                if len(app.subtopic) > 0:
-                    for subtopic in app.subtopic:
-                        if subtopic in msg.keys():
-                            name = subtopic
-                elif hasattr(app.instance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
-                    for subtopic in app.instance.subtopic:
-                        if subtopic in msg.keys():
-                            name = subtopic
-                if app.name in msg.keys() and app.instance is not None:
-                    name = app.name
-                if name is not None:
-                    msg = msg[name]
-                    cmd = msg["cmd"]
-                    value = msg["payload"]
-                    print(f"    message for {app.name}: {cmd} = {msg} -->   ")
-                    try:
-                        if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
-                            # print(f"   begin set attribute {cmd}={value}")
-                            app.instance.__setattr__(cmd, value)
-                            # print("   --> set attribute done")
-                        elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
-                            if value == []:  # it is a function call?
-                                # print(f"   begin call function {cmd}")
-                                app.instance.__getattribute__(cmd)()
-                                # print("   --> call function done")
-                            else:
-                                # print(f"   begin get/set attribute {cmd}={value}")
-                                app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
-                                # app.instance.__getattribute__(cmd)
-                                # print("   --> begin get/set attribute done")
-                            # print("   function call done")
-                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # get more information as only the payload
-                            app.instance.mqttreceive(name, msg)
-                        elif not hasattr(app.instance, cmd):
-                            self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
-                        else:
-                            self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
-                    except Exception as ex:
-                        msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
-                        self.logger.error(msg)
-                        print(msg)
+                self.transfer2gui(app, topic, msg)
+            instanceName = list(msg.keys())[0]
+            if instanceName in self.gui_icons:
+                self.transfer2gui(self.gui_icons[instanceName], topic, msg)
+                
+                # if not hasattr(app, "instance") or app.instance is None:
+                #     continue
+                # print(f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}")
+                # name = None
+                # app.topinstname = self.topinstname
+                # if len(app.subtopic) > 0:
+                #     for subtopic in app.subtopic:
+                #         if subtopic in msg.keys():
+                #             name = subtopic
+                # elif hasattr(app.instance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
+                #     for subtopic in app.instance.subtopic:
+                #         if subtopic in msg.keys():
+                #             name = subtopic
+                # if app.name in msg.keys() and app.instance is not None:
+                #     name = app.name
+                # if name is not None:
+                #     msg = msg[name]
+                #     cmd = msg["cmd"]
+                #     value = msg["payload"]
+                #     print(f"    message for {app.name}: {cmd} = {msg} -->   ")
+                #     try:
+                #         if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
+                #             # print(f"   begin set attribute {cmd}={value}")
+                #             app.instance.__setattr__(cmd, value)
+                #             # print("   --> set attribute done")
+                #         elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
+                #             if value == []:  # it is a function call?
+                #                 app.instance.__getattribute__(cmd)()
+                #             else:
+                #                 app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
+                #         elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # get more information as only the payload
+                #             app.instance.mqttreceive(name, msg)
+                #         elif not hasattr(app.instance, cmd):
+                #             self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
+                #         else:
+                #             self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
+                #     except Exception as ex:
+                #         msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
+                #         self.logger.error(msg)
+                #         print(msg)
+
+    def transfer2gui(self, app, topic, msg):
+        if not hasattr(app, "instance") or app.instance is None:
+            return
+        print(f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}")
+        name = None
+        app.topinstname = self.topinstname
+        if len(app.subtopic) > 0:
+            for subtopic in app.subtopic:
+                if subtopic in msg.keys():
+                    name = subtopic
+        elif hasattr(app.instance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
+            for subtopic in app.instance.subtopic:
+                if subtopic in msg.keys():
+                    name = subtopic
+        if app.name in msg.keys() and app.instance is not None:
+            name = app.name
+        if name is not None:
+            msg = msg[name]
+            cmd = msg["cmd"]
+            value = msg["payload"]
+            print(f"    message for {app.name}: {cmd} = {msg} -->   ")
+            try:
+                if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
+                    # print(f"   begin set attribute {cmd}={value}")
+                    app.instance.__setattr__(cmd, value)
+                    # print("   --> set attribute done")
+                elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
+                    if value == []:  # it is a function call?
+                        app.instance.__getattribute__(cmd)()
+                    else:
+                        app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
+                elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # get more information as only the payload
+                    app.instance.mqttreceive(name, msg)
+                elif not hasattr(app.instance, cmd):
+                    self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
+                else:
+                    self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
+            except Exception as ex:
+                msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
+                self.logger.error(msg)
+                print(msg)
 
     def setButtonActive(self, value):
         """Activate all disabled buttons."""
@@ -493,6 +534,10 @@ class LabGui(PluginMainWidget):
         print("Semicontrol.__del__")
         self.close()
         super().__del__
+
+    def debug_stop(self):
+        ''' do update the state of lab control when the test application is stoped '''
+        pass
 
 
 if __name__ == "__main__":
