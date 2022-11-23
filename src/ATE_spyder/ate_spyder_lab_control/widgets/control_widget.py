@@ -1122,9 +1122,10 @@ class LabControl(PluginMainWidget):
         super().close()
 
     def __del__(self):
-        print("Semicontrol.__del__")
+        print("Lab control.__del__")
         self.close()
         super().__del__
 
     def debug_stop(self):
         ''' do update the state of lab control when the test application is stoped '''
+        self.state = 'terminated'

@@ -108,7 +108,6 @@ class Gui(Guibase):
         self.mydir = os.path.dirname(__file__) + os.sep
         self.myframe = load_ui(self.gui.myframe, self.mydir + "svg.ui")
         self.mqtt2svgelement = []
-        # bgcolor = self.gui.palette().color(QtGui.QPalette.Background).name()    # getRgb()
         self.myadjustUI()
         self.gui.closeEvent = self.close
         self.parent = parent
@@ -127,7 +126,7 @@ class Gui(Guibase):
             for index in range(0, svgfiles[svgfile][1]):
                 self.chtabs.append(QtWidgets.QWidget())
                 tabname = (
-                    f"{svgfile}({index})"
+                    f"{svgfile}{index}"
                     if svgfiles[svgfile][1] > 1
                     else svgfile
                 )
@@ -221,7 +220,7 @@ class Gui(Guibase):
                                 msg["payload"] = mqttcmds['commands'][prefix][trcmd][1]
                 check = False
             if check:
-                print(f"      for {key} not translation found  in = {msg['cmd']} ")   
+                print(f"      for {key} not translation found  in = {msg['cmd']} ")
             print(f'   {instName}.mqttreceive: translate to {msg}')
         if super().mqttreceive(instName, msg, check):
             ch = msg["cmd"].split(".")[0]

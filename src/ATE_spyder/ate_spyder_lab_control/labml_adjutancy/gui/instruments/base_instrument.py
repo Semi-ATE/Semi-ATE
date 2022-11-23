@@ -91,7 +91,6 @@ class Gui(object):
         self.logger = mylogger() if not hasattr(grandparent, "logger") else grandparent.logger
         self.parentwindow = parentwindow if parentwindow is not None else grandparent
         window = QtWidgets.QMainWindow(parentwindow)
-        # window = QtWidgets.QDialog(grandparent)
         self.instName = name
         self.instNameExtension = ""
         self.grandparent = grandparent
