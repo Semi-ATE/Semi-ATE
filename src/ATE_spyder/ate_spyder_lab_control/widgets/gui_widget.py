@@ -161,8 +161,8 @@ class LabGui(PluginMainWidget):
             hardware_def = Hardware.get(self.project_info.file_operator, hw).definition
             tester_name = hardware_def['tester']
             actuators = hardware_def['Actuator'][base]
-            print(actuators)
             self.create_button('tester', tester_name)
+            print(actuators)
             for actuator in actuators:   # todo: actuartors see https://github.com/Semi-ATE/Semi-ATE/blob/master/docs/project/DevelopmentProcess/development_setup.md
                 self.create_button(actuator, tester_name)    # and https://github.com/Semi-ATE/TCC_actuators
 
@@ -170,21 +170,26 @@ class LabGui(PluginMainWidget):
         from ate_semiateplugins.pluginmanager import get_plugin_manager
 
         if instance_name == 'tester':
-            lib_types = get_plugin_manager().hook.get_tester_type(tester_name=name)[0]
+            lib_types = get_plugin_manager().hook.get_tester_type(tester_name=name)
+            if len(lib_types) >= 1:
+                lib_types = lib_types[0]
+            else:
+                return
         else:
-            lib_types = self.actuator_types[name]
+            lib_types = self.actuator_types[instance_name]
             if lib_types is None:
                 return
-        if instance_name not in self.gui_icons:
+        if instance_name not in self.gui_icons:                      # create new icon button
             button = QtWidgets.QToolButton(self.gui.frame)
             button.setGeometry(QtCore.QRect(10, 10, 42, 42))
             button.setIconSize(QtCore.QSize(40, 40))
             button.lib = None
             button.instance = None
             self.gui_icons[instance_name] = button
-        elif self.gui_icons[instance_name].lib is not None:
+        else:                                                        # use existing icon button
             button = self.gui_icons[instance_name]
-            importlib.reload(button.lib)
+            if self.gui_icons[instance_name].lib is not None:
+                importlib.reload(button.lib)
 
         button.setText(name)
         if hasattr(lib_types, 'gui'):
