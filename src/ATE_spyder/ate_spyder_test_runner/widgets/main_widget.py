@@ -244,6 +244,9 @@ class RunTab(TabInterface):
         self.parent.testName.setCurrentIndex(index)
 
     def _stop_debugging(self):
+        # stop button is always active as we cannot track the state of the process
+        # the problem currently is the ability to stop a process from different places
+        # in spyder IDE
         self.plugin.sig_stop_debugging.emit()
 
     def _update_hardware(self, hw: str):

@@ -75,12 +75,15 @@ class Logger:
     filetime_fmt = '%Y%m%d-%H%M%S'
     base_path = "log"
 
-    def __init__(self, logger_name, mqtt=None):
+    def __init__(self, logger_name, mqtt=None, abs_path: str = ''):
         self.active_loggers = {}
         self.logger_name = logger_name
         self.global_log_level = logging.WARNING
         str_time = time.strftime(self.filetime_fmt)
         self.log_file = os.path.join(self.base_path, f'{str_time}_{logger_name}.log')
+
+        if abs_path:
+            self.log_file = os.path.join(abs_path, self.log_file)
 
         os.makedirs(self.base_path, exist_ok=True)
         # set max size of file (100Mb)

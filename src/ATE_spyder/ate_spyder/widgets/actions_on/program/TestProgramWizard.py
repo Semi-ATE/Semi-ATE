@@ -435,11 +435,13 @@ class TestProgramWizard(BaseDialog):
     def _available_test_selected(self, item):
         self.parametersInput.setEnabled(False)
         self.parametersOutput.setEnabled(False)
+        self.selectedTests.clearSelection()
 
         self._display_active_test()
 
     @QtCore.pyqtSlot()
     def _available_table_clicked(self):
+        self.selectedTests.clearSelection()
         self.parametersInput.setEnabled(False)
         self.parametersOutput.setEnabled(False)
         self.parametersInput.setRowCount(0)
