@@ -226,7 +226,7 @@ class LabControl(PluginMainWidget):
         self.project_info = project_info
         self.project_info.lab_control = self
         current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
-        default_parameter = {"broker": '127.0.0.1', "topic": 'developmode'}
+        default_parameter = {"broker": '127.0.0.1', "topic": 'developmode'}     # "device_id": ''
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
         print(f'{self.plugin.NAME}.current config = {self.current_config}')
 
@@ -621,15 +621,17 @@ class LabControl(PluginMainWidget):
         elif cmd == "preferences":
             from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
 
-            dialog = PluginConfigurationDialog(self, self.plugin.NAME, self.current_config.dict().keys(), self.project_info.active_hardware, self.project_info, self.current_config.dict(), False)
+            dialog = PluginConfigurationDialog(self, self.plugin.NAME, self.current_config.dict().keys(), self.project_info.active_hardware,
+                                               self.project_info, self.current_config.dict(), False)
             dialog.exec_()
-            print(dialog.get_cfg())
-            if dialog.get_cfg() is not None:
+            if dialog.get_cfg() != self.current_config.dict():
                 self.project_info.store_plugin_cfg(self.project_info.active_hardware, self.plugin.NAME, dialog.get_cfg())
                 del(dialog)
-                self.mqtt.mqtt_disconnect()
-                self.mqttclient.mqtt_disconnect()
-                self.mqttclient.close()
+                if hasattr(self, 'mqtt'):
+                    self.mqtt.mqtt_disconnect()
+                if hasattr(self, 'mqttclient'):
+                    self.mqttclient.mqtt_disconnect()
+                    self.mqttclient.close()
                 self.reset()
                 self.setup_widget(self.project_info)
         elif cmd == "reset":
