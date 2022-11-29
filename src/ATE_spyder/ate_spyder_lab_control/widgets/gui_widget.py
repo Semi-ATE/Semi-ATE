@@ -131,7 +131,7 @@ class LabGui(PluginMainWidget):
 
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
-        """Initialise the class semi_control."""
+        """Initialise the class Lab Gui."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         self.plugin = plugin
         self.gui = LabGuiDialog()
@@ -167,6 +167,8 @@ class LabGui(PluginMainWidget):
                 self.logger = self.lab_control.logger
             hw = self.project_info.active_hardware
             base = self.project_info.active_base
+            if hw is None or hw == '':
+                return
             hardware_def = Hardware.get(self.project_info.file_operator, hw).definition
             tester_name = hardware_def['tester']
             actuators = hardware_def['Actuator'][base]
@@ -220,7 +222,7 @@ class LabGui(PluginMainWidget):
 
     def update_labgui(self, test_program_name):
         self.update_actions()
-        self.state = 'testing'
+        # self.state = 'testing'
 
     def show(self):
         super().show()
@@ -417,7 +419,7 @@ class LabGui(PluginMainWidget):
         if type(value) == tuple:
             msg = value[1]
             value = value[0]
-        print(f"semi_control.state = {value}, oldstate ={self._state}")
+        print(f"Lab Gui.state = {value}, oldstate ={self._state}")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
