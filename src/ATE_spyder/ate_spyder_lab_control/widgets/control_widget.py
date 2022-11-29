@@ -194,7 +194,7 @@ class LabControl(PluginMainWidget):
 
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
-        """Initialise the class semi_control."""
+        """Initialise the class Lab Control."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         self.plugin = plugin
         self.passmsg = "Pass"
@@ -232,7 +232,7 @@ class LabControl(PluginMainWidget):
 
         self.sendtopic = f"ate/{self.current_config.topic}/TestApp/"
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
-        mqttclient = mqtt_init()  # prepare mqtt for controlling
+        mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
         if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
             self.state = "notconnect"
             return
@@ -464,14 +464,18 @@ class LabControl(PluginMainWidget):
             return
         topicsplit = topic.split("/")
         notfound = False
+        print(f"mqtt_receive {topic} = {msg}")
         if len(topicsplit) > 2 and topicsplit[1] == self.computername:  # received a message from an instrument ?
             if topicsplit[2] == mqtt.TOPIC_INSTRUMENT:
+                print("mqttReiveMyname")
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
         elif type(msg) is dict and "type" in msg:  # received a message from controlling
+            print("mqttReceiveSemictrl")
             self.mqttReceiveSemictrl(topic, msg)
         else:
+            print("notfound")
             notfound = True
         if notfound:
             self.logger.warning(f"mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
@@ -503,7 +507,7 @@ class LabControl(PluginMainWidget):
             self.receive_msg_for_instrument.emit(topic, msg)
         else:
             pass
-            self.logger.info(f"Info: semi_control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
+            self.logger.info(f"Info: Lab Control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
 
     def mqttReceiveSemictrl(self, topic, msg):
         """
@@ -537,7 +541,7 @@ class LabControl(PluginMainWidget):
                     self.logging(None)
                     self.display_result()
                     self.gui.Llogfilename.setText("")
-            self.logger.debug(f"semi_control.mqtt_receive: {mqttstate}")
+            self.logger.debug(f"Lab Control.mqtt_receive: {mqttstate}")
             if mqttstate != "finish_seq":
                 self.state = mqttstate
         elif msgtype == "log":
@@ -725,14 +729,14 @@ class LabControl(PluginMainWidget):
         """
         path = os.path.join(self.project_info.project_directory, "log", self.logfilename)
         if msg is None or msg == "":
-            self.logger.debug("semi_control.logging: clear")
+            self.logger.debug("Lab Control.logging: clear")
             self.gui.TElogging.clear()
         elif msg == "clr":
-            self.logger.debug("semi_control.logging: clr")
+            self.logger.debug("Lab Control.logging: clr")
             self.gui.TElogging.clear()
         elif msg in (self.logging_cmd_reload, "!LOAD!"):
             if self.project_info.active_hardware != "" and self.project_info.active_base != "":
-                self.logger.debug(f"semi_control.logging: {msg}")
+                self.logger.debug(f"Lab Control.logging: {msg}")
                 if msg == "!LOAD!":
                     "logload"
                     self.display_result()
@@ -740,7 +744,7 @@ class LabControl(PluginMainWidget):
                     self.gui.TElogging.clear()
                 self.readlog(path)
             if msg == self.logging_cmd_reload:
-                self.logger.debug("    semi_control.logging: RELOAD")
+                self.logger.debug("    Lab Control.logging: RELOAD")
                 self.saveconfig()
         else:
             if msg.find("\r") == len(msg) - 1:
@@ -850,7 +854,11 @@ class LabControl(PluginMainWidget):
             for val in apara:
                 dmsg = dmsg + f"{val[0]}={val[1]}, "
             msg = dmsg[:-2] + msg
-        self.logger.debug(f"semi_control.state = {value}, oldstate ={self._state}")
+        print(f"Lab Control.state = {value}, oldstate ={self._state}")
+        if hasattr(self, 'mqttclient'):
+            print(f"       mqttclient.typ ={self.mqttclient.typ}")
+        else:
+            print("       mqttclient not found ????!!!!!!!!!!!!!")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
@@ -866,17 +874,17 @@ class LabControl(PluginMainWidget):
             self.progressbar.finish(False)
             self.setButtonActive(True)
         elif value == "config" or (value == "idle" and oldstate not in ("config", "testing")):  # start identify
-            self.logger.debug("semi_control.state: config apply")
+            self.logger.debug("Lab Control.state: config apply")
             self.cycle = 0
             self.display_result()
             if self.gui.CBstartauto.isChecked():
-                self.logger.debug(f"semi_control.state: {value}, config apply, Auto is enabled -> send next")
+                self.logger.debug(f"Lab Control.state: {value}, config apply, Auto is enabled -> send next")
                 self.guiclicked("next")
         elif value == "idle" and oldstate in ("reset", "config", "testing") and self.actionSequencer_Parameters.isChecked() and self.gui.CBautoseq.isChecked():  # testprogramm runs through
-            self.logger.debug("semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)")
+            self.logger.debug("Lab Control.state: idle, Auto sequence is enabled -> guiclicked(next)")
             self.guiclicked("next")
         elif value == "idle" and oldstate in ("reset", "config", "testing") and self.gui.CBstopauto.isChecked():  # testprogramm runs through
-            self.logger.debug("semi_control.state: idle, Auto is enabled -> send terminate")
+            self.logger.debug("Lab Control.state: idle, Auto is enabled -> send terminate")
             self.mqtt_send("cmd", "terminate")
 
     # result:
@@ -908,7 +916,7 @@ class LabControl(PluginMainWidget):
         msg == 'pass' -> msg in green
             else -> msg in red
         """
-        self.logger.debug(f"semi_control.display_result: {msg}")
+        self.logger.debug(f"Lab Control.display_result: {msg}")
         self.gui.Ldate.setText("Testresult from {}".format(self.lasttime))
         result = None
         if msg is None:
