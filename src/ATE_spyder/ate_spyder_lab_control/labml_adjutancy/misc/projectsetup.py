@@ -396,7 +396,7 @@ class ProjectSetup(object):
             found = False
             if cmdsplit[0] == 'tcc':
                 cmdsplit.pop(0)
-            if cmdsplit[0] in self.result.instruments.keys():
+            if hasattr(self.result, 'instruments') and cmdsplit[0] in self.result.instruments.keys():
                 path = self.parent
                 found = True
             elif cmdsplit[0] in self.__dict__:
