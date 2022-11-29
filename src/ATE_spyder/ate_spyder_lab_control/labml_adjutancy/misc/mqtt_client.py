@@ -469,7 +469,10 @@ class mqtt_deviceattributes(object):
                     }
                 }
             if payload != "nomqtt":
-                self._mqttclient.publish(self.topic, payload)
+                if self._mqttclient is not None:
+                    self._mqttclient.publish(self.topic, payload)
+                else:
+                    print(f" _mqttclient is None: coulnt't publish {attr}, {value}")
                 if self.mqtt_debug:
                     print(
                         "{} {} publish: {} {}".format(
