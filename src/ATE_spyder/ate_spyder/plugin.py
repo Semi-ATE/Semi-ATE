@@ -67,6 +67,7 @@ class ATE(SpyderDockablePlugin):
 
     sig_run_cell = Signal()
     sig_debug_cell = Signal()
+    sig_stop_debugging = Signal()
     sig_ate_progname = Signal(str)
 
     sig_test_tree_update = Signal()

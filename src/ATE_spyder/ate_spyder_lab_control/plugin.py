@@ -55,12 +55,7 @@ class LabControlPlugin(SpyderDockablePlugin):
         return self.create_icon('mdi.chip')
 
     def on_initialize(self):
-        widget = self.get_widget()
-        # widget.sig_run_cell.connect(self.sig_run_cell)
-        # widget.sig_debug_cell.connect(self.sig_debug_cell)
-        # widget.sig_stop_debugging.connect(self.sig_stop_debugging)
-
-        # widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
+        pass
 
     def update_font(self):
         pass
@@ -72,7 +67,7 @@ class LabControlPlugin(SpyderDockablePlugin):
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_ate_progname.connect(self.runflow_changed)
-        # ate.sig_test_tree_update.connect(widget.sig_test_tree_update)
+        ate.sig_stop_debugging.connect(widget.debug_stop)
 
     def _setup_test_runner_widget(self):
         widget: LabControl = self.get_widget()

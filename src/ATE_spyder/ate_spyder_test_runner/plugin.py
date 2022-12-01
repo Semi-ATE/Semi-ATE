@@ -73,6 +73,8 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_test_tree_update.connect(widget.sig_test_tree_update)
 
+        widget.sig_stop_debugging.connect(ate.sig_stop_debugging)
+
     def _setup_test_runner_widget(self):
         widget: TestRunner = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)

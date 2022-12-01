@@ -870,8 +870,8 @@ class ProjectNavigation(QObject):
     def _generate_bin_table_path(self, program_name):
         return self._generate_path_for_program(f'{program_name}_binning.json')
 
-    def _generate_auto_script_path(self, program_name):
-        return self._generate_path_for_program(f'{program_name}_auto_script.py')
+    def _generate_auto_script_path(self, hardware_name: str):
+        return Path(self.project_directory).joinpath(self.project_name, hardware_name, f'{hardware_name}_auto_script.py')
 
     def _generate_strategy_file_path(self, program_name):
         return self._generate_path_for_program(f'{program_name}_execution_strategy.json')

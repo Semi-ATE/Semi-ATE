@@ -219,6 +219,7 @@ class InputParameter(ParameterBase):
         self._set_input_fields(self.unit, self.table_row, InputFieldsPosition.Unit())
         self._set_input_fields(self.format, self.table_row, InputFieldsPosition.Format())
         self._set_input_fields(self.type, self.table_row, InputFieldsPosition.Type())
+        self._set_input_fields(self.exponent, self.table_row, InputFieldsPosition.Power())
 
     def on_edit_done_impl(self, new_text, _):
         try:
