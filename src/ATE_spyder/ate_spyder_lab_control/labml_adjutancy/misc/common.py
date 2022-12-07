@@ -77,6 +77,8 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
     if mqttcmd.find("(") > 0:
         mqttcmd = mqttcmd[: mqttcmd.find("(") + 1] + ")"
         typ = "func"
+    elif typ is None and mqttcmd.find(':') < 0:
+        typ= "get"        
     if mqttcheck and mqttcmd not in ["mqtt_status"] + parent.mqtt_list:
         instname = parent.instName if hasattr(self, "instName") else parent
         print(f"   Warning strcall: {instname} get {mqttcmd}, but it is not in the mqtt_list")
@@ -87,16 +89,18 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
         try:
             exec(f"self.{command} = {evalue}")
             print(f"   self.{instname}{command} := {value}")
+            return None
         except Exception as ex:
             print(f"   strcall error: 'self.{instname}{command} := {value}' get an exception: {ex}")
-        return None
+            return "ERROR"    
     elif typ == "get":
         try:
             value = eval(f"self.{command}")
             print(f"   self.{instname}{command} == {value}")
+            return value
         except Exception as ex:
             print(f"   strcall get error: 'self.{instname}{command}' get an exception: {ex}")
-        return value
+            return "ERROR"
     elif typ == "func":
         command = command[: command.find("(")]
         para = ""
@@ -106,14 +110,15 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
             para = para[:-1]
         elif type(value) == str and value != "":
             para = f"'{value}'"
-        elif para is not None:
+        elif value is not None:
             para = value
         try:
-            exec(f"self.{command}({para})")
+            result=eval(f"self.{command}({para})")
             print(f"   self.{instname}{command}({para})")
+            return result
         except Exception as ex:
-            print(f"   strcall error func: self.{instname}{command}({para}), get an exception: {ex}\n      typ(value)={type(value)}) ")
-        return None
+            print(f"   strcall error func: self.{instname}{command}({para}), get an exception: {ex}")
+            return 'ERROR'
 
 
 def convertExpr2Expression(Expr):
@@ -272,7 +277,7 @@ def check(msg, target, actual, tolerance=0, mask=None):
             target = str2num(target.replace("x", "0", len(target)))
     if type(actual) != type(target):
         error = 1
-        msg = f"{msg}  diffenrent type from target={type(target)}  and actual=(type(actual) -> couldn't check')"
+        msg = f"{msg}  different type: target= {target}({type(target)}) <-> actual= {actual}({type(actual)}) -> couldn't check')"
     elif type(actual) is list:
         if len(target) != len(actual):
             print("Warning: len() from target list (={len(target)}) <-> actual list ({len(actual)}), are different!!!!")
