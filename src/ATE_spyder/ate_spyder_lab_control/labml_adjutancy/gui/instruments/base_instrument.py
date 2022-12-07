@@ -298,9 +298,7 @@ class Gui(object):
                     print(f"        {self.instName}.mqttreceive base:  set {name[0]}.{element}={msg['payload']}")
                     return True
             if widget is None:
-                print(
-                    f'    Warning {self.instName}.mqttreceive base: {instName}, cmd={msg["cmd"]} type= msg["type"] not implemented yet !'
-                )
+                # print(f'    Warning {self.instName}.mqttreceive base: {instName}, cmd={msg["cmd"]} type= msg["type"] not implemented yet !')
                 return False
             print(f'    {self.instName}.mqttreceive base: {instName}, found {widget.objectName()}, type={type(widget)} value={msg["payload"]}')
             value = str2num(msg["payload"], default=-1)
@@ -380,7 +378,7 @@ class Gui(object):
             self.gui.myframe.setEnabled(True)
             print(f"   now ask for init values  {self.mqtt_initlist}, {self.mqtt_cmds}")
             for attribute in self.mqtt_initlist + self.mqtt_cmds:
-                if attribute.find("!") == 0:
+                if attribute.find("!") < 0:
                     print(f"       {attribute}")
                     self.grandparent.mqtt.publish_get(self.instName, attribute)
         msg = f"{self.instName}: {value}"
