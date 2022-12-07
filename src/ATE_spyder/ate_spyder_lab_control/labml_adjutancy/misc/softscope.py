@@ -56,9 +56,10 @@ class Softscope(mqtt_deviceattributes):
         self.topinstname = topinstname
 
     def setchannel(self, value):
-        """set the scopeChannel via mqtt"""
-        result = common.strcall(self.topinstname, value, "set")
+        """set the scopeChannel via mqtt"""        
+        result = common.strcall(self.topinstname, value)
         self.scopeChannel = value if result != "ERROR" else "ERROR"
+        # print(f'Softscope.setchannel: {value} -> {result}')        
         self.publish_set("scopeChannel", self.scopeChannel)
 
     def on(self):
@@ -94,7 +95,7 @@ class Softscope(mqtt_deviceattributes):
             return
         starttime = time()
         # print(f'_newsample: {self.topinstname}, {self.scopeChannel}')
-        result = common.strcall(self.topinstname, self.scopeChannel, typ="func")
+        result = common.strcall(self.topinstname, self.scopeChannel)
         if result == "ERROR":
             self.logger.log_message(LogLevel.Error(), f"{self.instName} get ERROR from {self.scopeChannel}  -->stop sampling")
             return
