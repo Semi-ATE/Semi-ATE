@@ -41,16 +41,9 @@ from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
 from labml_adjutancy.misc.common import check, str2num
 
-try:
-    from semictrl import mqttc
 
-    has_mqttc = True
-except ImportError:
-    has_mqttc = False
-
-
-__copyright__ = "Copyright 2021, Lab"
-__version__ = "0.0.1"
+__copyright__ = "Copyright 2022, Lab"
+__version__ = "0.0.2"
 
 mylogger = None
 
@@ -1168,7 +1161,7 @@ class RegisterMaster(mqtt_deviceattributes):
         if hasattr(self, "mqtt_all") and name in self.mqtt_all:
             self.publish_set(name, value)
 
-    def __init__(self, logger=None, filename=None, interface=None, instname="regs", read_mod_write=False, enableMqtt=True):
+    def __init__(self, logger=None, filename=None, interface=None, instname="regs", read_mod_write=False):
         global mylogger
         self.gui = "labml_adjutancy.gui.instruments.regs.registermaster"
         _setattr = object.__setattr__.__get__(self, self.__class__)
@@ -1190,8 +1183,6 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr("_bank", -1)
         _setattr("_atomic", read_mod_write)
         _setattr("_len_reg", 0)
-        if has_mqttc and enableMqtt:
-            self.mqtt_add(mqttc, self)
 
     def __repr__(self):
         args = ["{!r}".format(self.filename)]
@@ -1201,8 +1192,12 @@ class RegisterMaster(mqtt_deviceattributes):
         return "{classname}({args})".format(classname=self.__class__.__name__, args=", ".join(args))
 
     def init(self):
+        from semictrl import mqttc
+        
         if self.filename is None:
             raise IOError(f"{__class__}: no filename defined")
+        if mqttc is not None:
+            self.mqtt_add(mqttc, self)
         blocked_regs = tuple(self.__class__.__dict__)
         blocked_slices = tuple(Register.__dict__)
         db = RegDB(self.filename)
