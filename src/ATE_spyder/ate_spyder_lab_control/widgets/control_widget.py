@@ -460,25 +460,23 @@ class LabControl(PluginMainWidget):
         try:
             msg = json.loads(msg)
         except Exception as ex:
-            self.logger.error(f"mqtt_receive '{topic}: {msg}' with error {ex}")
+            self.logger.error(f"Lab Control.mqtt_receive '{topic}: {msg}' with error {ex}")
             return
         topicsplit = topic.split("/")
         notfound = False
-        print(f"mqtt_receive {topic} = {msg}")
+        print(f"Lab Control.mqtt_receive {topic} = {msg}")
         if len(topicsplit) > 2 and topicsplit[1] == self.computername:  # received a message from an instrument ?
             if topicsplit[2] == mqtt.TOPIC_INSTRUMENT:
-                print("mqttReiveMyname")
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
         elif type(msg) is dict and "type" in msg:  # received a message from controlling
-            print("mqttReceiveSemictrl")
-            self.mqttReceiveSemictrl(topic, msg)
+            self.mqttReceiveLabcontrol(topic, msg)
         else:
             print("notfound")
             notfound = True
         if notfound:
-            self.logger.warning(f"mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
+            self.logger.warning(f"Lab Control.mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
 
     def mqttReiveMyname(self, topic, msg):
         """
@@ -509,7 +507,7 @@ class LabControl(PluginMainWidget):
             pass
             self.logger.info(f"Info: Lab Control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
 
-    def mqttReceiveSemictrl(self, topic, msg):
+    def mqttReceiveLabcontrol(self, topic, msg):
         """
         Call if a message from ATE controlling received.
 
