@@ -653,13 +653,12 @@ class ProjectSetup(object):
     def _write(self):
         """Write the dictionary to the logfile."""
         # self.__dict__.pop('init')
-        with open(self._RESULT, 'w') as outfile:
+        with open(os.getenv('PROJECT_PATH') + "output" + os.sep + self._RESULT, 'w') as outfile:
             outfile.write('{')
             self.jsondump(outfile, self.setup)
             outfile.write('    ,\n')
             self.jsondump(outfile, 'result')
-            # json.dump(self.setup, outfile, indent=2)
-            # json.dump(self.result, outfile, indent=2)     # sort_keys=True
+            # json.dump(self.setup, outfile, indent=2)            # json.dump(self.result, outfile, indent=2)     # sort_keys=True
             outfile.write('\n}')
         self.logger.log_message(LogLevel.Info(), f'write results to {self._RESULT}')
 
