@@ -13,7 +13,6 @@ TODO:
 """
 import os
 import time
-import importlib
 import json
 import qtawesome as qta
 import qdarkstyle
@@ -71,11 +70,6 @@ class LabControl(PluginMainWidget):
     - most interactions from the user with the gui will be handle in guiclicked('')
     - mqtt command will be handle in mqtt_receive()
 
-    for extend the Menubar:
-        - send mqtt with {'semictrl': {'type': 'cmd', 'cmd': 'menu', 'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}}
-        - app must have the class GUI(parent=None, name=None)
-        - if you use more than one instName for the same GUI:
-            use subtopic[] for the other instName in the Gui
     """
 
     configfile = "lab_control.json"
@@ -470,7 +464,7 @@ class LabControl(PluginMainWidget):
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
-        elif type(msg) is dict and "type" in msg:  # received a message from controlling
+        elif type(msg) is dict and ("type" in msg or "status" in msg):  # received a message from controlling
             self.mqttReceiveLabcontrol(topic, msg)
         else:
             print("notfound")
@@ -513,7 +507,7 @@ class LabControl(PluginMainWidget):
 
         for the received mqtt syntax: look at the comment at the beginning of the file
         """
-        msgtype = msg["type"]
+        msgtype = msg["type"] if "type" in msg else list(msg.keys())[0]
         self.last_mqtt_time = time.time()
         if msgtype == "cmd":  # command received
             if not self.wait4answer:
@@ -561,8 +555,10 @@ class LabControl(PluginMainWidget):
             elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
                 newtopic = f"ate/{self.current_config.topic}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
+        elif msgtype == 'status':
+            self.receive_msg_for_instrument.emit(topic, msg)
         else:
-            self.logger.warning(f"I don't know what should I do with this message: {msgtype}")
+            self.logger.warning(f"mqttReceiveLabcontrol: I don't know what should I do with this message: {msgtype}")
 
     def setButtonActive(self, value):
         """Activate all disabled buttons."""
@@ -628,7 +624,6 @@ class LabControl(PluginMainWidget):
             dialog.exec_()
             if dialog.get_cfg() != self.current_config.dict():
                 self.project_info.store_plugin_cfg(self.project_info.active_hardware, self.plugin.NAME, dialog.get_cfg())
-                del(dialog)
                 if hasattr(self, 'mqtt'):
                     self.mqtt.mqtt_disconnect()
                 if hasattr(self, 'mqttclient'):
@@ -636,6 +631,7 @@ class LabControl(PluginMainWidget):
                     self.mqttclient.close()
                 self.reset()
                 self.setup_widget(self.project_info)
+            del(dialog)
         elif cmd == "reset":
             self.logger.debug("Reset Lab Control")
             self.setButtonActive(True)
