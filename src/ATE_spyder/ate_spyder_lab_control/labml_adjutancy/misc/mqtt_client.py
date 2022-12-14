@@ -103,6 +103,7 @@ class mqtt_init(object, metaclass=Singleton):
             print(msg)
 
         self.typ = typ
+        print(f'create mqtt_init as Singleton typ={typ}')
         self.broker = ""
         self.username = ""
         self.qos = 0
