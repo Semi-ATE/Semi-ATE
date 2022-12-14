@@ -294,7 +294,11 @@ class ProjectSetup(object):
                 nvalue = ''
                 for s in tmp:
                     if s.find('$') == 0:
-                        s = os.environ.get(s[1:])
+                        env = s[1:]
+                        s = os.environ.get(env)
+                    if s is None:
+                        self.logger.log_message(LogLevel.Error(), f'environment {env} not defined')
+                        s = ''
                     nvalue += s + '/'
                 if nvalue != '':
                     if type(jsontable) == dict:
