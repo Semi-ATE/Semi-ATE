@@ -7,7 +7,24 @@ Created on Tue May  4 14:18:05 2021
 import numpy as np
 import ast
 import copy
+import psutil
 from ate_common.logger import LogLevel
+
+
+def kill_proc_tree(pid=None, instance=None, including_parent=False):
+    if pid is None and instance is not None:
+        pid = instance.pid
+    parent = psutil.Process(pid)
+    children = parent.children(recursive=True)
+    for child in children:
+        child.kill()
+    gone, still_alive = psutil.wait_procs(children, timeout=5)
+    if including_parent:
+        parent.kill()
+        parent.wait(5)
+    if instance is not None:
+        instance.terminate()
+        del(instance)
 
 
 def str2num(value, base=10, default=""):
