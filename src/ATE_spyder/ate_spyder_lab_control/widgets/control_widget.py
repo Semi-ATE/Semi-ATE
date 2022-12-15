@@ -269,14 +269,6 @@ class LabControl(PluginMainWidget):
             self.bin_table = bin_table["bin-table"]
         self.logging()
 
-    # def show(self):
-    #     super().show()
-    #     index = 0
-    #     # for app in self.gui.newMenu:
-    #     #     if hasattr(app, "libname") and app.libname != "":
-    #     #         self.extendedbarClicked(index)
-    #     #     index += 1
-
     def adjustUI(self):
         # set Menubar
         menuBar = QtWidgets.QMenuBar(self)
@@ -392,7 +384,6 @@ class LabControl(PluginMainWidget):
             )
         )
         self.menuBar = menuBar
- #       self.gui.newMenu = []
         self.change_status_display.connect(self._change_status_display)
         self.gui.Gsequencer.hide()
         self.gui.Gprogress.hide()
@@ -565,42 +556,6 @@ class LabControl(PluginMainWidget):
         self.nextaction.setEnabled(value)
         self.terminateaction.setEnabled(value)
         self.resetaction.setEnabled(value)
-
-    # logging and display:
-    # def extendedbarClicked(self, index):
-    #     if index == 0:
-    #         return
-    #     self.logger.info(f"extendedbarClicked {index}")
-    #     self.logger.info(f"     name = {self.gui.newMenu[index].name}")
-    #     self.logger.info(f"     libname = {self.gui.newMenu[index].libname}")
-    #     self.logger.info(f"     lib = {self.gui.newMenu[index].lib}")
-    #     self.logger.info(f"     subtopic = {self.gui.newMenu[index].subtopic}")
-    #     self.logger.info(f"     topinstname = {self.topinstname}")
-    #     if self.gui.newMenu[index].isChecked():
-    #         name = self.gui.newMenu[index].name
-    #         if not hasattr(self.gui.newMenu[index], "lib") or self.gui.newMenu[index].lib is None:
-    #             self.logger.error(f" Gui for {name} not exist, please update the LAB-ML adjutancy lib")
-    #             self.gui.newMenu[index].instance = None
-    #             self.gui.newMenu[index].setChecked(False)
-    #             return
-    #         importlib.reload(importlib.import_module("labml_adjutancy.gui.instruments.base_instrument"))
-    #         importlib.reload(self.gui.newMenu[index].lib)
-    #         self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(self, name, self.project_info.parent)  # start Gui
-    #         self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[index].subtopic
-    #         self.gui.newMenu[index].instance.topinstname = self.topinstname
-    #         self.logger.debug(f" create {self.gui.newMenu[index].instance} done")
-    #         self.logger.info(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
-    #         if "menu" in self.saveconfigdata and name in self.saveconfigdata["menu"] and len(self.saveconfigdata["menu"][name]) > 3 and self.gui.newMenu[index].instance is not None:
-    #             self.set_Geometry(
-    #                 name,
-    #                 self.gui.newMenu[index].instance.gui,
-    #                 self.saveconfigdata["menu"][name][2],
-    #             )
-    #         self.saveconfig()
-    #     elif self.gui.newMenu[index].instance is not None:
-    #         self.gui.newMenu[index].instance.close()
-    #         self.gui.newMenu[index].instance = None
-    #         self.saveconfig()
 
     def guiclicked(self, cmd):
         """Handle mouseclicks on a button."""
