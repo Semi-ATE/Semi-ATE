@@ -55,7 +55,7 @@ class LabControlDialog(QtWidgets.QDialog):
 
 class LabConrolConfig(BaseModel):
     broker: str
-    topic: str
+    device_id: str
 
 
 class LabControl(PluginMainWidget):
@@ -220,11 +220,10 @@ class LabControl(PluginMainWidget):
         self.project_info = project_info
         self.project_info.lab_control = self
         current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
-        default_parameter = {"broker": '127.0.0.1', "topic": 'developmode'}     # "device_id": ''
+        default_parameter = {"broker": '127.0.0.1', "device_id": 'developmode'}     # "device_id": ''
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
-        print(f'{self.plugin.NAME}.current config = {self.current_config}')
 
-        self.sendtopic = f"ate/{self.current_config.topic}/TestApp/"
+        self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
         mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
         if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
@@ -449,16 +448,16 @@ class LabControl(PluginMainWidget):
             return
         topicsplit = topic.split("/")
         notfound = False
-        print(f"Lab Control.mqtt_receive {topic} = {msg}")
         if len(topicsplit) > 2 and topicsplit[1] == self.computername:  # received a message from an instrument ?
             if topicsplit[2] == mqtt.TOPIC_INSTRUMENT:
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
-        elif type(msg) is dict and ("type" in msg or "status" in msg):  # received a message from controlling
+        elif topicsplit[1] == self.current_config.device_id and type(msg) is dict\
+                and ("type" in msg or "status" in msg):  # received a message from controlling
             self.mqttReceiveLabcontrol(topic, msg)
         else:
-            print("notfound")
+            print(f"Lab Control.mqtt_receive {topic} = {msg} -> not found")
             notfound = True
         if notfound:
             self.logger.warning(f"Lab Control.mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
@@ -541,11 +540,12 @@ class LabControl(PluginMainWidget):
                     outfile.write("\n")
         elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuators
             if topic.split("/")[2] == "TestApp" and msgtype == "io-control-request":
-                newtopic = f"ate/{self.current_config.topic}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
+                newtopic = f"ate/{self.current_config.device_id}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
             elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
-                newtopic = f"ate/{self.current_config.topic}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
+                newtopic = f"ate/{self.current_config.device_id}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
+                self.receive_msg_for_instrument.emit(topic, msg)
         elif msgtype == 'status':
             self.receive_msg_for_instrument.emit(topic, msg)
         else:
@@ -803,11 +803,11 @@ class LabControl(PluginMainWidget):
             for val in apara:
                 dmsg = dmsg + f"{val[0]}={val[1]}, "
             msg = dmsg[:-2] + msg
-        print(f"Lab Control.state = {value}, oldstate ={self._state}")
-        if hasattr(self, 'mqttclient'):
-            print(f"       mqttclient.typ ={self.mqttclient.typ}")
-        else:
-            print("       mqttclient not found ????!!!!!!!!!!!!!")
+        # print(f"Lab Control.state = {value}, oldstate ={self._state}")
+        # if hasattr(self, 'mqttclient'):
+        #     print(f"       mqttclient.typ ={self.mqttclient.typ}")
+        # else:
+        #     print("       mqttclient not found ?!")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
@@ -1081,7 +1081,6 @@ class LabControl(PluginMainWidget):
         super().close()
 
     def __del__(self):
-        print("Lab control.__del__")
         self.close()
         super().__del__
 
