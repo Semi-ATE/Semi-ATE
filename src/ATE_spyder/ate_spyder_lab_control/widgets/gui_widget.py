@@ -15,7 +15,6 @@ Todo:
 import os
 import time
 import subprocess
-import signal
 import importlib
 from time import sleep
 import qtawesome as qta
@@ -52,6 +51,11 @@ class LabGuiDialog(QtWidgets.QDialog):
         super().__init__()
         uic.loadUi(__file__.replace(".py", ".ui"), self)
 
+
+class LabGuiButton(QtWidgets.QWidget):          #.QDialog
+    def __init__(self, parent):
+        super().__init__()
+        uic.loadUi(os.path.dirname(__file__)+"\\guibutton_widget.ui", parent)
 
 class LabGuiConfig(BaseModel):
     lib: str
@@ -233,17 +237,18 @@ class LabGui(PluginMainWidget):
                         instance = None
         if instanceName not in self.gui_icons:                      # create new icon button
             if xy is None:
-                x, y = len(self.gui_icons) // 2, len(self.gui_icons) % 2
+                x, y = len(self.gui_icons) % 2, len(self.gui_icons) // 2
             else:
                 x, y = xy
             button = QtWidgets.QToolButton(self.gui.frame)
-            button.setGeometry(QtCore.QRect(10, 10, 88, 40))
+            #button = LabGuiButton(self.gui.frame)
+            button.setGeometry(QtCore.QRect(10, 10, 88, 60))
             button.setIconSize(QtCore.QSize(40, 40))
             button.name = name
             button.instanceName = instanceName
             button.lib = None
             button.instance = None
-            button.move(y*100, x*50)
+            button.move(x*100, y*70)
             button.xy = x, y
             self.gui_icons[instanceName] = button
         else:                                                        # use existing icon button
@@ -251,7 +256,7 @@ class LabGui(PluginMainWidget):
             if self.gui_icons[instanceName].lib is not None:
                 importlib.reload(button.lib)
 
-        displayname = name if len(name) < 11 else f'{name[:11]}\n{name[11:]}'
+        displayname = f'{name}\n' if len(name) < 12 else f'{name[:11]}\n'   # {name[11:]}\n
         button.setText(displayname)
         menu = QtWidgets.QMenu(button) if instanceName != 'tester' else None
 
@@ -260,7 +265,7 @@ class LabGui(PluginMainWidget):
             button.setToolTip(name)
             style = self.sytle_button['available']
         else:
-            button.setToolTip(f'Gui not available for {name}')
+            button.setToolTip(f'no detailed Gui available for {name}')
         if instance is not None:
             if hasattr(instance, 'icon'):
                 button.setIcon(button.lib.icon)
@@ -328,7 +333,7 @@ class LabGui(PluginMainWidget):
         call if a message from an instrument, or from semictrl (is also a instrument) received.
 
         """
-        print(f"Lab Gui.receive_msg_for_instrument: {topic}, {msg}")
+        # print(f"Lab Gui.receive_msg_for_instrument: {topic}, {msg}")
         if type(msg) is dict and "type" in msg and msg["type"] == "cmd" and msg["cmd"] == "menu":  # get command to extend Menu
             pindex = -1
             for addmenu in msg["payload"]:
@@ -390,7 +395,6 @@ class LabGui(PluginMainWidget):
         elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a application in the extended Menu
             print(f"   message for the extended GUI received: '{topic}= {msg}'")
 # should be replaced:
-            print(self.gui.newMenu)
             for app in self.gui.newMenu:
                 self.transfer2gui(app, topic, msg)
 # end
@@ -398,18 +402,27 @@ class LabGui(PluginMainWidget):
             if instanceName not in self.gui_icons:
                 instanceName = topic.split("/")[2]
             if instanceName in self.gui_icons:
-                self.transfer2gui(self.gui_icons[instanceName], topic, msg)
+                self.msg2button(self.gui_icons[instanceName], topic, msg)
+        elif topic.split("/")[2] in self.gui_icons:
+            self.msg2button(self.gui_icons[topic.split("/")[2]], topic, msg)
+
+    def msg2button(self, button, topic, msg):
+        if 'status' in msg.keys():
+            button.setStyleSheet(self.sytle_button[msg['status']])
+            button.setToolTip(f"{button.instanceName} {msg['status']}")
+        elif 'ioctl_name' in msg.keys():
+            text = button.text().split('\n')[0]
+            value = msg['ioctl_name']
+            if 'result' in msg.keys():
+                value = f"{value}={msg['result']}"
+            button.setText(f'{text}\n\n{value[:13]}')
+            print(f'msg2button {topic}, {msg}')
 
     def transfer2gui(self, app, topic, msg):
-        print(f"    transfer2gui: {app}, {topic}, {msg}")
-        if type(app) == QtWidgets.QToolButton and 'status' in msg.keys():
-            app.setStyleSheet(self.sytle_button[msg['status']])
-            app.setToolTip(f"{app.instanceName} {msg['status']}")
-            return
-        #print(f"   {app.instance.topinstname}  {app.name}: subtopic: {app.instance.subtopic}")
         if not hasattr(app, "instance") or app.instance is None:
             return
-        print(app.instance)
+        print(f"    transfer2gui: {app.instance}, {topic}, {msg}")
+        #print(f"   {app.instance.topinstname}  {app.name}: subtopic: {app.instance.subtopic}")
         name = None
         app.topinstname = self.topinstname
         if len(app.subtopic) > 0:
@@ -466,7 +479,6 @@ class LabGui(PluginMainWidget):
             if actuator_name in lib_types['Actuator'][self.project_info.active_base].keys() else ""
         default_parameter = {"lib": lib_type}
         current_config = LabGuiConfig(**default_parameter)
-        # self.plugin.NAME
         dialog = PluginConfigurationDialog(self, name, current_config.dict().keys(), self.project_info.active_hardware,
                                            self.project_info, current_config.dict(), False)
         dialog.exec_()
