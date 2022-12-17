@@ -51,7 +51,8 @@ setup(
         "spyder.plugins": [
             "ate = ate_spyder.plugin:ATE",
             "test_runner = ate_spyder_test_runner.plugin:TestRunnerPlugin",
-            "stil = ate_spyder_stil.plugin:STIL"
+            "stil = ate_spyder_stil.plugin:STIL",
+            "ate_debug_display = ate_spyder_debug_display.plugin:DebugDisplay"
         ]
     }
 )

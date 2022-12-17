@@ -12,3 +12,4 @@ pygit2
 requests
 pyyaml
 force-delete-win; os_name == "nt"
+ate-dispatcher
