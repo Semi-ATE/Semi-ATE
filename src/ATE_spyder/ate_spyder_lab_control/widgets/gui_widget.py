@@ -52,13 +52,15 @@ class LabGuiDialog(QtWidgets.QDialog):
         uic.loadUi(__file__.replace(".py", ".ui"), self)
 
 
-class LabGuiButton(QtWidgets.QWidget):          #.QDialog
+class LabGuiButton(QtWidgets.QWidget):          # .QDialog
     def __init__(self, parent):
         super().__init__()
         uic.loadUi(os.path.dirname(__file__)+"\\guibutton_widget.ui", parent)
 
+
 class LabGuiConfig(BaseModel):
     lib: str
+    gui: str
 
 
 class LabGui(PluginMainWidget):
@@ -90,7 +92,7 @@ class LabGui(PluginMainWidget):
         ],
         "unknown": ["unknown", None],
         "error": ["error", "color: rgb(0, 0, 0);background-color: #ff0000"],
-        "reset": ["reset Lab Gui", None],
+        "nogui": ["GUi not available", "color: rgb(255, 165, 0)"],
     }
 
 #    errormessages = {"unknown", "unknown"}
@@ -202,6 +204,7 @@ class LabGui(PluginMainWidget):
 
         style = self.sytle_button['disabled']
         error = ""
+        guiLib = None
         if instanceName == 'tester':
             instance = get_plugin_manager().hook.get_tester_type(tester_name=name)
             if len(instance) >= 1:
@@ -212,14 +215,15 @@ class LabGui(PluginMainWidget):
                 style = self.sytle_button['crash']
         else:
             instance = None
-            lib_types = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
-            lib = lib_types['Actuator'][self.project_info.active_base][name]\
-                if name in lib_types['Actuator'][self.project_info.active_base].keys() else ""
+            parameters = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
+            lib = parameters['Actuator'][self.project_info.active_base][name]['lib']\
+                if name in parameters['Actuator'][self.project_info.active_base].keys() else ""
+            guiLib = parameters['Actuator'][self.project_info.active_base][name]['gui']\
+                if name in parameters['Actuator'][self.project_info.active_base].keys() else ""
             actuators_name = name.replace(' ', '_')
             actuators_lib = importlib.import_module(f'ate_test_app.actuators.{actuators_name}.{actuators_name}')
             instanceName = actuators_lib.periphery_type if hasattr(actuators_lib, 'periphery_type') else actuators_name
             del(actuators_lib)
-            # lib = 'magfield-dummy 127.0.0.1 1883 devlopmode 192.168.1.1 21324'
             if lib != "":
                 try:                                        # 1. try to import as module
                     instance = importlib.import_module(lib)
@@ -246,26 +250,28 @@ class LabGui(PluginMainWidget):
             button.setIconSize(QtCore.QSize(40, 40))
             button.name = name
             button.instanceName = instanceName
-            button.lib = None
+            button.guiLib = guiLib
+            button.guiLibImport = None
             button.instance = None
             button.move(x*100, y*70)
             button.xy = x, y
             self.gui_icons[instanceName] = button
         else:                                                        # use existing icon button
             button = self.gui_icons[instanceName]
-            if self.gui_icons[instanceName].lib is not None:
-                importlib.reload(button.lib)
+            if self.gui_icons[instanceName].guiLib is not None:
+                importlib.reload(button.guiLib)
 
         displayname = f'{name}\n' if len(name) < 12 else f'{name[:11]}\n'   # {name[11:]}\n
         button.setText(displayname)
-        menu = QtWidgets.QMenu(button) if instanceName != 'tester' else None
+        menu = QtWidgets.QMenu(button) if instanceName != 'tester' else {}
+        button.menues = menu
 
-        if hasattr(instance, 'gui'):
-            button.gui = importlib.import_module(instance.gui)
-            button.setToolTip(name)
-            style = self.sytle_button['available']
-        else:
-            button.setToolTip(f'no detailed Gui available for {name}')
+        # if hasattr(instance, 'gui'):
+        #     button.gui = importlib.import_module(instance.gui)
+        #     button.setToolTip(name)
+        #     style = self.sytle_button['available']
+        # else:
+        #     button.setToolTip(f'no detailed Gui available for {name}')
         if instance is not None:
             if hasattr(instance, 'icon'):
                 button.setIcon(button.lib.icon)
@@ -273,13 +279,17 @@ class LabGui(PluginMainWidget):
         elif instance is None:            # no gui for this module available
             button.setToolTip(f'{name} not available,\nlib = {lib if lib!= "" else "empty"}\n{error}')
         button.setStyleSheet(style)
-        if menu is not None:
+        if menu != {}:
+            button.menues = {}
             button.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)        # InstantPopup, MenuButtonPopup, DelayedPopup
-            menu_action = QtWidgets.QAction(self.gui)
-            menu_action.setText("change lib")
-            menu_action.triggered.connect(lambda: self.buttonMenuClicked(instanceName, "change lib"))
-            button.addAction(menu_action)
-        button.clicked.connect(lambda checked, name=instanceName: self.icon_button_clicked(instanceName))
+            items = ["change lib", "terminate"] if button.instance is not None else ["change lib"]
+            for item in items:
+                menu_item = QtWidgets.QAction(self.gui)
+                menu_item.setText(item)
+                menu_item.triggered.connect(lambda item, function=item: self.buttonMenuClicked(instanceName, function))
+                button.addAction(menu_item)
+                button.menues[item] = menu_item
+        button.clicked.connect(lambda: self.icon_button_clicked(instanceName))
         button.subtopic = []
         button.show()
 
@@ -412,11 +422,12 @@ class LabGui(PluginMainWidget):
             button.setToolTip(f"{button.instanceName} {msg['status']}")
         elif 'ioctl_name' in msg.keys():
             text = button.text().split('\n')[0]
+            tooltip = button.toolTip().split('\n')[0]
             value = msg['ioctl_name']
             if 'result' in msg.keys():
                 value = f"{value}={msg['result']}"
             button.setText(f'{text}\n\n{value[:13]}')
-            print(f'msg2button {topic}, {msg}')
+            button.setToolTip(f'{tooltip}\n{value}')
 
     def transfer2gui(self, app, topic, msg):
         if not hasattr(app, "instance") or app.instance is None:
@@ -461,35 +472,61 @@ class LabGui(PluginMainWidget):
 
     def icon_button_clicked(self, name):
         button = self.gui_icons[name]
-        print(name)
-        if button.instance is None:
-            if button.lib is not None:
-                importlib.reload(button.lib)
-                button.instance = button.lib.Gui(self, name, self.project_info.parent)  # start Gui
-                button.instance.subtopic = button.subtopic
-                button.instance.topinstname = name
+        if button.instance is not None:
+            if button.guiLib != "" and button.guiLibImport is None:
+                try:
+                    button.guiLibImport = importlib.import_module(button.guiLib)
+                    button.guiInstance = button.guiLibImport.Gui(self, name, self.project_info.parent)  # start Gui
+                    button.guiInstance.subtopic = button.subtopic
+                    button.guiInstance.topinstname = name
+                except Exception:
+                    print(f'coulnt load gui {button.guiLib}')
+                    self.state = 'nogui'
+            elif button.guiInstance is not None and not button.guiInstance.isVisible():
+                button.guiInstance.show()
+            elif button.guiInstance is not None and button.guiInstance.isVisible():
+                button.guiInstance.hide()
+            elif button.guiInstance is None:
+                print(f'reload {button.guiLibImport}')
+                importlib.reload(button.guiLibImport)
+                button.guiInstance = button.guiLibImport.Gui(self, name, self.project_info.parent)
 
     def buttonMenuClicked(self, name, function):
-        print(f'buttonMenuClicked  {name}, {function}')
-        from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
+        if function == 'change lib':
+            from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
 
-        actuator_name = self.gui_icons[name].name
-        lib_types = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
-        lib_type = lib_types['Actuator'][self.project_info.active_base][actuator_name]\
-            if actuator_name in lib_types['Actuator'][self.project_info.active_base].keys() else ""
-        default_parameter = {"lib": lib_type}
-        current_config = LabGuiConfig(**default_parameter)
-        dialog = PluginConfigurationDialog(self, name, current_config.dict().keys(), self.project_info.active_hardware,
-                                           self.project_info, current_config.dict(), False)
-        dialog.exec_()
-        newlib_type = dialog.get_cfg()['lib'].strip()
-        del(dialog)
-        if newlib_type != lib_type:
-            lib_types['Actuator'][self.project_info.active_base][actuator_name] = newlib_type
-            self.update_definition(self.project_info.file_operator, self.project_info.active_hardware, lib_types)
-            xy = self.gui_icons[name].xy
-            self.remove_button(name)
-            self.create_button(None, actuator_name, xy)
+            actuator_name = self.gui_icons[name].name
+            parameters = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
+            lib_type = guilib = ''
+            if actuator_name in parameters['Actuator'][self.project_info.active_base].keys():
+                lib_type = parameters['Actuator'][self.project_info.active_base][actuator_name]['lib']
+                guilib = parameters['Actuator'][self.project_info.active_base][actuator_name]['gui']
+            default_parameter = {"lib": lib_type, "gui": guilib}
+            current_config = LabGuiConfig(**default_parameter)
+            dialog = PluginConfigurationDialog(self, name, current_config.dict().keys(), self.project_info.active_hardware,
+                                               self.project_info, current_config.dict(), False)
+            dialog.exec_()
+            newparameters = dialog.get_cfg()
+            del(dialog)
+            if newparameters != parameters['Actuator'][self.project_info.active_base][actuator_name]:
+                newparameters['lib'] = newparameters['lib'].strip()
+                newparameters['gui'] = newparameters['gui'].strip()
+                parameters['Actuator'][self.project_info.active_base][actuator_name] = newparameters
+                self.update_definition(self.project_info.file_operator, self.project_info.active_hardware, parameters)
+                xy = self.gui_icons[name].xy
+                self.remove_button(name)
+                self.create_button(None, actuator_name, xy)
+        elif function == 'terminate':
+            button = self.gui_icons[name]
+            if button.instance is not None:
+                kill_proc_tree(instance=button.instance)
+                button.instance = None
+                button.menues[function].setText('restart')
+            else:
+                xy = self.gui_icons[name].xy
+                actuator_name = self.gui_icons[name].name
+                self.remove_button(name)
+                self.create_button(None,  actuator_name, xy)
 
     # display:
     def extendedbarClicked(self, index):
@@ -565,7 +602,7 @@ class LabGui(PluginMainWidget):
                 settings.append(app.subtopic)
                 app.instance = None
         elif name in self.gui_icons:
-            self.gui_icons[name].instance = None
+            self.gui_icons[name].guiInstance = None
 
     def close(self, event=None):
         for name in self.gui_icons.copy():
