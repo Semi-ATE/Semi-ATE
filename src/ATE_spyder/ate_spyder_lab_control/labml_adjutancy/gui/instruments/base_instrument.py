@@ -512,6 +512,17 @@ class Gui(object):
         """
         self.publish(name, value)
 
+    def isVisible(self):
+        return self.gui.isVisible()
+
+    def hide(self):
+        print(self.gui.isVisible())
+        self.gui.hide()
+
+    def show(self):
+        print(self.gui.isVisible())
+        self.gui.show()
+
     def close(self, event=None):
         self.publish("mqtt_status", "disconnect")
         if hasattr(self.grandparent, "appclosed"):
