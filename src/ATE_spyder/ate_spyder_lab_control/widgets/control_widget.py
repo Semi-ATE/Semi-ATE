@@ -220,7 +220,9 @@ class LabControl(PluginMainWidget):
         self.project_info = project_info
         self.project_info.lab_control = self
         current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
-        default_parameter = {"broker": '127.0.0.1', "device_id": 'developmode'}     # "device_id": ''
+        default_parameter = {"broker": '127.0.0.1', "device_id": 'developmode'}
+        if current_config.keys() != default_parameter.keys():
+            current_config = {}
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
 
         self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
