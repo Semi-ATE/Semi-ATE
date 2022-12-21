@@ -174,7 +174,8 @@ class LabGui(PluginMainWidget):
         if self.lab_control is None and hasattr(self.project_info, 'lab_control'):
             self.lab_control = self.project_info.lab_control
             self.lab_control.receive_msg_for_instrument.connect(self.receive_msg_for_instrument)
-            self.mqtt = self.lab_control.mqtt
+            if hasattr(self.lab_control, 'mqtt'):
+                self.mqtt = self.lab_control.mqtt
             self.logger = self.lab_control.logger
         hw = self.project_info.active_hardware
         base = self.project_info.active_base
@@ -508,9 +509,9 @@ class LabGui(PluginMainWidget):
             dialog.exec_()
             newparameters = dialog.get_cfg()
             del(dialog)
-            if newparameters != parameters['Actuator'][self.project_info.active_base][actuator_name]:
-                newparameters['lib'] = newparameters['lib'].strip()
-                newparameters['gui'] = newparameters['gui'].strip()
+            newparameters['lib'] = newparameters['lib'].strip()
+            newparameters['gui'] = newparameters['gui'].strip()
+            if newparameters != default_parameter:
                 parameters['Actuator'][self.project_info.active_base][actuator_name] = newparameters
                 self.update_definition(self.project_info.file_operator, self.project_info.active_hardware, parameters)
                 xy = self.gui_icons[name].xy
