@@ -14,9 +14,7 @@ Todo:
 """
 import os
 import time
-import subprocess
 import importlib
-from time import sleep
 import qtawesome as qta
 import qdarkstyle
 from PyQt5 import uic
@@ -33,8 +31,7 @@ if __name__ == "__main__":
 from spyder.api.widgets.main_widget import PluginMainWidget
 from ate_projectdatabase.Utils import DB_KEYS
 from ate_projectdatabase.FileOperator import DBObject, FileOperator
-from pydantic import BaseModel
-from labml_adjutancy.misc.common import kill_proc_tree
+from ate_spyder_lab_control.widgets.buttons import Button
 
 # Localization
 _ = get_translation("spyder")
@@ -58,11 +55,6 @@ class LabGuiButton(QtWidgets.QWidget):          # .QDialog
         uic.loadUi(os.path.dirname(__file__)+"\\guibutton_widget.ui", parent)
 
 
-class LabGuiConfig(BaseModel):
-    lib: str
-    gui: str
-
-
 class LabGui(PluginMainWidget):
     """
     Gui for instruments.
@@ -79,17 +71,8 @@ class LabGui(PluginMainWidget):
 
     default_tester_icon = qta.icon("mdi6.remote", color="green", scale_factor=1.0)
     definition = {'Actuator': {'PR': {}, 'FT': {}}}
-    sytle_button = {'disabled': "color: rgb(128, 128, 128);",
-                    'crash': "color: rgb(255, 64, 64);",
-                    'instance_ok': "color: rgb(64, 128, 64);",
-                    'available': "color: rgb(64, 164, 64);"
-                    }
 
-    _states = {  # from extern mean: no handling from Lab Gui, normally you get this message if your are running the MiniSCTGui
-        "init": [
-            "testflow not started / no connection",
-            "color: rgb(255, 165, 0)",
-        ],
+    _states = {
         "unknown": ["unknown", None],
         "error": ["error", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "nogui": ["GUi not available", "color: rgb(255, 165, 0)"],
@@ -122,8 +105,8 @@ class LabGui(PluginMainWidget):
         self.reset()
         self.project_info = None
         self.topinstname = ""
-        self._state = "init"
-        self.state = "init"
+        self._state = "unknown"
+        self.state = "unknown"
         self.gui_icons = {}
         self.lab_control = None
         self.flagAppclosed = False
@@ -167,8 +150,9 @@ class LabGui(PluginMainWidget):
     def update_actions(self):
         from ate_projectdatabase.Hardware import Hardware
 
-        for name in self.gui_icons.copy():
-            self.remove_button(name)
+        actual_buttons = {}
+        for button in self.gui_icons.values():
+            actual_buttons[button.name] = button.instanceName
         if self.project_info is None:
             return
         if self.lab_control is None and hasattr(self.project_info, 'lab_control'):
@@ -184,115 +168,37 @@ class LabGui(PluginMainWidget):
         hardware_def = Hardware.get(self.project_info.file_operator, hw).definition
         tester_name = hardware_def['tester']
         actuators = hardware_def['Actuator'][base]
-        self.create_button('tester', tester_name)
+
+        if tester_name not in actual_buttons:
+            if 'tester' in self.gui_icons.keys():
+                self.gui_icons['tester'].close()
+            self.gui_icons['tester'] = Button(self, 'tester', tester_name, 0)
+        else:
+            del(actual_buttons[tester_name])
+
         try:
             self.get(self.project_info.file_operator, hw).definition
         except AssertionError:
             self.add(self.project_info.file_operator, hw, self.definition)
-        for actuator_name in actuators:   # todo: actuartors see https://github.com/Semi-ATE/Semi-ATE/blob/master/docs/project/DevelopmentProcess/development_setup.md
-            self.create_button(None, actuator_name)    # and https://github.com/Semi-ATE/TCC_actuators
-
-    def remove_button(self, name):
-        button = self.gui_icons[name]
-        if button.instance is not None and name != 'tester':
-            kill_proc_tree(instance=button.instance)
-        button.destroy()
-        button.deleteLater()
-        self.gui_icons.pop(name)
-
-    def create_button(self, instanceName, name, xy=None):
-        from ate_semiateplugins.pluginmanager import get_plugin_manager
-
-        style = self.sytle_button['disabled']
-        error = ""
-        guiLib = None
-        if instanceName == 'tester':
-            instance = get_plugin_manager().hook.get_tester_type(tester_name=name)
-            if len(instance) >= 1:
-                instance = instance[0]
-                style = self.sytle_button['instance_ok']
+        for actuator_name in actuators:                     # add new actuator-buttons
+            if actuator_name not in actual_buttons:
+                button = Button(self, None,  actuator_name, len(self.gui_icons))
+                self.gui_icons[button.instanceName] = button
             else:
-                instance = None
-                style = self.sytle_button['crash']
-        else:
-            instance = None
-            parameters = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
-            lib = parameters['Actuator'][self.project_info.active_base][name]['lib']\
-                if name in parameters['Actuator'][self.project_info.active_base].keys() else ""
-            guiLib = parameters['Actuator'][self.project_info.active_base][name]['gui']\
-                if name in parameters['Actuator'][self.project_info.active_base].keys() else ""
-            actuators_name = name.replace(' ', '_')
-            actuators_lib = importlib.import_module(f'ate_test_app.actuators.{actuators_name}.{actuators_name}')
-            instanceName = actuators_lib.periphery_type if hasattr(actuators_lib, 'periphery_type') else actuators_name
-            del(actuators_lib)
-            if lib != "":
-                try:                                        # 1. try to import as module
-                    instance = importlib.import_module(lib)
-                    style = self.sytle_button['instance_ok']
-                except Exception as ex:         # ModuleNotFoundError
-                    error = ex
-                    style = self.sytle_button['crash']
-                if instance is None:                      # 2. call as subprocess
-                    instance = subprocess.Popen(lib, shell=True)
-                    sleep(0.2)
-                    if instance.poll() is None:
-                        style = self.sytle_button['instance_ok']
-                    else:
-                        del(instance)
-                        instance = None
-        if instanceName not in self.gui_icons:                      # create new icon button
-            if xy is None:
-                x, y = len(self.gui_icons) % 2, len(self.gui_icons) // 2
-            else:
-                x, y = xy
-            button = QtWidgets.QToolButton(self.gui.frame)
-            #button = LabGuiButton(self.gui.frame)
-            button.setGeometry(QtCore.QRect(10, 10, 88, 60))
-            button.setIconSize(QtCore.QSize(40, 40))
-            button.name = name
-            button.instanceName = instanceName
-            button.guiLib = guiLib
-            button.guiLibImport = None
-            button.instance = None
-            button.move(x*100, y*70)
-            button.xy = x, y
-            self.gui_icons[instanceName] = button
-        else:                                                        # use existing icon button
-            button = self.gui_icons[instanceName]
-            if self.gui_icons[instanceName].guiLib is not None:
-                importlib.reload(button.guiLib)
+                del(actual_buttons[actuator_name])
+        for actuator_name in actual_buttons:                # remove unnecessary actuator-button
+            self.gui_icons[actual_buttons[actuator_name]].close()
+            del(self.gui_icons[actual_buttons[actuator_name]])
+        index = 0
+        for name in self.gui_icons:                         # rearrange the actuator-buttons
+            self.gui_icons[name].move(index)
+            index += 1
 
-        displayname = f'{name}\n' if len(name) < 12 else f'{name[:11]}\n'   # {name[11:]}\n
-        button.setText(displayname)
-        menu = QtWidgets.QMenu(button) if instanceName != 'tester' else {}
-        button.menues = menu
-
-        # if hasattr(instance, 'gui'):
-        #     button.gui = importlib.import_module(instance.gui)
-        #     button.setToolTip(name)
-        #     style = self.sytle_button['available']
-        # else:
-        #     button.setToolTip(f'no detailed Gui available for {name}')
-        if instance is not None:
-            if hasattr(instance, 'icon'):
-                button.setIcon(button.lib.icon)
-            button.instance = instance
-        elif instance is None:            # no gui for this module available
-            button.setToolTip(f'{name} not available,\nlib = {lib if lib!= "" else "empty"}\n{error}')
-        button.setStyleSheet(style)
-        if menu != {}:
-            button.menues = {}
-            button.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)        # InstantPopup, MenuButtonPopup, DelayedPopup
-            items = ["change lib", "terminate"] if button.instance is not None else ["change lib"]
-            for item in items:
-                menu_item = QtWidgets.QAction(self.gui)
-                menu_item.setText(item)
-                menu_item.triggered.connect(lambda item, function=item: self.buttonMenuClicked(instanceName, function))
-                button.addAction(menu_item)
-                button.menues[item] = menu_item
-        button.clicked.connect(lambda: self.icon_button_clicked(instanceName))
-        button.subtopic = []
-        button.show()
+    def remove_buttons(self):
+        for name in self.gui_icons.copy():
+            button = self.gui_icons[name]
+            button.close()
+            self.gui_icons.pop(name)
 
     def get_title(self):
         return _("Lab Gui")
@@ -410,25 +316,16 @@ class LabGui(PluginMainWidget):
                 self.transfer2gui(app, topic, msg)
 # end
             instanceName = list(msg.keys())[0]
+            print(instanceName)
             if instanceName not in self.gui_icons:
                 instanceName = topic.split("/")[2]
+            print('new ' + instanceName, self.gui_icons.keys())
             if instanceName in self.gui_icons:
-                self.msg2button(self.gui_icons[instanceName], topic, msg)
+                # self.msg2button(self.gui_icons[instanceName], topic, msg)
+                self.gui_icons[topic.split("/")[2]].display_msg(topic, msg)
         elif topic.split("/")[2] in self.gui_icons:
-            self.msg2button(self.gui_icons[topic.split("/")[2]], topic, msg)
-
-    def msg2button(self, button, topic, msg):
-        if 'status' in msg.keys():
-            button.setStyleSheet(self.sytle_button[msg['status']])
-            button.setToolTip(f"{button.instanceName} {msg['status']}")
-        elif 'ioctl_name' in msg.keys():
-            text = button.text().split('\n')[0]
-            tooltip = button.toolTip().split('\n')[0]
-            value = msg['ioctl_name']
-            if 'result' in msg.keys():
-                value = f"{value}={msg['result']}"
-            button.setText(f'{text}\n\n{value[:13]}')
-            button.setToolTip(f'{tooltip}\n{value}')
+            # self.msg2button(self.gui_icons[topic.split("/")[2]], topic, msg)
+            self.gui_icons[topic.split("/")[2]].display_msg(topic, msg)
 
     def transfer2gui(self, app, topic, msg):
         if not hasattr(app, "instance") or app.instance is None:
@@ -470,64 +367,6 @@ class LabGui(PluginMainWidget):
                 msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
                 self.logger.error(msg)
                 print(msg)
-
-    def icon_button_clicked(self, name):
-        button = self.gui_icons[name]
-        if button.instance is not None:
-            if button.guiLib != "" and button.guiLibImport is None:
-                try:
-                    button.guiLibImport = importlib.import_module(button.guiLib)
-                    button.guiInstance = button.guiLibImport.Gui(self, name, self.project_info.parent)  # start Gui
-                    button.guiInstance.subtopic = button.subtopic
-                    button.guiInstance.topinstname = name
-                except Exception:
-                    print(f'coulnt load gui {button.guiLib}')
-                    self.state = 'nogui'
-            elif button.guiInstance is not None and not button.guiInstance.isVisible():
-                button.guiInstance.show()
-            elif button.guiInstance is not None and button.guiInstance.isVisible():
-                button.guiInstance.hide()
-            elif button.guiInstance is None:
-                print(f'reload {button.guiLibImport}')
-                importlib.reload(button.guiLibImport)
-                button.guiInstance = button.guiLibImport.Gui(self, name, self.project_info.parent)
-
-    def buttonMenuClicked(self, name, function):
-        if function == 'change lib':
-            from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
-
-            actuator_name = self.gui_icons[name].name
-            parameters = self.get(self.project_info.file_operator, self.project_info.active_hardware).definition
-            lib_type = guilib = ''
-            if actuator_name in parameters['Actuator'][self.project_info.active_base].keys():
-                lib_type = parameters['Actuator'][self.project_info.active_base][actuator_name]['lib']
-                guilib = parameters['Actuator'][self.project_info.active_base][actuator_name]['gui']
-            default_parameter = {"lib": lib_type, "gui": guilib}
-            current_config = LabGuiConfig(**default_parameter)
-            dialog = PluginConfigurationDialog(self, name, current_config.dict().keys(), self.project_info.active_hardware,
-                                               self.project_info, current_config.dict(), False)
-            dialog.exec_()
-            newparameters = dialog.get_cfg()
-            del(dialog)
-            newparameters['lib'] = newparameters['lib'].strip()
-            newparameters['gui'] = newparameters['gui'].strip()
-            if newparameters != default_parameter:
-                parameters['Actuator'][self.project_info.active_base][actuator_name] = newparameters
-                self.update_definition(self.project_info.file_operator, self.project_info.active_hardware, parameters)
-                xy = self.gui_icons[name].xy
-                self.remove_button(name)
-                self.create_button(None, actuator_name, xy)
-        elif function == 'terminate':
-            button = self.gui_icons[name]
-            if button.instance is not None:
-                kill_proc_tree(instance=button.instance)
-                button.instance = None
-                button.menues[function].setText('restart')
-            else:
-                xy = self.gui_icons[name].xy
-                actuator_name = self.gui_icons[name].name
-                self.remove_button(name)
-                self.create_button(None,  actuator_name, xy)
 
     # display:
     def extendedbarClicked(self, index):
@@ -606,8 +445,8 @@ class LabGui(PluginMainWidget):
             self.gui_icons[name].guiInstance = None
 
     def close(self, event=None):
-        for name in self.gui_icons.copy():
-            self.remove_button(name)
+        print("Lab Gui.close()")
+        self.remove_buttons()
         self.flagAppclosed = False
         super().close()
 

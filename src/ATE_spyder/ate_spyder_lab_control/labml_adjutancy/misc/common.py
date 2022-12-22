@@ -8,10 +8,12 @@ import numpy as np
 import ast
 import copy
 import psutil
-from ate_common.logger import LogLevel
+# from ate_common.logger import LogLevel
 
 
 def kill_proc_tree(pid=None, instance=None, including_parent=False):
+    if pid is None and instance is None:
+        return
     if pid is None and instance is not None:
         pid = instance.pid
     parent = psutil.Process(pid)
