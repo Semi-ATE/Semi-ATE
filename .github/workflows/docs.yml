@@ -21,7 +21,7 @@ jobs:
                 auto-update-conda: true
                 activate-environment: docs
                 miniforge-version: latest
-                python-version: 3.10
+                python-version: '3.10'
             - name: Setup environment
               run: |
                 conda install spyder
