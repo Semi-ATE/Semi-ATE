@@ -35,3 +35,7 @@ jobs:
               with:
                 path: docs/build/html/*
                 name: docs-output
+            - name: Deploy preview
+              uses: rossjrw/pr-preview-action@v1
+              with:
+                source-dir: ./docs/build/html
