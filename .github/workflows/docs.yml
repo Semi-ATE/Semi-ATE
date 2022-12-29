@@ -29,7 +29,6 @@ jobs:
                 python scripts/package_tool.py --change-env cicd
             - name: Build Sphinx
               run: |
-                cd docs
                 sphinx-build -b html docs/source/ docs/build/html
             - name: Upload maxiconda to Github artifact
               uses: actions/upload-artifact@v3
