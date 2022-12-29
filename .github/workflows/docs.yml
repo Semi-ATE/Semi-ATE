@@ -25,6 +25,7 @@ jobs:
             - name: Setup environment
               run: |
                 conda install spyder
+                pip install sphinx sphinx-rtd-theme
                 python scripts/package_tool.py --change-env cicd
             - name: Build Sphinx
               run: |
