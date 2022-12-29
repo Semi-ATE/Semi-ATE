@@ -25,7 +25,7 @@ jobs:
             - name: Setup environment
               run: |
                 conda install spyder
-                python scipts/package_tool.py --change-env cicd
+                python scripts/package_tool.py --change-env cicd
             - name: Build Sphinx
               run: |
                 cd docs
