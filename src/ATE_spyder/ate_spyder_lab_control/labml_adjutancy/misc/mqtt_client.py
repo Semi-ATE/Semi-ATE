@@ -367,21 +367,21 @@ class mqtt_deviceattributes(object):
         client.mqtt_add(instrument)
         if self._mqttclient is not None:
             self.mqtt_enable = True
-        self._mqtt_status = "disconnect"
-        self.publish_set(
-            "mqtt_status", "disconnect"
-        )  # send mqtt_status default = disconnect
         if (
             hasattr(self, "gui") and self.gui is not None
         ):  # send a message direct to semictrl that the gui is available
             payload = {
                 "semictrl": {
                     "type": "cmd",
-                    "cmd": "menu",
-                    "payload": {"Instruments": "", self.instName: self.gui},
+                    "cmd": "button",
+                    "payload": {self.instName: self.gui},
                 }
             }
             self._mqttclient.publish(self.topic, payload)
+        self._mqtt_status = "disconnect"
+        self.publish_set(
+            "mqtt_status", "disconnect"
+        )  # send mqtt_status default = disconnect
 
     def mqtt_disconnect(self):
         """

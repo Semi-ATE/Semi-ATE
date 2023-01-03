@@ -46,7 +46,7 @@ class Softscope(mqtt_deviceattributes):
             self.mqtt_add(mqttc, self)  # subscribe for mqtt and send information about the gui
         self.scopeChannel = None
         self._samplethread = None
-        self.sampleTime = 1.0
+        self.sampleTime = 0.1
         self._minSampleTime = 0.01
         self._sawtooth = 0
         self.topinstname = None
@@ -56,10 +56,10 @@ class Softscope(mqtt_deviceattributes):
         self.topinstname = topinstname
 
     def setchannel(self, value):
-        """set the scopeChannel via mqtt"""        
+        """set the scopeChannel via mqtt"""
         result = common.strcall(self.topinstname, value)
         self.scopeChannel = value if result != "ERROR" else "ERROR"
-        # print(f'Softscope.setchannel: {value} -> {result}')        
+        # print(f'Softscope.setchannel: {value} -> {result}')
         self.publish_set("scopeChannel", self.scopeChannel)
 
     def on(self):

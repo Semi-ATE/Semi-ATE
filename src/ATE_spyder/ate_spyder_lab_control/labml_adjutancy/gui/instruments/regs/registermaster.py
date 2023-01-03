@@ -193,11 +193,14 @@ class Gui(Guibase):
         self.id = f": {shortpath}{val[-1]}"
         self.gui.actionexcel.setEnabled(True)
         try:
-            self.regs = RegisterMaster(filename=self._filename, enableMqtt=False)
+            self.regs = RegisterMaster(filename=self._filename)
             self.regs.init()
         except Exception as ex:
             self.regstatus(f"could not load {self._filename}")
-            self.logger.error(f"registermaster.filename something is wrong: {ex}")
+            msg = f"registermaster.filename something is wrong: {ex}"
+            self.logger.error(msg)
+            print(msg)
+            return
         self.logger.info(f"registermaster.filename set to {val}")
 
     def showdoc(self, action, label):

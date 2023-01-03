@@ -485,9 +485,9 @@ class LabControl(PluginMainWidget):
                     self.change_status_display.emit("testing", "")
             elif msg["type"] == "cmd" and msg["cmd"] == "topinstname":
                 self.topinstname = msg["payload"]
-            if msg["type"] == "cmd" and msg["cmd"] == "menu":  # get command to extend Menu
+            if msg["type"] == "cmd" and msg["cmd"] == "button":  # get command to extend Menu
                 self.receive_msg_for_instrument.emit(topic, msg)
-        elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a application in the extended Menu
+        elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a other plugin
             self.receive_msg_for_instrument.emit(topic, msg)
         else:
             pass
@@ -821,6 +821,7 @@ class LabControl(PluginMainWidget):
             self.gui.Llogfilename.setText(self.logfilename)
         if value == "terminated":
             self.setButtonActive(False)
+            self.receive_msg_for_instrument.emit('', {"type": "set", "cmd": "mqtt_status", "payload": value})
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)

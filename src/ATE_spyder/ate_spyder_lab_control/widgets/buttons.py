@@ -22,6 +22,9 @@ __email__ = "Zlin526F@github"
 __version__ = "0.0.1"
 
 
+BUTTON_COLUMNS = 3  # define how many buttons are in one line
+
+
 class ButtonConfig(BaseModel):
     lib: str
     gui: str
@@ -35,16 +38,19 @@ class Button(QtWidgets.QToolButton):
     sytle_button = {'disabled': "color: rgb(128, 128, 128);",
                     'crash': "color: rgb(255, 64, 64);",
                     'instance_ok': "color: rgb(240, 240, 240);",
-                    'available': "color: rgb(64, 164, 64);"
+                    'available': "color: rgb(64, 164, 64);",
+                    'connect': "color: rgb(64, 164, 64);",
+                    'disconnect': "color: rgb(255, 64, 64);",
                     }
 
     def __init__(self, parent, instanceName, name, index):
         """Initialise the class Lab Button."""
-        super().__init__(parent.gui.frame)
-        self.name = name
         self.instanceName = instanceName
+        self.name = name
         self.parent = parent
-
+        self.mqtt = parent.mqtt
+        self.logger = parent.logger
+        super().__init__(parent.gui.frame)
         self.mystyle = self.sytle_button['disabled']
 
         self.setGeometry(QtCore.QRect(10, 10, 88, 60))
@@ -54,7 +60,10 @@ class Button(QtWidgets.QToolButton):
         self.instance = None
         self.guiInstance = None
         self.move(index)
-        displayname = f'{name}\n' if len(name) < 13 else f'{name[:12]}\n'
+        if name is not None:
+            displayname = f'{name}\n' if len(name) < 13 else f'{name[:12]}\n'
+        else:
+            displayname = instanceName
         self.setText(displayname)
 
         if instanceName == 'tester':
@@ -66,10 +75,13 @@ class Button(QtWidgets.QToolButton):
             else:
                 instance = None
                 self.mystyle = self.sytle_button['crash']
+        elif name is None:
+            instance = None
+            self.mystyle = self.sytle_button['instance_ok']
         else:
             instance = self.create_instance(False)
 
-        self.menu = QtWidgets.QMenu(self) if instanceName != 'tester' else None
+        self.menu = None if (instanceName == 'tester' or name is None) else QtWidgets.QMenu(self)
         if self.menu is not None:
             self.menu.setStyle(self.parent.style())
             self.menues = {}
@@ -81,7 +93,7 @@ class Button(QtWidgets.QToolButton):
                 menu_item.triggered.connect(lambda item, function=item: self.menu_clicked(instanceName, function))
                 self.addAction(menu_item)
                 self.menues[item] = menu_item
-        self.clicked.connect(self.icon_clicked)
+        self.clicked.connect(self.button_clicked)
         self.setStyleSheet(self.mystyle)
         self.instance = instance
         self.subtopic = []
@@ -125,7 +137,82 @@ class Button(QtWidgets.QToolButton):
             self.setStyleSheet(self.mystyle)
         return instance
 
-    def icon_clicked(self):
+    def set_gui(self, guiLib):
+        self.guiLib = guiLib
+        self.instance = ''
+        self.name = self.instanceName
+        self.button_clicked()
+        self.guiInstance.hide()
+
+    def msg2gui(self, topic, msg):
+        if self.guiInstance is None:
+            print(f"    {self.instanceName}.msg2gui: guiInstance is None ")
+            return
+        # print(f"   {app.instance.topinstname}  {app.name}: subtopic: {app.instance.subtopic}")
+        name = None
+        if len(self.subtopic) > 0:
+            for subtopic in self.subtopic:
+                if subtopic in msg.keys():
+                    name = subtopic
+        elif hasattr(self.guiInstance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
+            for subtopic in self.guiInstance.subtopic:
+                if subtopic in msg.keys():
+                    name = subtopic
+        if self.name in msg.keys() and self.guiInstance is not None:
+            name = self.name
+        if name is not None:
+            msg = msg[name]
+            cmd = msg["cmd"]
+            value = msg["payload"]
+            print(f"    {self.instanceName}.msg2gui: {self.name}, {self.instance}, {topic}, {msg}")
+            if cmd == 'mqtt_status':
+                self.setStyleSheet(self.sytle_button[msg["payload"]])
+                self.setToolTip(f"{self.instanceName} {msg['payload']}")
+            try:
+                if msg["type"] in ["set"] and hasattr(self.guiInstance, cmd):  # set attribute
+                    self.guiInstance.__setattr__(cmd, value)
+                elif msg["type"] in ["get"] and hasattr(self.guiInstance, cmd):  # get attribute/function call
+                    if value == []:  # it is a function call?
+                        self.guiInstance.__getattribute__(cmd)()
+                    else:
+                        self.guiInstance.__setattr__(cmd, value)  # get from extern is a set for displaying....
+                elif msg["type"] in ["set", "get"] and hasattr(self.guiInstance, "mqttreceive"):  # get more information as only the payload
+                    self.guiInstance.mqttreceive(name, msg)
+                    msg = {}
+                elif not hasattr(self.guiInstance, cmd):
+                    print(f"Warning! {name} has no attribute: '{cmd} = {msg}'")
+                else:
+                    print(f"Error: {name} I don't now what to do with this message: '{cmd} = {msg}'")
+            except Exception as ex:
+                msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
+                print(msg)
+                self.logger.error(msg)
+
+    def disconnect(self):
+        self.setStyleSheet(self.sytle_button["disconnect"])
+        self.setToolTip(f"{self.instanceName} disconnect")
+        if self.guiInstance is not None:
+            print(f'{self.instanceName}.guiInstance disconnect')
+            self.guiInstance.disconnect()
+
+    def display_msg(self, topic, msg):
+        if 'status' in msg.keys():
+            self.setStyleSheet(self.sytle_button[msg['status']])
+            self.setToolTip(f"{self.instanceName} {msg['status']}")
+            if msg['status'] == 'crash':
+                self.menues['terminate'].setText('restart')
+            elif msg['status'] == 'available':
+                self.menues['terminate'].setText('terminate')
+        elif 'ioctl_name' in msg.keys():
+            text = self.text().split('\n')[0]
+            tooltip = self.toolTip().split('\n')[0]
+            value = msg['ioctl_name']
+            if 'result' in msg.keys():
+                value = f"{value}={msg['result']}"
+            self.setText(f'{text}\n\n{value[:13]}')
+            self.setToolTip(f'{tooltip}\n{value}')
+
+    def button_clicked(self):
         if self.instance is not None:
             if self.guiLib != "" and self.guiLibImport is None:
                 try:
@@ -172,32 +259,13 @@ class Button(QtWidgets.QToolButton):
         elif function == 'terminate':
             if self.instance is not None:
                 kill_proc_tree(instance=self.instance)
-# todo: check if instance killed
                 self.instance = None
             else:
                 print(f'restart button {self.name}.....')
                 self.instance = self.create_instance()
 
-    def display_msg(self, topic, msg):
-        print(f'{self.name}.display_msg {topic}, {msg}')
-        if 'status' in msg.keys():
-            self.setStyleSheet(self.sytle_button[msg['status']])
-            self.setToolTip(f"{self.instanceName} {msg['status']}")
-            if msg['status'] == 'crash':
-                self.menues['terminate'].setText('restart')
-            elif msg['status'] == 'available':
-                self.menues['terminate'].setText('terminate')
-        elif 'ioctl_name' in msg.keys():
-            text = self.text().split('\n')[0]
-            tooltip = self.toolTip().split('\n')[0]
-            value = msg['ioctl_name']
-            if 'result' in msg.keys():
-                value = f"{value}={msg['result']}"
-            self.setText(f'{text}\n\n{value[:13]}')
-            self.setToolTip(f'{tooltip}\n{value}')
-
     def move(self, index):
-        x, y = index % 2, index // 2
+        x, y = index % BUTTON_COLUMNS, index // BUTTON_COLUMNS
         super().move(x*100, y*70)
         self.show()
 
