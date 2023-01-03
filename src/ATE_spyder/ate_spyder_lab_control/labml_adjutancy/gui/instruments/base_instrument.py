@@ -367,7 +367,7 @@ class Gui(object):
 
     @mqtt_status.setter
     def mqtt_status(self, value):
-        print(f"   {self.instName}.mqtt_status := {value}")
+        self.dprint(f"   {self.instName}.mqtt_status := {value}")
         self.status = value
         if value == "disconnect":
             self.publish("mqtt_status", "connect")

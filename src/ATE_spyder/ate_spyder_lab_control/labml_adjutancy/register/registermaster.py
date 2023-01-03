@@ -1193,14 +1193,16 @@ class RegisterMaster(mqtt_deviceattributes):
 
     def init(self):
         from semictrl import mqttc
-        
-        if self.filename is None:
+
+        filename = self.filename
+        if filename is None:
             raise IOError(f"{__class__}: no filename defined")
-        if mqttc is not None:
+        print(f'   {self.instName}.init:   self._mqttclient = {self._mqttclient}')
+        if self._mqttclient is None and mqttc is not None:
             self.mqtt_add(mqttc, self)
         blocked_regs = tuple(self.__class__.__dict__)
         blocked_slices = tuple(Register.__dict__)
-        db = RegDB(self.filename)
+        db = RegDB(filename)
         db.build_database()
         for item in db.database[0]["registers"]:
             slices = OrderedDict()
@@ -1208,7 +1210,7 @@ class RegisterMaster(mqtt_deviceattributes):
                 name = bsl["bsn"]
                 if name in blocked_slices:
                     msg = "WARNING: can't use name {!r} for slice\n" "Change slice name {!r} (line {!r}) in file {!r}"
-                    msg = msg.format(name, name, bsl["id"], self.filename)
+                    msg = msg.format(name, name, bsl["id"], filename)
                     print(msg)
                 elif not isinstance(bsl["posmin"], int):
                     msg = "WARNING: bit-slice {!r} in register {!r} has "
@@ -1233,7 +1235,7 @@ class RegisterMaster(mqtt_deviceattributes):
             name = item["blk"]
             if name in blocked_regs:
                 msg = "WARNING: can't use name {!r} for register\n" "Change register name {!} in file {!r}"
-                msg = msg.format(name, name, self.filename)
+                msg = msg.format(name, name, filename)
                 print(msg)
             elif item.get("adr") is None and item.get("prgadr") is None:
                 msg = "WARNING: register {!r} has invalid address: {!r}"
@@ -1473,7 +1475,7 @@ class RegisterMaster(mqtt_deviceattributes):
     def set_configuration_values(self, data):
         """Only empty dummy function."""
         global mylogger
-        mylogger.log_message(LogLevel.Warning(), "TCCLabor.RegisterMaster: set_configuration_values only dummy function..................................")
+        mylogger.log_message(LogLevel.Warning(), "TCCLabor.RegisterMaster: set_configuration_values only dummy function.....")
         pass
 
     def apply_configuration(self, data):
@@ -1506,20 +1508,7 @@ class RegisterMaster(mqtt_deviceattributes):
 
 
 if __name__ == "__main__":
-    #    from boards import STIBoard
-
-    filename = "hama_regs.xls"
     filename = "hana_regs.xls"
-    filename = r"\\samba\proot\hatd\0101\workareas\appslab\units\top\register_master\xlsdb\hatd_regs_0101.xls"
-
     regs = RegisterMaster(filename=filename)
-    # regs = RegisterMaster(filename, interface=STIBoard(), atomic_slices=False)
     regs.init()
 
-
-if 0:
-    filename = "hama_regs.xls"
-    db = RegDB(filename)
-    db.build_database()
-    reg = RegisterMaster(filename=filename)
-    # ~ assert reg.SPCTRL.mta_in == RegSlice(lsb=2, msb=3)

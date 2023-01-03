@@ -819,9 +819,9 @@ class LabControl(PluginMainWidget):
                 self.logging("clr")
             self.logfilename = logfilename
             self.gui.Llogfilename.setText(self.logfilename)
-        if value == "terminated":
+        elif value in ["terminated", "crash"]:
             self.setButtonActive(False)
-            self.receive_msg_for_instrument.emit('', {"type": "set", "cmd": "mqtt_status", "payload": value})
+            self.receive_msg_for_instrument.emit('', {"type": "set", "cmd": "mqtt_status", "payload": "terminated"})
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)

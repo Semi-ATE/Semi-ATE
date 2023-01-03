@@ -197,7 +197,7 @@ class Gui(Guibase):
             self.regs.init()
         except Exception as ex:
             self.regstatus(f"could not load {self._filename}")
-            msg = f"registermaster.filename something is wrong: {ex}"
+            msg = f"registermaster.filename something is wrong :-( : {ex}"
             self.logger.error(msg)
             print(msg)
             return
