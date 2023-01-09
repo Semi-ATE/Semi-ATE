@@ -384,7 +384,7 @@ class Gui(object):
         msg = f"{self.instName}: {value}"
         self.gui.myInstrument.setTitle(msg)
 
-    def disconnect(self):
+    def gui_disconnect(self):
         value = "disconnect"
         self.status = value
         self._mqtt_status = value
