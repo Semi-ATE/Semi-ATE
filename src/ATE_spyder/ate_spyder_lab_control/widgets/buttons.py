@@ -188,12 +188,12 @@ class Button(QtWidgets.QToolButton):
                 print(msg)
                 self.logger.error(msg)
 
-    def disconnect(self):
+    def gui_disconnect(self):
         self.setStyleSheet(self.sytle_button["disconnect"])
         self.setToolTip(f"{self.instanceName} disconnect")
         if self.guiInstance is not None:
             print(f'{self.instanceName}.guiInstance disconnect')
-            self.guiInstance.disconnect()
+            self.guiInstance.gui_disconnect()
 
     def display_msg(self, topic, msg):
         if 'status' in msg.keys():

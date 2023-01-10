@@ -247,7 +247,7 @@ class LabGui(PluginMainWidget):
                     self.instruments_buttons[name].set_gui(msg["payload"][name])
         elif topic == '' and msg["payload"] == "terminated":
             for name in self.instruments_buttons:
-                self.instruments_buttons[name].disconnect()
+                self.instruments_buttons[name].gui_disconnect()
         elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for the buttons directly or for the guis
             instanceName = list(msg.keys())[0]
             # print(f"   message for the extended GUI received: {instanceName}: '{topic}= {msg}'")
