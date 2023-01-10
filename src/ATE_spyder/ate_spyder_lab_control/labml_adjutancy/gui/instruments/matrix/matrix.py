@@ -48,7 +48,7 @@ class VerticalLabel(QLabel):
         painter = QtGui.QPainter(self)
         painter.translate(0, self.height())
         painter.rotate(-90)
-        painter.drawText(0, self.width() / 2, self.text())
+        painter.drawText(0, int(self.width() / 2), self.text())
         painter.end()
 
 
@@ -100,7 +100,7 @@ class Gui(Guibase):
         self._id = None
         self.gui.show()
         self.topinstname = ""
-        self.mqtt_initlist = ["load_connectionTable()", "show()"]
+        self.mqtt_initlist = ["load_connectionTable()", "display()"]
 
     def myadjustUI(self):
         self.gui.runToolBar.setVisible(False)
@@ -413,8 +413,8 @@ class Gui(Guibase):
             line.setGeometry(
                 QtCore.QRect(
                     self.X_OFFSET + self.X_LLABELWIDTH,
-                    self.Y_OFFSET + self.Y_TLABELHIGH + (y - 1) * self.Y_STEP + self.X_LABELHIGH / 2 + 2,
-                    self.X_OFFSET + self.x_max * self.X_STEP + 20,
+                    int(self.Y_OFFSET + self.Y_TLABELHIGH + (y - 1) * self.Y_STEP + self.X_LABELHIGH / 2 + 2),
+                    int(self.X_OFFSET + self.x_max * self.X_STEP + 20),
                     2,
                 )
             )
@@ -422,7 +422,7 @@ class Gui(Guibase):
         elif y == -1:  # vertical
             line.setGeometry(
                 QtCore.QRect(
-                    self.X_OFFSET + self.X_LLABELWIDTH + self.RADIOBUTTONWIDTH / 2 - 1 + x * self.X_STEP,
+                    int(self.X_OFFSET + self.X_LLABELWIDTH + self.RADIOBUTTONWIDTH / 2 - 1 + x * self.X_STEP),
                     self.Y_OFFSET + self.Y_TLABELHIGH - 10,
                     2,
                     self.y_max * self.Y_STEP + 20,

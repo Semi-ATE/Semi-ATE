@@ -141,8 +141,8 @@ class Button(QtWidgets.QToolButton):
         self.guiLib = guiLib
         self.instance = ''
         self.name = self.instanceName
-        self.button_clicked()
-        self.guiInstance.hide()
+        #self.button_clicked()
+        #self.guiInstance.hide()
 
     def msg2gui(self, topic, msg):
         if self.guiInstance is None:
