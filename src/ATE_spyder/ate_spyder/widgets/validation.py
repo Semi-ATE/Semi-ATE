@@ -7,14 +7,13 @@ import os
 import re
 
 valid_python_class_name_regex = r"^[a-zA-Z_][a-zA-Z0-9_]*$"
-# valid_python_class_name_regex = r"^[a-zA-Z_-][a-zA-Z0-9\[\]_-]*$"
 valid_die_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_product_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_maskset_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_device_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_package_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 
-valid_name_regex = r"^[a-zA-Z\d-][a-zA-Z0-9_]*$"
+valid_name_regex = r"^[a-zA-Z][a-zA-Z0-9_]*$"
 
 valid_pcb_name_regex = r"^[a-zA-Z][a-zA-Z0-9]*$"
 valid_positive_integer_regex = r"^[+]?\d*"
