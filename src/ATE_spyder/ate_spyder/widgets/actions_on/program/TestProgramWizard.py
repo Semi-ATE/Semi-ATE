@@ -27,7 +27,6 @@ from ate_spyder.widgets.constants import SUBFLOWS_QUALIFICATION
 DEFAULT_TEMPERATURE = '25'
 MAX_SBIN_NUM = 65535
 ORANGE = (255, 127, 39)
-DEFAULT = (25, 35, 45)
 RED = (237, 28, 36)
 GREEN = (34, 117, 76)
 ORANGE_LABEL = 'color: orange'
