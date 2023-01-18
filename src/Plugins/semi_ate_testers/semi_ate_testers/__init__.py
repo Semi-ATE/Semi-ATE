@@ -4,6 +4,7 @@ from ate_semiateplugins.hookspec import hookimpl
 from semi_ate_testers.master_testers.dummy_master_single_tester import DummyMasterSingleTester
 from semi_ate_testers.master_testers.dummy_master_parallel_tester import DummyMasterParallelTester
 from semi_ate_testers.Flatcache import Flatcache
+from semi_ate_testers.testers.file_configuration_tester import FileConfigurationTester
 from semi_ate_testers.testers.dummy_single_tester import DummySingleTester
 from semi_ate_testers.testers.dummy_parallel_tester import DummyParallelTester
 from semi_ate_testers.testers.tester_interface import TesterInterface
@@ -92,6 +93,12 @@ class Plugin:
                 "manufacturer": "Semi-ATE",
                 "name": f"{Plugin.prefix()} Parallel Tester"
             },
+           {
+               "display_name": f"{Plugin.prefix()} File configuration Tester",
+               "version": "0.0",
+               "manufacturer": "Semi-ATE",
+               "name": f"{Plugin.prefix()} File configuration Tester"
+           },
             {
                 "display_name": f"{Plugin.prefix()} Mini-SCT ",
                 "version": "0.0",
@@ -150,6 +157,8 @@ class Plugin:
             return DummySingleTester()
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester()
+        elif tester_name ==  f"{Plugin.prefix()} File configuration Tester":
+            return FileConfigurationTester(logger)
         elif tester_name == f"{Plugin.prefix()} Mini-SCT":
             import platform
             # Tester package for minisct hardware is not available on windows
@@ -169,6 +178,8 @@ class Plugin:
             return DummySingleTester
         elif tester_name == f"{Plugin.prefix()} Parallel Tester":
             return DummyParallelTester
+        elif tester_name ==  f"{Plugin.prefix()} File configuration Tester":
+            return FileConfigurationTester
         elif tester_name == f"{Plugin.prefix()} Mini-SCT":
             import platform
             # Tester package for minisct hardware is not available on windows
