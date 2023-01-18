@@ -10,7 +10,6 @@ Starting from TestWizard.py
 import os
 import re
 from typing import Optional
-import json
 
 import numpy as np
 import pandas as pd
@@ -35,7 +34,18 @@ minimal_docstring_length = 80
 
 MAX_OUTPUT_NUMBER = 100
 
-mappingATEDic = {'Empty_Field_999': ''}
+mappingATEDic = {'Unnamed: 1': 'name',
+                 'Test': 'No',
+                 'FlowID': 'NaN',
+                 'Name': 'output_parameters.name',
+                 'Type': 'NaN',                            # function or parameter
+                 'Low Limit': 'output_parameters.ltl',
+                 'Units': 'output_parameters.unit',
+                 'High Limit': 'output_parameters.utl',
+                 'Mean': 'output_parameters.nom',
+                 'Units.2': 'NaN',
+                 'Unnamed: 12': 'NaN',                     # only for test, NaN
+                 }
 
 
 SI = ['s', 'm', 'g', 'A', 'K', 'mol', 'cd', 'rad', 'sr', 'Hz', 'N', 'Pa', 'J', 'W', 'C', 'V', 'F', 'Ω', 'S', 'Wb', 'T', 'H', 'lm'
@@ -105,7 +115,6 @@ class ExcelTestWizard(BaseDialog):
 
         # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.req_headers_present = False
 
         self.get_excel_pages(filename)
         self.create_excel_table(filename)
@@ -116,12 +125,10 @@ class ExcelTestWizard(BaseDialog):
         # buttons
         self.mapping_load.setIcon(qta.icon('mdi.file-import', color='orange'))
         self.mapping_load.setToolTip('load mapping file')
-        self.mapping_load.setEnabled(True)
-        self.mapping_load.clicked.connect(self.mapping_load_pressed)
+        self.mapping_load.setEnabled(False)
         self.mapping_save.setIcon(qta.icon('mdi.content-save', color='orange'))
         self.mapping_save.setToolTip('save mapping file')
-        self.mapping_save.setEnabled(True)
-        self.mapping_save.clicked.connect(self.mapping_save_pressed)
+        self.mapping_save.setEnabled(False)
 
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
         self.OKButton.clicked.connect(self.OKButtonPressed)
@@ -129,21 +136,6 @@ class ExcelTestWizard(BaseDialog):
 
         self._connect_event_handler()
         self.resize(1200, 650)
-
-        self.table.viewport().installEventFilter(self)
-        self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-
-    def eventFilter(self, source, event):
-        if source is self.table.viewport() and event.type() == QtCore.QEvent.Drop:
-            pos = event.pos()
-            row = self.table.rowAt(pos.y())
-            column = self.table.columnAt(pos.x())
-            if row > 0 or self.table.item(row, column).text() != "":
-                event.ignore()
-                return True
-            else:
-                return super().eventFilter(source, event)
-        return super().eventFilter(source, event)
 
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
@@ -210,14 +202,10 @@ class ExcelTestWizard(BaseDialog):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText(str(val).strip())
                 self.table.setItem(row, col, item)
-                if row != 0:
-                    self.table.item(row, col).setFlags(QtCore.Qt.NoItemFlags)
+                item.setFlags(QtCore.Qt.NoItemFlags)
                 row += 1
             col += 1
         self.table.resizeColumnsToContents()
-        mappingATEDic.update(dict.fromkeys(wp.columns, ''))
-        if 'Empty_Field_999' in mappingATEDic.keys():
-            mappingATEDic.pop('Empty_Field_999')
         self.workpage = wp
 
     def map_ATE_2_excel(self):
@@ -230,21 +218,22 @@ class ExcelTestWizard(BaseDialog):
         self.table.mapping = {}
         for header in self.workpage.columns:
             if header in mappingATEDic.keys() and mappingATEDic[header] != 'NaN':
+                self.table.setItem(0, col, QtWidgets.QTableWidgetItem(str(mappingATEDic[header])))
+                self.table.item(0, col).setForeground(QtGui.QColor(0, 255, 0))
+                self.table.item(0, col).setFlags(QtCore.Qt.NoItemFlags)
                 self.table.mapping[str(mappingATEDic[header])] = col
                 delegatorname = mappingATEDic[header].split('.')[1] if len(mappingATEDic[header].split('.')) > 1 else None
                 if delegatorname is not None and delegatorname != 'name' and delegatorname != 'unit':
                     self.table.setItemDelegateForColumn(col, self.__getattribute__(f'{delegatorname}Delegator'))
                 for index in range(self.MappingList.count()):
                     if self.MappingList.item(index).text() == mappingATEDic[header]:
-                        self.MappingList.item(index).setForeground(QtGui.QColor(255, 255, 255))
+                        self.MappingList.item(index).setForeground(QtGui.QColor(0, 255, 0))
             self.table.item(0, col).setBackground(QtGui.QColor(backgroundcolor))
             col += 1
         self.table.resizeColumnsToContents()
 
     def fill_mapping_list(self):
-        self.mapping_list_dict = []
         testContent = self.test_content
-        testContent['No'] = ''
         if 'hardware' in testContent:
             testContent.pop('hardware')
         if 'base' in testContent:
@@ -253,59 +242,16 @@ class ExcelTestWizard(BaseDialog):
         for key in testContent.keys():
             if type(testContent[key]) is not dict or len(testContent[key]) == 0:
                 self.MappingList.addItem(key)
-                self.mapping_list_dict.append(key)
             else:
                 self.MappingList.addItem(f'{key}.name')
-                self.mapping_list_dict.append(f'{key}.name')
                 for childkey in testContent[key][list(testContent[key].keys())[0]].keys():
                     self.MappingList.addItem(f'{key}.{childkey}')
-                    self.mapping_list_dict.append(f'{key}.{childkey}')
 
     def _connect_event_handler(self):
-        self.table.cellChanged.connect(self.makeHeaderBold)
-        self.MappingList.itemChanged.connect(self.makeElementNormal)
+        self.testTabs.currentChanged.connect(self.testTabChanged)
 
-    def makeHeaderBold(self, row, column):
-        if row == 0:
-            bold_font = QtGui.QFont()
-            bold_font.setBold(True)
-            bold_font.setPointSize(11)
-            try:
-                self.table.item(row, column).setBackground(QtGui.QColor(25, 35, 45))
-                self.table.item(row, column).setFont(bold_font)
-            except AttributeError:
-                pass
-        else:
-            return
-
-        self.req_headers_present = False
-        current_header_list = []
-        for col in range(len(self.workpage.columns)):
-            if self.table.item(0, col) is None:
-                empty_text = ''
-                self.table.setItem(0, col, QtWidgets.QTableWidgetItem(str(empty_text)))
-            if self.table.item(0, col) is not None:
-                current_header_list.append(self.table.item(0, col).text())
-            try:
-                if 'name' in current_header_list:
-                    self.req_headers_present = True
-                else:
-                    self.req_headers_present = False
-            except AttributeError:
-                pass
-
-        mappingATEDic_update = dict(zip(mappingATEDic, current_header_list))
-        mappingATEDic.update(mappingATEDic_update)
-        self.verify()
-
-    def makeElementNormal(self, item_selected):
-        unbold_font = QtGui.QFont()
-        unbold_font.setBold(False)
-        unbold_font.setPointSize(9)
-        for i in range(self.MappingList.count()):
-            self.MappingList.item(i).setFont(unbold_font)
-        self.MappingList.setSortingEnabled(True)
-        self.MappingList.sortItems()
+    def testTabChanged(self, activatedTabIndex):
+        """Slot for when the Tab is changed."""
 
     @staticmethod
     def get_dicKey(dict, attribute) -> Optional[str]:
@@ -323,19 +269,15 @@ class ExcelTestWizard(BaseDialog):
 
     def verify(self):
         def check(mylist, testfunc, invert, msg, addAction=None):
-            if mylist is not None:
-                for value in mylist:
-                    if testfunc(value) ^ (not invert):
-                        if self.Feedback.text() == "":
-                            fb = f"{msg}       {value}"
-                            self.Feedback.setText(fb)
-                        matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
-                        for val in range(0, len(matching_items)):
-                            if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
-                                self._set_widget_color(matching_items[val], ORANGE)
-                                break
-                        if addAction is not None:
-                            addAction(matching_items)
+            for value in mylist:
+                if testfunc(value) ^ (not invert):
+                    if self.Feedback.text() == "":
+                        fb = f"{msg}       {value}"
+                        self.Feedback.setText(fb)
+                    matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)[0]
+                    self._set_widget_color(matching_items, ORANGE)
+                    if addAction is not None:
+                        addAction(matching_items)
 
         def startWithInteger(string):
             return True if string[0].isnumeric() else False
@@ -354,19 +296,12 @@ class ExcelTestWizard(BaseDialog):
             if self.WithBase.text() == '':
                 self.Feedback.setText("Select a 'base'")
 
-        for i in range(1, self.table.rowCount()):
-            for j in range(0, self.table.columnCount()):
-                self.table.item(i, j).setBackground(QtGui.QColor(25, 35, 45))
-                self.table.item(i, j).setForeground(QtGui.QColor(255, 255, 255))
-
         # 3. Check if we have a test name
-        testNames = []
-        if 'name' in mappingATEDic.values():
-            table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
-            testNames = [str(x).strip() for x in table_name if not pd.isnull(x) and str(x).strip() != '']
+        table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
+        testNames = [str(x).strip() for x in table_name if not pd.isnull(x) and x != '']
 
         if self.Feedback.text() == "":
-            if (testNames == []) or (set(testNames) == {''}):
+            if testNames == []:
                 self.Feedback.setText("No test names found")
 
         # 4. make some checks with the test names
@@ -407,14 +342,10 @@ class ExcelTestWizard(BaseDialog):
         if not len(self._get_groups()):
             self.Feedback.setText('make sure to select at least one Group')
 
-        if self.req_headers_present is False:
-            self.Feedback.setText("make sure to select the 'name' header")
-
         if self.Feedback.text() == "":
             self.OKButton.setEnabled(True)
         else:
             self.OKButton.setEnabled(False)
-            # self.Feedback.setText('make sure to select all the headers')
         self.testNames = testNames
 
     def _validate_isfloat(self, string):
@@ -454,7 +385,6 @@ class ExcelTestWizard(BaseDialog):
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                self.Feedback.setText('create {test_content["name"]}')
                 self.project_info.add_custom_test(test_content)
             if TestName != '':
                 test_content = {}
@@ -467,8 +397,7 @@ class ExcelTestWizard(BaseDialog):
                 # assign name
                 test_content['name'] = TestName
 
-                if type(searchAndAssign('docstring', [''])[0]) is not str:
-                    test_content['docstring'][0] = str(test_content['docstring'][0])
+                searchAndAssign('docstring', [''])
                 searchAndAssign('dependencies', {})
                 test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
@@ -507,58 +436,6 @@ class ExcelTestWizard(BaseDialog):
             self.project_info.add_custom_test(test_content)
 
         self.accept()
-
-    def mapping_save_pressed(self):
-        try:
-            new_excel_import_path = os.path.join(self.project_info.project_directory, "definitions/excel_import")
-            if not os.path.exists(new_excel_import_path):
-                os.mkdir(new_excel_import_path)
-
-            json_file_name, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save .json File', new_excel_import_path, 'JSON File (*.json)')
-            json_file = os.path.join(new_excel_import_path, json_file_name)
-
-            self.table.setUpdatesEnabled(True)
-            self.table.update()
-            dict_to_list = list(mappingATEDic.items())
-            for col in range(len(mappingATEDic)):
-                header_item = self.table.item(0, col).text()
-                dict_to_list[col] = list(dict_to_list[col])
-                dict_to_list[col][1] = header_item
-            list_to_dict = dict(dict_to_list)
-
-            j = json.dumps(list_to_dict, indent=4)
-            with open(json_file, 'w') as f:
-                f.write(j)
-                f.close()
-
-        except FileNotFoundError:
-            pass
-
-    def mapping_load_pressed(self):
-        try:
-            json_import_path = os.path.join(self.project_info.project_directory, "definitions/excel_import")
-            if not os.path.exists(json_import_path):
-                os.mkdir(json_import_path)
-            json_file, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Load .json File', json_import_path, 'JSON File (*.json)')
-
-            with open(json_file, 'r') as f:
-                self.json_header_data = json.load(f)
-
-            dict_to_list = list(self.json_header_data.items())
-            for col in range(len(dict_to_list)):
-                dict_to_list[col] = list(dict_to_list[col])
-                header_item = dict_to_list[col][1]
-                self.table.setItem(0, col, QtWidgets.QTableWidgetItem(str(header_item)))
-
-            for header in range(len(dict_to_list)):
-                for item in range(self.MappingList.count()):
-                    try:
-                        if (dict_to_list[header][1] == self.MappingList.item(item).text()):
-                            self.MappingList.takeItem(item)
-                    except AttributeError:
-                        pass
-        except FileNotFoundError:
-            pass
 
     def _get_groups(self):
         groups = []
@@ -603,26 +480,3 @@ def excel_test_dialog(project_info, selected_file):
     newTestWizard = ExcelTestWizard(project_info, selected_file)
     newTestWizard.exec_()
     del(newTestWizard)
-
-
-# if __name__ == "__main__":
-#     from ate_spyder.widgets.navigation import ProjectNavigation
-#     from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-#     from PyQt5.QtWidgets import QApplication
-#     from qtpy.QtWidgets import QMainWindow
-#     import qdarkstyle
-#     import sys
-
-#     app = QApplication(sys.argv)
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-#     app.references = set()
-#     main = QMainWindow()
-#     homedir = os.path.expanduser("~")
-#     project_directory = homedir + r'\ATE\tb_ate'       # path to your semi-ate project
-#     project_info = ProjectNavigation(project_directory, homedir, main)
-#     project_info.active_hardware = 'HW0'
-#     project_info.active_base = 'FT'
-#     project_info.active_target = 'Device1'
-#     file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-#     selected_file = file_system_operator.get_file('*.xlsx')
-#     excel_test_dialog(project_info, selected_file)
