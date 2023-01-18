@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
+from ate_common.logger import LogLevel
 
 
 class TesterInterface(ABC):
     SITE_COUNT = -1
+    
+    def __init__(self, logger=None):
+        self.logger = logger
 
     def get_sites_count(self):
         if self.SITE_COUNT == -1:
@@ -34,3 +38,33 @@ class TesterInterface(ABC):
 
     def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
         pass
+
+    def log_info(self, message: str):
+        if self.logger is not None:
+            self.logger.log_message(LogLevel.Info(), message)
+        else:
+            print(f'Info: {message}')
+
+    def log_debug(self, message: str):
+        if self.logger is not None:
+            self.logger.log_message(LogLevel.Debug(), message)
+        else:
+            print(f'Debug: {message}')
+
+    def log_warning(self, message: str):
+        if self.logger is not None:
+            self.logger.log_message(LogLevel.Warning(), message)
+        else:
+            print(f'Warning: {message}')
+
+    def log_error(self, message: str):
+        if self.logger is not None:
+            self.logger.log_message(LogLevel.Error(), message)
+        else:
+            print(f'Error: {message}')
+
+    def log_measure(self, message: str):
+        if self.logger is not None:
+            self.logger.log_message(LogLevel.Measure(), message)
+        else:
+            print(f'Measure: {message}')
