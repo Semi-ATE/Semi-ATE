@@ -169,7 +169,23 @@
        <item row="0" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QTableWidget" name="table"/>
+          <widget class="QTableWidget" name="table">
+           <property name="dragEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="dragDropOverwriteMode">
+            <bool>true</bool>
+           </property>
+           <property name="dragDropMode">
+            <enum>QAbstractItemView::DragDrop</enum>
+           </property>
+           <property name="defaultDropAction">
+            <enum>Qt::MoveAction</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -228,7 +244,20 @@
             </widget>
            </item>
            <item>
-            <widget class="QListWidget" name="MappingList"/>
+            <widget class="QListWidget" name="MappingList">
+             <property name="dragEnabled">
+              <bool>true</bool>
+             </property>
+             <property name="dragDropOverwriteMode">
+              <bool>false</bool>
+             </property>
+             <property name="dragDropMode">
+              <enum>QAbstractItemView::DragDrop</enum>
+             </property>
+             <property name="defaultDropAction">
+              <enum>Qt::MoveAction</enum>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
