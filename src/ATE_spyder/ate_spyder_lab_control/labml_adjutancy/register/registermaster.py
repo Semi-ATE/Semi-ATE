@@ -1498,7 +1498,7 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr = object.__setattr__.__get__(self, self.__class__)
         config = environment.replaceEnvs(data)
         filename = config["filename"] if "filename" in config and config["filename"] != "" else self.filename
-        _setattr("filename", filename)
+        _setattr("filename", os.environ['NETWORK'] + filename)
         instname = config["instance name"] if "instance name" in config and config["instance name"] != "" else self.instName
         _setattr("instName", instname)
         read_mod_write = config["read mod write"] if "read mod write" in config and config["read mod write"] != "" else self._atomic
