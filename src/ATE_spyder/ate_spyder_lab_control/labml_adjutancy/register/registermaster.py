@@ -18,11 +18,6 @@ bitslice is descripted by the following items:
     reset value
     description
 
-The following types of register masters are available:
-    HATC (tested)
-    HANA (tested)
-    HAMA (but compatibility not tested....)
-
 """
 
 import re
@@ -41,16 +36,9 @@ from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
 from labml_adjutancy.misc.common import check, str2num
 
-try:
-    from semictrl import mqttc
 
-    has_mqttc = True
-except ImportError:
-    has_mqttc = False
-
-
-__copyright__ = "Copyright 2021, Lab"
-__version__ = "0.0.1"
+__copyright__ = "Copyright 2023, Lab"
+__version__ = "0.0.3"
 
 mylogger = None
 
@@ -1168,7 +1156,7 @@ class RegisterMaster(mqtt_deviceattributes):
         if hasattr(self, "mqtt_all") and name in self.mqtt_all:
             self.publish_set(name, value)
 
-    def __init__(self, logger=None, filename=None, interface=None, instname="regs", read_mod_write=False, enableMqtt=True):
+    def __init__(self, logger=None, filename=None, interface=None, instname="regs", read_mod_write=False):
         global mylogger
         self.gui = "labml_adjutancy.gui.instruments.regs.registermaster"
         _setattr = object.__setattr__.__get__(self, self.__class__)
@@ -1190,8 +1178,6 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr("_bank", -1)
         _setattr("_atomic", read_mod_write)
         _setattr("_len_reg", 0)
-        if has_mqttc and enableMqtt:
-            self.mqtt_add(mqttc, self)
 
     def __repr__(self):
         args = ["{!r}".format(self.filename)]
@@ -1201,11 +1187,17 @@ class RegisterMaster(mqtt_deviceattributes):
         return "{classname}({args})".format(classname=self.__class__.__name__, args=", ".join(args))
 
     def init(self):
-        if self.filename is None:
+        from semictrl import mqttc
+
+        filename = self.filename
+        if filename is None:
             raise IOError(f"{__class__}: no filename defined")
+        print(f'   {self.instName}.init:   self._mqttclient = {self._mqttclient}')
+        if self._mqttclient is None and mqttc is not None:
+            self.mqtt_add(mqttc, self)
         blocked_regs = tuple(self.__class__.__dict__)
         blocked_slices = tuple(Register.__dict__)
-        db = RegDB(self.filename)
+        db = RegDB(filename)
         db.build_database()
         for item in db.database[0]["registers"]:
             slices = OrderedDict()
@@ -1213,7 +1205,7 @@ class RegisterMaster(mqtt_deviceattributes):
                 name = bsl["bsn"]
                 if name in blocked_slices:
                     msg = "WARNING: can't use name {!r} for slice\n" "Change slice name {!r} (line {!r}) in file {!r}"
-                    msg = msg.format(name, name, bsl["id"], self.filename)
+                    msg = msg.format(name, name, bsl["id"], filename)
                     print(msg)
                 elif not isinstance(bsl["posmin"], int):
                     msg = "WARNING: bit-slice {!r} in register {!r} has "
@@ -1238,7 +1230,7 @@ class RegisterMaster(mqtt_deviceattributes):
             name = item["blk"]
             if name in blocked_regs:
                 msg = "WARNING: can't use name {!r} for register\n" "Change register name {!} in file {!r}"
-                msg = msg.format(name, name, self.filename)
+                msg = msg.format(name, name, filename)
                 print(msg)
             elif item.get("adr") is None and item.get("prgadr") is None:
                 msg = "WARNING: register {!r} has invalid address: {!r}"
@@ -1478,12 +1470,12 @@ class RegisterMaster(mqtt_deviceattributes):
     def set_configuration_values(self, data):
         """Only empty dummy function."""
         global mylogger
-        mylogger.log_message(LogLevel.Warning(), "TCCLabor.RegisterMaster: set_configuration_values only dummy function..................................")
+        mylogger.log_message(LogLevel.Warning(), "labml_adjutancy.RegisterMaster: set_configuration_values only dummy function.....")
         pass
 
     def apply_configuration(self, data):
         """
-        Call from the Plugin TCCLabor.instruments, if the modul placed in the hardwaresetups.
+        Call from the Plugin if the modul placed in the hardwaresetups.
 
         Parameters
         ----------
@@ -1498,7 +1490,9 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr = object.__setattr__.__get__(self, self.__class__)
         config = environment.replaceEnvs(data)
         filename = config["filename"] if "filename" in config and config["filename"] != "" else self.filename
-        _setattr("filename", os.environ['NETWORK'] + filename)
+        filename = environment.checkNetworkPath(filename)
+        _setattr("filename", filename)
+
         instname = config["instance name"] if "instance name" in config and config["instance name"] != "" else self.instName
         _setattr("instName", instname)
         read_mod_write = config["read mod write"] if "read mod write" in config and config["read mod write"] != "" else self._atomic
@@ -1511,20 +1505,7 @@ class RegisterMaster(mqtt_deviceattributes):
 
 
 if __name__ == "__main__":
-    #    from boards import STIBoard
-
-    filename = "hama_regs.xls"
-    filename = "hana_regs.xls"
-    filename = r"\\samba\proot\hatd\0101\workareas\appslab\units\top\register_master\xlsdb\hatd_regs_0101.xls"
-
+    filename = "your_registermaster.xls"
     regs = RegisterMaster(filename=filename)
-    # regs = RegisterMaster(filename, interface=STIBoard(), atomic_slices=False)
     regs.init()
 
-
-if 0:
-    filename = "hama_regs.xls"
-    db = RegDB(filename)
-    db.build_database()
-    reg = RegisterMaster(filename=filename)
-    # ~ assert reg.SPCTRL.mta_in == RegSlice(lsb=2, msb=3)
