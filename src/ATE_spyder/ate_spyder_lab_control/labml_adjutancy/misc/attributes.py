@@ -3,7 +3,7 @@
 Call the methode read() for get, or write() for set attribute, with some checks before and after calling.
 
 :Date: |today|
-:Author: Zlin526F <jung@micronas.com>
+:Author: Zlin526F
 
 """
 
@@ -25,7 +25,7 @@ class create_attributes(object):
     """Create a methode or an attributes from a dictionary.
 
     :Date: |today|
-    :Author: Zlin526F <jung@micronas.com>
+    :Author: Zlin526F
 
     Call the methode read() for get, or write() for set attribute, with some checks before and after calling.
 
@@ -130,8 +130,6 @@ class create_attributes(object):
          show the usage to create many attributes and connect to a smu with one or more channels
        * the class :func:`~instruments.thermostreamer.mpi_ta5k.MPI_TA5K` :download:`instruments/thermostreamer/mpi_ta5k <../../../instruments/thermostreamer/mpi_ta5k.py>`
          show the usage to create many attributes and connect to a thermostreamer
-       * the class :func:`~instruments.boards.micronas.communication.apbboard.HALAPBBoard` :download:`instruments/boards/micronas/communication/apbboard <../../../instruments/boards/micronas/communication/apbboard.py>`
-         show the usage to create many attributes and connect to a communication board
        * the class :func:`~instruments.smu.natinst.pxie41xx` use this class to call inst.methods_name
          :download:`instruments/smu/natinst/pxie41xx.py <../../../instruments/smu/natinst/pxie41xx.py>`
 
