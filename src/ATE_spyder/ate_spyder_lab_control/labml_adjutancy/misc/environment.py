@@ -54,14 +54,18 @@ def environ_getpath(self, key):
     result = os.environ.get(key)
     if result is None:
         self.log_error(f'labml_adjutancy: key {key} not found in environment')
-    elif os.name == "nt" and (result.find('/') == 0 or result.find('\\') == 0) and (result.find('samba') < 0 or result.find('samba') > 2):
-        result = '//samba' + result
+        return None
+    network = os.environ['NETWORK'] if os.environ['NETWORK'] is not None else ''
+    if network != '' and os.name == "nt" and result.find(os.sep)==0 and result.split(os.sep)[0].find(network)<0:
+        result = network + result
         os.environ[key] = result
     return result
 
 def checkNetworkPath(name, network=''):
     if os.environ['NETWORK'] and network=='':
         network = os.environ['NETWORK']
+    elif os.environ['NETWORK'] is None and network != '':
+        os.environ['NETWORK'] == network
     if network != '' and os.name == "nt" and name.find(os.sep)==0 and name.split(os.sep)[0].find(network)<0:
         name = network + name
     return name
