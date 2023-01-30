@@ -756,7 +756,6 @@ class ProjectSetup(object):
         pass
 
     def apply_configuration(self, data):
-        breakpoint()
         if 'Network prefix' in data and data['Network prefix'] != '' and os.name == "nt":
             self.network = data['Network prefix']
             os.environ['NETWORK'] = self.network
