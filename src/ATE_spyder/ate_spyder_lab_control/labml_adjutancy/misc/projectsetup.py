@@ -170,7 +170,7 @@ class ProjectSetup(object):
         self.main_path = str(Path(sys.modules['__main__'].__file__).parent) + os.sep
         os.environ['PROJECT_PATH'] = str(Path(self.main_path).parent.parent.parent) + os.sep
         
-        self.network = os.environ.get('NETWORK')
+        self.network = '' if os.environ.get('NETWORK') is None else os.environ.get('NETWORK')
         self.logger = logger
         mylogger = logger
         self.instName = 'setup'
@@ -756,13 +756,14 @@ class ProjectSetup(object):
         pass
 
     def apply_configuration(self, data):
+        breakpoint()
+        if 'Network prefix' in data and data['Network prefix'] != '' and os.name == "nt":
+            self.network = data['Network prefix']
+            os.environ['NETWORK'] = self.network
         config = environment.replaceEnvs(data)
         project_path = self.main_path
         harness = ''
-        path_prefix = ''
         working_dir= ''
-        if 'Network prefix' in config and config['Network prefix'] != '' and os.name == "nt":
-            path_prefix = config['Network prefix']
         if 'working directory' in config and config['working directory'] != '':        
             for path in config['working directory'].split(';'):
                 if os.path.exists(path):
@@ -774,7 +775,6 @@ class ProjectSetup(object):
             harness = config['add path']
         self.logger.log_message(LogLevel.Info(), '$LOGGINGFILENAME$ {};{}'.format(project_path, self.logger.get_log_file_information()['filename']))
 
-        os.environ['NETWORK'] = path_prefix
         environment.environ_getpath(self, 'registermaster')      # replace environment for registermaster if os='nt'
         project_path = os.environ['PROJECT_PATH']
         harness = working_dir + harness if working_dir != "" else str(Path(project_path).parent) + os.sep + harness
