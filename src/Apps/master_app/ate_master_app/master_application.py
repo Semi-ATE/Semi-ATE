@@ -62,9 +62,9 @@ def assert_valid_system_mimetypes_config():
     where types from registry will always be loaded.
     """
     js_mime_type = mimetypes.guess_type('file.js')[0]
-    if js_mime_type != 'application/javascript':
+    if js_mime_type != 'text/javascript':
         print('FATAL ERROR: Invalid system configuration for .js type: '
-              + 'expected "application/javascript" but got '
+              + 'expected "text/javascript" but got '
               + f'"{js_mime_type}".'
               + ' Please fix your systems mimetypes configuration.')
         sys.exit(1)

@@ -19,10 +19,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ['3.8', '3.9']
+        PYTHON_VERSION: ['3.8', '3.9', '3.10']
     steps:
       - name: Checkout Pull Requests
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Environment Dependencies
         run: |
@@ -111,7 +111,7 @@ jobs:
 
     steps:
       - name: Checkout Pull Requests
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Environment Dependencies
         shell: bash
@@ -208,7 +208,7 @@ jobs:
           twine check output/*
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: output
           path: ./output
