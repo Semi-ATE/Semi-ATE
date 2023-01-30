@@ -363,6 +363,9 @@ class mqtt_deviceattributes(object):
             self.mqtt_list = self.mqtt_all
         else:
             self.mqtt_list = liste
+        if client is None:
+            print("mqtt_add: client not defined")
+            return
         client.mqtt_add(instrument)
         if self._mqttclient is not None:
             self.mqtt_enable = True
@@ -468,7 +471,7 @@ class mqtt_deviceattributes(object):
                         "payload": value,
                     }
                 }
-            if payload != "nomqtt":
+            if payload != "nomqtt" and self._mqttclient is not None:
                 self._mqttclient.publish(self.topic, payload)
                 if self.mqtt_debug:
                     print(

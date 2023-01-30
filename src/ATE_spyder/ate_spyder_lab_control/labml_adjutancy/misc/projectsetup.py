@@ -11,6 +11,7 @@ import json
 import time
 import getpass
 import datetime
+from pathlib import Path
 from inspect import isclass
 from labml_adjutancy.misc import environment
 from labml_adjutancy.misc import common
@@ -166,7 +167,10 @@ class ProjectSetup(object):
               >>> tcc.setup.append('instruments.smu', 'limit', 0.1)
         """
         global mylogger
-        self.network = os.environ.get('NETWORK')
+        self.main_path = str(Path(sys.modules['__main__'].__file__).parent) + os.sep
+        os.environ['PROJECT_PATH'] = str(Path(self.main_path).parent.parent.parent) + os.sep
+        
+        self.network = '' if os.environ.get('NETWORK') is None else os.environ.get('NETWORK')
         self.logger = logger
         mylogger = logger
         self.instName = 'setup'
@@ -221,58 +225,65 @@ class ProjectSetup(object):
             return
         for instrument in self.init:                # initialise the instances to their values in self.init
             items = self.init[instrument]
-            if tuple(self.init[instrument])[0] == self._MYCLASS:
-                for myclass in self.init[instrument][self._MYCLASS]:
-                    if hasattr(parent, instrument) and myclass == getattr(parent, instrument).__class__.__name__:
-                        items = self.init[instrument][self._MYCLASS][myclass]
-                        break
-            if instrument not in dir(parent):
-                self.logger.info(f'{self.setup.Setupfile}: instrument {instrument} not found in your Hardware configuration -> do nothing')
-                continue
-            for item in items:
-                error = False
-                cpitem = item
-                mypath = getattr(parent, instrument)        # set mypath to the instrument
-                if type(item) is dict:
-                    item = tuple(item.items())[0]
-                cmd = item[0]
-                value = item[1]
-                getattribute = False
-                if type(item) is str:
-                    cmd = item
-                    getattribute = True
-                command = cmd
-                if len(cmd.split('.')) > 1:
-                    split = cmd.split('.')
-                    if split[0] == 'parent':
-                        mypath = parent
-                        split.pop(0)
-                    for index in range(len(split)-1):
-                        try:
-                            mypath = getattr(mypath, split[index])
-                        except Exception:
-                            self.logger.info(f'{self.setup.Setupfile}: {instrument} path from {cpitem} not found --> do nothing')
-                            error = True
-                    cmd = split[index+1]
-                if error:
-                    continue
-                result = None
-                try:
-                    if getattribute:
-                        result = getattr(mypath, cmd, None)
-                        self.logger.info(f'{instrument}.{item} == {result}')
-                    elif cmd.find('(') < 0:
-                        setattr(mypath, cmd, value)
-                    else:                                               # it is a function call
-                        cmd = cmd[0:cmd.find('(')]
-                        result = getattr(mypath, cmd, None)(value)
-                except Exception:
-                    error = True
-                if not error:
-                    self.write(f'setup.instruments.{instrument}', command, (value, result))
-                else:
-                    self.logger.error(f'{self.setup.Setupfile}:  {instrument}.{cpitem} not found --> do nothing')
+            self.init_instrument(parent, instrument, items)
         self.logger.log_message(LogLevel.Info(), f"{self.__class__}.init: set instruments to its setup values, defined in {self.setup.Setupfile}")
+
+    def init_instrument(self, parent, instrument, items):
+        if type(items) is dotdict and list(items.keys())[0] == self._MYCLASS:
+            for myclass in items[self._MYCLASS]:
+                if hasattr(parent, instrument) and myclass == getattr(parent, instrument).__class__.__name__:
+                    self.init_instrument(parent, instrument, items[self._MYCLASS][myclass])
+            return
+        if instrument not in dir(parent):
+            self.logger.info(f"{self.setup.Setupfile}: Instrument '{instrument}' not found in your Hardware configuration -> do nothing")
+            return
+        if type(items) is dotdict and len(items.keys()) > 1:
+            for item in items:
+                self.init_instrument(getattr(parent, instrument), item, items[item])
+            return
+        for item in items:
+            error = False
+            cpitem = item
+            mypath = getattr(parent, instrument)        # set mypath to the instrument
+            if type(item) is dict:
+                item = tuple(item.items())[0]
+            cmd = item[0]
+            value = item[1]
+            getattribute = False
+            if type(item) is str:
+                cmd = item
+                getattribute = True
+            command = cmd
+            if len(cmd.split('.')) > 1:
+                split = cmd.split('.')
+                if split[0] == 'parent':
+                    mypath = parent
+                    split.pop(0)
+                for index in range(len(split)-1):
+                    try:
+                        mypath = getattr(mypath, split[index])
+                    except Exception:
+                        self.logger.info(f'{self.setup.Setupfile}: {instrument} path from {cpitem} not found --> do nothing')
+                        error = True
+                cmd = split[index+1]
+            if error:
+                continue
+            result = None
+            try:
+                if getattribute:
+                    result = getattr(mypath, cmd, None)
+                    self.logger.info(f'{instrument}.{item} == {result}')
+                elif cmd.find('(') < 0:
+                    setattr(mypath, cmd, value)
+                else:                                               # it is a function call
+                    cmd = cmd[0:cmd.find('(')]
+                    result = getattr(mypath, cmd, None)(value)
+            except Exception:
+                error = True
+            if not error:
+                self.write(f'setup.instruments.{instrument}', command, (value, result))
+            else:
+                self.logger.error(f'{self.setup.Setupfile}:  {instrument}.{cpitem} not found --> do nothing')
 
     def _replaceSomeThing(self, jsontable):
         """
@@ -294,7 +305,11 @@ class ProjectSetup(object):
                 nvalue = ''
                 for s in tmp:
                     if s.find('$') == 0:
-                        s = os.environ.get(s[1:])
+                        env = s[1:]
+                        s = os.environ.get(env)
+                    if s is None:
+                        self.logger.log_message(LogLevel.Error(), f'environment {env} not defined')
+                        s = ''
                     nvalue += s + '/'
                 if nvalue != '':
                     if type(jsontable) == dict:
@@ -396,7 +411,7 @@ class ProjectSetup(object):
             found = False
             if cmdsplit[0] == 'tcc':
                 cmdsplit.pop(0)
-            if cmdsplit[0] in self.result.instruments.keys():
+            if hasattr(self.result, 'instruments') and cmdsplit[0] in self.result.instruments.keys():
                 path = self.parent
                 found = True
             elif cmdsplit[0] in self.__dict__:
@@ -653,13 +668,12 @@ class ProjectSetup(object):
     def _write(self):
         """Write the dictionary to the logfile."""
         # self.__dict__.pop('init')
-        with open(self._RESULT, 'w') as outfile:
+        with open(os.getenv('PROJECT_PATH') + "output" + os.sep + self._RESULT, 'w') as outfile:
             outfile.write('{')
             self.jsondump(outfile, self.setup)
             outfile.write('    ,\n')
             self.jsondump(outfile, 'result')
-            # json.dump(self.setup, outfile, indent=2)
-            # json.dump(self.result, outfile, indent=2)     # sort_keys=True
+            # json.dump(self.setup, outfile, indent=2)            # json.dump(self.result, outfile, indent=2)     # sort_keys=True
             outfile.write('\n}')
         self.logger.log_message(LogLevel.Info(), f'write results to {self._RESULT}')
 
@@ -742,7 +756,30 @@ class ProjectSetup(object):
         pass
 
     def apply_configuration(self, data):
+        if 'Network prefix' in data and data['Network prefix'] != '' and os.name == "nt":
+            self.network = data['Network prefix']
+            os.environ['NETWORK'] = self.network
         config = environment.replaceEnvs(data)
+        project_path = self.main_path
+        harness = ''
+        working_dir= ''
+        if 'working directory' in config and config['working directory'] != '':        
+            for path in config['working directory'].split(';'):
+                if os.path.exists(path):
+                    working_dir = path
+            os.environ['WORKING_DIR'] = working_dir
+            if working_dir != '':
+                self.logger.log_message(LogLevel.Info(), f'LABML.Instruments: get WORKING_DIR from the Plugin parameter-file = {working_dir}')
+        if 'add path' in config and config['add path'] != '':
+            harness = config['add path']
+        self.logger.log_message(LogLevel.Info(), '$LOGGINGFILENAME$ {};{}'.format(project_path, self.logger.get_log_file_information()['filename']))
+
+        environment.environ_getpath(self, 'registermaster')      # replace environment for registermaster if os='nt'
+        project_path = os.environ['PROJECT_PATH']
+        harness = working_dir + harness if working_dir != "" else str(Path(project_path).parent) + os.sep + harness
+        sys.path.append(working_dir if working_dir != "" else str(Path(project_path).parent))
+        os.environ['harness'] = harness
+
         self.logger.log_message(LogLevel.Info(), f'TCCLabor.ProjectSetup: apply_configuration  {config}')
         setupfile = config['filename'] if 'filename' in config and config['filename'] != '' else None
         workarea = os.environ.get('WORKAREA')

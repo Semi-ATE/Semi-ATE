@@ -11,15 +11,15 @@ with requirements_path.open('r') as f:
 readme_path = Path(Path(__file__).parent, './labml_adjutancy/README.md')
 with readme_path.open('r') as f:
     long_description = f.read()
-	
-setup( 
+
+setup(
     name="LabMl-adjutancy",
     version=version,
-	description="adjutancy lib for the Lab labor Measurement library",
-    author = "Semi-ATE",
+    description="adjutancy lib for the Lab labor Measurement library",
+    author="Semi-ATE",
     author_email="info@Semi-ATE.org",
-    maintainer='Semi-ATE',  
-    maintainer_email='info@Semi-ATE.org', 
+    maintainer='Semi-ATE',
+    maintainer_email='info@Semi-ATE.org',
     url="https://github.com/Semi-ATE",
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -35,9 +35,9 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
@@ -49,11 +49,10 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Quality Assurance',
-    ],	
-    python_requires='>=3.7',
+    ],
+    python_requires='>=3.8',
     entry_points={
-        "spyder.plugins": [
-            "lab_control = plugin:LabControlPlugin"
-        ]
+        "spyder.plugins": "lab_control = plugin:LabControlPlugin",
+        "ate.org": "labmlplug = generalpurposefunc:Plugin"
     }
 )

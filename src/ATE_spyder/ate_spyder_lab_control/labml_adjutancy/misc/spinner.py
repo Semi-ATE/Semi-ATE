@@ -2,7 +2,7 @@
 
 
 :Date: |today|
-:Author: Zlin526F <jung@micronas.com>
+:Author: Zlin526F
 
 """
 

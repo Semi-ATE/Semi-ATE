@@ -24,16 +24,20 @@ class TesterInterface(ABC):
 
     @abstractmethod
     def test_done(self, site_id: int, timeout: int):
+        self.log_info('tester.test_done() only dummy function')
         pass
 
     @abstractmethod
     def do_init_state(self, site_id: int):
+        self.log_info('tester.do_init_state() only dummy function')
         pass
 
     def setup(self):
+        self.log_info('tester.setup() only dummy function')
         pass
 
     def teardown(self):
+        self.log_info('tester: teardown() only dummy function')
         pass
 
     def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
