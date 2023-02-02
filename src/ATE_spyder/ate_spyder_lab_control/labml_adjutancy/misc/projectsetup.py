@@ -820,7 +820,8 @@ if __name__ == '__main__':
     from ATE.common.logger import Logger
 
     logger = Logger('logger')
-    setup = ProjectSetup(logger, '//samba/proot/hana/0504/workareas/appslab/units/lab.Win64/source/python/tb_ate/src/HW0/FT/result_projectsetup-20012022.json')
+	jsonSetupFile = 'your_setup_json_file.json' 
+    setup = ProjectSetup(logger, jsonSetupFile)
     print(setup.result.regs.dump.keys())
 
     setup.initialization()
