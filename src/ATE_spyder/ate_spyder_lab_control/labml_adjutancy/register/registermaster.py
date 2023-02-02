@@ -36,7 +36,6 @@ from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
 from labml_adjutancy.misc.common import check, str2num
 
-
 __copyright__ = "Copyright 2023, Lab"
 __version__ = "0.0.3"
 

@@ -3,6 +3,7 @@ xlrd
 h5py
 lxml
 openpyxl
+ipywidgets
 tables
 hightime
 QtAwesome

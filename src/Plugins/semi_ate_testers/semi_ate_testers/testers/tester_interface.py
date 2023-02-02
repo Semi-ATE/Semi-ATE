@@ -8,6 +8,9 @@ class TesterInterface(ABC):
     def __init__(self, logger=None):
         self.logger = logger
 
+    def __init__(self, logger=None):
+        self.logger = logger
+
     def get_sites_count(self):
         if self.SITE_COUNT == -1:
             raise Exception('make sure to override the static class variable `SITE_COUNT` with the correct site number supported by the tester inside the derived class')
@@ -72,3 +75,4 @@ class TesterInterface(ABC):
             self.logger.log_message(LogLevel.Measure(), message)
         else:
             print(f'Measure: {message}')
+

@@ -52,7 +52,10 @@ setup(
     ],
     python_requires='>=3.8',
     entry_points={
-        "spyder.plugins": "lab_control = plugin:LabControlPlugin",
+       "spyder.plugins": [
+            "lab_control = plugin_control:LabControlPlugin",
+            "lab_gui = plugin_gui:LabGuiPlugin"
+        ],
         "ate.org": "labmlplug = generalpurposefunc:Plugin"
     }
 )

@@ -13,7 +13,6 @@ TODO:
 """
 import os
 import time
-import importlib
 import json
 import qtawesome as qta
 import qdarkstyle
@@ -56,7 +55,7 @@ class LabControlDialog(QtWidgets.QDialog):
 
 class LabConrolConfig(BaseModel):
     broker: str
-    topic: str
+    device_id: str
 
 
 class LabControl(PluginMainWidget):
@@ -71,11 +70,6 @@ class LabControl(PluginMainWidget):
     - most interactions from the user with the gui will be handle in guiclicked('')
     - mqtt command will be handle in mqtt_receive()
 
-    for extend the Menubar:
-        - send mqtt with {'semictrl': {'type': 'cmd', 'cmd': 'menu', 'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}}
-        - app must have the class GUI(parent=None, name=None)
-        - if you use more than one instName for the same GUI:
-            use subtopic[] for the other instName in the Gui
     """
 
     configfile = "lab_control.json"
@@ -190,10 +184,11 @@ class LabControl(PluginMainWidget):
     ]
 
     change_status_display = Signal(str, str)
+    receive_msg_for_instrument = Signal(str, dict)
 
     def __init__(self, name, plugin, parent=None):
         super().__init__(name, plugin, parent)
-        """Initialise the class semi_control."""
+        """Initialise the class Lab Control."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         self.plugin = plugin
         self.passmsg = "Pass"
@@ -223,14 +218,16 @@ class LabControl(PluginMainWidget):
 
     def setup_widget(self, project_info):
         self.project_info = project_info
+        self.project_info.lab_control = self
         current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
-        default_parameter = {"broker": '127.0.0.1', "topic": 'developmode'}
+        default_parameter = {"broker": '127.0.0.1', "device_id": 'developmode'}
+        if current_config.keys() != default_parameter.keys():
+            current_config = {}
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
-        print(f'{self.plugin.NAME}.current config = {self.current_config}')
 
-        self.sendtopic = f"ate/{self.current_config.topic}/TestApp/"
+        self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
-        mqttclient = mqtt_init()  # prepare mqtt for controlling
+        mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
         if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
             self.state = "notconnect"
             return
@@ -253,8 +250,6 @@ class LabControl(PluginMainWidget):
         return _("Lab Control")
 
     def update_control(self, test_program_name):
-        print(f"Lab Control.update_control({test_program_name})")
-
         self.test_program_name = test_program_name
         if self.project_info == "":
             self.logger.error("__call__ : no project_info found")
@@ -274,15 +269,6 @@ class LabControl(PluginMainWidget):
         if bin_table is not None:
             self.bin_table = bin_table["bin-table"]
         self.logging()
-
-    def show(self):
-        super().show()
-        index = 0
-        for app in self.gui.newMenu:
-            if hasattr(app, "libname") and app.libname != "":
-                self.extendedbarClicked(index)
-            index += 1
-        self.flagAppclosed = True
 
     def adjustUI(self):
         # set Menubar
@@ -399,7 +385,6 @@ class LabControl(PluginMainWidget):
             )
         )
         self.menuBar = menuBar
-        self.gui.newMenu = []
         self.change_status_display.connect(self._change_status_display)
         self.gui.Gsequencer.hide()
         self.gui.Gprogress.hide()
@@ -461,7 +446,7 @@ class LabControl(PluginMainWidget):
         try:
             msg = json.loads(msg)
         except Exception as ex:
-            self.logger.error(f"mqtt_receive '{topic}: {msg}' with error {ex}")
+            self.logger.error(f"Lab Control.mqtt_receive '{topic}: {msg}' with error {ex}")
             return
         topicsplit = topic.split("/")
         notfound = False
@@ -470,12 +455,14 @@ class LabControl(PluginMainWidget):
                 self.mqttReiveMyname(topic, msg)
             elif topicsplit[2] != mqtt.TOPIC_CONTROL:
                 notfound = True
-        elif type(msg) is dict and "type" in msg:  # received a message from controlling
-            self.mqttReceiveSemictrl(topic, msg)
+        elif topicsplit[1] == self.current_config.device_id and type(msg) is dict\
+                and ("type" in msg or "status" in msg):  # received a message from controlling
+            self.mqttReceiveLabcontrol(topic, msg)
         else:
+            print(f"Lab Control.mqtt_receive {topic} = {msg} -> not found")
             notfound = True
         if notfound:
-            self.logger.warning(f"mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
+            self.logger.warning(f"Lab Control.mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
 
     def mqttReiveMyname(self, topic, msg):
         """
@@ -498,124 +485,21 @@ class LabControl(PluginMainWidget):
                     self.change_status_display.emit("testing", "")
             elif msg["type"] == "cmd" and msg["cmd"] == "topinstname":
                 self.topinstname = msg["payload"]
-            if msg["type"] == "cmd" and msg["cmd"] == "menu":  # get command to extend Menu
-                pindex = -1
-                for addmenu in msg["payload"]:
-                    # the syntax is {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
-                    pindex += 1
-                    found = False
-                    if pindex == 0 and addmenu not in self.gui.menuBar.titles:  # add new Menu Title
-                        self.gui.newMenu.append(QtWidgets.QMenu(addmenu, self.gui))
-                        self.gui.newMenu[-1].instance = None
-                        self.gui.menuBar.addMenu(self.gui.newMenu[-1])
-                        self.gui.menuBar.titles.append(addmenu)
-                        mindex = pindex
-                        found = True
-                    elif pindex == 0:  # Menu Title already exist
-                        self.logger.debug(f"     Menu Title {addmenu} already exist, do nothing")
-                        continue
-                    else:  # create/update submenue
-                        self.logger.debug(f"     add/update menu: {addmenu}")
-                        mindex = 0
-                        for menu in self.gui.newMenu:  # menu exist?
-                            if hasattr(menu, "name") and menu.name == addmenu:
-                                found = True
-                                break
-                            mindex += 1
-                        self.logger.debug(f"     found: {found}")
-                        if found:
-                            self.logger.debug(f"     update menu: {addmenu}")
-                            lib = msg["payload"][addmenu].split(".")[-1]
-                            self.logger.debug(f"     reload lib {lib} from {msg['payload'][addmenu]}")
-                            self.logger.debug(f"     reload lib {str(self.gui.newMenu[mindex].lib)}")
-                            try:
-                                importlib.reload(self.gui.newMenu[mindex].lib)
-                            except Exception as ex:
-                                self.logger.error(f"    Coudn't reload lib {lib} from {msg['payload'][addmenu]}  {ex}")
-                            continue
-                        else:  # create menu: {addmenu} with action to lib {msg['payload'][addmenu]}
-                            self.gui.newMenu.append(QtWidgets.QAction("   " + addmenu, self.gui))
-                            try:
-                                if msg["payload"][addmenu] != "":
-                                    self.logger.debug(f"     importlib {msg['payload'][addmenu]}")
-                                    self.gui.newMenu[-1].lib = importlib.import_module(msg["payload"][addmenu])
-                            except Exception as ex:
-                                # self.gui.newMenu[-1].lib = None
-                                print(f"    Coudn't set lib, try to load {msg['payload']}[{addmenu}]  {ex}")
-                                self.gui.newMenu.pop(-1)
-                                continue
-                            self.gui.newMenu[-1].setCheckable(True)
-                            self.gui.newMenu[-1].setText("     " + addmenu)
-                            self.gui.newMenu[0].addAction(self.gui.newMenu[-1])
-                            self.gui.newMenu[-1].triggered.connect(lambda checked, index=len(self.gui.newMenu) - 1: self.extendedbarClicked(index))
-                            print(f"         create menu: {addmenu} index = {len(self.gui.newMenu)-1}, with action to lib {msg['payload'][addmenu]}")
-                    if not hasattr(self.gui.newMenu[mindex], "instance"):  # GUI has not created
-                        self.gui.newMenu[mindex].instance = None
-                    self.gui.newMenu[mindex].libname = msg["payload"][addmenu]
-                    self.gui.newMenu[mindex].name = addmenu
-                    self.gui.newMenu[mindex].subtopic = []
-                    self.logger.debug("     add/update menu : done")
-                    self.menuBar.adjustSize()
-        elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a application in the extended Menu
-            self.logger.debug(f"   message for the extended GUI received: '{topic}= {msg}'")
-            for app in self.gui.newMenu:
-                if not hasattr(app, "instance") or app.instance is None:
-                    continue
-                self.logger.debug(f"   {app.instance.topinstname}.{app.name}: subtopic: {app.instance.subtopic}")
-                name = None
-                app.topinstname = self.topinstname
-                if len(app.subtopic) > 0:
-                    for subtopic in app.subtopic:
-                        if subtopic in msg.keys():
-                            name = subtopic
-                elif hasattr(app.instance, "subtopic"):  # you can also add subtopic to a each GUI, e.q. scope also listen to 'regs'
-                    for subtopic in app.instance.subtopic:
-                        if subtopic in msg.keys():
-                            name = subtopic
-                if app.name in msg.keys() and app.instance is not None:
-                    name = app.name
-                if name is not None:
-                    msg = msg[name]
-                    cmd = msg["cmd"]
-                    value = msg["payload"]
-                    self.logger.debug(f"    message for {app.name}: {cmd} = {msg} -->   ")
-                    try:
-                        if msg["type"] in ["set"] and hasattr(app.instance, cmd):  # set attribute
-                            self.logger.debug(f"   begin set attribute {cmd}={value}")
-                            app.instance.__setattr__(cmd, value)
-                            self.logger.debug("   --> set attribute done")
-                        elif msg["type"] in ["get"] and hasattr(app.instance, cmd):  # get attribute/function call
-                            if value == []:  # it is a function call?
-                                self.logger.debug(f"   begin call function {cmd}")
-                                app.instance.__getattribute__(cmd)()
-                                self.logger.debug("   --> call function done")
-                            else:
-                                self.logger.debug(f"   begin get/set attribute {cmd}={value}")
-                                app.instance.__setattr__(cmd, value)  # get from extern is a set for displaying....
-                                # app.instance.__getattribute__(cmd)
-                                self.logger.debug("   --> begin get/set attribute done")
-                            self.logger.debug("   function call done")
-                        elif msg["type"] in ["set", "get"] and hasattr(app.instance, "mqttreceive"):  # implemented not as attribute/functioncall to get more information as only the payload
-                            self.logger.debug(f"   call mqttreceive with {msg}")
-                            app.instance.mqttreceive(name, msg)
-                            self.logger.debug("   call mqttreceive done")
-                        elif not hasattr(app.instance, cmd):
-                            self.logger.warning(f"{name} hat no attribute: '{cmd} = {msg}'")
-                        else:
-                            self.logger.error(f"{name} I don't now what to do with this message: '{cmd} = {msg}'")
-                    except Exception as ex:
-                        self.logger.error(f"{name} something goes wrong: '{topic} = {msg}'  {ex}")
+            if msg["type"] == "cmd" and msg["cmd"] == "button":  # get command to extend Menu
+                self.receive_msg_for_instrument.emit(topic, msg)
+        elif type(msg) is dict and len(msg.keys()) == 1:  # received a message for a other plugin
+            self.receive_msg_for_instrument.emit(topic, msg)
         else:
             pass
-            self.logger.info(f"Info: semi_control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
+            self.logger.info(f"Info: Lab Control.mqttReiveMyname '{topic}: {msg}' -> not implemented do nothing....")
 
-    def mqttReceiveSemictrl(self, topic, msg):
+    def mqttReceiveLabcontrol(self, topic, msg):
         """
         Call if a message from ATE controlling received.
 
         for the received mqtt syntax: look at the comment at the beginning of the file
         """
-        msgtype = msg["type"]
+        msgtype = msg["type"] if "type" in msg else list(msg.keys())[0]
         self.last_mqtt_time = time.time()
         if msgtype == "cmd":  # command received
             if not self.wait4answer:
@@ -641,7 +525,7 @@ class LabControl(PluginMainWidget):
                     self.logging(None)
                     self.display_result()
                     self.gui.Llogfilename.setText("")
-            self.logger.debug(f"semi_control.mqtt_receive: {mqttstate}")
+            self.logger.debug(f"Lab Control.mqtt_receive: {mqttstate}")
             if mqttstate != "finish_seq":
                 self.state = mqttstate
         elif msgtype == "log":
@@ -656,57 +540,24 @@ class LabControl(PluginMainWidget):
                 for index in msg["payload"]:
                     outfile.writelines(str(index))
                     outfile.write("\n")
-        elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuartors
+        elif msgtype.find("io-control-") == 0:  # and "periphery_type" in msg:      # handle message from actuators
             if topic.split("/")[2] == "TestApp" and msgtype == "io-control-request":
-                newtopic = f"ate/{self.current_config.topic}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
+                newtopic = f"ate/{self.current_config.device_id}/{msg['periphery_type']}/{topic.split('/')[3]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
             elif topic.split("/")[2] != "Master" and msgtype == "io-control-response":
-                newtopic = f"ate/{self.current_config.topic}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
+                newtopic = f"ate/{self.current_config.device_id}/Master/{topic.split('/')[2]}/{topic.split('/')[-1]}"
                 self.mqtt.publish(newtopic, msg)
+                self.receive_msg_for_instrument.emit(topic, msg)
+        elif msgtype == 'status':
+            self.receive_msg_for_instrument.emit(topic, msg)
         else:
-            self.logger.warning(f"I don't know what should I do with this message: {msgtype}")
+            self.logger.warning(f"mqttReceiveLabcontrol: I don't know what should I do with this message: {msgtype}")
 
     def setButtonActive(self, value):
         """Activate all disabled buttons."""
         self.nextaction.setEnabled(value)
         self.terminateaction.setEnabled(value)
         self.resetaction.setEnabled(value)
-
-    # logging and display:
-    def extendedbarClicked(self, index):
-        if index == 0:
-            return
-        self.logger.info(f"extendedbarClicked {index}")
-        self.logger.info(f"     name = {self.gui.newMenu[index].name}")
-        self.logger.info(f"     libname = {self.gui.newMenu[index].libname}")
-        self.logger.info(f"     lib = {self.gui.newMenu[index].lib}")
-        self.logger.info(f"     subtopic = {self.gui.newMenu[index].subtopic}")
-        self.logger.info(f"     topinstname = {self.topinstname}")
-        if self.gui.newMenu[index].isChecked():
-            name = self.gui.newMenu[index].name
-            if not hasattr(self.gui.newMenu[index], "lib") or self.gui.newMenu[index].lib is None:
-                self.logger.error(f" Gui for {name} not exist, please update the LAB-ML adjutancy lib")
-                self.gui.newMenu[index].instance = None
-                self.gui.newMenu[index].setChecked(False)
-                return
-            importlib.reload(importlib.import_module("labml_adjutancy.gui.instruments.base_instrument"))
-            importlib.reload(self.gui.newMenu[index].lib)
-            self.gui.newMenu[index].instance = self.gui.newMenu[index].lib.Gui(self, name, self.project_info.parent)  # start Gui
-            self.gui.newMenu[index].instance.subtopic = self.gui.newMenu[index].subtopic
-            self.gui.newMenu[index].instance.topinstname = self.topinstname
-            self.logger.debug(f" create {self.gui.newMenu[index].instance} done")
-            self.logger.info(f"     geometry = {self.gui.newMenu[index].instance.gui.geometry()}")
-            if "menu" in self.saveconfigdata and name in self.saveconfigdata["menu"] and len(self.saveconfigdata["menu"][name]) > 3 and self.gui.newMenu[index].instance is not None:
-                self.set_Geometry(
-                    name,
-                    self.gui.newMenu[index].instance.gui,
-                    self.saveconfigdata["menu"][name][2],
-                )
-            self.saveconfig()
-        elif self.gui.newMenu[index].instance is not None:
-            self.gui.newMenu[index].instance.close()
-            self.gui.newMenu[index].instance = None
-            self.saveconfig()
 
     def guiclicked(self, cmd):
         """Handle mouseclicks on a button."""
@@ -725,17 +576,19 @@ class LabControl(PluginMainWidget):
         elif cmd == "preferences":
             from ate_spyder.widgets.actions_on.hardwaresetup.PluginConfigurationDialog import PluginConfigurationDialog
 
-            dialog = PluginConfigurationDialog(self, self.plugin.NAME, self.current_config.dict().keys(), self.project_info.active_hardware, self.project_info, self.current_config.dict(), False)
+            dialog = PluginConfigurationDialog(self, self.plugin.NAME, self.current_config.dict().keys(), self.project_info.active_hardware,
+                                               self.project_info, self.current_config.dict(), False)
             dialog.exec_()
-            print(dialog.get_cfg())
-            if dialog.get_cfg() is not None:
+            if dialog.get_cfg() != self.current_config.dict():
                 self.project_info.store_plugin_cfg(self.project_info.active_hardware, self.plugin.NAME, dialog.get_cfg())
-                del(dialog)
-                self.mqtt.mqtt_disconnect()
-                self.mqttclient.mqtt_disconnect()
-                self.mqttclient.close()
+                if hasattr(self, 'mqtt'):
+                    self.mqtt.mqtt_disconnect()
+                if hasattr(self, 'mqttclient'):
+                    self.mqttclient.mqtt_disconnect()
+                    self.mqttclient.close()
                 self.reset()
                 self.setup_widget(self.project_info)
+            del(dialog)
         elif cmd == "reset":
             self.logger.debug("Reset Lab Control")
             self.setButtonActive(True)
@@ -827,14 +680,14 @@ class LabControl(PluginMainWidget):
         """
         path = os.path.join(self.project_info.project_directory, "log", self.logfilename)
         if msg is None or msg == "":
-            self.logger.debug("semi_control.logging: clear")
+            self.logger.debug("Lab Control.logging: clear")
             self.gui.TElogging.clear()
         elif msg == "clr":
-            self.logger.debug("semi_control.logging: clr")
+            self.logger.debug("Lab Control.logging: clr")
             self.gui.TElogging.clear()
         elif msg in (self.logging_cmd_reload, "!LOAD!"):
             if self.project_info.active_hardware != "" and self.project_info.active_base != "":
-                self.logger.debug(f"semi_control.logging: {msg}")
+                self.logger.debug(f"Lab Control.logging: {msg}")
                 if msg == "!LOAD!":
                     "logload"
                     self.display_result()
@@ -842,7 +695,7 @@ class LabControl(PluginMainWidget):
                     self.gui.TElogging.clear()
                 self.readlog(path)
             if msg == self.logging_cmd_reload:
-                self.logger.debug("    semi_control.logging: RELOAD")
+                self.logger.debug("    Lab Control.logging: RELOAD")
                 self.saveconfig()
         else:
             if msg.find("\r") == len(msg) - 1:
@@ -952,7 +805,11 @@ class LabControl(PluginMainWidget):
             for val in apara:
                 dmsg = dmsg + f"{val[0]}={val[1]}, "
             msg = dmsg[:-2] + msg
-        self.logger.debug(f"semi_control.state = {value}, oldstate ={self._state}")
+        # print(f"Lab Control.state = {value}, oldstate ={self._state}")
+        # if hasattr(self, 'mqttclient'):
+        #     print(f"       mqttclient.typ ={self.mqttclient.typ}")
+        # else:
+        #     print("       mqttclient not found ?!")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
@@ -962,23 +819,24 @@ class LabControl(PluginMainWidget):
                 self.logging("clr")
             self.logfilename = logfilename
             self.gui.Llogfilename.setText(self.logfilename)
-        if value == "terminated":
+        elif value in ["terminated", "crash"]:
             self.setButtonActive(False)
+            self.receive_msg_for_instrument.emit('', {"type": "set", "cmd": "mqtt_status", "payload": "terminated"})
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
             self.setButtonActive(True)
         elif value == "config" or (value == "idle" and oldstate not in ("config", "testing")):  # start identify
-            self.logger.debug("semi_control.state: config apply")
+            self.logger.debug("Lab Control.state: config apply")
             self.cycle = 0
             self.display_result()
             if self.gui.CBstartauto.isChecked():
-                self.logger.debug(f"semi_control.state: {value}, config apply, Auto is enabled -> send next")
+                self.logger.debug(f"Lab Control.state: {value}, config apply, Auto is enabled -> send next")
                 self.guiclicked("next")
         elif value == "idle" and oldstate in ("reset", "config", "testing") and self.actionSequencer_Parameters.isChecked() and self.gui.CBautoseq.isChecked():  # testprogramm runs through
-            self.logger.debug("semi_control.state: idle, Auto sequence is enabled -> guiclicked(next)")
+            self.logger.debug("Lab Control.state: idle, Auto sequence is enabled -> guiclicked(next)")
             self.guiclicked("next")
         elif value == "idle" and oldstate in ("reset", "config", "testing") and self.gui.CBstopauto.isChecked():  # testprogramm runs through
-            self.logger.debug("semi_control.state: idle, Auto is enabled -> send terminate")
+            self.logger.debug("Lab Control.state: idle, Auto is enabled -> send terminate")
             self.mqtt_send("cmd", "terminate")
 
     # result:
@@ -1010,7 +868,7 @@ class LabControl(PluginMainWidget):
         msg == 'pass' -> msg in green
             else -> msg in red
         """
-        self.logger.debug(f"semi_control.display_result: {msg}")
+        self.logger.debug(f"Lab Control.display_result: {msg}")
         self.gui.Ldate.setText("Testresult from {}".format(self.lasttime))
         result = None
         if msg is None:
@@ -1034,7 +892,6 @@ class LabControl(PluginMainWidget):
                 found = True
         if found:
             gui.setGeometry(geometry[0], geometry[1], geometry[2], geometry[3])
-            print(f"{name}.set_Geometry({geometry[0]}, {geometry[1]}, {geometry[2]}, {geometry[3]})")
         else:
             self.logger.warning(f"coudn't set last geometry for {name}, it is out of the actual screen")
             print(f"coudn't set last geometry for {name}, it is out of the actual screen")
@@ -1088,26 +945,26 @@ class LabControl(PluginMainWidget):
             self.sequencer.parameters = data["config"]["sequencer"]
             self.set_Geometry("semi-ctrl", self.gui, data["config"]["geometry"])
             self.logger.debug("   now create menu from the settings")
-            if "menu" in data:
-                menu = {}
-                menu["type"] = "cmd"
-                menu["cmd"] = "menu"
-                menu["payload"] = data["menu"].copy()
-                self.logger.debug(f"   read menue = {menu}")
-                # syntax e.q. = {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
-                for name in menu["payload"].keys():
-                    if len(menu["payload"][name]) > 0:
-                        menu["payload"][name] = menu["payload"][name][0]
-                self.logger.debug(f"       {menu}")
-                self.mqttReiveMyname("", {self.SemiCtrlinstName: menu})
-                index = 0
-                for app in self.gui.newMenu:
-                    if app.libname != "":
-                        app.setChecked(data["menu"][app.name][1])
-                        if len(data["menu"][app.name]) > 3 and app.instance is not None:
-                            app.subtopic = data["menu"][app.name][3]
-                            app.instance.subtopic = app.subtopic
-                    index += 1
+            # if "menu" in data:
+            #     menu = {}
+            #     menu["type"] = "cmd"
+            #     menu["cmd"] = "menu"
+            #     menu["payload"] = data["menu"].copy()
+            #     self.logger.debug(f"   read menue = {menu}")
+            #     # syntax e.q. = {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
+            #     for name in menu["payload"].keys():
+            #         if len(menu["payload"][name]) > 0:
+            #             menu["payload"][name] = menu["payload"][name][0]
+            #     self.logger.debug(f"       {menu}")
+            #     self.mqttReiveMyname("", {self.SemiCtrlinstName: menu})
+            #     index = 0
+            #     for app in self.gui.newMenu:
+            #         if app.libname != "":
+            #             app.setChecked(data["menu"][app.name][1])
+            #             if len(data["menu"][app.name]) > 3 and app.instance is not None:
+            #                 app.subtopic = data["menu"][app.name][3]
+            #                 app.instance.subtopic = app.subtopic
+            #         index += 1
             self.saveconfigdata = data
         except Exception as ex:
             print(f"{self.configfile}: {ex} not found or not ok -> use rest of default config")
@@ -1158,26 +1015,26 @@ class LabControl(PluginMainWidget):
             },
             "menu": {},
         }
-        mymenu = {}
-        index = 0
-        for app in self.gui.newMenu:
-            # syntax = {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
-            if index == 0:
-                mymenu[app.name] = ""
-            elif hasattr(app, "libname"):
-                mymenu[app.name] = [app.libname, app.isChecked()]
-                if app.instance is not None and hasattr(app.instance, "geometry"):
-                    mymenu[app.name].append(
-                        [
-                            app.instance.geometry().x(),
-                            app.instance.geometry().y(),
-                            app.instance.width(),
-                            app.instance.height(),
-                        ]
-                    )
-                mymenu[app.name].append(app.subtopic)
-            index += 1
-        data["menu"] = mymenu
+        # mymenu = {}
+        # index = 0
+        # for app in self.gui.newMenu:
+        #     # syntax = {'payload': {'Instruments': '', 'scope': 'gui.instruments.softscope.softscope'}}
+        #     if index == 0:
+        #         mymenu[app.name] = ""
+        #     elif hasattr(app, "libname"):
+        #         mymenu[app.name] = [app.libname, app.isChecked()]
+        #         if app.instance is not None and hasattr(app.instance, "geometry"):
+        #             mymenu[app.name].append(
+        #                 [
+        #                     app.instance.geometry().x(),
+        #                     app.instance.geometry().y(),
+        #                     app.instance.width(),
+        #                     app.instance.height(),
+        #                 ]
+        #             )
+        #         mymenu[app.name].append(app.subtopic)
+        #     index += 1
+        # data["menu"] = mymenu
         settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
@@ -1222,37 +1079,14 @@ class LabControl(PluginMainWidget):
             self.logger.error(f"coudn't find {filename}")
         return result
 
-    def appclosed(self, name):
-        """Call from an instrumet if the instrument closed itself."""
-        self.saveconfig()
-        if self.flagAppclosed:  # TODO change to a Signal
-            print(f"   Control.appclosed({name})")
-            for app in self.gui.newMenu:
-                if app.name == name:
-                    app.setChecked(False)
-                    settings = [app.libname, app.isChecked()]
-                    if app.instance is not None and hasattr(app.instance, "geometry"):
-                        settings.append(
-                            [
-                                app.instance.geometry().x(),
-                                app.instance.geometry().y(),
-                                app.instance.width(),
-                                app.instance.height(),
-                            ]
-                        )
-                    settings.append(app.subtopic)
-                    self.saveconfigdata["menu"][app.name] = settings
-                    self.saveconfig()
-
     def close(self, event=None):
         self.saveconfig()
-        self.flagAppclosed = False
         super().close()
 
     def __del__(self):
-        print("Semicontrol.__del__")
         self.close()
         super().__del__
 
     def debug_stop(self):
         ''' do update the state of lab control when the test application is stoped '''
+        self.state = 'terminated'
