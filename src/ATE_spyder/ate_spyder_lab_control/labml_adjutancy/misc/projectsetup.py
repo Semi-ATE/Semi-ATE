@@ -820,7 +820,7 @@ if __name__ == '__main__':
     from ATE.common.logger import Logger
 
     logger = Logger('logger')
-	jsonSetupFile = 'your_setup_json_file.json' 
+    jsonSetupFile = 'your_setup_json_file.json' 
     setup = ProjectSetup(logger, jsonSetupFile)
     print(setup.result.regs.dump.keys())
 
