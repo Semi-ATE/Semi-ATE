@@ -28,12 +28,18 @@ from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
 from ate_spyder.widgets.validation import is_valid_python_class_name
 import ate_spyder.widgets.actions_on.tests.Utils as utils
+from ate_spyder.widgets.constants import UpdateOptions
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
 
 minimal_docstring_length = 80
 
 MAX_OUTPUT_NUMBER = 100
+BACKGROUNDCOLOR = (25, 35, 45)
+FOREGROUNDCOLOR = (255, 255, 255)
+YELLOW = (255, 255, 102)
+GREY = (128, 128, 128)
+OVERWRITE = 'overwrite'
 
 mappingATEDic = {'Empty_Field_999': ''}
 
@@ -132,6 +138,8 @@ class ExcelTestWizard(BaseDialog):
 
         self.table.viewport().installEventFilter(self)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.openNameMenu)
 
     def eventFilter(self, source, event):
         if source is self.table.viewport() and event.type() == QtCore.QEvent.Drop:
@@ -144,6 +152,47 @@ class ExcelTestWizard(BaseDialog):
             else:
                 return super().eventFilter(source, event)
         return super().eventFilter(source, event)
+
+    def openNameMenu(self, pos):
+        row = self.table.rowAt(pos.y())
+        column = self.table.columnAt(pos.x())
+        item = self.table.item(row, column)
+        if item.text() == "" or self.table.item(0, column).text() != 'name':
+            return
+        menu = QtWidgets.QMenu()
+        menuActions = []
+        if row == 0:
+            actions = ["enable all", "disable all", "overwrite all"]
+            for action in actions:
+                menuActions.append(menu.addAction(action))
+            action = menu.exec_(self.table.mapToGlobal(pos))
+            if action is not None:
+                for index in range(1, self.table.rowCount()):
+                    item = self.table.item(index, column)
+                    if item.text() != "":
+                        newaction = action.text().split(" ")[0]
+                        if newaction == 'overwrite' and not self._does_test_exist(item.text()):
+                            newaction = 'enable'
+                        item.action = newaction
+        if row > 0:
+            actions = ["disable"]
+            exists = self._does_test_exist(item.text())
+            # create menu:
+            if not hasattr(item, 'action'):
+                item.action = 'enable'
+            if exists and item.action in ['enable', 'disable']:
+                actions.append("overwrite")
+            elif exists and item.action == 'overwrite':
+                actions.append("enable")
+            if item.action == 'disable':
+                actions[0] = "enable"
+            for action in actions:
+                menuActions.append(menu.addAction(action))
+            # do action:
+            action = menu.exec_(self.table.mapToGlobal(pos))
+            if action is not None:
+                item.action = action.text()
+        self.verify()
 
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
@@ -321,27 +370,45 @@ class ExcelTestWizard(BaseDialog):
         item.setBackground(self._generate_color(color))
         item.setForeground(QtCore.Qt.black)
 
+    def testNamesAction(self, items, msg):
+        for i in range(0, len(items)):
+            action = 'enable'
+            fb = f"{msg}       {items[i].text()}"
+            exist = self._does_test_exist(items[i].text())
+            if hasattr(items[i], "action"):
+                action = items[i].action
+            if action == 'overwrite' and exist:
+                self._set_widget_color(items[i], YELLOW)
+            elif action == 'disable':
+                self._set_widget_color(items[i], GREY)
+
+            if action == 'enable' and self.Feedback.text() == "":
+                if exist:
+                    self.Feedback.setText(fb)
+                else:
+                    self.Feedback.setText("")
+            elif action != 'enable' and fb == self.Feedback.text():
+                self.Feedback.setText("")
+
     def verify(self):
         def check(mylist, testfunc, invert, msg, addAction=None):
             if mylist is not None:
                 for value in mylist:
+                    matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
                     if testfunc(value) ^ (not invert):
-                        if self.Feedback.text() == "":
-                            fb = f"{msg}       {value}"
-                            self.Feedback.setText(fb)
-                        matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
                         for val in range(0, len(matching_items)):
                             if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
                                 self._set_widget_color(matching_items[val], ORANGE)
-                                break
                         if addAction is not None:
-                            addAction(matching_items)
+                            addAction(matching_items, msg)
+                        elif self.Feedback.text() == "":
+                            fb = f"{msg}       {value}"
+                            self.Feedback.setText(fb)
+                    elif addAction is not None:
+                        addAction(matching_items, msg)
 
         def startWithInteger(string):
             return True if string[0].isnumeric() else False
-
-        def addMenuOverwrite(item):
-            pass
 
         self.Feedback.setText("")
 
@@ -356,8 +423,8 @@ class ExcelTestWizard(BaseDialog):
 
         for i in range(1, self.table.rowCount()):
             for j in range(0, self.table.columnCount()):
-                self.table.item(i, j).setBackground(QtGui.QColor(25, 35, 45))
-                self.table.item(i, j).setForeground(QtGui.QColor(255, 255, 255))
+                self.table.item(i, j).setBackground(QtGui.QColor(self._generate_color(BACKGROUNDCOLOR)))
+                self.table.item(i, j).setForeground(QtGui.QColor(self._generate_color(FOREGROUNDCOLOR)))
 
         # 3. Check if we have a test name
         testNames = []
@@ -373,7 +440,7 @@ class ExcelTestWizard(BaseDialog):
         if self.Feedback.text() == "":
             check(testNames, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
             check(testNames, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
-            check(testNames, self._does_test_exist, True, "test name already exists!", addMenuOverwrite)
+            check(testNames, self._does_test_exist, True, "test name already exists!", self.testNamesAction)
             check(testNames, keyword.iskeyword, True, "python keyword should not be used as test name! ")
 
         # 5. Check the input/output parameters
@@ -445,6 +512,37 @@ class ExcelTestWizard(BaseDialog):
                 test_content[header] = value
             return value
 
+        def create_default_outputparameters():
+            output_parameters = utils.make_default_output_parameter(empty=True)
+            output_parameters['lsl'] = -np.inf
+            output_parameters['ltl'] = np.nan
+            output_parameters['nom'] = 0.0
+            output_parameters['utl'] = np.nan
+            output_parameters['usl'] = np.inf
+            output_parameters['fmt'] = ".3f"
+            output_parameters['exp10'] = 0
+            return output_parameters
+
+        def create_update_custom_test(test_content):
+            matching_item = self.table.findItems(test_content["name"], QtCore.Qt.MatchExactly)[0]
+            action = 'enable'
+            if 'output_parameters' not in test_content.keys():
+                test_content['output_parameters'] = {'new_parameter1': create_default_outputparameters()}
+            if hasattr(matching_item, 'action'):
+                action = matching_item.action
+            if action == 'enable':
+                msg = f'create {test_content["name"]}'
+                self.Feedback.setText(msg)
+                print(msg)
+                self.project_info.add_custom_test(test_content)
+            elif action == 'overwrite':
+                msg = f'update {test_content["name"]}'
+                self.Feedback.setText(msg)
+                print(msg)
+                update_option = self.__have_parameters_changed(test_content)
+                self.project_info.update_custom_test(test_content, update_option)
+
+        #QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         test_content = {}
         wp = self.workpage
         for index in wp.index:
@@ -454,8 +552,7 @@ class ExcelTestWizard(BaseDialog):
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                self.Feedback.setText('create {test_content["name"]}')
-                self.project_info.add_custom_test(test_content)
+                create_update_custom_test(test_content)
             if TestName != '':
                 test_content = {}
                 test_content['type'] = "custom"
@@ -480,11 +577,7 @@ class ExcelTestWizard(BaseDialog):
             column = searchmapping('output_parameters.name')
             if column is not None:
                 name = searchAndAssign('output_parameters.name', write_content=False)
-                output_parameters = utils.make_default_output_parameter(empty=True)
-                output_parameters['lsl'] = -np.inf
-                output_parameters['usl'] = np.inf
-                output_parameters['fmt'] = ".3f"
-                output_parameters['exp10'] = 0
+                output_parameters = create_default_outputparameters()
 
                 for parameterName in mappingATEDic.values():
                     parameterName_split = parameterName.split('.')
@@ -504,9 +597,44 @@ class ExcelTestWizard(BaseDialog):
                     test_content['output_parameters'][name] = output_parameters
 
         if test_content != {}:
-            self.project_info.add_custom_test(test_content)
+            create_update_custom_test(test_content)
 
+        #QtWidgets.QApplication.restoreOverrideCursor()
         self.accept()
+
+    def _get_test_content(self, name):
+        return self.project_info.get_test_table_content(name, self.project_info.active_hardware, self.project_info.active_base)
+
+    def __have_parameters_changed(self, content: dict) -> UpdateOptions:
+        db_content = self._get_test_content(content['name'])
+        if len(content['input_parameters']) != len(db_content['input_parameters']) \
+           or len(content['output_parameters']) != len(db_content['output_parameters']):
+            return UpdateOptions.Code_Update()
+
+        if self._check_content(db_content['input_parameters'], content['input_parameters']) \
+           or self._check_content(db_content['output_parameters'], content['output_parameters']):
+            return UpdateOptions.Code_Update()
+
+        if self._check_content(db_content['patterns'], content['patterns']):
+            return UpdateOptions.Code_Update()
+
+        group_names = set([group.name for group in self.project_info.get_groups_for_test(content['name'])])
+        if group_names != set(self._get_groups()):
+            return UpdateOptions.Group_Update()
+
+        return UpdateOptions.DB_Update()
+
+    @staticmethod
+    def _check_content(old_data, new_data):
+        for key, value in old_data.items():
+            if not new_data.get(key):
+                return True
+
+            for k, v in new_data[key].items():
+                if str(value[k]) != str(v):
+                    return True
+
+        return False
 
     def mapping_save_pressed(self):
         try:
@@ -541,6 +669,7 @@ class ExcelTestWizard(BaseDialog):
                 os.mkdir(json_import_path)
             json_file, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Load .json File', json_import_path, 'JSON File (*.json)')
 
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             with open(json_file, 'r') as f:
                 self.json_header_data = json.load(f)
 
@@ -559,6 +688,8 @@ class ExcelTestWizard(BaseDialog):
                         pass
         except FileNotFoundError:
             pass
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def _get_groups(self):
         groups = []
@@ -605,24 +736,25 @@ def excel_test_dialog(project_info, selected_file):
     del(newTestWizard)
 
 
-# if __name__ == "__main__":
-#     from ate_spyder.widgets.navigation import ProjectNavigation
-#     from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-#     from PyQt5.QtWidgets import QApplication
-#     from qtpy.QtWidgets import QMainWindow
-#     import qdarkstyle
-#     import sys
+if __name__ == "__main__":
+    from ate_spyder.widgets.navigation import ProjectNavigation
+    from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
+    from PyQt5.QtWidgets import QApplication
+    from qtpy.QtWidgets import QMainWindow
+    import qdarkstyle
+    import sys
 
-#     app = QApplication(sys.argv)
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-#     app.references = set()
-#     main = QMainWindow()
-#     homedir = os.path.expanduser("~")
-#     project_directory = homedir + r'\ATE\tb_ate'       # path to your semi-ate project
-#     project_info = ProjectNavigation(project_directory, homedir, main)
-#     project_info.active_hardware = 'HW0'
-#     project_info.active_base = 'FT'
-#     project_info.active_target = 'Device1'
-#     file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-#     selected_file = file_system_operator.get_file('*.xlsx')
-#     excel_test_dialog(project_info, selected_file)
+    app = QApplication(sys.argv)
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    app.references = set()
+    main = QMainWindow()
+    homedir = os.path.expanduser("~")
+    project_directory = homedir + r'\ATE\tb_ate'       # path to your semi-ate project
+    project_directory = homedir + r'\ATE\packages\envs\tb_ate'
+    project_info = ProjectNavigation(project_directory, homedir, main)
+    project_info.active_hardware = 'HW0'
+    project_info.active_base = 'FT'
+    project_info.active_target = 'Device1'
+    file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
+    selected_file = file_system_operator.get_file('*.xlsx')
+    excel_test_dialog(project_info, selected_file)
