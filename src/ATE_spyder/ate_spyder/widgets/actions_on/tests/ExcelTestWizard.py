@@ -511,6 +511,20 @@ class ExcelTestWizard(BaseDialog):
                 test_content[header] = value
             return value
 
+        def assignParameters(pName, parameters):
+            for parameterName in mappingATEDic.values():
+                parameterName_split = parameterName.split('.')
+                if parameterName_split[0] == pName:
+                    if parameterName_split[1] != 'name':
+                        value = searchAndAssign(parameterName, write_content=False)
+                        if parameterName_split[1] == 'unit':
+                            if (type(value) == str and value.strip() == '') or (type(value) == float and np.isnan(value)):
+                                value = '˽'
+                            if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
+                                parameters['exp10'] = POWER[value[0]]
+                                value = value[1:]
+                        parameters[parameterName_split[1]] = value
+
         def create_default_outputparameters():
             output_parameters = utils.make_default_output_parameter(empty=True)
             output_parameters['lsl'] = -np.inf
@@ -523,8 +537,9 @@ class ExcelTestWizard(BaseDialog):
             return output_parameters
 
         def create_update_custom_test(test_content):
-            test_content['dependencies'] = {}  # TODO: implement this
-            test_content['patterns'] = {}      # TODO: implement this
+            test_content['dependencies'] = {}
+            test_content['patterns'] = []      # TODO: implement this
+            searchAndAssign('dependencies', {})
             matching_item = self.table.findItems(test_content["name"], QtCore.Qt.MatchExactly)[0]
             action = 'enable'
             if 'output_parameters' not in test_content.keys():
@@ -568,33 +583,26 @@ class ExcelTestWizard(BaseDialog):
 
                 if type(searchAndAssign('docstring', [''])[0]) is not str:
                     test_content['docstring'][0] = str(test_content['docstring'][0])
-                searchAndAssign('dependencies', {})
                 test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
                 test_content['input_parameters']['Temperature'] = self.validationInputParameter(test_content['input_parameters']['Temperature'])
 
             column = searchmapping('input_parameters.name')
             if column is not None:
-                # todo: not yet implemented
-                pass
+                name = searchAndAssign('input_parameters.name', write_content=False)
+                input_parameters = utils.make_default_input_parameter()
+                assignParameters('input_parameters', input_parameters)
+                if 'input_parameters' not in test_content:
+                    test_content['input_parameters'] = {name: input_parameters}
+                else:
+                    test_content['input_parameters'][name] = input_parameters
 
             column = searchmapping('output_parameters.name')
             if column is not None:
                 name = searchAndAssign('output_parameters.name', write_content=False)
                 output_parameters = create_default_outputparameters()
+                assignParameters('output_parameters', output_parameters)
 
-                for parameterName in mappingATEDic.values():
-                    parameterName_split = parameterName.split('.')
-                    if parameterName_split[0] == 'output_parameters':
-                        if parameterName_split[1] != 'name':
-                            value = searchAndAssign(parameterName, write_content=False)
-                            if parameterName_split[1] == 'unit':
-                                if (type(value) == str and value.strip() == '') or (type(value) == float and np.isnan(value)):
-                                    value = '˽'
-                                if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
-                                    output_parameters['exp10'] = POWER[value[0]]
-                                    value = value[1:]
-                            output_parameters[parameterName_split[1]] = value
                 if 'output_parameters' not in test_content:
                     test_content['output_parameters'] = {name: output_parameters}
                 else:
@@ -637,6 +645,13 @@ class ExcelTestWizard(BaseDialog):
 
     @staticmethod
     def _check_content(old_data, new_data):
+        if type(old_data) == list:
+            if len(old_data) != len(new_data):
+                return True
+            for index in range(0, len(old_data)):
+                if old_data[index] != new_data[index]:
+                    return True
+            return False
         for key, value in old_data.items():
             if not new_data.get(key):
                 return True
@@ -760,8 +775,7 @@ if __name__ == "__main__":
     app.references = set()
     main = QMainWindow()
     homedir = os.path.expanduser("~")
-    project_directory = homedir + r'\ATE\tb_ate'       # path to your semi-ate project
-    project_directory = homedir + r'\ATE\packages\envs\tb_ate'
+    project_directory = homedir + r'\ATE\packages\envs\tb_ate'    # path to your semi-ate project
     project_info = ProjectNavigation(project_directory, homedir, main)
     project_info.active_hardware = 'HW0'
     project_info.active_base = 'FT'
