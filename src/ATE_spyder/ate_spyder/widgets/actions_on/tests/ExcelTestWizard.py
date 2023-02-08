@@ -2,7 +2,7 @@
 """
 Created on Mon Sep  5 18:56:05 2022
 
-@author: Zlin526F
+@author: Zlin526F, hari999333
 
 Starting from TestWizard.py
 
@@ -197,7 +197,7 @@ class ExcelTestWizard(BaseDialog):
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
         self.fill_mapping_list()
-        self.map_ATE_2_excel()
+        # self.map_ATE_2_excel()    # this is not necessary anymore?
         self.verify()
 
     def get_excel_pages(self, filename):
@@ -276,10 +276,8 @@ class ExcelTestWizard(BaseDialog):
         """
         col = 0
         backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()
-        self.table.mapping = {}
         for header in self.workpage.columns:
             if header in mappingATEDic.keys() and mappingATEDic[header] != 'NaN':
-                self.table.mapping[str(mappingATEDic[header])] = col
                 delegatorname = mappingATEDic[header].split('.')[1] if len(mappingATEDic[header].split('.')) > 1 else None
                 if delegatorname is not None and delegatorname != 'name' and delegatorname != 'unit':
                     self.table.setItemDelegateForColumn(col, self.__getattribute__(f'{delegatorname}Delegator'))
@@ -397,8 +395,8 @@ class ExcelTestWizard(BaseDialog):
                     matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
                     if testfunc(value) ^ (not invert):
                         for val in range(0, len(matching_items)):
-                            if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
-                                self._set_widget_color(matching_items[val], ORANGE)
+                            # if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
+                            self._set_widget_color(matching_items[val], ORANGE)
                         if addAction is not None:
                             addAction(matching_items, msg)
                         elif self.Feedback.text() == "":
@@ -445,10 +443,11 @@ class ExcelTestWizard(BaseDialog):
 
         # 5. Check the input/output parameters
         if self.Feedback.text() == "":
-            for key in self.table.mapping.keys():
+            for key in mappingATEDic.values():
+                column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, key))
                 if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
                     for index in range(1, self.table.rowCount()):
-                        text = self.table.item(index, self.table.mapping[key]).text()
+                        text = self.table.item(index, column).text()
                         check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
                         # check(testNames, self._does_test_exist, True, "parameter name already exists!")
@@ -458,12 +457,12 @@ class ExcelTestWizard(BaseDialog):
                     continue
                 for index in range(1, self.table.rowCount()):
                     erroritem = None
-                    text = self.table.item(index, self.table.mapping[key]).text()
+                    text = self.table.item(index, column).text()
                     if key.split('.')[1] == 'unit':
                         if not (text in SI or (len(text) > 1 and text[0] in POWER.keys() and text[1:] in SI)):                 # check if exp valid
-                            erroritem = self.table.item(index, self.table.mapping[key])
+                            erroritem = self.table.item(index, column)
                     elif not self._validate_isfloat(text):  # check for floats
-                        erroritem = self.table.item(index, self.table.mapping[key])
+                        erroritem = self.table.item(index, column)
                     if erroritem is not None:
                         self._set_widget_color(erroritem, ORANGE)
                         if self.Feedback.text() == "":
@@ -524,6 +523,8 @@ class ExcelTestWizard(BaseDialog):
             return output_parameters
 
         def create_update_custom_test(test_content):
+            test_content['dependencies'] = {}  # TODO: implement this
+            test_content['patterns'] = {}      # TODO: implement this
             matching_item = self.table.findItems(test_content["name"], QtCore.Qt.MatchExactly)[0]
             action = 'enable'
             if 'output_parameters' not in test_content.keys():
@@ -533,14 +534,16 @@ class ExcelTestWizard(BaseDialog):
             if action == 'enable':
                 msg = f'create {test_content["name"]}'
                 self.Feedback.setText(msg)
-                print(msg)
+                print(msg, test_content)
                 self.project_info.add_custom_test(test_content)
             elif action == 'overwrite':
                 msg = f'update {test_content["name"]}'
                 self.Feedback.setText(msg)
-                print(msg)
+                print(msg, test_content)
                 update_option = self.__have_parameters_changed(test_content)
                 self.project_info.update_custom_test(test_content, update_option)
+            if action != 'disable':
+                self.project_info.parent.sig_test_tree_update.emit()
 
         #QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         test_content = {}
@@ -555,23 +558,24 @@ class ExcelTestWizard(BaseDialog):
                 create_update_custom_test(test_content)
             if TestName != '':
                 test_content = {}
+                # assign name
+                test_content['name'] = TestName
+
                 test_content['type'] = "custom"
                 test_content['hardware'] = self.ForHardwareSetup.text()
                 test_content['base'] = self.WithBase.text()
                 test_content['groups'] = self._get_groups()
-                test_content['patterns'] = {}
-
-                # assign name
-                test_content['name'] = TestName
 
                 if type(searchAndAssign('docstring', [''])[0]) is not str:
                     test_content['docstring'][0] = str(test_content['docstring'][0])
                 searchAndAssign('dependencies', {})
                 test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
+                test_content['input_parameters']['Temperature'] = self.validationInputParameter(test_content['input_parameters']['Temperature'])
 
             column = searchmapping('input_parameters.name')
             if column is not None:
+                # todo: not yet implemented
                 pass
 
             column = searchmapping('output_parameters.name')
@@ -601,6 +605,13 @@ class ExcelTestWizard(BaseDialog):
 
         #QtWidgets.QApplication.restoreOverrideCursor()
         self.accept()
+
+    def validationInputParameter(self, parameters):
+        parameters['min'] = float(parameters['min'])
+        parameters['default'] = float(parameters['default'])
+        parameters['max'] = float(parameters['max'])
+
+        return parameters
 
     def _get_test_content(self, name):
         return self.project_info.get_test_table_content(name, self.project_info.active_hardware, self.project_info.active_base)
