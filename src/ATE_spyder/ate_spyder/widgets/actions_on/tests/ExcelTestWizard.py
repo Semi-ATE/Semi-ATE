@@ -132,6 +132,7 @@ class ExcelTestWizard(BaseDialog):
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.OKButton.setEnabled(False)
+        self.AcceptAllWarnings.toggled.connect(self.verify)
 
         self._connect_event_handler()
         self.resize(1200, 650)
@@ -369,6 +370,7 @@ class ExcelTestWizard(BaseDialog):
         item.setForeground(QtCore.Qt.black)
 
     def testNamesAction(self, items, msg):
+        result = True
         for i in range(0, len(items)):
             action = 'enable'
             fb = f"{msg}       {items[i].text()}"
@@ -383,13 +385,16 @@ class ExcelTestWizard(BaseDialog):
             if action == 'enable' and self.Feedback.text() == "":
                 if exist:
                     self.Feedback.setText(fb)
+                    result = False
                 else:
                     self.Feedback.setText("")
             elif action != 'enable' and fb == self.Feedback.text():
                 self.Feedback.setText("")
+        return result
 
     def verify(self):
         def check(mylist, testfunc, invert, msg, addAction=None):
+            result = True
             if mylist is not None:
                 for value in mylist:
                     matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
@@ -402,11 +407,28 @@ class ExcelTestWizard(BaseDialog):
                         elif self.Feedback.text() == "":
                             fb = f"{msg}       {value}"
                             self.Feedback.setText(fb)
+                            result = False
                     elif addAction is not None:
-                        addAction(matching_items, msg)
+                        result = addAction(matching_items, msg)
+            return result
 
         def startWithInteger(string):
             return True if string[0].isnumeric() else False
+
+        def checkErrorItem(item, fb):
+            if item is not None:
+                self._set_widget_color(item, ORANGE)
+                if self.Feedback.text() == "":
+                    self.Feedback.setText(fb)
+
+        def markAllWarnings(mark, errorfb):
+            for key in mark:
+                column = self.get_dicKey(mappingATEDic, key)
+                if column is not None:
+                    self.chooseAceptWarning = True
+                    column = self.workpage.columns.get_loc(column)
+                    erroritem = self.table.item(index, column)
+                    checkErrorItem(erroritem, errorfb)
 
         self.Feedback.setText("")
 
@@ -442,32 +464,43 @@ class ExcelTestWizard(BaseDialog):
             check(testNames, keyword.iskeyword, True, "python keyword should not be used as test name! ")
 
         # 5. Check the input/output parameters
+        self.chooseAceptWarning = False
         if self.Feedback.text() == "":
-            for key in mappingATEDic.values():
-                column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, key))
-                if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
-                    for index in range(1, self.table.rowCount()):
+            for index in range(1, self.table.rowCount()):
+                parameters = {'ltl': np.inf, 'utl': np.inf, 'nom': np.nan}
+                for key in mappingATEDic.values():
+                    if key == '':
+                        continue
+                    column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, key))
+                    if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
                         text = self.table.item(index, column).text()
                         check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
                         # check(testNames, self._does_test_exist, True, "parameter name already exists!")
                         check([text], keyword.iskeyword, True, "python keyword should not be used as parameter name! ")
-                    continue
-                elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
-                    continue
-                for index in range(1, self.table.rowCount()):
+                        continue
+                    elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
+                        continue
+                    # check values
                     erroritem = None
                     text = self.table.item(index, column).text()
-                    if key.split('.')[1] == 'unit':
+                    paraName = key.split('.')[1]
+                    if paraName == 'unit':
                         if not (text in SI or (len(text) > 1 and text[0] in POWER.keys() and text[1:] in SI)):                 # check if exp valid
                             erroritem = self.table.item(index, column)
                     elif not self._validate_isfloat(text):  # check for floats
                         erroritem = self.table.item(index, column)
-                    if erroritem is not None:
-                        self._set_widget_color(erroritem, ORANGE)
-                        if self.Feedback.text() == "":
-                            fb = f"error in {key}       {erroritem.text()}"
-                            self.Feedback.setText(fb)
+                    elif paraName in ['ltl', 'utl', 'nom']:
+                        parameters[paraName] = float(text)
+                    checkErrorItem(erroritem,  f"error in {key}       {text}")
+                # validation from ltl, utl, nom
+                if (parameters['ltl'] != np.inf or parameters['utl'] != np.inf) and parameters['ltl'] > parameters['utl']:
+                    markAllWarnings(['output_parameters.ltl', 'output_parameters.utl'],
+                                    f"Warning: ltl({parameters['ltl']}) > utl({parameters['utl']})")
+                if (parameters['ltl'] != np.inf or parameters['utl'] != np.inf) and (parameters['nom'] > parameters['utl']
+                                                                                     or parameters['nom'] < parameters['ltl']):
+                    markAllWarnings(['output_parameters.nom'],
+                                    f"Warning: nom({parameters['nom']}) <> ltl({parameters['ltl']}) or utl({parameters['utl']})")
             # check MAX_OUTPUT_NUMBER
 
         if not len(self._get_groups()):
@@ -476,11 +509,16 @@ class ExcelTestWizard(BaseDialog):
         if self.req_headers_present is False:
             self.Feedback.setText("make sure to select the 'name' header")
 
-        if self.Feedback.text() == "":
+        if self.chooseAceptWarning:
+            self.AcceptAllWarnings.show()
+        else:
+            self.AcceptAllWarnings.hide()
+
+        if self.Feedback.text() == "" or (self.AcceptAllWarnings.isVisible() and self.AcceptAllWarnings.isChecked()):
             self.OKButton.setEnabled(True)
         else:
             self.OKButton.setEnabled(False)
-            # self.Feedback.setText('make sure to select all the headers')
+        # self.Feedback.setText('make sure to select all the headers')
         self.testNames = testNames
 
     def _validate_isfloat(self, string):
