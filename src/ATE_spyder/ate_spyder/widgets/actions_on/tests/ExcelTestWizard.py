@@ -463,9 +463,26 @@ class ExcelTestWizard(BaseDialog):
             check(testNames, self._does_test_exist, True, "test name already exists!", self.testNamesAction)
             check(testNames, keyword.iskeyword, True, "python keyword should not be used as test name! ")
 
-        # 5. Check the input/output parameters
+        # 5. Check patterns
+        if "patterns" in mappingATEDic.values():
+            column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, "patterns"))
+            for row in range(1, self.table.rowCount()):
+                item = self.table.item(row, column)
+                values = item.text()
+                if values == '':
+                    continue
+                for value in values.split(','):
+                    if not is_valid_python_class_name(value):
+                        checkErrorItem(item, "The pattern name is not valid, character not allowed!")
+                    elif startWithInteger(value):
+                        checkErrorItem(item, "The pattern name is not valid, e.q. it can not start with a number!")
+                    elif keyword.iskeyword(value):
+                        checkErrorItem(item, "python keyword should not be used as pattern name! ")
+
+        # 6. Check the input/output parameters
         self.chooseAceptWarning = False
-        if self.Feedback.text() == "":
+        # if self.Feedback.text() == "":
+        if True:
             for index in range(1, self.table.rowCount()):
                 parameters = {'ltl': np.inf, 'utl': np.inf, 'nom': np.nan}
                 for key in mappingATEDic.values():
@@ -476,7 +493,7 @@ class ExcelTestWizard(BaseDialog):
                         text = self.table.item(index, column).text()
                         check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
-                        # check(testNames, self._does_test_exist, True, "parameter name already exists!")
+                        # check([text], self._does_test_exist, True, "parameter name already exists!")
                         check([text], keyword.iskeyword, True, "python keyword should not be used as parameter name! ")
                         continue
                     elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
@@ -509,7 +526,7 @@ class ExcelTestWizard(BaseDialog):
         if self.req_headers_present is False:
             self.Feedback.setText("make sure to select the 'name' header")
 
-        if self.chooseAceptWarning:
+        if self.chooseAceptWarning and self.Feedback.text().find('Warning:') == 0:
             self.AcceptAllWarnings.show()
         else:
             self.AcceptAllWarnings.hide()
@@ -544,7 +561,7 @@ class ExcelTestWizard(BaseDialog):
 
         def searchAndAssign(header, default='', write_content=True):
             column = searchmapping(header)
-            value = raw[column] if column is not None else default
+            value = row[column] if column is not None else default
             if write_content:
                 test_content[header] = value
             return value
@@ -574,9 +591,9 @@ class ExcelTestWizard(BaseDialog):
             output_parameters['exp10'] = 0
             return output_parameters
 
-        def create_update_custom_test(test_content):
+        def create_update_custom_test(test_content, patterns):
             test_content['dependencies'] = {}
-            test_content['patterns'] = []      # TODO: implement this
+            test_content['patterns'] = patterns
             searchAndAssign('dependencies', {})
             matching_item = self.table.findItems(test_content["name"], QtCore.Qt.MatchExactly)[0]
             action = 'enable'
@@ -598,17 +615,19 @@ class ExcelTestWizard(BaseDialog):
             if action != 'disable':
                 self.project_info.parent.sig_test_tree_update.emit()
 
-        #QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        # QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         test_content = {}
         wp = self.workpage
+        patterns = []
         for index in wp.index:
-            raw = wp.loc[index]
+            row = wp.loc[index]
             column = self.get_dicKey(mappingATEDic, 'name')
-            TestName = raw[column].strip() if not pd.isnull(raw[column]) else ''
+            TestName = row[column].strip() if not pd.isnull(row[column]) else ''
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                create_update_custom_test(test_content)
+                create_update_custom_test(test_content, patterns)
+                patterns = []
             if TestName != '':
                 test_content = {}
                 # assign name
@@ -646,10 +665,15 @@ class ExcelTestWizard(BaseDialog):
                 else:
                     test_content['output_parameters'][name] = output_parameters
 
-        if test_content != {}:
-            create_update_custom_test(test_content)
+            column = searchmapping('patterns')
+            if column is not None and row[column] != "" and type(row[column]) == str:
+                for value in row[column].split(','):
+                    patterns.append(value)
 
-        #QtWidgets.QApplication.restoreOverrideCursor()
+        if test_content != {}:
+            create_update_custom_test(test_content, patterns)
+
+        # QtWidgets.QApplication.restoreOverrideCursor()
         self.accept()
 
     def validationInputParameter(self, parameters):
