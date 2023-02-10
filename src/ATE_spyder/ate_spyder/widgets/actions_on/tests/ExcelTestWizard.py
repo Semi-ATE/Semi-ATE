@@ -472,6 +472,7 @@ class ExcelTestWizard(BaseDialog):
                 if values == '':
                     continue
                 for value in values.split(','):
+                    value = value.strip()
                     if not is_valid_python_class_name(value):
                         checkErrorItem(item, "The pattern name is not valid, character not allowed!")
                     elif startWithInteger(value):
@@ -668,7 +669,7 @@ class ExcelTestWizard(BaseDialog):
             column = searchmapping('patterns')
             if column is not None and row[column] != "" and type(row[column]) == str:
                 for value in row[column].split(','):
-                    patterns.append(value)
+                    patterns.append(value.strip())
 
         if test_content != {}:
             create_update_custom_test(test_content, patterns)
