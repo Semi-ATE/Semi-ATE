@@ -39,6 +39,10 @@ jobs:
           mamba-version: "*"
           show-channel-urls: true
 
+      - name: milestone
+        run:
+          echo 'Milestone'
+
       - name: Setup environment
         run: |
           mamba install spyder=5.3.0
