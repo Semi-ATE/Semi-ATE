@@ -123,7 +123,7 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: 3.9
-          channel-priority: "strict"
+          channel-priority: false # "strict"
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
