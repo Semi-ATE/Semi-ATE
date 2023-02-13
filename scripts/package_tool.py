@@ -6,7 +6,7 @@ from enum import Enum
 from typing import List, Union
 from package_list import distribution_packages, integration_test_packages
 import re
-from os.path import basename
+from os.path import basename, join
 from os import unlink
 
 
@@ -64,9 +64,11 @@ def setup(packages: Package, setup_command: SetupCommand):
     setup_path_list = _compute_package_list(packages, PackageType.SetupDirPath)
     init_path_list = _compute_package_list(packages, PackageType.InitDirPath)
 
+    install_requirements(zip(setup_path_list, init_path_list))
+
     for p in zip(setup_path_list, init_path_list):
         path = Path(Path(__file__).parents[0], p[0])
-        if path.exists() == True:
+        if path.exists() is True:
             if setup_command == SetupCommand.Sdist:
                 print(f'Generating sdist for folder {path}')
 
@@ -115,6 +117,30 @@ def setup(packages: Package, setup_command: SetupCommand):
                     exit(exit_code)
         else:
             print(f'ERROR: Path "{path}" could not be found!')
+
+
+def install_requirements(paths):
+    packages = set()
+    for p in paths:
+        path = Path(Path(__file__).parents[0], p[0])
+        runtxt = join(path, 'requirements/run.txt')
+        if Path(runtxt).exists():
+            with open(runtxt) as f:
+                for line in f:
+                    package = re.sub(r'#.*$', '', line).strip()
+                    package = re.sub(r';.*$', '', package).strip()
+                    if package != '' and package.find('semi-ate') < 0:
+                        packages.add(package)
+    if packages != {}:
+        cmd = 'conda install '
+        for package in packages:
+            cmd += f'{package} '
+        cmd += ' -y'
+        print(cmd)
+        process = Popen(cmd, shell=True)
+        output, errors = process.communicate()
+        if errors is not None:
+            exit(errors)
 
 
 def change_environment(profile: Profile):
@@ -202,7 +228,7 @@ def _collect_test_requirements(include_cicd: bool) -> List[Path]:
     distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.SetupDirPath)
     distribution_packages_paths.append(integration_tests_path)
     path_list = list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
-    if include_cicd == True:
+    if include_cicd is True:
         path_list.append(Path(git_root_folder, 'requirements/cicd.txt'))
     return path_list
 
@@ -210,7 +236,7 @@ def _collect_test_requirements(include_cicd: bool) -> List[Path]:
 def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
     packages = set()
     for p in paths:
-        if p.exists() == True:
+        if p.exists() is True:
             with p.open('r') as f:
                 for line in f:
                     line_without_comment = re.sub(r'#.*$', '', line).strip()
@@ -258,14 +284,14 @@ def main():
     parser.add_argument('--tag-version', type=str, help='Version to write into "__init__.py" package files. This option is used during CICD-build')
 
     args = parser.parse_args()
-    setup_command = SetupCommand.Develop if args.setup_cmd == None else _command_from_string(args.setup_cmd)
-    packages = Package.All if args.packages == None else _package_from_string(args.packages)
+    setup_command = SetupCommand.Develop if args.setup_cmd is None else _command_from_string(args.setup_cmd)
+    packages = Package.All if args.packages is None else _package_from_string(args.packages)
 
-    if args.uninstall == True:
+    if args.uninstall is True:
         uninstall(packages, PackageType.Name)
-    elif args.change_env != None:
+    elif args.change_env is not None:
         change_environment(_profile_from_string(args.change_env))
-    elif args.tag_version != None:
+    elif args.tag_version is not None:
         tag_version(packages, args.tag_version)
     else:
         setup(packages, setup_command)
