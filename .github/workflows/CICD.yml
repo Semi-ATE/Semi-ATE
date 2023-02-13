@@ -34,14 +34,10 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
-          channel-priority: "strict"
+          channel-priority: False  # "strict"
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
-
-      - name: milestone
-        run:
-          echo 'Milestone'
 
       - name: Setup environment
         run: |
