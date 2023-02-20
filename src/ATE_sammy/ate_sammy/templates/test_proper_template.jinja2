@@ -6,7 +6,8 @@
 {% endfor %}
 """
 
-import os, sys
+import os
+import sys
 from pathlib import Path
 test_path = os.path.abspath(Path(__file__).joinpath('..'))
 sys.path.append(test_path)
@@ -20,7 +21,7 @@ from {{ definition['name'] }}_BC import Patterns
 class {{ definition['name'] }}({{ definition['name'] }}_BC):
 
     '''
-    for debug puposes, a logger is available to log infomration and porpagate them to the UI.
+    for debug puposes, a logger is available to log information and propagate them to the UI.
     logging can be used as described below:
     self.log_info(<message>)
     self.log_debug(<message>)
@@ -30,6 +31,7 @@ class {{ definition['name'] }}({{ definition['name'] }}_BC):
 
 {{ do_not_touch_section }}
     '''
+
     def do(self):
         """Default implementation for test."""
 

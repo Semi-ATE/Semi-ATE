@@ -34,7 +34,7 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
-          channel-priority: False  # "strict"
+          channel-priority: false    # "strict"
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
