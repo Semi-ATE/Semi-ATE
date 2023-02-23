@@ -2,7 +2,7 @@
 """
 Created on Mon Sep  5 18:56:05 2022
 
-@author: Zlin526F
+@author: Zlin526F, hari999333
 
 Starting from TestWizard.py
 
@@ -28,12 +28,18 @@ from ate_spyder.widgets.validation import valid_max_float_regex
 from ate_spyder.widgets.validation import valid_min_float_regex
 from ate_spyder.widgets.validation import is_valid_python_class_name
 import ate_spyder.widgets.actions_on.tests.Utils as utils
+from ate_spyder.widgets.constants import UpdateOptions
 from ate_spyder.widgets.actions_on.tests.Utils import POWER
 from ate_spyder.widgets.actions_on.program.TestProgramWizard import ORANGE_LABEL, ORANGE
 
 minimal_docstring_length = 80
 
 MAX_OUTPUT_NUMBER = 100
+BACKGROUNDCOLOR = (25, 35, 45)
+FOREGROUNDCOLOR = (255, 255, 255)
+YELLOW = (255, 255, 102)
+GREY = (128, 128, 128)
+OVERWRITE = 'overwrite'
 
 mappingATEDic = {'Empty_Field_999': ''}
 
@@ -126,12 +132,15 @@ class ExcelTestWizard(BaseDialog):
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
         self.OKButton.clicked.connect(self.OKButtonPressed)
         self.OKButton.setEnabled(False)
+        self.AcceptAllWarnings.toggled.connect(self.verify)
 
         self._connect_event_handler()
         self.resize(1200, 650)
 
         self.table.viewport().installEventFilter(self)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.openNameMenu)
 
     def eventFilter(self, source, event):
         if source is self.table.viewport() and event.type() == QtCore.QEvent.Drop:
@@ -145,10 +154,51 @@ class ExcelTestWizard(BaseDialog):
                 return super().eventFilter(source, event)
         return super().eventFilter(source, event)
 
+    def openNameMenu(self, pos):
+        row = self.table.rowAt(pos.y())
+        column = self.table.columnAt(pos.x())
+        item = self.table.item(row, column)
+        if item.text() == "" or self.table.item(0, column).text() != 'name':
+            return
+        menu = QtWidgets.QMenu()
+        menuActions = []
+        if row == 0:
+            actions = ["enable all", "disable all", "overwrite all"]
+            for action in actions:
+                menuActions.append(menu.addAction(action))
+            action = menu.exec_(self.table.mapToGlobal(pos))
+            if action is not None:
+                for index in range(1, self.table.rowCount()):
+                    item = self.table.item(index, column)
+                    if item.text() != "":
+                        newaction = action.text().split(" ")[0]
+                        if newaction == 'overwrite' and not self._does_test_exist(item.text()):
+                            newaction = 'enable'
+                        item.action = newaction
+        if row > 0:
+            actions = ["disable"]
+            exists = self._does_test_exist(item.text())
+            # create menu:
+            if not hasattr(item, 'action'):
+                item.action = 'enable'
+            if exists and item.action in ['enable', 'disable']:
+                actions.append("overwrite")
+            elif exists and item.action == 'overwrite':
+                actions.append("enable")
+            if item.action == 'disable':
+                actions[0] = "enable"
+            for action in actions:
+                menuActions.append(menu.addAction(action))
+            # do action:
+            action = menu.exec_(self.table.mapToGlobal(pos))
+            if action is not None:
+                item.action = action.text()
+        self.verify()
+
     def create_excel_table(self, filename):
         self._read_excel_page(filename)
         self.fill_mapping_list()
-        self.map_ATE_2_excel()
+        # self.map_ATE_2_excel()    # this is not necessary anymore?
         self.verify()
 
     def get_excel_pages(self, filename):
@@ -227,10 +277,8 @@ class ExcelTestWizard(BaseDialog):
         """
         col = 0
         backgroundcolor = self.table.horizontalHeaderItem(0).background().color().name()
-        self.table.mapping = {}
         for header in self.workpage.columns:
             if header in mappingATEDic.keys() and mappingATEDic[header] != 'NaN':
-                self.table.mapping[str(mappingATEDic[header])] = col
                 delegatorname = mappingATEDic[header].split('.')[1] if len(mappingATEDic[header].split('.')) > 1 else None
                 if delegatorname is not None and delegatorname != 'name' and delegatorname != 'unit':
                     self.table.setItemDelegateForColumn(col, self.__getattribute__(f'{delegatorname}Delegator'))
@@ -321,27 +369,66 @@ class ExcelTestWizard(BaseDialog):
         item.setBackground(self._generate_color(color))
         item.setForeground(QtCore.Qt.black)
 
+    def testNamesAction(self, items, msg):
+        result = True
+        for i in range(0, len(items)):
+            action = 'enable'
+            fb = f"{msg}       {items[i].text()}"
+            exist = self._does_test_exist(items[i].text())
+            if hasattr(items[i], "action"):
+                action = items[i].action
+            if action == 'overwrite' and exist:
+                self._set_widget_color(items[i], YELLOW)
+            elif action == 'disable':
+                self._set_widget_color(items[i], GREY)
+
+            if action == 'enable' and self.Feedback.text() == "":
+                if exist:
+                    self.Feedback.setText(fb)
+                    result = False
+                else:
+                    self.Feedback.setText("")
+            elif action != 'enable' and fb == self.Feedback.text():
+                self.Feedback.setText("")
+        return result
+
     def verify(self):
         def check(mylist, testfunc, invert, msg, addAction=None):
+            result = True
             if mylist is not None:
                 for value in mylist:
+                    matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
                     if testfunc(value) ^ (not invert):
-                        if self.Feedback.text() == "":
+                        for val in range(0, len(matching_items)):
+                            # if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
+                            self._set_widget_color(matching_items[val], ORANGE)
+                        if addAction is not None:
+                            addAction(matching_items, msg)
+                        elif self.Feedback.text() == "":
                             fb = f"{msg}       {value}"
                             self.Feedback.setText(fb)
-                        matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
-                        for val in range(0, len(matching_items)):
-                            if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
-                                self._set_widget_color(matching_items[val], ORANGE)
-                                break
-                        if addAction is not None:
-                            addAction(matching_items)
+                            result = False
+                    elif addAction is not None:
+                        result = addAction(matching_items, msg)
+            return result
 
         def startWithInteger(string):
             return True if string[0].isnumeric() else False
 
-        def addMenuOverwrite(item):
-            pass
+        def checkErrorItem(item, fb):
+            if item is not None:
+                self._set_widget_color(item, ORANGE)
+                if self.Feedback.text() == "":
+                    self.Feedback.setText(fb)
+
+        def markAllWarnings(mark, errorfb):
+            for key in mark:
+                column = self.get_dicKey(mappingATEDic, key)
+                if column is not None:
+                    self.chooseAceptWarning = True
+                    column = self.workpage.columns.get_loc(column)
+                    erroritem = self.table.item(index, column)
+                    checkErrorItem(erroritem, errorfb)
 
         self.Feedback.setText("")
 
@@ -356,8 +443,8 @@ class ExcelTestWizard(BaseDialog):
 
         for i in range(1, self.table.rowCount()):
             for j in range(0, self.table.columnCount()):
-                self.table.item(i, j).setBackground(QtGui.QColor(25, 35, 45))
-                self.table.item(i, j).setForeground(QtGui.QColor(255, 255, 255))
+                self.table.item(i, j).setBackground(QtGui.QColor(self._generate_color(BACKGROUNDCOLOR)))
+                self.table.item(i, j).setForeground(QtGui.QColor(self._generate_color(FOREGROUNDCOLOR)))
 
         # 3. Check if we have a test name
         testNames = []
@@ -373,35 +460,65 @@ class ExcelTestWizard(BaseDialog):
         if self.Feedback.text() == "":
             check(testNames, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
             check(testNames, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
-            check(testNames, self._does_test_exist, True, "test name already exists!", addMenuOverwrite)
+            check(testNames, self._does_test_exist, True, "test name already exists!", self.testNamesAction)
             check(testNames, keyword.iskeyword, True, "python keyword should not be used as test name! ")
 
-        # 5. Check the input/output parameters
-        if self.Feedback.text() == "":
-            for key in self.table.mapping.keys():
-                if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
-                    for index in range(1, self.table.rowCount()):
-                        text = self.table.item(index, self.table.mapping[key]).text()
+        # 5. Check patterns
+        if "patterns" in mappingATEDic.values():
+            column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, "patterns"))
+            for row in range(1, self.table.rowCount()):
+                item = self.table.item(row, column)
+                values = item.text()
+                if values == '':
+                    continue
+                for value in values.split(','):
+                    value = value.strip()
+                    if not is_valid_python_class_name(value):
+                        checkErrorItem(item, "The pattern name is not valid, character not allowed!")
+                    elif startWithInteger(value):
+                        checkErrorItem(item, "The pattern name is not valid, e.q. it can not start with a number!")
+                    elif keyword.iskeyword(value):
+                        checkErrorItem(item, "python keyword should not be used as pattern name! ")
+
+        # 6. Check the input/output parameters
+        self.chooseAceptWarning = False
+        # if self.Feedback.text() == "":
+        if True:
+            for index in range(1, self.table.rowCount()):
+                parameters = {'ltl': np.inf, 'utl': np.inf, 'nom': np.nan}
+                for key in mappingATEDic.values():
+                    if key == '':
+                        continue
+                    column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, key))
+                    if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
+                        text = self.table.item(index, column).text()
                         check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
                         check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
-                        # check(testNames, self._does_test_exist, True, "parameter name already exists!")
+                        # check([text], self._does_test_exist, True, "parameter name already exists!")
                         check([text], keyword.iskeyword, True, "python keyword should not be used as parameter name! ")
-                    continue
-                elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
-                    continue
-                for index in range(1, self.table.rowCount()):
+                        continue
+                    elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
+                        continue
+                    # check values
                     erroritem = None
-                    text = self.table.item(index, self.table.mapping[key]).text()
-                    if key.split('.')[1] == 'unit':
+                    text = self.table.item(index, column).text()
+                    paraName = key.split('.')[1]
+                    if paraName == 'unit':
                         if not (text in SI or (len(text) > 1 and text[0] in POWER.keys() and text[1:] in SI)):                 # check if exp valid
-                            erroritem = self.table.item(index, self.table.mapping[key])
+                            erroritem = self.table.item(index, column)
                     elif not self._validate_isfloat(text):  # check for floats
-                        erroritem = self.table.item(index, self.table.mapping[key])
-                    if erroritem is not None:
-                        self._set_widget_color(erroritem, ORANGE)
-                        if self.Feedback.text() == "":
-                            fb = f"error in {key}       {erroritem.text()}"
-                            self.Feedback.setText(fb)
+                        erroritem = self.table.item(index, column)
+                    elif paraName in ['ltl', 'utl', 'nom']:
+                        parameters[paraName] = float(text)
+                    checkErrorItem(erroritem,  f"error in {key}       {text}")
+                # validation from ltl, utl, nom
+                if (parameters['ltl'] != np.inf or parameters['utl'] != np.inf) and parameters['ltl'] > parameters['utl']:
+                    markAllWarnings(['output_parameters.ltl', 'output_parameters.utl'],
+                                    f"Warning: ltl({parameters['ltl']}) > utl({parameters['utl']})")
+                if (parameters['ltl'] != np.inf or parameters['utl'] != np.inf) and (parameters['nom'] > parameters['utl']
+                                                                                     or parameters['nom'] < parameters['ltl']):
+                    markAllWarnings(['output_parameters.nom'],
+                                    f"Warning: nom({parameters['nom']}) <> ltl({parameters['ltl']}) or utl({parameters['utl']})")
             # check MAX_OUTPUT_NUMBER
 
         if not len(self._get_groups()):
@@ -410,11 +527,16 @@ class ExcelTestWizard(BaseDialog):
         if self.req_headers_present is False:
             self.Feedback.setText("make sure to select the 'name' header")
 
-        if self.Feedback.text() == "":
+        if self.chooseAceptWarning and self.Feedback.text().find('Warning:') == 0:
+            self.AcceptAllWarnings.show()
+        else:
+            self.AcceptAllWarnings.hide()
+
+        if self.Feedback.text() == "" or (self.AcceptAllWarnings.isVisible() and self.AcceptAllWarnings.isChecked()):
             self.OKButton.setEnabled(True)
         else:
             self.OKButton.setEnabled(False)
-            # self.Feedback.setText('make sure to select all the headers')
+        # self.Feedback.setText('make sure to select all the headers')
         self.testNames = testNames
 
     def _validate_isfloat(self, string):
@@ -440,73 +562,168 @@ class ExcelTestWizard(BaseDialog):
 
         def searchAndAssign(header, default='', write_content=True):
             column = searchmapping(header)
-            value = raw[column] if column is not None else default
+            value = row[column] if column is not None else default
             if write_content:
                 test_content[header] = value
             return value
 
+        def assignParameters(pName, parameters):
+            for parameterName in mappingATEDic.values():
+                parameterName_split = parameterName.split('.')
+                if parameterName_split[0] == pName:
+                    if parameterName_split[1] != 'name':
+                        value = searchAndAssign(parameterName, write_content=False)
+                        if parameterName_split[1] == 'unit':
+                            if (type(value) == str and value.strip() == '') or (type(value) == float and np.isnan(value)):
+                                value = '˽'
+                            if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
+                                parameters['exp10'] = POWER[value[0]]
+                                value = value[1:]
+                        parameters[parameterName_split[1]] = value
+
+        def create_default_outputparameters():
+            output_parameters = utils.make_default_output_parameter(empty=True)
+            output_parameters['lsl'] = -np.inf
+            output_parameters['ltl'] = np.nan
+            output_parameters['nom'] = 0.0
+            output_parameters['utl'] = np.nan
+            output_parameters['usl'] = np.inf
+            output_parameters['fmt'] = ".3f"
+            output_parameters['exp10'] = 0
+            return output_parameters
+
+        def create_update_custom_test(test_content, patterns):
+            test_content['dependencies'] = {}
+            test_content['patterns'] = patterns
+            searchAndAssign('dependencies', {})
+            matching_item = self.table.findItems(test_content["name"], QtCore.Qt.MatchExactly)[0]
+            action = 'enable'
+            if 'output_parameters' not in test_content.keys():
+                test_content['output_parameters'] = {'new_parameter1': create_default_outputparameters()}
+            if hasattr(matching_item, 'action'):
+                action = matching_item.action
+            if action == 'enable':
+                msg = f'create {test_content["name"]}'
+                self.Feedback.setText(msg)
+                print(msg, test_content)
+                self.project_info.add_custom_test(test_content)
+            elif action == 'overwrite':
+                msg = f'update {test_content["name"]}'
+                self.Feedback.setText(msg)
+                print(msg, test_content)
+                update_option = self.__have_parameters_changed(test_content)
+                self.project_info.update_custom_test(test_content, update_option)
+            if action != 'disable':
+                self.project_info.parent.sig_test_tree_update.emit()
+
+        # QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         test_content = {}
         wp = self.workpage
+        patterns = []
         for index in wp.index:
-            raw = wp.loc[index]
+            row = wp.loc[index]
             column = self.get_dicKey(mappingATEDic, 'name')
-            TestName = raw[column].strip() if not pd.isnull(raw[column]) else ''
+            TestName = row[column].strip() if not pd.isnull(row[column]) else ''
             if TestName == '' and test_content == {}:
                 continue
             elif TestName != '' and test_content != {}:
-                self.Feedback.setText('create {test_content["name"]}')
-                self.project_info.add_custom_test(test_content)
+                create_update_custom_test(test_content, patterns)
+                patterns = []
             if TestName != '':
                 test_content = {}
+                # assign name
+                test_content['name'] = TestName
+
                 test_content['type'] = "custom"
                 test_content['hardware'] = self.ForHardwareSetup.text()
                 test_content['base'] = self.WithBase.text()
                 test_content['groups'] = self._get_groups()
-                test_content['patterns'] = {}
-
-                # assign name
-                test_content['name'] = TestName
 
                 if type(searchAndAssign('docstring', [''])[0]) is not str:
                     test_content['docstring'][0] = str(test_content['docstring'][0])
-                searchAndAssign('dependencies', {})
                 test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
+                test_content['input_parameters']['Temperature'] = self.validationInputParameter(test_content['input_parameters']['Temperature'])
 
             column = searchmapping('input_parameters.name')
             if column is not None:
-                pass
+                name = searchAndAssign('input_parameters.name', write_content=False)
+                input_parameters = utils.make_default_input_parameter()
+                assignParameters('input_parameters', input_parameters)
+                if 'input_parameters' not in test_content:
+                    test_content['input_parameters'] = {name: input_parameters}
+                else:
+                    test_content['input_parameters'][name] = input_parameters
 
             column = searchmapping('output_parameters.name')
             if column is not None:
                 name = searchAndAssign('output_parameters.name', write_content=False)
-                output_parameters = utils.make_default_output_parameter(empty=True)
-                output_parameters['lsl'] = -np.inf
-                output_parameters['usl'] = np.inf
-                output_parameters['fmt'] = ".3f"
-                output_parameters['exp10'] = 0
+                output_parameters = create_default_outputparameters()
+                assignParameters('output_parameters', output_parameters)
 
-                for parameterName in mappingATEDic.values():
-                    parameterName_split = parameterName.split('.')
-                    if parameterName_split[0] == 'output_parameters':
-                        if parameterName_split[1] != 'name':
-                            value = searchAndAssign(parameterName, write_content=False)
-                            if parameterName_split[1] == 'unit':
-                                if (type(value) == str and value.strip() == '') or (type(value) == float and np.isnan(value)):
-                                    value = '˽'
-                                if type(value) == str and len(value) > 1 and value not in SI and value[0] in POWER.keys():
-                                    output_parameters['exp10'] = POWER[value[0]]
-                                    value = value[1:]
-                            output_parameters[parameterName_split[1]] = value
                 if 'output_parameters' not in test_content:
                     test_content['output_parameters'] = {name: output_parameters}
                 else:
                     test_content['output_parameters'][name] = output_parameters
 
-        if test_content != {}:
-            self.project_info.add_custom_test(test_content)
+            column = searchmapping('patterns')
+            if column is not None and row[column] != "" and type(row[column]) == str:
+                for value in row[column].split(','):
+                    patterns.append(value.strip())
 
+        if test_content != {}:
+            create_update_custom_test(test_content, patterns)
+
+        # QtWidgets.QApplication.restoreOverrideCursor()
         self.accept()
+
+    def validationInputParameter(self, parameters):
+        parameters['min'] = float(parameters['min'])
+        parameters['default'] = float(parameters['default'])
+        parameters['max'] = float(parameters['max'])
+
+        return parameters
+
+    def _get_test_content(self, name):
+        return self.project_info.get_test_table_content(name, self.project_info.active_hardware, self.project_info.active_base)
+
+    def __have_parameters_changed(self, content: dict) -> UpdateOptions:
+        db_content = self._get_test_content(content['name'])
+        if len(content['input_parameters']) != len(db_content['input_parameters']) \
+           or len(content['output_parameters']) != len(db_content['output_parameters']):
+            return UpdateOptions.Code_Update()
+
+        if self._check_content(db_content['input_parameters'], content['input_parameters']) \
+           or self._check_content(db_content['output_parameters'], content['output_parameters']):
+            return UpdateOptions.Code_Update()
+
+        if self._check_content(db_content['patterns'], content['patterns']):
+            return UpdateOptions.Code_Update()
+
+        group_names = set([group.name for group in self.project_info.get_groups_for_test(content['name'])])
+        if group_names != set(self._get_groups()):
+            return UpdateOptions.Group_Update()
+
+        return UpdateOptions.DB_Update()
+
+    @staticmethod
+    def _check_content(old_data, new_data):
+        if type(old_data) == list:
+            if len(old_data) != len(new_data):
+                return True
+            for index in range(0, len(old_data)):
+                if old_data[index] != new_data[index]:
+                    return True
+            return False
+        for key, value in old_data.items():
+            if not new_data.get(key):
+                return True
+
+            for k, v in new_data[key].items():
+                if str(value[k]) != str(v):
+                    return True
+
+        return False
 
     def mapping_save_pressed(self):
         try:
@@ -541,6 +758,7 @@ class ExcelTestWizard(BaseDialog):
                 os.mkdir(json_import_path)
             json_file, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Load .json File', json_import_path, 'JSON File (*.json)')
 
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             with open(json_file, 'r') as f:
                 self.json_header_data = json.load(f)
 
@@ -559,6 +777,8 @@ class ExcelTestWizard(BaseDialog):
                         pass
         except FileNotFoundError:
             pass
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def _get_groups(self):
         groups = []
@@ -605,24 +825,24 @@ def excel_test_dialog(project_info, selected_file):
     del(newTestWizard)
 
 
-# if __name__ == "__main__":
-#     from ate_spyder.widgets.navigation import ProjectNavigation
-#     from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
-#     from PyQt5.QtWidgets import QApplication
-#     from qtpy.QtWidgets import QMainWindow
-#     import qdarkstyle
-#     import sys
+if __name__ == "__main__":
+    from ate_spyder.widgets.navigation import ProjectNavigation
+    from ate_spyder.widgets.actions_on.utils.FileSystemOperator import FileSystemOperator
+    from PyQt5.QtWidgets import QApplication
+    from qtpy.QtWidgets import QMainWindow
+    import qdarkstyle
+    import sys
 
-#     app = QApplication(sys.argv)
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-#     app.references = set()
-#     main = QMainWindow()
-#     homedir = os.path.expanduser("~")
-#     project_directory = homedir + r'\ATE\tb_ate'       # path to your semi-ate project
-#     project_info = ProjectNavigation(project_directory, homedir, main)
-#     project_info.active_hardware = 'HW0'
-#     project_info.active_base = 'FT'
-#     project_info.active_target = 'Device1'
-#     file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
-#     selected_file = file_system_operator.get_file('*.xlsx')
-#     excel_test_dialog(project_info, selected_file)
+    app = QApplication(sys.argv)
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    app.references = set()
+    main = QMainWindow()
+    homedir = os.path.expanduser("~")
+    project_directory = homedir + r'\ATE\packages\envs\tb_ate'    # path to your semi-ate project
+    project_info = ProjectNavigation(project_directory, homedir, main)
+    project_info.active_hardware = 'HW0'
+    project_info.active_base = 'FT'
+    project_info.active_target = 'Device1'
+    file_system_operator = FileSystemOperator(str(project_info.project_directory), project_info.parent)
+    selected_file = file_system_operator.get_file('*.xlsx')
+    excel_test_dialog(project_info, selected_file)

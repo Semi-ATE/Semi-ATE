@@ -611,7 +611,7 @@ class ProjectNavigation(QObject):
         groups = definition['groups']
         if update_option >= UpdateOptions.DB_Update():
             self.update_custom_test_db(definition)
-        if update_option == UpdateOptions.Group_Update:
+        if update_option >= UpdateOptions.Group_Update:
             self._update_test_groups(definition['name'], groups)
             self.parent.groups_update.emit(definition['name'], groups)
         if update_option == UpdateOptions.Code_Update:
