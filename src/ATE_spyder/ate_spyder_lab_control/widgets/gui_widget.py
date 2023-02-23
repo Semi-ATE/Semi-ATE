@@ -157,8 +157,7 @@ class LabGui(PluginMainWidget):
         if self.lab_control is None and hasattr(self.project_info, 'lab_control'):
             self.lab_control = self.project_info.lab_control
             self.lab_control.receive_msg_for_instrument.connect(self.receive_msg_for_instrument)
-            if hasattr(self.lab_control, 'mqtt'):
-                self.mqtt = self.lab_control.mqtt
+            self.mqtt = self.lab_control.mqtt if hasattr(self.lab_control, 'mqtt') else None
             self.logger = self.lab_control.logger
         hw = self.project_info.active_hardware
         base = self.project_info.active_base
