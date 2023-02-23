@@ -45,6 +45,7 @@ class FileConfigurationTester(TesterInterface):
                 dest.writelines(lines)
             sys.argv.append('--labml')
             sys.argv.append(self.logger)
+            sys.path.append(str(Path(self.hw_path).parent.parent))
             pythonPath = f'{self.hw_path.split(os.sep)[-3]}.{self.hw_path.split(os.sep)[-2].upper()}.'
             doExit = False
             try:
