@@ -1113,6 +1113,7 @@ class TestProgramWizard(BaseDialog):
 
             iterator += 1
 
+        self._update_pattern_table()
         self._verify()
 
     @staticmethod
