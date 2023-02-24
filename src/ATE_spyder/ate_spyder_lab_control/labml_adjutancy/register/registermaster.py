@@ -1186,11 +1186,16 @@ class RegisterMaster(mqtt_deviceattributes):
         return "{classname}({args})".format(classname=self.__class__.__name__, args=", ".join(args))
 
     def init(self):
-        from semictrl import mqttc
+        try:
+            from semictrl import mqttc
+        except Exception:
+            mqttc = None
 
         filename = self.filename
         if filename is None:
-            raise IOError(f"{__class__}: no filename defined")
+            print(f"{__class__}: no filename defined")
+            return
+            # raise IOError(f"{__class__}: no filename defined")
         print(f'   {self.instName}.init:   self._mqttclient = {self._mqttclient}')
         if self._mqttclient is None and mqttc is not None:
             self.mqtt_add(mqttc, self)
