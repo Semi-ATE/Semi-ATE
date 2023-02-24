@@ -4,7 +4,7 @@ from labml_adjutancy.misc import common
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.gui.instruments.minisct.minisct import mqttcmds
 from labml_adjutancy.misc.mqtt_client import mqtt_init
-from SCT8.tester import Tester as sct8
+import SCT8
 
 __author__ = "Zlin526F"
 __credits__ = ["Zlin526F"]
@@ -57,15 +57,15 @@ class MiniSCT(TesterInterface):
         self.mqttc = mqttc
 
     def close(self):
-        self.inst.close()
+        self.inst.turnOff()
         self.mqtt.close()
         self.mqttc.close()
 
     def on(self):
-        pass
+        self.inst.turnOn()
 
     def off(self):
-        pass
+        self.inst.turnOff()
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         return True
@@ -77,10 +77,10 @@ class MiniSCT(TesterInterface):
         self.log_info(f"Tester.test_done({site_id})")
 
     def do_init_state(self, site_id: int):
-        self.inst = sct8()
+        self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
+        self.inst = SCT8.getTester()
+        self.inst.turnOn()
         self.startKeywords = dir(self.inst)
-        self.startKeywords.remove('connections')    # todo: what is this command doing
-        self.startKeywords.remove('relays')
 
         # create the list for the allowed mqtt commands
         for index in range(0, 8):  # create mqtt-cmds for channels 0..7
@@ -95,6 +95,7 @@ class MiniSCT(TesterInterface):
         self.log_info(f"Tester.do_init_state({site_id})")
 
     def teardown(self):
+        self.log_info('MiniSCT.teardown')
         self.close()
 
     @property
@@ -115,8 +116,8 @@ class MiniSCT(TesterInterface):
             if attr in self.startKeywords:
                 self.cmd = f'{attr}.'
             value = eval(f'self.inst.{self.cmd[:-1]}')
-            if not(value is None or isinstance(value, (int, bool, float, complex, str, list, tuple, bytes, bytearray, set, dict))
-                   or inspect.ismethod(value)):
+            if not (value is None or isinstance(value, (int, bool, float, complex, str, list, tuple, bytes, bytearray, set, dict))
+                    or inspect.ismethod(value)):
                 value = self
             elif inspect.ismethod(value):
                 return self._ismethod
@@ -157,7 +158,7 @@ class MiniSCT(TesterInterface):
 if __name__ == "__main__":
     tester = MiniSCT()
     tester.do_init_state(1)
-    #breakpoint()
+    # breakpoint()
     tester.CH0.connections
     # tester.CH0.drv.vdh = 4.5
     tester.CH0.connect("PBUS_F")
