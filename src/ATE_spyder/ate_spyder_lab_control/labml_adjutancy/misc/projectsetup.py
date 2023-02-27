@@ -752,7 +752,7 @@ class ProjectSetup(object):
 
     def set_configuration_values(self, data):
         """Only empty dummy function."""
-        self.logger.log_message(LogLevel.Warning(), 'TCCLabor.ProjectSetup: set_configuration_values only dummy function..................................')
+        self.logger.log_message(LogLevel.Warning(), 'TDK Micronas Labor.ProjectSetup: set_configuration_values only dummy function..................................')
         pass
 
     def apply_configuration(self, data):
@@ -760,32 +760,32 @@ class ProjectSetup(object):
             self.network = data['Network prefix']
             os.environ['NETWORK'] = self.network
         config = environment.replaceEnvs(data)
-        project_path = self.main_path
+        project_path = os.environ['PROJECT_PATH']
         harness = ''
-        working_dir= ''
-        if 'working directory' in config and config['working directory'] != '':        
+        working_dir = ''
+        if 'working directory' in config and config['working directory'] != '':
             for path in config['working directory'].split(';'):
                 if os.path.exists(path):
                     working_dir = path
-            os.environ['WORKING_DIR'] = working_dir
-            if working_dir != '':
-                self.logger.log_message(LogLevel.Info(), f'LABML.Instruments: get WORKING_DIR from the Plugin parameter-file = {working_dir}')
+        if working_dir == '':
+            working_dir = str(Path(os.environ['PROJECT_PATH']).parent) + os.sep
+        os.environ['WORKING_DIR'] = working_dir
+        self.logger.log_message(LogLevel.Info(), f'TDK Micronas Labor.ProjectSetup: WORKING_DIR = {working_dir}')
+        self.logger.log_message(LogLevel.Info(), f'$LOGGINGFILENAME$ {project_path}log/;{self.logger.get_log_file_information()["filename"]}')
+
         if 'add path' in config and config['add path'] != '':
             harness = config['add path']
-        self.logger.log_message(LogLevel.Info(), '$LOGGINGFILENAME$ {};{}'.format(project_path, self.logger.get_log_file_information()['filename']))
-
         environment.environ_getpath(self, 'registermaster')      # replace environment for registermaster if os='nt'
-        project_path = os.environ['PROJECT_PATH']
-        harness = working_dir + harness if working_dir != "" else str(Path(project_path).parent) + os.sep + harness
-        sys.path.append(working_dir if working_dir != "" else str(Path(project_path).parent))
-        os.environ['harness'] = harness
+        harness = working_dir + harness
+        sys.path.append(working_dir)
+        os.environ['HARNESS'] = harness
 
-        self.logger.log_message(LogLevel.Info(), f'TCCLabor.ProjectSetup: apply_configuration  {config}')
+        data['Network prefix'] = self.network
+        data['working directory'] = working_dir
+        self.logger.log_message(LogLevel.Info(), f'TDK Micronas Labor.ProjectSetup: apply_configuration  {config}')
         setupfile = config['filename'] if 'filename' in config and config['filename'] != '' else None
-        workarea = os.environ.get('WORKAREA')
         readonly = True
-#        if workarea is None and setupfile is None:
-#            self.logger.log_message(LogLevel.Warning(), "TCCLabor.ProjectSetup: No setup file name and no $WORKAREA exist !!")
+
         if setupfile is None:
             setupfile = file_io.replaceFilename(f'$HARNESS/{self._SETUPFILE}')
             readonly = False
@@ -800,7 +800,7 @@ class ProjectSetup(object):
         else:
             self.setup = {'Setupfile': None}
             level = LogLevel.Warning() if setupfile is None else LogLevel.Error()
-            self.logger.log_message(level, "TCCLabor.ProjectSetup: setup file not exist !!")
+            self.logger.log_message(level, "TDK Micronas Labor.ProjectSetup: setup file not exist !!")
             setupfile = None
 
         self.create_dotdic(self.setup, self)
