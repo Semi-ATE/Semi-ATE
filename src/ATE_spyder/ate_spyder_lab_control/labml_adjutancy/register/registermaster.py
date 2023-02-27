@@ -1351,6 +1351,8 @@ class RegisterMaster(mqtt_deviceattributes):
         object.__setattr__(self, "_protocol", interface)
         object.__setattr__(self, "_protocol_typ", typ)
         object.__setattr__(self, "_bank", -1)
+        if hasattr(self._protocol, "init"):
+            self._protocol.init()
 
     def set_bank(self, adr):
         """
@@ -1495,6 +1497,8 @@ class RegisterMaster(mqtt_deviceattributes):
         config = environment.replaceEnvs(data)
         filename = config["filename"] if "filename" in config and config["filename"] != "" else self.filename
         filename = environment.checkNetworkPath(filename)
+        if filename.find("..") == 0 and "WORKING_DIR" and os.environ:
+            filename = filename.replace("..", os.environ["WORKING_DIR"])
         _setattr("filename", filename)
 
         instname = config["instance name"] if "instance name" in config and config["instance name"] != "" else self.instName
