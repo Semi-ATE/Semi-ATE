@@ -10,7 +10,6 @@
 # Third-party imports
 
 # Spyder imports
-from spyder.api.plugins import SpyderDockablePlugin
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import on_plugin_available, on_plugin_teardown
