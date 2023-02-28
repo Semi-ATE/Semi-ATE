@@ -133,7 +133,7 @@ class Barprogress(QtCore.QThread):
             self.parent.gui.Ltestbench.setText('done')
             self.progressbar.setValue(self.progressbar.maximum())
         else:
-            # self.gui.Ltestbench.setText(self.gui.Ltestbench.text())     # 'Last: '
+            self.parent.gui.Ltestbench.setText('done')     # 'Last: '
             self.progressbar.setValue(self.progressbar.maximum())
         self.parent.gui.Lremain.setText(remain)
 

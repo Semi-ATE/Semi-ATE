@@ -104,7 +104,6 @@ class LabCtrl(mqtt_deviceattributes):
             print(color("b_red", "Hold on the default breakpoint"))
             print(color("b_red", "This is a workaround, otherwise your breapoints doesn't working"))
             print(color("b_red", "To continue: Click in Spyder 'continue execution' "))
-            print(color("b_red", "Don't click terminate in semi-ctrl, if you are in debug mode (e.q. breakpoint, step )!!"))
             breakpoint()
             self.publish("breakpoint", "testing")
         # end workaround breakpoint

@@ -1130,6 +1130,7 @@ class RegisterMaster(mqtt_deviceattributes):
     # read-only attributes
     def __setattr__(self, name, value):
         valid = (
+            "__class__",
             "_cached",
             "_debug",
             "_interface",
@@ -1187,7 +1188,7 @@ class RegisterMaster(mqtt_deviceattributes):
 
     def init(self):
         try:
-            from semictrl import mqttc
+            from labml_adjutancy.ctrl.labctrl import mqttc
         except Exception:
             mqttc = None
 
