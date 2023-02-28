@@ -91,8 +91,7 @@ class LabControl(PluginMainWidget):
         ],
         "crash": ["crashed ", "color: rgb(255, 0, 0)"],
         "init": [
-            "testflow not started / no connection",
-            "color: rgb(255, 165, 0)",
+            "testflow not started", "color: rgb(255, 165, 0)",
         ],
         "unknown": ["unknown", None],
         "idle": ["ready -> wait for next", "color: rgb(255, 255, 0)"],
@@ -234,7 +233,10 @@ class LabControl(PluginMainWidget):
         self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
         self.mqttclient = mqttclient
         self.mqtt.mqtt_add()
-        self.computername = socket.gethostname() if self.mqttclient.broker == "127.0.0.1" else self.mqttclient.broker
+        hostname = socket.gethostname()
+        self.computername = hostname if self.mqttclient.broker == "127.0.0.1" or \
+            socket.gethostbyname(hostname) == self.mqttclient.broker else self.mqttclient.broker
+        self.gui.Lconnect.setText(f"{self.computername} ({socket.gethostbyname(hostname)})")
         self.openconfig()
         self.menuBar.adjustSize()
 
@@ -588,7 +590,7 @@ class LabControl(PluginMainWidget):
                     self.mqttclient.close()
                 self.reset()
                 self.setup_widget(self.project_info)
-            del(dialog)
+            del (dialog)
         elif cmd == "reset":
             self.logger.debug("Reset Lab Control")
             self.setButtonActive(True)
@@ -628,7 +630,8 @@ class LabControl(PluginMainWidget):
             else:
                 self.command["SetParameter"]["parameters"] = []
             self.logger.debug(f"guiclicked('next') with {self.command['SetParameter']['parameters']}, last={last}")
-            if not self.actionSequencer_Parameters.isChecked() or (not last and self.actionSequencer_Parameters.isChecked()) and self.command["SetParameter"]["parameters"] != []:
+            if not self.actionSequencer_Parameters.isChecked() or \
+               (not last and self.actionSequencer_Parameters.isChecked()) and self.command["SetParameter"]["parameters"] != []:
                 self.mqtt_send("cmd", "next")
             elif last and self.actionSequencer_Parameters.isChecked() and self.command["SetParameter"]["parameters"] == []:
                 self.state = "nothing_seq"
@@ -739,7 +742,7 @@ class LabControl(PluginMainWidget):
         """
         search = "Enter"  # new testbench started
         if msg.split("|")[-1].find(search) == 0 and progress:
-            testbenchname = msg[msg.find(search) + len(search) + 1 :]
+            testbenchname = msg[msg.find(search) + len(search) + 1:]
             self.progressbar.start(testbenchname)
             return msg
         if msg.split("|")[-1].find("Leave") == 0 and progress:
@@ -797,7 +800,7 @@ class LabControl(PluginMainWidget):
             apara = []
             for parametername in parameters:
                 pname = parametername["parametername"]
-                pname = pname[pname.find(".") + 1 :]
+                pname = pname[pname.find(".") + 1:]
                 pvalue = parametername["value"]
                 if (pname, pvalue) not in apara:
                     apara.append((pname, pvalue))
@@ -824,7 +827,7 @@ class LabControl(PluginMainWidget):
             self.receive_msg_for_instrument.emit('', {"type": "set", "cmd": "mqtt_status", "payload": "terminated"})
         if value.find("error") > -1:  # wo wird das gesetzt?? TODO: change!!
             self.progressbar.finish(False)
-            self.setButtonActive(True)
+            self.setButtonActive(False)
         elif value == "config" or (value == "idle" and oldstate not in ("config", "testing")):  # start identify
             self.logger.debug("Lab Control.state: config apply")
             self.cycle = 0

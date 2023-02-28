@@ -1,4 +1,6 @@
+import os
 from time import sleep
+from pathlib import Path
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from SCT8.tester import TesterImpl
 
@@ -7,7 +9,7 @@ class MiniSCTSTI:
     """Sub-class, Interface to STI protocol of the MiniSCT, called from :class:`MiniSCT`.
 
     :Date: |today|
-    :Author: Christian Jung <christian.jung@tdk.com>
+    :Author: "Zlin526F@github"
 
     Example: Read/Write register
 
@@ -97,12 +99,11 @@ Example: Read/Write register
 
 """
 
-
-def __init__(self, board, logger):
-    """Initialise Biphase interface."""
-    self.board = board
-    self.logger = logger
-    self.tdelay = 0.1
+    def __init__(self, board, logger):
+        """Initialise Biphase interface."""
+        self.board = board
+        self.logger = logger
+        self.tdelay = 0.1
 
 # TODO! implement biphase
 
@@ -114,6 +115,15 @@ class MiniSCT(TesterInterface, TesterImpl):
         TesterInterface.__init__(self, logger)
         self._protocol_typ = ''
         self.error = False
+
+    def init(self, parent, path):
+        
+        breakpoint()
+        mainPath = str(Path(path).parent.parent.parent.parent)
+        indir = os.path.join(mainPath, "pattern", parent.hardware, parent.base, "Device1", "protocols")    #TODO! clarivy 
+        outdir = os.path.join(mainPath, "pattern_output")
+        # exec(f"{indir}/make")
+        # instance = subprocess.Popen(f"{indir}/make", shell=True)
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         self.log_info(f'MiniSCT.do_request(site_id={site_id})')
@@ -127,11 +137,13 @@ class MiniSCT(TesterInterface, TesterImpl):
 
     def do_init_state(self, site_id: int):
         TesterImpl.__init__(self)
-        self.biph = None
         self._protocol_typ = 'sti'
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
+        # TODO!: compile and load stil pattern, aber woher kommt hardware, base, target ?
+        # self.init
         self.turnOn()
         self.sti = MiniSCTSTI(board=self, logger=self.logger)
+        self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
 
     def teardown(self):
         self.log_info('MiniSCT.teardown')

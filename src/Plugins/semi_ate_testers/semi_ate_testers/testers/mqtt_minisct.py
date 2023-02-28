@@ -1,8 +1,10 @@
 import inspect
 from semi_ate_testers.testers.tester_interface import TesterInterface
+from ate_test_app.sequencers.CommandLineParser import CommandLineParser
 from labml_adjutancy.misc import common
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.gui.instruments.minisct.minisct import mqttcmds
+from semi_ate_testers.testers import minisct 
 from labml_adjutancy.misc.mqtt_client import mqtt_init
 import SCT8
 
@@ -22,7 +24,7 @@ class MiniSCT(TesterInterface):
                        'mqtt', 'mqttc', 'mqtt_list', 'mqtt_status', '_mqttclient',
                        'logger', 'log_debug', 'log_measure', 'log_info', 'log_warning', 'log_error',
                        'run_pattern', 'on', 'off', 'publish_set',
-                       'setup', 'setup_mqtt', 'size', 'shape', 'startKeywords',
+                       'setup', 'setup_mqtt', 'size', 'shape', 'startKeywords', 'sti',
                        'teardown', 'test_done', 'test_in_progress',
                        ]
     gui = "labml_adjutancy.gui.instruments.minisct.minisct"
@@ -80,6 +82,7 @@ class MiniSCT(TesterInterface):
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
         self.inst = SCT8.getTester()
         self.inst.turnOn()
+        self.sti = minisct.MiniSCTSTI(board=self.inst, logger=self.logger)
         self.startKeywords = dir(self.inst)
 
         # create the list for the allowed mqtt commands
@@ -90,13 +93,31 @@ class MiniSCT(TesterInterface):
             self.mqtt.mqtt_all.append(f"dps.{cmd[0]}")
 
         mqttc = mqtt_init(typ="instrument")
-        mqttc.init("127.0.0.1", port=1883, message_client=None)
+        params = CommandLineParser([''])
+# TODO: use projectname.hardware.lab_control.json to get the right client
+#       or connect to the exits client from main context.harness._mqtt_connection.get_mqtt_client()
+        mqttc.init(params.broker_host, port=params.broker_port, message_client=None)
+        # mqttc.init("192.168.0.11", port=1883, message_client=None)
+
         self.setup_mqtt(mqttc)
         self.log_info(f"Tester.do_init_state({site_id})")
 
     def teardown(self):
         self.log_info('MiniSCT.teardown')
         self.close()
+
+    @property
+    def protocol_typ(self):
+        """Set/get protocol typ."""
+        return (self._protocol_typ)
+
+    @protocol_typ.setter
+    def protocol_typ(self, value):
+        if value != self._protocol_typ:
+            self._protocol_typ = value
+            self.__getattribute__(self._protocol_typ).init()
+            self.delay = self.__getattribute__(self._protocol_typ).delay
+
 
     @property
     def mqtt_status(self):
