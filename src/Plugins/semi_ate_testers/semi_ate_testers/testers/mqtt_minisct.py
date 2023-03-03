@@ -1,10 +1,13 @@
 import inspect
+import os
+import json
+import subprocess
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from ate_test_app.sequencers.CommandLineParser import CommandLineParser
 from labml_adjutancy.misc import common
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.gui.instruments.minisct.minisct import mqttcmds
-from semi_ate_testers.testers import minisct 
+from semi_ate_testers.testers import minisct
 from labml_adjutancy.misc.mqtt_client import mqtt_init
 import SCT8
 
@@ -38,6 +41,17 @@ class MiniSCT(TesterInterface):
         self.mqtt.instName = instName
         self.mqtt.mqtt_all = ['on()', 'off()']
         self.startKeywords = []
+
+    def loadProtocolls(self):
+        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
+            settings = json.load(json_file)["settings"]
+        path = os.path.join(os.getcwd(), "pattern", settings["hardware"], settings["base"],
+                            settings["target"], "protocols")
+        # TODO! make should be could only called once
+        #from SCT8.sct8 import pf
+        result = subprocess.call('make', shell=True, cwd=path)
+        if result != 0:
+            self.log_error(f'MiniSCT could not load protocols in {path}')
 
     def setup_mqtt(self, mqttc):
         """Setup for mqtt.
@@ -81,8 +95,10 @@ class MiniSCT(TesterInterface):
     def do_init_state(self, site_id: int):
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
         self.inst = SCT8.getTester()
+        self.loadProtocolls()
         self.inst.turnOn()
         self.sti = minisct.MiniSCTSTI(board=self.inst, logger=self.logger)
+        self.inst.error = False
         self.startKeywords = dir(self.inst)
 
         # create the list for the allowed mqtt commands

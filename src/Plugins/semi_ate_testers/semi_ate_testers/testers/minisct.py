@@ -1,6 +1,7 @@
 import os
 from time import sleep
-from pathlib import Path
+import json
+import subprocess
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from SCT8.tester import TesterImpl
 
@@ -116,14 +117,16 @@ class MiniSCT(TesterInterface, TesterImpl):
         self._protocol_typ = ''
         self.error = False
 
-    def init(self, parent, path):
-        
-        breakpoint()
-        mainPath = str(Path(path).parent.parent.parent.parent)
-        indir = os.path.join(mainPath, "pattern", parent.hardware, parent.base, "Device1", "protocols")    #TODO! clarivy 
-        outdir = os.path.join(mainPath, "pattern_output")
-        # exec(f"{indir}/make")
-        # instance = subprocess.Popen(f"{indir}/make", shell=True)
+    def loadProtocolls(self):
+        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
+            settings = json.load(json_file)["settings"]
+        path = os.path.join(os.getcwd(), "pattern", settings["hardware"], settings["base"],
+                            settings["target"], "protocols")
+        # TODO! make should be could only called once
+        #from SCT8.sct8 import pf
+        result = subprocess.call('make', shell=True, cwd=path)
+        if result != 0:
+            self.log_error(f'MiniSCT could not load protocols in {path}')
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         self.log_info(f'MiniSCT.do_request(site_id={site_id})')
@@ -139,8 +142,7 @@ class MiniSCT(TesterInterface, TesterImpl):
         TesterImpl.__init__(self)
         self._protocol_typ = 'sti'
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
-        # TODO!: compile and load stil pattern, aber woher kommt hardware, base, target ?
-        # self.init
+        self.loadProtocolls()
         self.turnOn()
         self.sti = MiniSCTSTI(board=self, logger=self.logger)
         self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
