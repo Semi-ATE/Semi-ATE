@@ -27,7 +27,7 @@ __author__ = "Zlin526F"
 __copyright__ = "Copyright 2020, Lab"
 __credits__ = ["Zlin526F"]
 __email__ = "Zlin526F@github"
-__version__ = "0.0.2"
+__version__ = "0.0.3a"
 
 
 class Gui(Guibase):
@@ -56,13 +56,6 @@ class Gui(Guibase):
         self._filename = ""
         self.regs = None
         self.show_regs = []
-        if __name__ == "__main__":
-            self.filename = "//samba/proot/hana/0504/workareas/appslab/units/top/register_master/xlsdb/hana_regs_20210218.xls"
-            self.mqttreceive("regs", {"type": "set", "cmd": "TEST7.read", "payload": 1608})
-            self.show_regs[-1].Bhold.setChecked(True)
-            self.mqttreceive("regs", {"type": "set", "cmd": "CFX.read", "payload": 208})
-            self.show_regs[-2].Bhold.setChecked(False)
-            self.mqttreceive("regs", {"type": "set", "cmd": "DAC.read", "payload": 50})
 
     def myadjustUI(self):
         # set icons:
@@ -132,7 +125,7 @@ class Gui(Guibase):
         if myregister is None:
             self.show_regs.append(QtWidgets.QGroupBox(self.myframe))
             myregister = self.show_regs[-1]
-            load_ui(myregister, os.path.dirname(__file__) + "\\register.ui")  # QBregister
+            load_ui(myregister, os.path.join(os.path.dirname(__file__), "register.ui"))  # QBregister
             myregister.Bhold.setIcon(qta.icon("fa5s.thumbtack", color="white", scale_factor=1.0, color_active="orange"))
             myregister.Bhold.clicked.connect(lambda: self.toggleBhold(myregister.Bhold))
             # self.myframe.Name.mousePressEvent = self.readreg(register._name)
@@ -201,7 +194,9 @@ class Gui(Guibase):
             self.logger.error(msg)
             print(msg)
             return
-        self.logger.info(f"registermaster.filename set to {val}")
+        self.logger.info(f"registermaster.filename set to {self._filename}")
+        self.myframe.Lfilename.setText(self._filename)
+        print(f"registermaster.filename set to {self._filename}")
 
     def showdoc(self, action, label):
         if not action.isChecked():
