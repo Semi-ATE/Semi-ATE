@@ -1162,7 +1162,7 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr = object.__setattr__.__get__(self, self.__class__)
         super().__init__()
         self.mqtt_all = ["filename", "use"]
-        filename = os.environ.get("registermaster") if filename is None else filename
+        filename = os.environ.get("registermaster") if filename is None else filename   #TODO! remove envronment, use setup instead
         mylogger = logger
         _setattr("instName", instname)
         _setattr("filename", filename)
@@ -1498,7 +1498,7 @@ class RegisterMaster(mqtt_deviceattributes):
         config = environment.replaceEnvs(data)
         filename = config["filename"] if "filename" in config and config["filename"] != "" else self.filename
         filename = environment.checkNetworkPath(filename)
-        if filename.find("..") == 0 and "WORKING_DIR" and os.environ:
+        if filename is not None and filename.find("..") == 0 and "WORKING_DIR" in os.environ:
             filename = filename.replace("..", os.environ["WORKING_DIR"])
         _setattr("filename", filename)
 
@@ -1517,4 +1517,3 @@ if __name__ == "__main__":
     filename = "your_registermaster.xls"
     regs = RegisterMaster(filename=filename)
     regs.init()
-
