@@ -1,19 +1,24 @@
 import sys
 import os
+import json
+import socket
 from pathlib import Path
 import importlib
 import inspect
 from semi_ate_testers.testers.tester_interface import TesterInterface
 
-TESTER_CONFIG_FILE = 'testerconfig.py'
+TESTER_CONFIG_FILE = 'testerconfig'
+
 
 class FileConfigurationTester(TesterInterface):
     SITE_COUNT = 1
-    
+
     def __init__(self, logger):
         TesterInterface.__init__(self, logger)
-        self.hw_path = str(Path(sys.modules['__main__'].__file__).parent.parent) + os.sep
-        
+        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
+            settings = json.load(json_file)["settings"]
+        self.hardware = settings["hardware"]
+        self.hw_path = os.path.join(os.getcwd(), os.getcwd().split(os.sep)[-1], self.hardware) + os.sep
 
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
@@ -29,37 +34,42 @@ class FileConfigurationTester(TesterInterface):
         pass
 
     def do_init_state(self, site_id: int):
-        myfile = '$$$HW' + TESTER_CONFIG_FILE
-        testerconfig = None
-        with open(self.hw_path + myfile, 'w') as f:
+        testerconfig = self.hw_path + TESTER_CONFIG_FILE
+        testerconfigTemp = Path(testerconfig + "_tmp.py")
+        extension = ""
+        for ad in [os.getenv('USER'), socket.gethostname()]:
+            if Path(testerconfig + "_" + ad + ".py").is_file():
+                extension = "_" + ad
+
+        with open(testerconfigTemp, 'w') as f:
             f.write('# -*- coding: utf-8 -*-\n"""\n\n')
             f.write("Don't edit this file. It will be overwriten at runtime. Any manual edits will be lost\n")
             f.write('"""\n')
             f.write("import sys\n")
             f.write("logger = sys.argv[2]\n")
-        if Path(self.hw_path + TESTER_CONFIG_FILE).is_file():
-            source = self.hw_path + TESTER_CONFIG_FILE
-            with open(self.hw_path+myfile, 'a') as dest:
-                with open(Path(source), 'r') as src:
+        if Path(testerconfig + extension + ".py").is_file():
+            self.log_info(f"Use Tester configuration file : {testerconfig + extension}.py")
+            with open(testerconfigTemp, 'a') as dest:
+                with open(testerconfig + extension + ".py", "r") as src:
                     lines = src.readlines()
                 dest.writelines(lines)
             sys.argv.append('--labml')
             sys.argv.append(self.logger)
-            sys.path.append(str(Path(self.hw_path).parent.parent))
             pythonPath = f'{self.hw_path.split(os.sep)[-3]}.{self.hw_path.split(os.sep)[-2].upper()}.'
             doExit = False
             try:
-                testerconfig = importlib.import_module(pythonPath + os.path.splitext(myfile)[0])
+                testerconfig = importlib.import_module(pythonPath + TESTER_CONFIG_FILE + "_tmp")
             except Exception as ex:
                 msg = f'exception in {TESTER_CONFIG_FILE} : {ex}'
                 self.log_error(msg)
                 doExit = True
+                testerconfig = None
             sys.argv.pop()
             sys.argv.pop()
             if doExit:
                 raise Exception(msg)
         else:
-            self.log_error(f'No Tester file configuration found, you have to create {self.hw_path + TESTER_CONFIG_FILE}')
+            self.log_error(f"No Tester file configuration found, you have to create {self.hw_path + TESTER_CONFIG_FILE}.py")
         self.testerconfig = testerconfig
         for instrument in dir(testerconfig):  # add information from each instrument to result.instruments
             if instrument.find("_") != -1:
