@@ -146,6 +146,7 @@ class MiniSCT(TesterInterface, TesterImpl):
         self.turnOn()
         self.sti = MiniSCTSTI(board=self, logger=self.logger)
         self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
+        self.interface = self
 
     def teardown(self):
         self.log_info('MiniSCT.teardown')
