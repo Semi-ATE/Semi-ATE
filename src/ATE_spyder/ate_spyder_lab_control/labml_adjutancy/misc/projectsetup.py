@@ -520,8 +520,8 @@ class ProjectSetup(object):
         else:
             dumplist = liste
         if type(dumplist) == str:
-            foundtcc = dumplist.find('tcc.')
-            dumplist = dumplist[4:] if foundtcc == 0 else dumplist
+            foundtcc = dumplist.find('self.')
+            dumplist = dumplist[5:] if foundtcc == 0 else dumplist
             dump = self.call(dumplist, senderror=False)
         else:
             dump = dumplist
