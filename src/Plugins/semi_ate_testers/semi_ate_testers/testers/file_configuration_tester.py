@@ -15,7 +15,7 @@ class FileConfigurationTester(TesterInterface):
 
     def __init__(self, logger):
         TesterInterface.__init__(self, logger)
-        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
+        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:           # TODO: os.getcwd() is not correct if you run another python file :-()
             settings = json.load(json_file)["settings"]
         self.hardware = settings["hardware"]
         self.hw_path = os.path.join(os.getcwd(), os.getcwd().split(os.sep)[-1], self.hardware) + os.sep
@@ -38,7 +38,7 @@ class FileConfigurationTester(TesterInterface):
         testerconfigTemp = Path(testerconfig + "_tmp.py")
         extension = ""
         for ad in [os.getenv('USER'), socket.gethostname()]:
-            if Path(testerconfig + "_" + ad + ".py").is_file():
+            if ad is not None and Path(testerconfig + "_" + ad + ".py").is_file():
                 extension = "_" + ad
 
         with open(testerconfigTemp, 'w') as f:
