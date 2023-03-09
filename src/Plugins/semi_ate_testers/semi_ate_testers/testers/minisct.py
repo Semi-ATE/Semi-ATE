@@ -1,6 +1,7 @@
 import os
 from time import sleep
 import json
+import psutil
 import subprocess
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from SCT8.tester import TesterImpl
@@ -120,10 +121,12 @@ class MiniSCT(TesterInterface, TesterImpl):
     def loadProtocolls(self):
         with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
             settings = json.load(json_file)["settings"]
-        path = os.path.join(os.getcwd(), "pattern", settings["hardware"], settings["base"],
-                            settings["target"], "protocols")
-        # TODO! make should be could only called once
-        #from SCT8.sct8 import pf
+        path = os.path.join(os.getcwd(), "protocols", settings["hardware"], settings["base"],
+                            settings["target"])
+
+        if psutil.boot_time() > os.path.getctime('/tmp/mem.hex'):
+       # TODO! make should be could only called once, but also if the protocols or pattern changed.....
+            print('compile and load protocols and pattern')
         result = subprocess.call('make', shell=True, cwd=path)
         if result != 0:
             self.log_error(f'MiniSCT could not load protocols in {path}')
