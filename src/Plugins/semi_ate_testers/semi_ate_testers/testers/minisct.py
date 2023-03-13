@@ -1,11 +1,26 @@
 import os
+import sys
 from time import sleep
+from pathlib import Path
 import json
 import psutil
+import shutil
 import subprocess
 from semi_ate_testers.testers.tester_interface import TesterInterface
 from SCT8.tester import TesterImpl
 
+
+makeSTIL = \
+    "\n\nload: $(STIL)\n" + \
+    "	sscl -l -i $(STIL)\n" + \
+    "\n" + \
+    "%.stil.hdf5: %.stil sig2chan_map.yml\n" + \
+    "	sscl -c -i $<\n" + \
+    "\n" + \
+    "clean:\n" + \
+    "	rm -f *.hdf5 *~ *.zip *.tgz *.vec_mem\n"
+
+tmpDir = "/tmp/STIL.hdf5"
 
 class MiniSCTSTI:
     """Sub-class, Interface to STI protocol of the MiniSCT, called from :class:`MiniSCT`.
@@ -19,7 +34,7 @@ class MiniSCTSTI:
         >>> interface.do_init_state()
 
         >>> tester.sti.writebase(0)
-        >>> tester.sti.writereg(0x20, 0b1101)
+        >>> tester.sti.writer"/tmp/STIL.hdf5"eg(0x20, 0b1101)
         >>> tester.sti.readreg(0x20)
     """
 
@@ -118,18 +133,48 @@ class MiniSCT(TesterInterface, TesterImpl):
         self._protocol_typ = ''
         self.error = False
 
-    def loadProtocolls(self):
-        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:
+    def getPath(self):
+        cwd = Path.cwd().parent.parent.parent
+        with open(os.path.join(cwd, '.lastsettings'), 'r') as json_file:
             settings = json.load(json_file)["settings"]
-        path = os.path.join(os.getcwd(), "protocols", settings["hardware"], settings["base"],
-                            settings["target"])
+        return cwd, os.path.join(settings["hardware"], settings["base"], settings["target"])
+
+    def compileSTIL(self, path):
+        cwd, relPath = self.getPath()
 
         if psutil.boot_time() > os.path.getctime('/tmp/mem.hex'):
-       # TODO! make should be could only called once, but also if the protocols or pattern changed.....
+            # TODO! make should be could only called once, but also if the protocols or pattern changed.....
             print('compile and load protocols and pattern')
-        result = subprocess.call('make', shell=True, cwd=path)
+
+        if Path(tmpDir).is_dir():                               # clear tmp directory
+            for file in os.listdir(tmpDir):
+                os.remove(os.path.join(tmpDir, file))
+        else:
+            os.makedirs(tmpDir)
+
+        stilFiles = []
+        for root, directories, files in os.walk(os.path.join(cwd, "protocols", relPath)):
+            for filename in files:
+                if filename.endswith("stil"):
+                    stilFiles.append(filename)
+                    shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
+
+        with open(os.path.join(cwd, f"definitions/program/program{os.path.basename(sys.argv[0]).split('.')[0]}.json"), 'r') as json_file:
+            stilPatterns = json.load(json_file)[0]["patterns"]
+        for pattern in stilPatterns:
+            filename = stilPatterns[pattern][0][1]
+            shutil.copy(os.path.join(cwd, filename), os.path.join(tmpDir, os.path.basename(filename)))
+            stilFiles.append(os.path.basename(filename))
+
+        stil = "STIL ="
+        for file in stilFiles:
+            stil += f" {file}"
+        with open(os.path.join(tmpDir, "Makefile"), 'w') as f:
+            f.write(stil + makeSTIL)
+
+        result = subprocess.call('make', shell=True, cwd=tmpDir)
         if result != 0:
-            self.log_error(f'MiniSCT could not load protocols in {path}')
+            self.log_error(f'MiniSCT could not load protocols/patterns in {tmpDir}')
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         self.log_info(f'MiniSCT.do_request(site_id={site_id})')
@@ -145,7 +190,7 @@ class MiniSCT(TesterInterface, TesterImpl):
         TesterImpl.__init__(self)
         self._protocol_typ = 'sti'
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
-        self.loadProtocolls()
+        self.compileSTIL()
         self.turnOn()
         self.sti = MiniSCTSTI(board=self, logger=self.logger)
         self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
