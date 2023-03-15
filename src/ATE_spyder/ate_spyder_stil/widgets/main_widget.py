@@ -13,6 +13,7 @@ import os.path as osp
 from datetime import datetime
 import logging
 from typing import List, Optional, Union, Literal, Dict
+from itertools import chain
 
 # PEP 589 and 544 are available from Python 3.8 onwards
 if sys.version_info >= (3, 8):
@@ -336,15 +337,21 @@ class STILContainer(PluginMainWidget):
         self.stil_process.setProcessEnvironment(env)
         self.stil_process.setWorkingDirectory(str(cwd))
 
+        paths = cwd.joinpath('protocols') if stil_files is not None else cwd.joinpath('protocols'), cwd.joinpath('pattern')
+
         # Find STIL files recursively
         if stil_files is None:
             stil_files = []
-            for root, _, files in os.walk(cwd.joinpath('pattern')):
-                for file in files:
-                    _, ext = osp.splitext(file)
-                    ext = ext[1:]
-                    if ext == 'stil' or ext == 'wav':
-                        stil_files.append(osp.join(root, file))
+        for root, _, files in chain.from_iterable(os.walk(str(path)) for path in paths):
+            if root.split(os.sep)[-1] == 'gen':     # TODO! this is our include directory,make the name more flexibel, perhaps define the name in the STIL- tool
+                continue
+            for file in files:
+                _, ext = osp.splitext(file)
+                ext = ext[1:]
+                if ext == 'stil' or ext == 'wav':
+                    stil_files.append(osp.join(root, file))
+
+        print(f'          stil_files = {stil_files}')
 
         sscl_path = find_program('sscl')
         if sscl_path is None:
