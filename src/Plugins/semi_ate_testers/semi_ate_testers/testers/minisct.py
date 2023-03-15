@@ -10,17 +10,6 @@ from semi_ate_testers.testers.tester_interface import TesterInterface
 from SCT8.tester import TesterImpl
 
 
-makeSTIL = \
-    "\n\nload: $(STIL)\n" + \
-    "	sscl -l -i $(STIL)\n" + \
-    "\n" + \
-    "%.stil.hdf5: %.stil sig2chan_map.yml\n" + \
-    "	sscl -c -i $<\n" + \
-    "\n" + \
-    "clean:\n" + \
-    "	rm -f *.hdf5 *~ *.zip *.tgz *.vec_mem\n"
-
-tmpDir = "/tmp/STIL.hdf5"
 
 class MiniSCTSTI:
     """Sub-class, Interface to STI protocol of the MiniSCT, called from :class:`MiniSCT`.
@@ -134,50 +123,63 @@ class MiniSCT(TesterInterface, TesterImpl):
         self.error = False
 
     def getPath(self):
-        cwd = Path.cwd().parent.parent.parent
-        with open(os.path.join(cwd, '.lastsettings'), 'r') as json_file:
-            settings = json.load(json_file)["settings"]
-        return cwd, os.path.join(settings["hardware"], settings["base"], settings["target"])
+        '''get the necesary information about hardware, base, target
+        '''
+        import __main__
 
-    def compileSTIL(self, path):
-        cwd, relPath = self.getPath()
+        mainFileSplit = __main__.__file__.split(os.sep)
+        cwd = Path(__main__.__file__).parent.parent.parent.parent
+        filename = os.path.splitext(mainFileSplit[-1])[0]
+        target = mainFileSplit[-1].split('_')[-3]
+        base = mainFileSplit[-2]
+        hardware = mainFileSplit[-3]
+        projectname = mainFileSplit[-4]
 
-        if psutil.boot_time() > os.path.getctime('/tmp/mem.hex'):
-            # TODO! make should be could only called once, but also if the protocols or pattern changed.....
-            print('compile and load protocols and pattern')
+        return cwd, os.path.join(hardware, base, target), filename
 
-        if Path(tmpDir).is_dir():                               # clear tmp directory
-            for file in os.listdir(tmpDir):
-                os.remove(os.path.join(tmpDir, file))
-        else:
-            os.makedirs(tmpDir)
+    # def compileSTIL(self):
+    #     # TODO! use STIL widget instead
 
-        stilFiles = []
-        for root, directories, files in os.walk(os.path.join(cwd, "protocols", relPath)):
-            for filename in files:
-                if filename.endswith("stil"):
-                    stilFiles.append(filename)
-                    shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
+    #     cwd, relPath, projectFilename = self.getPath()
 
-        with open(os.path.join(cwd, f"definitions/program/program{os.path.basename(sys.argv[0]).split('.')[0]}.json"), 'r') as json_file:
-            stilPatterns = json.load(json_file)[0]["patterns"]
-        for pattern in stilPatterns:
-            filename = stilPatterns[pattern][0][1]
-            shutil.copy(os.path.join(cwd, filename), os.path.join(tmpDir, os.path.basename(filename)))
-            stilFiles.append(os.path.basename(filename))
+    #     if Path(tmpDir).is_dir():                               # clear tmp directory
+    #         for file in os.listdir(tmpDir):
+    #             os.remove(os.path.join(tmpDir, file))
+    #     else:
+    #         os.makedirs(tmpDir)
 
-        stil = "STIL ="
-        for file in stilFiles:
-            stil += f" {file}"
-        with open(os.path.join(tmpDir, "Makefile"), 'w') as f:
-            f.write(stil + makeSTIL)
+    #     stilFiles = []
+    #     for root, directories, files in os.walk(os.path.join(cwd, "protocols", relPath)):
+    #         for filename in files:
+    #             if filename.endswith("stil.hdf5"):
+    #                 stilFiles.append(filename)
+    #                 shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
+    #     filename = "sig2chan_map.yml"
+    #     shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
 
-        result = subprocess.call('make', shell=True, cwd=tmpDir)
-        if result != 0:
-            self.log_error(f'MiniSCT could not load protocols/patterns in {tmpDir}')
+    #     with open(os.path.join(cwd, f"definitions/program/program{projectFilename}.json"), 'r') as json_file:
+    #         stilPatterns = json.load(json_file)[0]["patterns"]
+    #     for pattern in stilPatterns:
+    #         filename = stilPatterns[pattern][0][1] + '.hdf5'
+    #         shutil.copy(os.path.join(cwd, filename), os.path.join(tmpDir, os.path.basename(filename)))
+    #         stilFiles.append(os.path.basename(filename))
+
+    #     stil = "STIL ="
+    #     for file in stilFiles:
+    #         stil += f" {file}"
+    #     with open(os.path.join(tmpDir, "Makefile"), 'w') as f:
+    #         f.write(stil + makeSTIL)
+#        result = subprocess.call('make', shell=True, cwd=tmpDir)
+#       if result != 0:
+#          self.log_error(f'MiniSCT could not load protocols/patterns in {tmpDir}')
 
     def do_request(self, site_id: int, timeout: int) -> bool:
         self.log_info(f'MiniSCT.do_request(site_id={site_id})')
+        if not hasattr(self, 'PF'):
+            self.turnOn()
+            self.sti = MiniSCTSTI(board=self, logger=self.logger)
+            self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
+            self.interface = self
         return True
 
     def test_in_progress(self, site_id: int):
@@ -190,11 +192,6 @@ class MiniSCT(TesterInterface, TesterImpl):
         TesterImpl.__init__(self)
         self._protocol_typ = 'sti'
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
-        self.compileSTIL()
-        self.turnOn()
-        self.sti = MiniSCTSTI(board=self, logger=self.logger)
-        self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
-        self.interface = self
 
     def teardown(self):
         self.log_info('MiniSCT.teardown')
