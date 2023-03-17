@@ -313,7 +313,7 @@ class STILContainer(PluginMainWidget):
             return
 
         self.output_log.clear()
-        self.output_tree.clear()
+        self.output_tree.clear_results()
         self.tabwidget.setCurrentIndex(1)
 
         now = datetime.now()
@@ -350,8 +350,6 @@ class STILContainer(PluginMainWidget):
                 ext = ext[1:]
                 if ext == 'stil' or ext == 'wav':
                     stil_files.append(osp.join(root, file))
-
-        print(f'          stil_files = {stil_files}')
 
         sscl_path = find_program('sscl')
         if sscl_path is None:
