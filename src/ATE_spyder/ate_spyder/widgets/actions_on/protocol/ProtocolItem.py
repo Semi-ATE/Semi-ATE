@@ -17,11 +17,20 @@ class ProtocolItem(BaseItem):
 
     def clone_from_item(self):
         pass
+    
+    def compile_protocols_files(self):
+        self.project_info.compile_protocols(self.text())
 
-    @staticmethod
-    def _get_menu_items():
-        return [MenuActionTypes.Add(),
+    def _get_menu_items(self):
+        menu = [MenuActionTypes.Add(),
                 MenuActionTypes.CloneFrom()]
+        
+        # the stil file compilation option should be only enabled
+        # if the protocols stil files available
+        if self.project_info.get_protocols(self.text()):
+            menu.insert(len(menu), MenuActionTypes.CompileProtocols())
+        
+        return menu
 
     @staticmethod
     def is_valid_functionality(functionality):
