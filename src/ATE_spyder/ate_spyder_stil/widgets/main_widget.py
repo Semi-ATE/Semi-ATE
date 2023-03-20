@@ -13,7 +13,6 @@ import os.path as osp
 from datetime import datetime
 import logging
 from typing import List, Optional, Union, Literal, Dict
-from itertools import chain
 
 # PEP 589 and 544 are available from Python 3.8 onwards
 if sys.version_info >= (3, 8):
@@ -23,7 +22,7 @@ else:
 
 # Third-party imports
 import zmq
-from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
+from qtpy.QtCore import Signal, QProcess, QSocketNotifier
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QTreeWidgetItem
 
 # Spyder imports
@@ -337,19 +336,15 @@ class STILContainer(PluginMainWidget):
         self.stil_process.setProcessEnvironment(env)
         self.stil_process.setWorkingDirectory(str(cwd))
 
-        paths = cwd.joinpath('protocols') if stil_files is not None else cwd.joinpath('protocols'), cwd.joinpath('pattern')
-
         # Find STIL files recursively
         if stil_files is None:
             stil_files = []
-        for root, _, files in chain.from_iterable(os.walk(str(path)) for path in paths):
-            if root.split(os.sep)[-1] == 'gen':     # TODO! this is our include directory,make the name more flexibel, perhaps define the name in the STIL- tool
-                continue
-            for file in files:
-                _, ext = osp.splitext(file)
-                ext = ext[1:]
-                if ext == 'stil' or ext == 'wav':
-                    stil_files.append(osp.join(root, file))
+            for root, _, files in os.walk(cwd.joinpath('pattern')):
+                for file in files:
+                    _, ext = osp.splitext(file)
+                    ext = ext[1:]
+                    if ext == 'stil' or ext == 'wav':
+                        stil_files.append(osp.join(root, file))
 
         sscl_path = find_program('sscl')
         if sscl_path is None:
@@ -361,6 +356,12 @@ class STILContainer(PluginMainWidget):
                     message=err_msg, filename='Global', row=0, col=0))
             self.output_tree.append_file_msg(tree_msg)
             return
+        if sig_to_chan_path is None or not os.path.exists(sig_to_chan_path) or os.stat(sig_to_chan_path).st_size < 3:
+            err_msg = f'Channel to mapping {sig_to_chan_path} not exist or it is empty'
+            tree_msg = STILCompilerMsg(
+                kind='warning', payload=STILErrWarnPayload(
+                    message=err_msg, filename='Global', row=0, col=0))
+            self.output_tree.append_file_msg(tree_msg)
 
         output_folder = str(cwd.joinpath('pattern_output'))
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
