@@ -152,7 +152,8 @@ class PatternTab(QtWidgets.QWidget):
             if not pattern_path:
                 continue
 
-            patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
+            #patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
+            patterns.setdefault(current_test_name, []).append((pattern_name, pattern_path))
 
         return patterns
 
