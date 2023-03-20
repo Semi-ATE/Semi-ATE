@@ -122,68 +122,31 @@ class MiniSCT(TesterInterface, TesterImpl):
         self._protocol_typ = ''
         self.error = False
 
-    def getPath(self):
-        '''get the necesary information about hardware, base, target
+    def loadSTIL(self):
+        '''
+        workaround until stil_tool._load_pattern load protocols, too.
         '''
         import __main__
+        from ate_common.pattern.tool_factory import get_stil_tool
 
-        mainFileSplit = __main__.__file__.split(os.sep)
         cwd = Path(__main__.__file__).parent.parent.parent.parent
-        filename = os.path.splitext(mainFileSplit[-1])[0]
-        target = mainFileSplit[-1].split('_')[-3]
-        base = mainFileSplit[-2]
-        hardware = mainFileSplit[-3]
-        projectname = mainFileSplit[-4]
 
-        return cwd, os.path.join(hardware, base, target), filename
+        stilFiles = {}
+        for root, directories, files in os.walk(os.path.join(cwd, "pattern_output")):
+            for filename in files:
+                if filename.endswith("stil.hdf5"):
+                    stilFiles[filename.split('.')[0]] = os.path.join(root, filename)
 
-    # def compileSTIL(self):
-    #     # TODO! use STIL widget instead
-
-    #     cwd, relPath, projectFilename = self.getPath()
-
-    #     if Path(tmpDir).is_dir():                               # clear tmp directory
-    #         for file in os.listdir(tmpDir):
-    #             os.remove(os.path.join(tmpDir, file))
-    #     else:
-    #         os.makedirs(tmpDir)
-
-    #     stilFiles = []
-    #     for root, directories, files in os.walk(os.path.join(cwd, "protocols", relPath)):
-    #         for filename in files:
-    #             if filename.endswith("stil.hdf5"):
-    #                 stilFiles.append(filename)
-    #                 shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
-    #     filename = "sig2chan_map.yml"
-    #     shutil.copy(os.path.join(root, filename), os.path.join(tmpDir, filename))
-
-    #     with open(os.path.join(cwd, f"definitions/program/program{projectFilename}.json"), 'r') as json_file:
-    #         stilPatterns = json.load(json_file)[0]["patterns"]
-    #     for pattern in stilPatterns:
-    #         filename = stilPatterns[pattern][0][1] + '.hdf5'
-    #         shutil.copy(os.path.join(cwd, filename), os.path.join(tmpDir, os.path.basename(filename)))
-    #         stilFiles.append(os.path.basename(filename))
-
-    #     stil = "STIL ="
-    #     for file in stilFiles:
-    #         stil += f" {file}"
-    #     with open(os.path.join(tmpDir, "Makefile"), 'w') as f:
-    #         f.write(stil + makeSTIL)
-#        result = subprocess.call('make', shell=True, cwd=tmpDir)
-#       if result != 0:
-#          self.log_error(f'MiniSCT could not load protocols/patterns in {tmpDir}')
+        stil_tool = get_stil_tool()
+        stil_tool._load_patterns(stilFiles)
 
     def do_request(self, site_id: int, timeout: int) -> bool:
-        self.log_info(f'MiniSCT.do_request(site_id={site_id})')
-        if not hasattr(self, 'PF'):
-            self.turnOn()
-            self.sti = MiniSCTSTI(board=self, logger=self.logger)
-            self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
-            self.interface = self
+        # self.log_info(f'MiniSCT.do_request(site_id={site_id})')
         return True
 
     def test_in_progress(self, site_id: int):
-        self.log_info(f'MiniSCT.test_in_progress(site_id={site_id})')
+        # self.log_info(f'MiniSCT.test_in_progress(site_id={site_id})')
+        pass
 
     def test_done(self, site_id: int, timeout: int):
         self.log_info(f'MiniSCT.test_done({site_id})')
@@ -191,6 +154,12 @@ class MiniSCT(TesterInterface, TesterImpl):
     def do_init_state(self, site_id: int):
         TesterImpl.__init__(self)
         self._protocol_typ = 'sti'
+        self.loadSTIL()
+        if not hasattr(self, 'PF'):
+            self.turnOn()
+            self.sti = MiniSCTSTI(board=self, logger=self.logger)
+            self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
+            self.interface = self
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
 
     def teardown(self):
