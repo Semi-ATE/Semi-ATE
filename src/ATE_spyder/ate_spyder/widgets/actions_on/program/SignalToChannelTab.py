@@ -161,7 +161,8 @@ class SignalToChannelTab(QtWidgets.QWidget):
             if not sig_name.text():
                 continue
 
-            signal_to_channel_table[sig_name.text()] = int(ch_num.currentText())
+            text = '-1' if ch_num.currentText() == '' else ch_num.currentText()
+            signal_to_channel_table[sig_name.text()] = int(text)
 
         return signal_to_channel_table
 
