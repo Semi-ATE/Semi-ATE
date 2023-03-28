@@ -122,30 +122,18 @@ class MiniSCT(TesterInterface, TesterImpl):
         self._protocol_typ = ''
         self.error = False
 
-    def loadSTIL(self):
-        '''
-        workaround until stil_tool._load_pattern load protocols, too.
-        '''
-        import __main__
-        from ate_common.pattern.tool_factory import get_stil_tool
-
-        cwd = Path(__main__.__file__).parent.parent.parent.parent
-
-        stilFiles = {}
-        for root, directories, files in os.walk(os.path.join(cwd, "pattern_output")):
-            for filename in files:
-                if filename.endswith("stil.hdf5"):
-                    stilFiles[filename.split('.')[0]] = os.path.join(root, filename)
-
-        stil_tool = get_stil_tool()
-        stil_tool._load_patterns(stilFiles)
-
     def do_request(self, site_id: int, timeout: int) -> bool:
-        # self.log_info(f'MiniSCT.do_request(site_id={site_id})')
+        '''==> es fehlt eine FUnktion die einmal vor dem eigentlichen start der tests aufgeruffen wird'''
+        self.log_info(f'MiniSCT.do_request(site_id={site_id})')
+        if not hasattr(self, 'PF'):
+            self.turnOn()
+            self.sti = MiniSCTSTI(board=self, logger=self.logger)
+            self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
+            self.interface = self
         return True
 
     def test_in_progress(self, site_id: int):
-        # self.log_info(f'MiniSCT.test_in_progress(site_id={site_id})')
+        self.log_info(f'MiniSCT.test_in_progress(site_id={site_id})')
         pass
 
     def test_done(self, site_id: int, timeout: int):
@@ -154,13 +142,11 @@ class MiniSCT(TesterInterface, TesterImpl):
     def do_init_state(self, site_id: int):
         TesterImpl.__init__(self)
         self._protocol_typ = 'sti'
-        self.loadSTIL()
-        if not hasattr(self, 'PF'):
-            self.turnOn()
-            self.sti = MiniSCTSTI(board=self, logger=self.logger)
-            self.biph = MiniSCTBiPhase(board=self, logger=self.logger)
-            self.interface = self
         self.log_info(f'MiniSCT.do_init_state(site_id={site_id})')
+
+    def setup(self):
+        self.log_info('MiniSCT.setup()')
+        pass
 
     def teardown(self):
         self.log_info('MiniSCT.teardown')

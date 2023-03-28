@@ -41,7 +41,8 @@ class test_program_generator(BaseGenerator):
 
         test_list, test_imports = self.build_test_entry_list(tests_in_program, test_targets)
 
-        compiled_patterns = collect_compiled_patterns(program_configuration.patterns, self.project_path)
+        protocols_path = os.path.join('protocols', program_configuration.hardware, program_configuration.base, program_configuration.target)
+        compiled_patterns = collect_compiled_patterns(program_configuration.patterns, self.project_path, protocols_path)
 
         output = template.render(
             project_path=str(self.project_path),
