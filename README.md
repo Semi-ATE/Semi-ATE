@@ -44,49 +44,6 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 
 
-
-
-
-
-## Installation (on a MiniSCT)
-
-1. login as sct/sct
-2. in the home directory there should be a directory `repos`
-3. in `repos` there is a `Semi-ATE` directory (holding the relevant Semi-ATE git repositories)
-  - `TCC_actuators` : git clone 
-5. 
-
-## Run (on a MiniSCT)
-
-1. Make sure you have a "test cell" configured as follows :
-![image](https://user-images.githubusercontent.com/3516972/197773673-df64bc5f-b9aa-4166-a585-014dad2d617d.png)
-
-
-
-
-
-
-
-
-
----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ===
 Installation of the packages can be achieved via `conda` or [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/#use-pip-for-installing).
 
@@ -119,9 +76,26 @@ Or all at once:
 python -m pip install semi-ate-common semi-ate-project-database semi-ate-sammy semi-ate-plugins semi-ate-testers semi-ate-spyder semi-ate-apps-common semi-ate-control-app semi-ate-master-app semi-ate-test-app
 ```
 
-### Installation via Conda
-
+### Installation via Conda 
 To be defined
+
+### Installation via Conda (Development mode)
+
+Create an environment in conda and install semi-ate in it 
+```
+(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.3.3
+(base)~$ conda activate Semi-ATE
+(Semi-ATE)~$ mkdir -p ~/repos/Semi-ATE
+(Semi-ATE)~$ cd ~/repos/Semi-ATE
+(Semi-ATE)~/repos/Semi-ATE$ git clone https://github.com/Semi-ATE/Semi-ATE.git
+(Semi-ATE)~/repos/Semi-ATE$ cd Semi-ATE
+(Semi-ATE)~/repos/Semi-ATE/Semi-ATE$ python scripts/package_tool.py --change-env cicd
+...
+```
+
+## Installation and running on a MiniSCT
+that is describe [here](docs/project/DevelopmentProcess/development_setup.md)
+
 
 ### Development Process
 
