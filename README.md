@@ -25,7 +25,7 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 | Package Name              | PyPI Version | conda Version | feedstock |
 |:------------------------- |:----:|:-----------:|:---------:|
-| [Semi-ATE-common](https://github.com/Semi-ATE/Semi-ATE/tree/master/src/ATE_common) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-Common?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-common/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-Common?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-common) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-Common-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-Common-feedstock) | 
+| [Semi-ATE-common](https://github.com/Semi-ATE/Semi-ATE/tree/master/src/ATE_common) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-Common?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-common/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-Common?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-common) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-Common-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-Common-feedstock) |
 | [Semi-ATE-project-database](https://github.com/Semi-ATE/Semi-ATE/tree/master/src/ATE_projectdatabase) |[![PyPI](https://img.shields.io/pypi/v/Semi-ATE-project-database?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-project-database/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-project-database?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-project-database) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-project-database-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-project-database-feedstock) |
 | [Semi-ATE-sammy](https://github.com/Semi-ATE/Semi-ATE/tree/master/src/ATE_sammy) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-sammy?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-sammy/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-sammy?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-sammy) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-sammy-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-sammy-feedstock) |
 | [Semi-ATE-plugins](https://github.com/Semi-ATE/Semi-ATE/tree/master/src/ATE_semiateplugins) | [![PyPI](https://img.shields.io/pypi/v/Semi-ATE-plugins?color=blue&label=PyPI)](https://pypi.org/project/Semi-ATE-plugins/) | [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/Semi-ATE-plugins?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/semi-ate-plugins) | [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/Semi-ATE-plugins-feedstock?label=feedstock)](https://github.com/conda-forge/Semi-ATE-plugins-feedstock) |
@@ -39,19 +39,10 @@ The Semi-ATE project is maintained in this single repository, however it is rele
 
 3rd party packages needed:
 
-[mosquitto](https://github.com/conda-forge/staged-recipes/pull/18387) : [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/mosquitto?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/mosquitto)    [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/mosquitto-feedstock?label=feedstock)](https://github.com/conda-forge/mosquitto-feedstock) 
-
-
-
+[mosquitto](https://github.com/conda-forge/staged-recipes/pull/18387) : [![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/mosquitto?color=blue&label=conda-forge)](https://anaconda.org/conda-forge/mosquitto)    [![conda-forge feedstock](https://img.shields.io/github/issues-pr/conda-forge/mosquitto-feedstock?label=feedstock)](https://github.com/conda-forge/mosquitto-feedstock)
 
 ===
 Installation of the packages can be achieved via `conda` or [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/#use-pip-for-installing).
-
-
-
-
-
-
 
 ### Installation using pip
 
@@ -76,12 +67,14 @@ Or all at once:
 python -m pip install semi-ate-common semi-ate-project-database semi-ate-sammy semi-ate-plugins semi-ate-testers semi-ate-spyder semi-ate-apps-common semi-ate-control-app semi-ate-master-app semi-ate-test-app
 ```
 
-### Installation via Conda 
+### Installation via Conda
+
 To be defined
 
 ### Installation via Conda (Development mode)
 
-Create an environment in conda and install semi-ate in it 
+Create an environment in conda and install semi-ate in it
+
 ```
 (base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.3.3
 (base)~$ conda activate Semi-ATE
@@ -94,8 +87,8 @@ Create an environment in conda and install semi-ate in it
 ```
 
 ## Installation and running on a MiniSCT
-that is describe [here](docs/project/DevelopmentProcess/development_setup.md)
 
+that is describe [here](docs/project/DevelopmentProcess/development_setup.md)
 
 ### Development Process
 
