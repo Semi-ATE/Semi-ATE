@@ -10,7 +10,6 @@
 # Third-party imports
 
 # Spyder imports
-from spyder.api.plugins import SpyderDockablePlugin
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import on_plugin_available, on_plugin_teardown
@@ -18,21 +17,21 @@ from spyder.api.plugin_registration.decorators import on_plugin_available, on_pl
 from qtpy.QtCore import Signal
 
 # Local imports
-from ate_spyder_lab_control.widgets.main_widget import LabControl
+from ate_spyder_lab_control.widgets.gui_widget import LabGui
 from ate_spyder.plugin import ATE
 
 # Localization
 _ = get_translation("spyder")
 
 
-class LabControlPlugin(SpyderDockablePlugin):
-    """Labo Control dockable plugin."""
+class LabGuiPlugin(SpyderDockablePlugin):
+    """Labor Gui dockable plugin."""
 
-    NAME = 'lab_control'
-    WIDGET_CLASS = LabControl
+    NAME = 'lab_gui'
+    WIDGET_CLASS = LabGui
     CONF_SECTION = NAME
     REQUIRES = [ATE.NAME]
-    OPTIONAL = [Plugins.MainMenu, Plugins.Editor, Plugins.Projects]
+    OPTIONAL = [Plugins.MainMenu, Plugins.Projects]
     CONF_FILE = False
     TABIFY = [Plugins.Help]
 
@@ -46,16 +45,17 @@ class LabControlPlugin(SpyderDockablePlugin):
 
     @staticmethod
     def get_name() -> str:
-        return _('Lab_CONTROL')
+        return _('Lab_GUI')
 
     def get_description(self) -> str:
-        return _('Lab Control integration')
+        return _('Lab Gui integration')
 
     def get_icon(self):
         return self.create_icon('mdi.chip')
 
     def on_initialize(self):
         pass
+        # widget = self.get_widget()
 
     def update_font(self):
         pass
@@ -63,14 +63,15 @@ class LabControlPlugin(SpyderDockablePlugin):
     # -------------------- Plugin initialization ------------------------------
     @on_plugin_available(plugin=ATE.NAME)
     def on_ate_available(self):
-        widget: LabControl = self.get_widget()
+        widget: LabGui = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_ate_progname.connect(self.runflow_changed)
+        ate.sig_test_tree_update.connect(self.update_actions)
         ate.sig_stop_debugging.connect(widget.debug_stop)
 
     def _setup_test_runner_widget(self):
-        widget: LabControl = self.get_widget()
+        widget: LabGui = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
@@ -83,28 +84,20 @@ class LabControlPlugin(SpyderDockablePlugin):
     def project_closed(self):
         pass
 
-    @on_plugin_available(plugin=Plugins.Editor)
-    def on_editor_available(self):
-        editor = self.get_plugin(Plugins.Editor)
-        self.sig_edit_goto_requested.connect(editor.load)
-
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
-        self.sig_stop_debugging.connect(editor.stop_debugging)
-
     def runflow_changed(self, progname: str):
-        widget: LabControl = self.get_widget()
-        widget.update_control(progname)
+        widget: LabGui = self.get_widget()
+        widget.update_labgui(progname)
+
+    def update_actions(self):
+        widget: LabGui = self.get_widget()
+        widget.update_actions()
 
     # ----------------------- Plugin teardown ---------------------------------
 
     @on_plugin_teardown(plugin=ATE.NAME)
     def on_ate_teardown(self):
-        widget: LabControl = self.get_widget()
+        widget: LabGui = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
 
         widget.set_project_information(None)
         ate.sig_ate_project_changed.disconnect(widget.notify_project_status)
-
-    def compile_patterns(self, patterns: list[str]):
-        self.get_container().compile_patterns(patterns)

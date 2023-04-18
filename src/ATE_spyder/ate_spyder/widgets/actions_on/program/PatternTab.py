@@ -13,6 +13,7 @@ class PatternTab(QtWidgets.QWidget):
         self.parent = parent
         self.project_navigation = project_navigation
         self.read_only = read_only
+        self.assinged_patterns = {}
 
     def setup(self):
         self.pattern_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
@@ -33,18 +34,24 @@ class PatternTab(QtWidgets.QWidget):
             pattern_name = self.pattern_table.item(index, 1).text()
             assigned_tuples = assinged_patterns.get(current_test_name)
             if assigned_tuples is None:
+                combo = self.pattern_table.cellWidget(index, 2)
+                combo.setCurrentIndex(-1)
                 continue
 
             for tuple in assigned_tuples:
-                if tuple[0] == f'{current_test_name}_{pattern_name}':
+                if tuple[0] == f'{pattern_name}':
                     combo = self.pattern_table.cellWidget(index, 2)
                     index = combo.findText(tuple[1])
                     combo.setCurrentIndex(index)
+
+        self.assinged_patterns = assinged_patterns
 
     def update_table(self, test_names: List[str]):
         self.pattern_table.setRowCount(0)
         for test_name in test_names:
             self.add_pattern_items(test_name)
+        if self.assinged_patterns:
+            self.fill_pattern_table(test_names, self.assinged_patterns)
 
     def add_pattern_items(self, test_name: str):
         if not test_name:
@@ -119,7 +126,6 @@ class PatternTab(QtWidgets.QWidget):
     def _is_assigned(self, test_name: str) -> bool:
         for index in range(self.pattern_table.rowCount()):
             item = self.pattern_table.item(index, 0)
-
             if item.text() == test_name:
                 return True
 
@@ -152,7 +158,8 @@ class PatternTab(QtWidgets.QWidget):
             if not pattern_path:
                 continue
 
-            patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
+            #patterns.setdefault(current_test_name, []).append((f'{current_test_name}_{pattern_name}', pattern_path))
+            patterns.setdefault(current_test_name, []).append((pattern_name, pattern_path))
 
         return patterns
 

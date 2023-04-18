@@ -1,6 +1,7 @@
 from ate_test_app.sequencers.MqttClient import MqttClient
 import json
 
+periphery_type = 'MagField'
 
 class Magnetic_FieldProxy():
     def set_mqtt_client(self, mqtt: MqttClient):
@@ -8,12 +9,12 @@ class Magnetic_FieldProxy():
 
     def _do_request(self, ioctl: str, payload: dict):
         message = {"type": "io-control-request",
-                   "periphery_type": "MagField",
+                   "periphery_type": periphery_type,
                    "ioctl_name": ioctl,
                    "parameters": payload
                    }
 
-        has_timed_out, data = self.mqtt.publish_with_reply("MagField", json.dumps(message), 5.0)
+        has_timed_out, data = self.mqtt.publish_with_reply(periphery_type, json.dumps(message), 5.0)
         return data
 
     def set_field(self, field_strength: float):

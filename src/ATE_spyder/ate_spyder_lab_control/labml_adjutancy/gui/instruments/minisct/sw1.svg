@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg7225"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   sodipodi:docname="switch1.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/">
+  <sodipodi:namedview
+     id="namedview7227"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="14.204965"
+     inkscape:cx="17.001098"
+     inkscape:cy="9.785311"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs7222" />
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       transform="matrix(0.35277777,0,0,-0.35277777,0.393282,123.94526)"
+       v:mID="323"
+       id="g6850">
+      <title
+         id="title6836">SWITCH</title>
+      <userDefs>
+        <ud
+           nameU="visDescription"
+           val="Represents a single-pole, single-throw switch.  Right-click to open and close the switch." />
+        <ud
+           nameU="visVersion"
+           val="12" />
+      </userDefs>
+      <g
+         transform="translate(-0.88885784,344.94594)"
+         v:mID="324"
+         id="g6842">
+        <title
+           id="title6838" />
+        <path
+           stroke="#c00000"
+           stroke-width="2.16"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           fill="#ffffff"
+           fill-rule="evenodd"
+           id="path6840"
+           d="m 15.019774,0.86774892 h 10e-7 v 0 c -1.71e-4,-0.23472172 0.09301,-0.46013797 0.258859,-0.62623215 v 0 c 0.165853,-0.16609419 0.391134,-0.25960056 0.625855,-0.25977148 v 0 c 0.234722,-1.7093e-4 0.460139,0.09300727 0.626232,0.2588598 v 0 c 0.166095,0.16585248 0.259601,0.3911328 0.259772,0.62585452 v 0 c 10e-7,4.2975e-4 10e-7,8.5956e-4 0,0.001289 v 0 0 0 0 0 C 16.790664,1.1024706 16.697486,1.3278868 16.531634,1.493981 v 0 C 16.365781,1.6600752 16.1405,1.7535815 15.905779,1.7537526 v 0 C 15.671057,1.7539235 15.44564,1.6607456 15.279547,1.4948927 v 0 C 15.113452,1.3290403 15.019946,1.10376 15.019775,0.86903828 v 0 c -10e-7,-4.2975e-4 -10e-7,-8.5961e-4 0,-0.001289 v 0 z m -14.16573098,0 h -5e-8 v 0 C 0.85387218,0.63302708 0.94705065,0.40761074 1.1129034,0.24151656 v 0 C 1.2787561,0.07542238 1.5040365,-0.01808399 1.7387585,-0.01825478 v 0 c 0.2347219,-1.7079e-4 0.4601381,0.09300768 0.6262323,0.2588604 v 0 C 2.531085,0.40645829 2.6245913,0.63173878 2.6247622,0.86646068 v 0 c 3e-7,4.2939e-4 3e-7,8.5884e-4 0,0.001288 v 0 0 0 0 0 C 2.624933,1.1024708 2.5317545,1.3278871 2.3659018,1.4939814 v 0 C 2.2000491,1.6600754 1.9747686,1.7535819 1.7400467,1.7537527 v 0 C 1.5053248,1.7539234 1.2799085,1.6607449 1.1138143,1.4948921 v 0 C 0.94772013,1.3290396 0.85421376,1.103759 0.85404297,0.86903721 v 0 c -3.3e-7,-4.2945e-4 -3.3e-7,-8.5884e-4 0,-0.001288 v 0 h 5e-8 M 2.5691198,1.2112795 14.13671,1.314961" />
+      </g>
+      <g
+         transform="translate(0,-7.086614)"
+         v:mID="325"
+         id="g6846">
+        <title
+           id="title6844" />
+      </g>
+      <g
+         transform="translate(6.086614,-9.200001)"
+         id="g6848" />
+    </g>
+  </g>
+</svg>

@@ -8,6 +8,7 @@ from package_list import distribution_packages, integration_test_packages
 import re
 from os.path import basename, join
 from os import unlink
+from os import name as osname
 
 
 class SetupCommand(Enum):
@@ -128,7 +129,12 @@ def install_requirements(paths):
             with open(runtxt) as f:
                 for line in f:
                     package = re.sub(r'#.*$', '', line).strip()
-                    package = re.sub(r';.*$', '', package).strip()
+                    if package.find('os_name') > 0:
+                        os_name = re.findall(r'"(.*?)"',package)
+                        if osname in os_name:
+                            package = re.sub(r';.*$', '', package).strip()
+                        else:
+                            continue
                     if package != '' and package.find('semi-ate') < 0:
                         packages.add(package)
     if packages != {}:

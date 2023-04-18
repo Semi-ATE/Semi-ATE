@@ -15,7 +15,7 @@ with readme_path.open('r') as f:
 setup(
     name="LabMl-adjutancy",
     version=version,
-    description="adjutancy lib for the Lab labor Measurement library",
+    description="Plugin for Semi-ATE flow controlling",
     author="Semi-ATE",
     author_email="info@Semi-ATE.org",
     maintainer='Semi-ATE',
@@ -52,7 +52,12 @@ setup(
     ],
     python_requires='>=3.8',
     entry_points={
-        "spyder.plugins": "lab_control = plugin:LabControlPlugin",
-        "ate.org": "labmlplug = generalpurposefunc:Plugin"
+       "spyder.plugins": [
+            "lab_control = plugin_control:LabControlPlugin",
+            "lab_gui = plugin_gui:LabGuiPlugin"
+        ],
+        "ate.org": ["labmlplug = generalpurposefunc:Plugin",
+                    "semiplug = plugin_semictrl:Plugin"
+		]
     }
 )

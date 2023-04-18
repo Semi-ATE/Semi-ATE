@@ -1335,6 +1335,17 @@ class ProjectNavigation(QObject):
 
         return pattern_data
 
+    def get_protocols(self, prog_name: str) -> dict:
+        protocols_data = {}
+
+        for root, directories, files in os.walk(self.project_directory.joinpath("protocols",
+                                                self.active_hardware, self.active_base, self.active_target)):
+            for filename in files:
+                if filename.endswith("stil"):
+                    protocols_data[filename.split('.')[0]] = os.path.join(root, filename)
+
+        return protocols_data
+
     def update_pattern_names_for_programs(self, old: str, new: str):
         programs = Program.get_all(self.get_file_operator())
         for program in programs:
@@ -1371,6 +1382,17 @@ class ProjectNavigation(QObject):
                 f'{prog_name}.yaml'))
 
         self.compile_stil_patterns(pattern_abs_paths, sig_to_chan_path)
+
+    def compile_protocols(self, prog_name: str):
+        protocols = list(self.get_protocols(prog_name).values())
+        sig_to_chan_path = \
+            str(self.project_directory.joinpath(
+                'protocols',
+                self.active_hardware,
+                self.active_base,
+                self.active_target,
+                'sig2chan_map.yaml'))       # TODO: this should be more flexibel, create a widget for this mapping file
+        self.compile_stil_patterns(protocols, sig_to_chan_path)
 
     def compile_stil_patterns(self, patterns: List[str], sig_to_chan_path: str):
         self.parent.sig_compile_pattern.emit(patterns, sig_to_chan_path)

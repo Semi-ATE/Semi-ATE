@@ -66,10 +66,11 @@ def environ_getpath(self, key):
     return result
 
 def checkNetworkPath(name, network=''):
-    if os.environ['NETWORK'] and network=='':
-        network = os.environ['NETWORK']
-    elif os.environ['NETWORK'] is None and network != '':
-        os.environ['NETWORK'] == network
+    envName = 'NETWORK'
+    if envName in os.environ and os.environ[envName] and network=='':
+        network = os.environ[envName]
+    elif envName in os.environ and os.environ[envName] is None and network != '':
+        os.environ[envName] == network
     if name is not None and network != '' and os.name == "nt" and (name.find('/') == 0 or name.find('\\') == 0) and name.find(network) != 0:
         name = network + name
     return name

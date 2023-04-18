@@ -36,7 +36,6 @@ from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
 from labml_adjutancy.misc.common import check, str2num
 
-
 __copyright__ = "Copyright 2023, Lab"
 __version__ = "0.0.3"
 
@@ -1131,6 +1130,7 @@ class RegisterMaster(mqtt_deviceattributes):
     # read-only attributes
     def __setattr__(self, name, value):
         valid = (
+            "__class__",
             "_cached",
             "_debug",
             "_interface",
@@ -1162,7 +1162,7 @@ class RegisterMaster(mqtt_deviceattributes):
         _setattr = object.__setattr__.__get__(self, self.__class__)
         super().__init__()
         self.mqtt_all = ["filename", "use"]
-        filename = os.environ.get("registermaster") if filename is None else filename
+        filename = os.environ.get("registermaster") if filename is None else filename   #TODO! remove envronment, use setup instead
         mylogger = logger
         _setattr("instName", instname)
         _setattr("filename", filename)
@@ -1187,11 +1187,16 @@ class RegisterMaster(mqtt_deviceattributes):
         return "{classname}({args})".format(classname=self.__class__.__name__, args=", ".join(args))
 
     def init(self):
-        from semictrl import mqttc
+        try:
+            from labml_adjutancy.ctrl.labctrl import mqttc
+        except Exception:
+            mqttc = None
 
         filename = self.filename
         if filename is None:
-            raise IOError(f"{__class__}: no filename defined")
+            print(f"{__class__}: no filename defined")
+            return
+            # raise IOError(f"{__class__}: no filename defined")
         print(f'   {self.instName}.init:   self._mqttclient = {self._mqttclient}')
         if self._mqttclient is None and mqttc is not None:
             self.mqtt_add(mqttc, self)
@@ -1347,6 +1352,8 @@ class RegisterMaster(mqtt_deviceattributes):
         object.__setattr__(self, "_protocol", interface)
         object.__setattr__(self, "_protocol_typ", typ)
         object.__setattr__(self, "_bank", -1)
+        if hasattr(self._protocol, "init"):
+            self._protocol.init()
 
     def set_bank(self, adr):
         """
@@ -1491,6 +1498,8 @@ class RegisterMaster(mqtt_deviceattributes):
         config = environment.replaceEnvs(data)
         filename = config["filename"] if "filename" in config and config["filename"] != "" else self.filename
         filename = environment.checkNetworkPath(filename)
+        if filename is not None and filename.find("..") == 0 and "WORKING_DIR" in os.environ:
+            filename = filename.replace("..", os.environ["WORKING_DIR"])
         _setattr("filename", filename)
 
         instname = config["instance name"] if "instance name" in config and config["instance name"] != "" else self.instName
@@ -1508,4 +1517,3 @@ if __name__ == "__main__":
     filename = "your_registermaster.xls"
     regs = RegisterMaster(filename=filename)
     regs.init()
-

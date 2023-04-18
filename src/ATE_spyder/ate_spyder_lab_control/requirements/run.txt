@@ -2,8 +2,8 @@ sphinx_rtd_theme
 xlrd
 h5py
 lxml
-pywidgets
 openpyxl
+ipywidgets
 tables
 hightime
 QtAwesome

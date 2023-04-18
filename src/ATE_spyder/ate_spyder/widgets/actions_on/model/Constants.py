@@ -34,6 +34,7 @@ class MenuActionTypes(Enum):
     Export = "export_item"
     OpenAutoScriptFile = "open_auto_script_file_item"
     CompilePattern = "compile_pattern_files"
+    CompileProtocols = "compile_protocols_files"
 
     def __call__(self):
         return self.value

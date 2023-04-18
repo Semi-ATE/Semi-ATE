@@ -22,7 +22,7 @@ else:
 
 # Third-party imports
 import zmq
-from qtpy.QtCore import Qt, Signal, QProcess, QSocketNotifier
+from qtpy.QtCore import Signal, QProcess, QSocketNotifier
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QTreeWidgetItem
 
 # Spyder imports
@@ -312,7 +312,7 @@ class STILContainer(PluginMainWidget):
             return
 
         self.output_log.clear()
-        self.output_tree.clear()
+        self.output_tree.clear_results()
         self.tabwidget.setCurrentIndex(1)
 
         now = datetime.now()
@@ -356,6 +356,12 @@ class STILContainer(PluginMainWidget):
                     message=err_msg, filename='Global', row=0, col=0))
             self.output_tree.append_file_msg(tree_msg)
             return
+        if sig_to_chan_path is None or not os.path.exists(sig_to_chan_path) or os.stat(sig_to_chan_path).st_size < 3:
+            err_msg = f'Channel to mapping {sig_to_chan_path} not exist or it is empty'
+            tree_msg = STILCompilerMsg(
+                kind='warning', payload=STILErrWarnPayload(
+                    message=err_msg, filename='Global', row=0, col=0))
+            self.output_tree.append_file_msg(tree_msg)
 
         output_folder = str(cwd.joinpath('pattern_output'))
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
