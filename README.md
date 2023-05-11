@@ -73,10 +73,12 @@ To be defined
 
 ### Installation via Conda (Development mode)
 
-Create an environment in conda and install semi-ate in it
+we use maxiconda (https://www.maxiconda.org) , because it is free and open source conda installer.
+
+Create an environment in conda and install semi-ate in it:
 
 ```
-(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.3.3
+(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.4.3
 (base)~$ conda activate Semi-ATE
 (Semi-ATE)~$ mkdir -p ~/repos/Semi-ATE
 (Semi-ATE)~$ cd ~/repos/Semi-ATE
@@ -84,6 +86,11 @@ Create an environment in conda and install semi-ate in it
 (Semi-ATE)~/repos/Semi-ATE$ cd Semi-ATE
 (Semi-ATE)~/repos/Semi-ATE/Semi-ATE$ python scripts/package_tool.py --change-env cicd
 ...
+```
+For the development of testflows, tests and debugging, the easiest way is to use the plugin lab_control for spyder:
+```
+cd src/ATE_spyder/ate_spyder_lab_control
+pip install -e .
 ```
 
 ## Installation and running on a MiniSCT
