@@ -14,11 +14,10 @@ class FileConfigurationTester(TesterInterface):
     SITE_COUNT = 1
 
     def __init__(self, logger):
+        import __main__
+
         TesterInterface.__init__(self, logger)
-        with open(os.path.join(os.getcwd(), '.lastsettings'), 'r') as json_file:           # TODO: os.getcwd() is not correct if you run another python file :-()
-            settings = json.load(json_file)["settings"]
-        self.hardware = settings["hardware"]
-        self.hw_path = os.path.join(os.getcwd(), os.getcwd().split(os.sep)[-1], self.hardware) + os.sep
+        self.hw_path = str(Path(__main__.__file__).parent.parent.parent)
 
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
