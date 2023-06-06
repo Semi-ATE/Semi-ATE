@@ -17,7 +17,7 @@ class FileConfigurationTester(TesterInterface):
         import __main__
 
         TesterInterface.__init__(self, logger)
-        self.hw_path = str(Path(__main__.__file__).parent.parent.parent)
+        self.hw_path = str(Path(__main__.__file__).parent.parent) + os.sep
 
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
@@ -54,7 +54,7 @@ class FileConfigurationTester(TesterInterface):
                 dest.writelines(lines)
             sys.argv.append('--labml')
             sys.argv.append(self.logger)
-            pythonPath = f'{self.hw_path.split(os.sep)[-3]}.{self.hw_path.split(os.sep)[-2].upper()}.'
+            pythonPath = f'{self.hw_path.split(os.sep)[-2].upper()}.'
             doExit = False
             try:
                 testerconfig = importlib.import_module(pythonPath + TESTER_CONFIG_FILE + "_tmp")
