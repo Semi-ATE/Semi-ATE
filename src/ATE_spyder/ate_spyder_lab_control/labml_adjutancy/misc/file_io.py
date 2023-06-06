@@ -181,14 +181,14 @@ def readQEMemFile(fileName, base=0x20):
         array[data[index][0]-minadr] = data[index][1]
     return minadr, array
 
-def readVlogMemFile(fileName, memSize, debug=False):
+def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
     """
     readVlogMemFile(fileName, debug=False)
 
     reads a file with memory data in verilog hex format
 
       fileName........path to verilog file
-      memSize.........number of memory addresses
+      memSize.........number of memory addresses, if 0 then calculate from the data of the file
       debug...........if True it prints out the data loaded
 
     return data
@@ -205,27 +205,43 @@ def readVlogMemFile(fileName, memSize, debug=False):
     # except Exception:
     #     print(f'VlogMemFile ERROR: Cannot open {fileName}')
     #     return None
-    data = [None]*(memSize)
-    i = 0
+    if memSize == 0:
+        for line in fi:
+            parts = line.split()
+            try:
+                if parts[0][0] == "@":
+                    adr = int(parts[0][1:], 16)
+                    memSize = adr if adr >= memSize else memSize
+                    parts.pop(0)
+                if len(parts) > 0:
+                    for value in parts:
+                        int(value, 16)
+                        memSize += 1
+            except Exception:
+                continue
+        fi.seek(0)
+
+    data = [defaultvalues]*(memSize)
+    adr = 0
     for line in fi:
         parts = line.split()
         try:
             if parts[0][0] == "@":
-                i = int(parts[0][1:], 16)
+                adr = int(parts[0][1:], 16)
                 v = int(parts[1], 16)
             else:
                 v = int(parts[0], 16)
-            if i < len(data):
-                data[i] = v
+            if adr < len(data):
+                data[adr] = v
             else:
-                #logger.error('VlogMemFile: %s > %d value(s)' % (fileName, memSize))
+                # logger.error('VlogMemFile: %s > %d value(s)' % (fileName, memSize))
                 print('ERROR: VlogMemFile: %s > %d value(s)' % (fileName, memSize))
                 fi.close()
                 return
-            i += 1
+            adr += 1
         except Exception:
             continue
-    #logger.info('VlogMemFile: %s read with %d value(s)' % (fileName, len(data)))
+    # logger.info('VlogMemFile: %s read with %d value(s)' % (fileName, len(data)))
     print('VlogMemFile: %s read with %d value(s)' % (fileName, len(data)))
     if debug:
         for i, v in enumerate(data):
