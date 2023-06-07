@@ -2,6 +2,7 @@ sphinx_rtd_theme
 xlrd
 h5py
 lxml
+paho-mqtt
 openpyxl
 ipywidgets
 tables

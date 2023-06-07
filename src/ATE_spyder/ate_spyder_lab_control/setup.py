@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 from pathlib import Path
-from labml_adjutancy import __version__
+from ate_spyder_lab_control.labml_adjutancy import __version__
 
 version = __version__
 requirements_path = Path(Path(__file__).parents[0], 'requirements/run.txt')
