@@ -313,9 +313,9 @@ def check(msg, target, actual, tolerance=0, mask=None):
         if mask is not None and (actual & mask) != (target & mask):
             error = 1
             msg = f"{msg}  target: 0x{target&mask:x} != actual: 0x{actual&mask:x}"
-        elif mask is None and actual != target:
+        elif mask is None and not (target - tolerance < actual < target + tolerance):    # actual != target:
             error = 1
-            msg = "{}  target: 0x{:x} != actual: 0x{:x}".format(msg, target, actual)
+            msg = f"{msg}  target: 0x{target:x} != actual: 0x{actual:x}" if tolerance == 0 else f"{msg}: 0x{target:x} +- 0x{tolerance:x} <> 0x{actual:x}"
         else:
             msg = "{} == 0x{:2x}".format(msg, actual)
     elif (type(actual) is str) or (type(actual) is bool):
