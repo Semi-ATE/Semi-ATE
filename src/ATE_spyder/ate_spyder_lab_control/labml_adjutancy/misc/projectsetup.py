@@ -556,8 +556,8 @@ class ProjectSetup(object):
                 if output is not None and 'wr2setup' in output:
                     bank = 0 if bank is None else bank
                     addr = 0 if addr is None else addr
-                    self.write('regs.dump', regname, {'addr': f'0x{bank+addr:03x}', 'dat': f'0x{value:0{width}x}'})
-                allregs.append({'addr': f'0x{bank+addr:03x}', 'dat': f'0x{value:0{width}x}'})
+                    self.write(f'{self.parent.__class__.__name__}.regDump', regname, [f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
+                allregs.append([f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
                 index += 1
         return error, allregs
 
