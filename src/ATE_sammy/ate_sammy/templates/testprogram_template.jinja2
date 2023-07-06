@@ -54,10 +54,10 @@ if __name__ == '__main__':
     auto_script.before_start_setup()
 
     stil_tool = get_stil_tool()
-    stil_tool._load_patterns({{compiled_patterns}})
+    sig2chan_map = f'{os.path.splitext(__file__)[0]}.yaml'
+    stil_tool._load_patterns({{compiled_patterns}}, sig2chan_map)
 
     {% for testinstance in test_list %}
-
     from {{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
     _ate_var_{{ testinstance.instance_name }} = {{ testinstance.test_class }}("{{ testinstance.instance_name }}", {{ testinstance.sbin }}, {{ testinstance.test_number }}, context, stil_tool)
     {% for ip in testinstance.input_parameters %}
@@ -77,9 +77,9 @@ if __name__ == '__main__':
     sequencer.set_caching_policy("{{program_configuration.caching_policy}}")
     sequencer.set_cache_instance(context.gp_dict["{{program_configuration.cache_type}}"])
     {% endif %}
-
     # Start MQTT using the sequencer.
     # Note that "run()" will
     # only return when the program should terminate.
     context.harness.run()
     context.get_logger().cleanup()
+
