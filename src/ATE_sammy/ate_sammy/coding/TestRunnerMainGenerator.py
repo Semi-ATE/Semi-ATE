@@ -32,7 +32,7 @@ class test_runner_generator(BaseGenerator):
         if file_path.exists():
             os.remove(file_path)
 
-        compiled_patterns = collect_compiled_patterns(test_configuration.definition['patterns'], self.project_path)
+        compiled_patterns = collect_compiled_patterns(test_configuration.definition['patterns'], self.project_path, None)
 
         output = template.render(
             project_name=project_path.name,
