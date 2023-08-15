@@ -70,7 +70,7 @@ class LabCtrl(mqtt_deviceattributes):
         super().__init__()
         self.logger = logger
         self.instName = "semictrl"
-        self.parent = "init"
+        self.parent = None
         mqttc = mqtt_init(typ="instrument")
         mqttc.init(broker="127.0.0.1", port=1883, message_client=None, username="", userpasswd="",
                    qos=0, retain=False)     # TODO: or use access with self.logger.stream_handler.mqtt ?
@@ -90,35 +90,35 @@ class LabCtrl(mqtt_deviceattributes):
 
     def init(self, parent):
         """Init the semictrl plugin."""
-        if self.loglevel != "":
-            self.logger.set_logger_level(LogLevel[self.loglevel])
-        self.parent = parent
-        self.publish("topinstname", self.topinstname)
-        self._setShortInstances()
-        self.setShortNames(parent)
-        if hasattr(parent.context, 'tester') and hasattr(parent.context.tester, "setup_mqtt"):
-            parent.context.tester.setup_mqtt(self.mqttc)  # create mqtt-messages for the tester
-        # workaround for breakpoints:
-        if self._breakpoint:
-            self.publish("breakpoint", "hold")
-            print(color("b_red", "Hold on the default breakpoint"))
-            print(color("b_red", "This is a workaround, otherwise your breapoints doesn't working"))
-            print(color("b_red", "To continue: Click in Spyder 'continue execution' "))
-            breakpoint()
-            self.publish("breakpoint", "testing")
-        # end workaround breakpoint
+        if self.parent is None:
+            if self.loglevel != "":
+                self.logger.set_logger_level(LogLevel[self.loglevel])
+            self.parent = parent
+            self.publish("topinstname", self.topinstname)
+            self._setShortInstances()
+            self.setShortNames(parent)
+            if hasattr(parent.context, 'tester') and hasattr(parent.context.tester, "setup_mqtt"):
+                parent.context.tester.setup_mqtt(self.mqttc)  # create mqtt-messages for the tester
+            # workaround for breakpoints:
+            if self._breakpoint:
+                self.publish("breakpoint", "hold")
+                print(color("b_red", "Hold on the default breakpoint"))
+                print(color("b_red", "This is a workaround, otherwise your breapoints doesn't working"))
+                print(color("b_red", "To continue: Click in Spyder 'continue execution' "))
+                breakpoint()
+                self.publish("breakpoint", "testing")
+            # end workaround breakpoint
+        else:
+            self.setShortNames(parent)
 
     def setShortNames(self, parent=None):
         """Init semi-ctrl."""
-        if self.parent == "init":
-            self.logger.error(f"{self.instName} initialisation missing, you have to call: 'self.context.SemiCtrl_Control_instance.init(self)' first")
-        elif self.parent == "close":
+        if self.parent == "close":
             self.logger.error(f"{self.instName} already closed, do nothing")
         else:
             for name in self.topinstance.names:
                 if name not in dir(parent):
                     parent.__setattr__(name, object.__getattribute__(self.topinstance, name))
-            # self.parent = parent
 
     def _setShortInstances(self):
         parent = self.parent.context

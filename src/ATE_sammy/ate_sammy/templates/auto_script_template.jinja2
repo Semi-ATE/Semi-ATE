@@ -16,15 +16,21 @@ from ate_common.logger import LogLevel
 class AutoScript(AutoScriptBase):
     def __init__(self):
         super().__init__()
+        self.cycle = 1
 
     def before_start_setup(self):
         self.context.tester.setup()
 
     def after_cycle_teardown(self):
-        pass
+        self.logger.info(f"Cycle {self.cycle} finish")
+        self.cycle += 1
+        if hasattr(self.context, 'SemiCtrl_Control_instance'):
+            self.context.SemiCtrl_Control_instance.parent = None
 
     def after_terminate_teardown(self):
         self.context.tester.teardown()
+        if hasattr(self.context, 'SemiCtrl_Control_instance'):
+            self.context.SemiCtrl_Control_instance.close()
 
     def after_exception_teardown(self, source: str, exception: Exception):
         pass
