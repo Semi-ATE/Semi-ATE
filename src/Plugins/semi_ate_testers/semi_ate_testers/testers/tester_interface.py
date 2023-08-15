@@ -44,7 +44,8 @@ class TesterInterface(ABC):
         pass
 
     def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
-        pass
+        self.log_error(f'tester: run_pattern({pattern_name} is not implemented')
+        return -1
 
     def log_info(self, message: str):
         if self.logger is not None:
