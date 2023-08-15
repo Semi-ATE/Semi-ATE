@@ -356,9 +356,13 @@ class test_proper_generator(BaseTestGenerator):
             for pattern in self.definition['patterns']:
                 sec += '    ' + f'{pattern} = Patterns.{pattern}' + '\n'
 
+        docfirstline = True
         for doc in self.definition['docstring'][0].split('\n'):
-            sec += '    ' + doc + '\n'
+            if not docfirstline or doc.strip() != '':
+                sec += '    ' + doc + '\n'
+            docfirstline = False
 
+        sec += '\n'
         sec += self._stringify_table(input_table_content)
         sec += '\n'
         sec += self._stringify_table(output_table_content)
