@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import keyword
 import qtawesome as qta
+import gzip
+import shutil
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -308,6 +310,8 @@ class ExcelTestWizard(BaseDialog):
                 for childkey in testContent[key][list(testContent[key].keys())[0]].keys():
                     self.MappingList.addItem(f'{key}.{childkey}')
                     self.mapping_list_dict.append(f'{key}.{childkey}')
+        self.MappingList.addItem('Pattern Path')
+        self.mapping_list_dict.append('Pattern Path')
 
     def _connect_event_handler(self):
         self.table.cellChanged.connect(self.makeHeaderBold)
@@ -521,6 +525,16 @@ class ExcelTestWizard(BaseDialog):
                                     f"Warning: nom({parameters['nom']}) <> ltl({parameters['ltl']}) or utl({parameters['utl']})")
             # check MAX_OUTPUT_NUMBER
 
+        # 7. Check the pattern path exist
+        if "Pattern Path" in mappingATEDic.values():
+            column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, "Pattern Path"))
+            for row in range(1, self.table.rowCount()):
+                text = self.table.item(row, column).text()
+                if text == '':
+                    continue
+                elif not os.path.exists(text):
+                    checkErrorItem(self.table.item(row, column), f'{self.get_dicKey(mappingATEDic, "Pattern Path")} not exist')
+
         if not len(self._get_groups()):
             self.Feedback.setText('make sure to select at least one Group')
 
@@ -670,6 +684,27 @@ class ExcelTestWizard(BaseDialog):
             if column is not None and row[column] != "" and type(row[column]) == str:
                 for value in row[column].split(','):
                     patterns.append(value.strip())
+
+            column = searchmapping('Pattern Path')
+            if column is not None and TestName != '':
+                if type(row[column]) != str:
+                    continue
+                new_file = os.path.splitext(row[column])[0] if os.path.splitext(row[column])[1] == '.gz' else row[column]
+                new_file = os.path.join(self.project_info.project_directory,
+                                        'pattern',
+                                        self.project_info.active_hardware,
+                                        self.project_info.active_base,
+                                        self.project_info.active_target,
+                                        os.path.basename(new_file))
+                if os.path.exists(new_file) and os.stat(row[column]).st_mtime - os.stat(new_file).st_mtime < 0:
+                    continue
+
+                if os.path.splitext(row[column])[1] == '.gz':
+                    with gzip.open(row[column], 'r') as f_in:
+                        with open(new_file, 'wb') as f_out:
+                            shutil.copyfileobj(f_in, f_out)
+                else:
+                    shutil.copyfile(row[column], new_file)
 
         if test_content != {}:
             create_update_custom_test(test_content, patterns)
@@ -822,7 +857,7 @@ class ExcelTestWizard(BaseDialog):
 def excel_test_dialog(project_info, selected_file):
     newTestWizard = ExcelTestWizard(project_info, selected_file)
     newTestWizard.exec_()
-    del(newTestWizard)
+    del (newTestWizard)
 
 
 if __name__ == "__main__":
