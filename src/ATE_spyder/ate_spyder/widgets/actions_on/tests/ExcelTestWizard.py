@@ -6,6 +6,9 @@ Created on Mon Sep  5 18:56:05 2022
 
 Starting from TestWizard.py
 
+todo:
+    - check if name in excel twice
+
 """
 import os
 import re
@@ -128,7 +131,7 @@ class ExcelTestWizard(BaseDialog):
         self.mapping_load.clicked.connect(self.mapping_load_pressed)
         self.mapping_save.setIcon(qta.icon('mdi.content-save', color='orange'))
         self.mapping_save.setToolTip('save mapping file')
-        self.mapping_save.setEnabled(True)
+        self.mapping_save.setEnabled(False)
         self.mapping_save.clicked.connect(self.mapping_save_pressed)
 
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
@@ -348,6 +351,10 @@ class ExcelTestWizard(BaseDialog):
 
         mappingATEDic_update = dict(zip(mappingATEDic, current_header_list))
         mappingATEDic.update(mappingATEDic_update)
+        if len(list(mappingATEDic.values())) == list(mappingATEDic.values()).count(''):
+            self.mapping_save.setEnabled(False)
+        else:
+            self.mapping_save.setEnabled(True)
         self.verify()
 
     def makeElementNormal(self, item_selected):
