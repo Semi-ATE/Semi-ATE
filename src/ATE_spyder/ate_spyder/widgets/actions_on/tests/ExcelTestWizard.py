@@ -6,8 +6,6 @@ Created on Mon Sep  5 18:56:05 2022
 
 Starting from TestWizard.py
 
-todo:
-    - check if name in excel twice
 
 """
 import os
@@ -116,6 +114,7 @@ class ExcelTestWizard(BaseDialog):
 
         # table
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.table.mappingDic = {}
         self.req_headers_present = False
 
         self.get_excel_pages(filename)
@@ -328,6 +327,7 @@ class ExcelTestWizard(BaseDialog):
             try:
                 self.table.item(row, column).setBackground(QtGui.QColor(25, 35, 45))
                 self.table.item(row, column).setFont(bold_font)
+                self.table.mappingDic = {self.table.item(row, column).text(): column}
             except AttributeError:
                 pass
         else:
@@ -404,11 +404,18 @@ class ExcelTestWizard(BaseDialog):
         return result
 
     def verify(self):
-        def check(mylist, testfunc, invert, msg, addAction=None):
+        def check(mylist, tableColumn, testfunc, invert, msg, addAction=None):
             result = True
             if mylist is not None:
                 for value in mylist:
-                    matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)
+                    if tableColumn != -1:
+                        matching_items = []
+                        for rowIndex in range(self.table.rowCount()):
+                            if self.table.item(rowIndex, tableColumn).text == value:
+                                matching_items.append(self.table.item(rowIndex, tableColumn))
+                    else:
+                        matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)        # todo: validate only column not the complete table 
+
                     if testfunc(value) ^ (not invert):
                         for val in range(0, len(matching_items)):
                             # if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
@@ -461,7 +468,15 @@ class ExcelTestWizard(BaseDialog):
         testNames = []
         if 'name' in mappingATEDic.values():
             table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
+            testnamelist = list(table_name)
+            nameColumn = -1
+            if hasattr(self.table.mappingDic, 'name'):
+                nameColumn = self.table.mappingDic['name']
+                for rowIndex in range(self.table.rowCount()):
+                    if hasattr(self.table.item(rowIndex, nameColumn), 'action') and self.table.item(rowIndex, nameColumn).action == 'disable':
+                        testnamelist.pop(rowIndex)
             testNames = [str(x).strip() for x in table_name if not pd.isnull(x) and str(x).strip() != '']
+            self.testnamelist = [str(x).strip().lower() for x in testnamelist if not pd.isnull(x) and str(x).strip() != '']
 
         if self.Feedback.text() == "":
             if (testNames == []) or (set(testNames) == {''}):
@@ -469,10 +484,10 @@ class ExcelTestWizard(BaseDialog):
 
         # 4. make some checks with the test names
         if self.Feedback.text() == "":
-            check(testNames, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
-            check(testNames, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
-            check(testNames, self._does_test_exist, True, "test name already exists!", self.testNamesAction)
-            check(testNames, keyword.iskeyword, True, "python keyword should not be used as test name! ")
+            check(testNames, nameColumn, is_valid_test_name, False, "The test name is not valid, e.q. it can not contain the word 'TEST' in any form!")
+            check(testNames, nameColumn, startWithInteger, True, "The test name is not valid, e.q. it can not start with a number!")
+            check(testNames, nameColumn, self._does_test_exist, True, "test name already exists!", self.testNamesAction)
+            check(testNames, nameColumn, keyword.iskeyword, True, "python keyword should not be used as test name! ")
 
         # 5. Check patterns
         if "patterns" in mappingATEDic.values():
@@ -503,10 +518,10 @@ class ExcelTestWizard(BaseDialog):
                     column = self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, key))
                     if len(key.split('.')) > 1 and key.split('.')[1] == 'name':
                         text = self.table.item(index, column).text()
-                        check([text], is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
-                        check([text], startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
+                        check([text], -1, is_valid_python_class_name, False, "The parameter name is not valid, character not allowed!")
+                        check([text], -1, startWithInteger, True, "The parameter name is not valid, e.q. it can not start with a number!")
                         # check([text], self._does_test_exist, True, "parameter name already exists!")
-                        check([text], keyword.iskeyword, True, "python keyword should not be used as parameter name! ")
+                        check([text], -1, keyword.iskeyword, True, "python keyword should not be used as parameter name! ")
                         continue
                     elif key.split('.')[0] != 'output_parameters' and key.split('.')[0] != 'input_parameters':
                         continue
@@ -571,7 +586,8 @@ class ExcelTestWizard(BaseDialog):
         tests = [test.name.lower() for test in self.project_info.get_tests_from_db(self.ForHardwareSetup.text(), self.WithBase.text())]
         if test_name.lower() in tests:
             return True
-
+        if self.testnamelist.count(test_name.lower()) > 1:
+            return True
         return False
 
     def CancelButtonPressed(self):
