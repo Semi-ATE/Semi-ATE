@@ -38,7 +38,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
                 self.signal_to_channel_table.setItem(row_count, 0, self._generate_item(key))
                 self.signal_to_channel_table.setCellWidget(row_count, 1, self._generate_dropdown_item())
                 combo = self.signal_to_channel_table.cellWidget(row_count, 1)
-                combo.setCurrentIndex(value)
+                combo.setCurrentIndex(value+1)
                 if self.read_only:
                     self.signal_to_channel_table.item(row_count, 0).setFlags(flags)
                     combo.setEnabled(False)
