@@ -6,7 +6,7 @@ class StilToolBase(ABC):
     def __init__(self):
         self._compiled_patterns = None
 
-    def _load_patterns(self, compiled_patterns: dict, sig2chan=None):
+    def _load_patterns(self, compiled_patterns: dict):
         self._compiled_patterns = compiled_patterns
 
         if not self._compiled_patterns:
@@ -21,10 +21,10 @@ class StilToolBase(ABC):
             if not Path(compiled_pattern).exists():
                 raise Exception(f'pattern binary file: \"{compiled_pattern}\" is missing, make sure to compile all required pattern files')
 
-        self._load_patterns_impl(compiled_pattern_list, sig2chan)
+        self._load_patterns_impl(compiled_pattern_list)
 
     @abstractmethod
-    def _load_patterns_impl(self, compiled_patterns: list, sig2chan=None):
+    def _load_patterns_impl(self, compiled_patterns: list):
         pass
 
     def _get_pattern_name(self, pattern_virtual_name: str):
