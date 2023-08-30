@@ -54,8 +54,7 @@ if __name__ == '__main__':
     auto_script.before_start_setup()
 
     stil_tool = get_stil_tool()
-    sig2chan_map = f'{os.path.splitext(__file__)[0]}.yaml'
-    stil_tool._load_patterns({{compiled_patterns}}, sig2chan_map)
+    stil_tool._load_patterns({{compiled_patterns}})
 
     {% for testinstance in test_list %}
     from {{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
@@ -82,4 +81,3 @@ if __name__ == '__main__':
     # only return when the program should terminate.
     context.harness.run()
     context.get_logger().cleanup()
-
