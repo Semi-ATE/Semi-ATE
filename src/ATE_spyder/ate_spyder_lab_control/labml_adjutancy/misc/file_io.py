@@ -83,7 +83,7 @@ def readMemFile(filename, typ=None, interpret=None):
     if not choice(typ, ['verilog', 'txt']):
         return False
     if typ == 'verilog':
-        data = readVlogMemFile(filename, 100)      # TODO!:  change  readVlogMemFile to get automatically the size
+        start, data = readVlogMemFile(filename, 0)      # TODO!:  change  readVlogMemFile to get automatically the size
     elif typ == 'txt':
         start, data = readtxtMemFile(filename, interpret)
     return start, data
@@ -200,33 +200,36 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
     fi = openFile(fileName, 'rt')
     if fi is None:
         return fi
-    # try:
-    #     fi = open(fileName, 'rt')
-    # except Exception:
-    #     print(f'VlogMemFile ERROR: Cannot open {fileName}')
-    #     return None
-    if memSize == 0:
-        for line in fi:
-            parts = line.split()
-            try:
-                if parts[0][0] == "@":
-                    adr = int(parts[0][1:], 16)
-                    memSize = adr if adr >= memSize else memSize
-                    parts.pop(0)
-                if len(parts) > 0:
-                    for value in parts:
-                        int(value, 16)
-                        memSize += 1
-            except Exception:
-                continue
-        fi.seek(0)
 
+    startadr = 0
+    calc_memSize = 0
+    for line in fi:
+        parts = line.split()
+        try:
+            if parts[0] == '//':
+                continue
+            elif parts[0][0] == "@":
+                adr = int(parts[0][1:], 16)
+                calc_memSize = adr if adr >= calc_memSize else calc_memSize
+                startadr = adr if adr <= startadr else startadr
+                parts.pop(0)
+            if len(parts) > 0:
+                for value in parts:
+                    int(value, 16)
+                    memSize += 1
+        except Exception:
+            continue
+    fi.seek(0)
+        
+    memSize = calc_memSize  if memSize == 0 else memSize
     data = [defaultvalues]*(memSize)
     adr = 0
     for line in fi:
         parts = line.split()
         try:
-            if parts[0][0] == "@":
+            if parts[0] == '//':
+                continue
+            elif parts[0][0] == "@":
                 adr = int(parts[0][1:], 16)
                 v = int(parts[1], 16)
             else:
@@ -248,7 +251,7 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
             # logger.debug('0x%X: 0x%X' % (i, v))
             print('0x%X: 0x%X' % (i, v))
     fi.close()
-    return data
+    return startadr, data
 
 
 def writeVlogMemFile(fileName, mem, a_dig=4, d_dig=8, header=["", "verilog memory data file", ""]):
