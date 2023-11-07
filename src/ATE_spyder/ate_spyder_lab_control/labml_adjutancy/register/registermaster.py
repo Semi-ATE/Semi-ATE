@@ -453,8 +453,7 @@ class Register:
             paddr = self._cpuaddr
         if paddr == -1:
             msg = "access not possible, interface in {!r} mode, please use e.g. tin".format(self._rm._protocol_typ)
-            self._rm.handle_ValueError(msg)
-            # raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return paddr
 
     def writebase(self, bank):
@@ -484,13 +483,13 @@ class Register:
         if isinstance(value, int):
             if value > 2**length - 1:
                 msg = "{!r} too big for {} bits".format(value, length)
-                raise ValueError(msg)
+                self._rm.handle_exception(msg, ValueError, self._name)
             elif value < 0:
                 msg = "value = {!r} must be positive".format(value)
-                raise ValueError(msg)
+                self._rm.handle_exception(msg, ValueError, self._name)
         else:
             msg = "value {!r} is not an integer".format(value)
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return value
 
     @property
@@ -499,7 +498,7 @@ class Register:
             msg = "cache is empty\n"
             msg += "use either _cache = <value>, _use_reset(), "
             msg += "_read() or _write(<value>)"
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return self.__cache__
 
     @_cache.setter
