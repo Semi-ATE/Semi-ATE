@@ -577,6 +577,8 @@ class Register:
             current = self._rm._protocol.readreg(self._get_addr())
             current &= 2 ** self._len_slices() - 1
             self._check_r_err()
+        elif self.__cache__ is None:
+            current = self.read()
         else:
             current = self._cache
         # clear all bits between msb:lsb
