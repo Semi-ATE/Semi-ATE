@@ -505,6 +505,7 @@ class ProjectSetup(object):
         error = 0
         allregs = []
         allregs = diclist()
+        memdump = []
         dumplist = []
         mylist = self.parent.regs.register
         invert = False
@@ -558,7 +559,9 @@ class ProjectSetup(object):
                     addr = 0 if addr is None else addr
                     self.write(f'{self.parent.__class__.__name__}.regDump', regname, [f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
                 allregs.append([f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
+                memdump.append(value)
                 index += 1
+        self.write(f'{self.parent.__class__.__name__}.memDump', liste, memdump)
         return error, allregs
 
     def regDumpSave2DUT(self, mode='default', compare='cache'):
