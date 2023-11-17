@@ -35,7 +35,7 @@ def openFile(fileName, *argv, **kwargs):
     try:
         file = open(fileName, *argv, **kwargs)
     except Exception:
-        #logger.error(f'{inspect.stack()[1][3]}: Cannot open {fileName}')
+        # logger.error(f'{inspect.stack()[1][3]}: Cannot open {fileName}')
         print(f'ERROR: {inspect.stack()[1][3]}: Cannot open {fileName}')
     return file
 
@@ -89,7 +89,7 @@ def readMemFile(filename, typ=None, interpret=None):
     return start, data
 
 
-def readtxtMemFile(fileName, memSize=None, interpret=None):
+def readtxtMemFile(fileName, memSize=None, bitsize=None, interpret=None):
     """
     reads a file with memory data in simple hex or integer format.
 
@@ -97,10 +97,15 @@ def readtxtMemFile(fileName, memSize=None, interpret=None):
     ----------
     fileName : string
         DESCRIPTION.
-    memSize : TYPE
-        DESCRIPTION.
+    memSize : int
+        size from the reserved memory array.
+    bitSize: int
+        size from one datum, e.q. 8-bit, 16-bit, must be multiple times of 8
+        this has an effect on the adress counting
+        if None each datum will assign to an adress, otherwise each 8-bit datum has an adress
+        only little endian is supported
     interpret : {adr : base
-                 dat : base}    # base could be 10 or 16
+                 dat : base}    # base could be 10(decimal) or 16(hex)
 
     Returns
     -------
@@ -112,29 +117,43 @@ def readtxtMemFile(fileName, memSize=None, interpret=None):
     file = openFile(fileName)
     if file is None:
         return None
+    base_adr = interpret['adr'] if (interpret is not None and 'adr' in interpret.keys()) else 10
+    base_dat = interpret['dat'] if (interpret is not None and 'dat' in interpret.keys()) else 10
+
     data = []
     for line in file:
         parts = line.split()
-        base = 10
         for index in range(0, len(parts)):
             value = parts[index]
-            base = 16 if value.find('0x') == 0 else base
-            if index == 0 and (interpret is not None and 'adr' in interpret.keys()):
-                base = interpret['adr']
-            elif index != 0 and (interpret is not None and 'dat' in interpret.keys()):
-                base = interpret['dat']
-            value = str2num(value, base)
+            if value == '//':
+                break
+            value = str2num(value, base_adr if index == 0 else base_dat)
+            if type(value) == str:
+                continue
             if index == 0:
                 adr = value
                 continue
-            data.append((adr, value))
+            if bitsize is None:
+                data.append((adr, value))
+            else:
+                for i in range(bitsize // 8):
+                    data.append((adr, value % 256))
+                    value = value // 256
+                    adr += 1
+                continue
             adr += 1
     file.close()
     minadr = min(data)[0]
     maxadr = max(data)[0]+1
-    array = [None]*(maxadr-minadr)
+    array = [None]*((maxadr-minadr) // (bitsize//8)) if memSize is None else [None]*memSize
+    adr = minadr
     for index in range(0, len(data)):
-        array[data[index][0]-minadr] = data[index][1]
+        adr = data[index][0]
+        dat = data[index][1]
+        realadr = (adr-minadr) // (bitsize//8)
+        oldat = 0 if array[realadr] is None else array[realadr]
+        shift = adr % (bitsize//8)
+        array[realadr] = (dat << (shift*8)) + oldat
     return minadr, array
 
 
@@ -181,7 +200,8 @@ def readQEMemFile(fileName, base=0x20):
         array[data[index][0]-minadr] = data[index][1]
     return minadr, array
 
-def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
+
+def readVlogMemFile(fileName, memSize=0, defaultvalues=None, debug=False):
     """
     readVlogMemFile(fileName, debug=False)
 
@@ -206,7 +226,7 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
     for line in fi:
         parts = line.split()
         try:
-            if parts[0] == '//':
+            if len(parts) == 0 or (len(parts) > 0 and parts[0] == '//'):
                 continue
             elif parts[0][0] == "@":
                 adr = int(parts[0][1:], 16)
@@ -220,14 +240,14 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues= None, debug=False):
         except Exception:
             continue
     fi.seek(0)
-        
-    memSize = calc_memSize  if memSize == 0 else memSize
+
+    memSize = calc_memSize if memSize == 0 else memSize
     data = [defaultvalues]*(memSize)
     adr = 0
     for line in fi:
         parts = line.split()
         try:
-            if parts[0] == '//':
+            if len(parts) == 0 or (len(parts) > 0 and parts[0] == '//'):
                 continue
             elif parts[0][0] == "@":
                 adr = int(parts[0][1:], 16)
