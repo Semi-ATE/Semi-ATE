@@ -69,12 +69,19 @@ class FileConfigurationTester(TesterInterface):
                 raise Exception(msg)
         else:
             self.log_error(f"No Tester file configuration found, you have to create {self.hw_path + TESTER_CONFIG_FILE}.py")
+
         self.testerconfig = testerconfig
-        for instrument in dir(testerconfig):  # add information from each instrument to result.instruments
-            if instrument.find("_") != -1:
+
+        for instName in dir(testerconfig):  # add information from each instrument to result.instruments
+            if instName.find("_") != -1:
                 continue
-            instrument = getattr(testerconfig, instrument)
+            instrument = getattr(testerconfig, instName)
             if not inspect.isclass(instrument):  # filter out the class-definitions
                 if hasattr(instrument, "instName"):
                     setattr(self, instrument.instName, instrument)
+                elif instName not in dir(self):
+                    setattr(self, instName, instrument)
+                elif instName not in ['logger']:
+                    self.error(' keyword {instName} not allowed in {TESTER_CONFIG_FILE}')
+
         self.log_info(f"FileConfigurationTester.do_int_state({site_id}): done")
