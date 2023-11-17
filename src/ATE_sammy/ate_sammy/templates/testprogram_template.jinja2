@@ -54,7 +54,10 @@ if __name__ == '__main__':
     auto_script.before_start_setup()
 
     stil_tool = get_stil_tool()
-    stil_tool._load_patterns({{compiled_patterns}})
+    if hasattr(context.tester, 'stilload') and context.tester.stilload is False:
+        pass
+    else:
+        stil_tool._load_patterns({{compiled_patterns}})
 
     {% for testinstance in test_list %}
     from {{program_configuration['hardware']}}.{{program_configuration['base']}}.{{ testinstance.test_module }} import {{ testinstance.test_class }}
