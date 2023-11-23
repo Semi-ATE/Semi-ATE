@@ -46,7 +46,6 @@ class FileConfigurationTester(TesterInterface):
             f.write('"""\n')
             f.write("import sys\n")
             f.write("logger = sys.argv[2]\n")
-        breakpoint()
         self.logger.debug = self.log_debug
         self.logger.measure = self.log_measure
         self.logger.info = self.log_info
