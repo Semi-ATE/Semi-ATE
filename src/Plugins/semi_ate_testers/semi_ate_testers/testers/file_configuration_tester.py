@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import socket
 from pathlib import Path
 import importlib
@@ -39,6 +38,9 @@ class FileConfigurationTester(TesterInterface):
         for ad in [os.getenv('USER'), socket.gethostname()]:
             if ad is not None and Path(testerconfig + "_" + ad + ".py").is_file():
                 extension = "_" + ad
+
+        if extension != "":
+            self.log_warning("You are not using the default Tester configuration file !!!")
 
         with open(testerconfigTemp, 'w') as f:
             f.write('# -*- coding: utf-8 -*-\n"""\n\n')
