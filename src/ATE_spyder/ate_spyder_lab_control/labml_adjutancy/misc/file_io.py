@@ -55,6 +55,53 @@ def replaceFilename(fileName):
     return fileName
 
 
+def loadIHexFile(fileName, bytemem=None, size=0x10000):
+    """
+    loadIHexFile(fileName, bytemem=None, size=0x10000)
+
+    reads the ihex file(s) and builds a byte image
+
+      ihexfileName....path to IntelHex file
+      bytemem.........byte image, default=None
+      size............size of byte memory, default 64kB
+
+
+    return bytemem    or None if fileName not exist
+    """
+
+    try:
+        fop = open(fileName, 'rt')
+        print('loadIHexFile: open %s' % fileName)
+    except Exception:
+        print('loadIHexFile: Cannot open %s' % fileName)
+        return None
+
+    if bytemem is None:
+        bytemem = [0] * size
+    firstaddr = 0xffffffff
+    lastaddr = 0x0
+    addr_offset = 0
+    # read const file
+    for line in fop:
+        if line[0:3] != ':00' and line[7:9] == '00':                # Data Record (Typ 00)
+            byte_count = int(line[1:3], 16)
+            addr = int(line[3:7], 16) + addr_offset
+            if addr < firstaddr:
+                firstaddr = addr
+            if addr < size:
+                if addr+byte_count-1 > lastaddr:
+                    lastaddr = addr+byte_count-1
+                    for i in range(byte_count):
+                        bytemem[addr + i] = int(line[9 + (i * 2):11 + (i * 2)], 16)
+        elif line[7:9] == '01':                                    # Enf of File Record (Typ 01)
+            break
+        elif line[7:9] == '02':                                    # Extended Segment Address Record (Typ 02)
+            addr_offset = line[10:12] << 4
+    fop.close()
+    print('  Read IHex image in address range 0x%0X to 0x%0X' % (firstaddr, lastaddr))
+    return bytemem
+
+
 def readMemFile(filename, typ=None, interpret=None):
     """
     read a memory-file and  alocate data.
