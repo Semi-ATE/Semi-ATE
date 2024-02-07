@@ -119,6 +119,8 @@ class LabCtrl(mqtt_deviceattributes):
             for name in self.topinstance.names:
                 if name not in dir(parent):
                     parent.__setattr__(name, object.__getattribute__(self.topinstance, name))
+        if hasattr(self.parent, 'setup'):
+            self.parent.setup.testbench_name = parent.__class__.__name__
 
     def _setShortInstances(self):
         parent = self.parent.context
