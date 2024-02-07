@@ -95,7 +95,7 @@ class diclist(list):
 
 class setupstr(str):
     def arange(items):
-        return(common.arange(items))
+        return (common.arange(items))
 
     def start(items):
         return (common.arange(items)[0])
@@ -169,7 +169,7 @@ class ProjectSetup(object):
         global mylogger
         self.main_path = str(Path(sys.modules['__main__'].__file__).parent) + os.sep
         os.environ['PROJECT_PATH'] = str(Path(self.main_path).parent.parent.parent) + os.sep
-        
+
         self.network = '' if os.environ.get('NETWORK') is None else os.environ.get('NETWORK')
         self.logger = logger
         mylogger = logger
@@ -179,6 +179,7 @@ class ProjectSetup(object):
         self.lastmacro = None
         self.running = False
         self._setupfile = None
+        self.testbench_name = None
         if filename is not None:
             self.apply_configuration({'filename': filename})
 
@@ -496,8 +497,8 @@ class ProjectSetup(object):
               * False : use reg that are in the list
 
            output :  :
-              * None : return with a list of all registers and their values
-              *'wr2setup' : write return with a list of all registers and their values to setup.result.regs.dump
+              * None : return with a list of all registers (or adresses) and their values
+              *'wr2setup' : write return with a list of all registers and their values to setup.result.regs.regDump
         """
         knownParameter = [None, 'wr2setup']
         if output not in knownParameter:
@@ -531,6 +532,7 @@ class ProjectSetup(object):
                 dump = dump[self.parent.regs.use]
             except Exception:
                 pass
+        self.logger.log_message(LogLevel.Info(), f'   regDump: read {dump}')
         if type(dump) in [str, setupstr] and dump.find(':') > 0:
             dump = common.arange(dump)
             mylist = dump
@@ -557,11 +559,15 @@ class ProjectSetup(object):
                 if output is not None and 'wr2setup' in output:
                     bank = 0 if bank is None else bank
                     addr = 0 if addr is None else addr
-                    self.write(f'{self.parent.__class__.__name__}.regDump', regname, [f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
+                    self.write(f'{self.testbench_name}.regDump', regname, [f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
                 allregs.append([f'0x{bank+addr:03x}', f'0x{value:0{width}x}'])
                 memdump.append(value)
                 index += 1
-        self.write(f'{self.parent.__class__.__name__}.memDump', liste, memdump)
+        if self.testbench_name is not None:
+            dumpname = liste.split('.')[-1] if type(liste) == str else 'dump'
+            self.write(f'{self.testbench_name}.regDumpDat', dumpname, memdump)
+        else:
+            self.logger.log_message(LogLevel.Info(), 'testbench name not defined, could not write regDumpDat to {self._SETUPFILE}')
         return error, allregs
 
     def regDumpSave2DUT(self, mode='default', compare='cache'):
@@ -574,7 +580,7 @@ class ProjectSetup(object):
               * type(mode) == list : use mode as a list  (not yet implemented)
 
            compare :
-              * 'cache' : compare with the cache value and write if orginal different from last cache value (faster as to read the register value)
+              * 'cache' : compare with the Register cache value and write if orginal different from last cache value (faster as to read the register value)
               * True : write only if value different from actual values
               * False : write always
         """
@@ -644,7 +650,7 @@ class ProjectSetup(object):
             self.logger.log_message(LogLevel.Info(), "      -> ok, unlocked,  0x{:04x}".format(NVPROGM))
             result = 0
         # self.parent.interface.check_acknowledge = True
-        return(NVPROGM, result)
+        return (NVPROGM, result)
 
     def close(self):
         """Write EEPROM/NVRAM with the rescue values and close all instruments.
@@ -664,8 +670,7 @@ class ProjectSetup(object):
                 self.logger.log_message(LogLevel.Error(), "setup.close(): Couln't execute reg_dump_load")
         self.running = False
         self._write()
-        #if hasattr(self.parent, 'semictrl'):
-        #    self.parent.semictrl.mqttc.close()
+
         self.logger.log_message(LogLevel.Info(), "setup closed")
 
     def _write(self):
@@ -813,7 +818,7 @@ class ProjectSetup(object):
         self.lastresult = None
         self.lastmacro = None
         self.running = False
-        #if not readonly:
+        # if not readonly:
         if True:
             self._configsave2setup()
             self.result = dotdict([])
@@ -823,7 +828,7 @@ if __name__ == '__main__':
     from ATE.common.logger import Logger
 
     logger = Logger('logger')
-    jsonSetupFile = 'your_setup_json_file.json' 
+    jsonSetupFile = 'your_setup_json_file.json'
     setup = ProjectSetup(logger, jsonSetupFile)
     print(setup.result.regs.dump.keys())
 
