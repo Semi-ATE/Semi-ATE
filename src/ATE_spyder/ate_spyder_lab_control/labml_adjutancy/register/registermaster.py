@@ -34,7 +34,7 @@ from collections import OrderedDict  # , namedtuple
 from ate_common.logger import LogLevel
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
-from labml_adjutancy.misc.common import check, str2num
+from labml_adjutancy.misc import common
 
 __copyright__ = "Copyright 2023, Lab"
 __version__ = "0.0.3"
@@ -680,7 +680,7 @@ class Register:
         if not self._rm._protocol.board.error:
             mylogger.log_message(LogLevel.Measure(), f"{self.__class__.__name__}.{self._name} == {hex(value)}")
         if compare is not None:
-            error = check(f"{self.__class__.__name__}.{self._name}", compare, value, tolerance, mask)
+            error = common.check(f"{self.__class__.__name__}.{self._name}", compare, value, tolerance, mask)
             if onlycheck:
                 return error
             else:
@@ -1226,7 +1226,7 @@ class RegisterMaster(mqtt_deviceattributes):
                     print(msg.format(name, item["blk"], bsl["posmax"]))
                 else:
                     try:
-                        valres = str2num(bsl["res"])
+                        valres = common.str2num(bsl["res"])
                     except ValueError:
                         valres = None
                     slices[name] = dict(
@@ -1417,7 +1417,7 @@ class RegisterMaster(mqtt_deviceattributes):
             value &= 2**self._len_slices - 1
         if compare is not None:
             bank = 0 if self._bank is None else self._bank
-            error = check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
+            error = common.check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
             if onlycheck:
                 return error
             else:
