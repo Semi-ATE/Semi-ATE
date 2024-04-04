@@ -136,9 +136,9 @@ def readMemFile(filename, typ=None, interpret=None):
     return start, data
 
 
-def readtxtMemFile(fileName, memSize=None, bitsize=None, interpret=None):
+def readtxtMemFile(fileName, memSize=None, bitsize=None, numerative=None, raw_data=False):
     """
-    reads a file with memory data in simple hex or integer format.
+    Read a file with memory data in simple hex or integer format.
 
     Parameters
     ----------
@@ -151,8 +151,11 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, interpret=None):
         this has an effect on the adress counting
         if None each datum will assign to an adress, otherwise each 8-bit datum has an adress
         only little endian is supported
-    interpret : {adr : base
+    numerative : {adr : base
                  dat : base}    # base could be 10(decimal) or 16(hex)
+    raw_data: bool
+        if True than return with a list of adr + data
+        if False than return with a coherent memory, beginning with startadr
 
     Returns
     -------
@@ -164,8 +167,8 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, interpret=None):
     file = openFile(fileName)
     if file is None:
         return None
-    base_adr = interpret['adr'] if (interpret is not None and 'adr' in interpret.keys()) else 10
-    base_dat = interpret['dat'] if (interpret is not None and 'dat' in interpret.keys()) else 10
+    base_adr = numerative['adr'] if (numerative is not None and 'adr' in numerative.keys()) else 10
+    base_dat = numerative['dat'] if (numerative is not None and 'dat' in numerative.keys()) else 10
 
     data = []
     for line in file:
@@ -190,6 +193,8 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, interpret=None):
                 continue
             adr += 1
     file.close()
+    if raw_data:
+        return data
     minadr = min(data)[0]
     maxadr = max(data)[0]+1
     array = [None]*((maxadr-minadr) // (bitsize//8)) if memSize is None else [None]*memSize
