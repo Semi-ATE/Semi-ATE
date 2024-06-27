@@ -22,7 +22,7 @@ FILE_PATH = os.path.dirname(__file__)
 
 
 def default_configuration():
-    return {'broker_host': '192.168.0.1',
+    return {'broker_host': '127.0.0.1',                    # '192.168.0.1',
             'broker_port': '8991',
             'sites': ["0", "1"],
             'device_id': DEVICE_ID,
