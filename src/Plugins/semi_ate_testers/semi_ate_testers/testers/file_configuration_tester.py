@@ -81,7 +81,7 @@ class FileConfigurationTester(TesterInterface):
         self.testerconfig = testerconfig
 
         for instName in dir(testerconfig):  # add information from each instrument to result.instruments
-            if instName.find("_") != -1:
+            if instName.find("_") == 0:
                 continue
             instrument = getattr(testerconfig, instName)
             if not inspect.isclass(instrument):  # filter out the class-definitions
