@@ -8,6 +8,7 @@ Created on Fri Apr 12 15:58:04 2019
 # from pytestsharing.instruments.base_instrument import logger
 from labml_adjutancy.misc.common import choice
 from labml_adjutancy.misc.common import str2num
+from labml_adjutancy.misc.common import complement_num
 import os
 import pathlib
 import inspect
@@ -136,7 +137,7 @@ def readMemFile(filename, typ=None, interpret=None):
     return start, data
 
 
-def readtxtMemFile(fileName, memSize=None, bitsize=None, numerative=None, raw_data=False):
+def readtxtMemFile(fileName, memSize=None, bitsize_source=None, bitsize_target=None, numerative=None, raw_data=False):
     """
     Read a file with memory data in simple hex or integer format.
 
@@ -146,11 +147,14 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, numerative=None, raw_da
         DESCRIPTION.
     memSize : int
         size from the reserved memory array.
-    bitSize: int
+    bitsize_source: int
         size from one datum, e.q. 8-bit, 16-bit, must be multiple times of 8
         this has an effect on the adress counting
         if None each datum will assign to an adress, otherwise each 8-bit datum has an adress
-        only little endian is supported
+        only little endian is supported yet
+    bitsize_target: int
+        size from one datum in the array result.
+            needed if negative values in the sourcefile
     numerative : {adr : base
                  dat : base}    # base could be 10(decimal) or 16(hex)
     raw_data: bool
@@ -183,10 +187,10 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, numerative=None, raw_da
             if index == 0:
                 adr = value
                 continue
-            if bitsize is None:
+            if bitsize_source is None:
                 data.append((adr, value))
             else:
-                for i in range(bitsize // 8):
+                for i in range(bitsize_source // 8):
                     data.append((adr, value % 256))
                     value = value // 256
                     adr += 1
@@ -197,21 +201,26 @@ def readtxtMemFile(fileName, memSize=None, bitsize=None, numerative=None, raw_da
         return data
     minadr = min(data)[0]
     maxadr = max(data)[0]+1
-    array = [None]*((maxadr-minadr) // (bitsize//8)) if memSize is None else [None]*memSize
+    bitsize_source = 8 if bitsize_source is None else bitsize_source
+    array = [None]*((maxadr-minadr) // (bitsize_source//8)) if memSize is None else [None]*memSize
     adr = minadr
     for index in range(0, len(data)):
         adr = data[index][0]
         dat = data[index][1]
-        realadr = (adr-minadr) // (bitsize//8)
+        realadr = (adr-minadr) // (bitsize_source//8)
         oldat = 0 if array[realadr] is None else array[realadr]
-        shift = adr % (bitsize//8)
+        shift = adr % (bitsize_source//8)
         array[realadr] = (dat << (shift*8)) + oldat
+    if bitsize_target is not None:
+        for index in range(0, len(array)):
+            if array[index] < 0:
+                array[index] = complement_num(abs(array[index]), bitsize_target) + 1   # calculated 2 complement
     return minadr, array
 
 
 def readQEMemFile(fileName, base=0x20):
-    """
-    reads a file with memory data in the DUMP_QE Software format:
+    """Read a file with memory data in the DUMP_QE Software format.
+
         base address 0
         address 0
         data hex	0000	data dec	0
