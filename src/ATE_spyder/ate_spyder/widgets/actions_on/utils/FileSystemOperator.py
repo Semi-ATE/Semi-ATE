@@ -1,5 +1,6 @@
 import os
 import shutil
+import gzip
 from typing import Optional
 
 from PyQt5 import QtWidgets
@@ -32,19 +33,38 @@ class FileSystemOperator(QtWidgets.QFileDialog):
         add_dir = AddDirectoryDialog(self.path, "Folder name", self.parent)
         add_dir.show()
 
-    def import_file(self, file_types: str = ''):
-        selected, _ = self.getOpenFileName(self, "Import File", self.path, file_types, options=self.options())
+    def import_file(self, file_types: str = '', filelocation: str = ''):
+        filelocation = self.path if filelocation == '' else filelocation
+        selected, _ = self.getOpenFileName(self, "Import File", filelocation, file_types, options=self.options())
         if not selected:
-            return
+            return None
 
         file_name = os.path.basename(selected)
         location = os.path.join(self.path, file_name)
+        location = os.path.splitext(location)[0] if os.path.splitext(selected)[1] == '.gz' else location
 
-        try:
-            shutil.copyfile(selected, location)
-        except Exception:
-            exception = ExceptionFoundDialog(selected, "File not found", self.parent, "file exists already: ")
+        error = False
+        if os.path.exists(location):
+            error = True
+        elif os.path.splitext(selected)[1] == '.gz':
+            try:
+                with gzip.open(selected, 'rb') as f_in:
+                    lines = f_in.read()
+                with open(location, 'w') as f_out:
+                    f_out.write(lines.decode("utf-8"))
+            except Exception:
+                error = True
+        else:
+            try:
+                shutil.copyfile(selected, location)
+            except Exception:
+                error = True
+
+        if error:
+            exception = ExceptionFoundDialog(os.path.basename(location), "File not found", self.parent, "file exists already: ")
             exception.show()
+            file_name = None
+        return location
 
     def get_file(self, file_filter: str = ''):
         selected, _ = self.getOpenFileName(self, "Select File", self.path, file_filter, options=self.options())

@@ -97,6 +97,9 @@ class HardwareWizard(BaseDialog):
             for gpfunction in gpfunction_list:
                 self._append_gpfunction_to_manufacturer(gpfunction)
 
+    # Pattern import
+        self.importextension_list.setToolTip("Add extension for import testpattern, process this pattern with the converting call, set a default path for opening.")
+
     # general
         self.feedback.setText('')
         self.feedback.setStyleSheet('color: orange')
@@ -189,6 +192,10 @@ class HardwareWizard(BaseDialog):
 
         # Actuator
         self.checkActuators.clicked.connect(self.checkActuatorUsage)
+
+        # Pattern Import
+        self.importextension_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.importextension_list.customContextMenuRequested.connect(self.importPatternMenu)
 
         # general
         self.CancelButton.clicked.connect(self.CancelButtonPressed)
@@ -364,7 +371,8 @@ class HardwareWizard(BaseDialog):
             DB_KEYS.HARDWARE.DEFINITION.TESTER: testername,
             DB_KEYS.HARDWARE.DEFINITION.ACTUATOR.KEY(): self._collect_actuators(),
             DB_KEYS.HARDWARE.DEFINITION.INSTRUMENTS.KEY(): self._collect_instruments(),
-            DB_KEYS.HARDWARE.DEFINITION.GP_FUNCTIONS.KEY(): self._collect_gpfunctions()
+            DB_KEYS.HARDWARE.DEFINITION.GP_FUNCTIONS.KEY(): self._collect_gpfunctions(),
+            DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY(): self._getimportextension(),
         }
 
 # instruments
@@ -498,7 +506,51 @@ class HardwareWizard(BaseDialog):
     def _store_plugin_configuration(self):
         for plugin_name, plugin_cfg in self._plugin_configurations.items():
             if plugin_cfg is not None:
+                print(f'_store_plugin_configuration: {self.hardware.text()}, {plugin_name}, {plugin_cfg}')
                 self.project_info.store_plugin_cfg(self.hardware.text(), plugin_name, plugin_cfg)
+
+# Pattern import
+    def importPatternMenu(self, pos):
+        menu = QtWidgets.QMenu()
+        index = self.importextension_list.indexAt(pos).row()
+        menuActions = []
+        actions = ["add", "remove"]
+        for action in actions:
+            menuActions.append(menu.addAction(action))
+        action = menu.exec_(self.importextension_list.mapToGlobal(pos))
+        widgets = [self.importextension_list, self.importconvert_list, self.importdefaultpath_list]
+        if action is not None:
+            if action.text() == 'add':
+                self._addimportextension_handler()
+            elif index is not None and action.text() == 'remove':
+                for widget in widgets:
+                    widget.takeItem(index)
+
+    def _addimportextension_handler(self):
+        self.importextension_list.addItem('')
+        self.importconvert_list.addItem('')
+        self.importdefaultpath_list.addItem('')
+
+        count = self.importextension_list.count()-1
+        for widget in [self.importextension_list, self.importconvert_list, self.importdefaultpath_list]:
+            item = widget.item(count)
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
+            widget.setCurrentItem(item)
+
+    def _getimportextension(self):
+        mylist = []
+        for item in [self.importextension_list.item, self.importconvert_list.item, self.importdefaultpath_list.item]:
+            plist = []
+            for index in range(self.importextension_list.count()):
+                if self.importextension_list.item(index).text() == '':
+                    continue
+                if item == self.importextension_list.item and item(index).text()[0] != '.':
+                    value = '.' + item(index).text()
+                else:
+                    value = item(index).text()
+                plist.append(value)
+            mylist.append(plist)
+        return mylist
 
     def CancelButtonPressed(self):
         self.reject()

@@ -34,4 +34,5 @@ class StilToolBase(ABC):
         if not self._compiled_patterns.get(pattern_virtual_name):
             raise Exception(f'pattern: \'{pattern_virtual_name}\' is not loaded')
 
-        return Path(self._compiled_patterns[pattern_virtual_name]).stem
+        pattern = Path(self._compiled_patterns[pattern_virtual_name]) if self.pattern_withpath else Path(self._compiled_patterns[pattern_virtual_name]).stem
+        return pattern

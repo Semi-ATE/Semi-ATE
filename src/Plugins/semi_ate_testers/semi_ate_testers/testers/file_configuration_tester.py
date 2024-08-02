@@ -87,9 +87,9 @@ class FileConfigurationTester(TesterInterface):
             if not inspect.isclass(instrument):  # filter out the class-definitions
                 if hasattr(instrument, "instName"):
                     setattr(self, instrument.instName, instrument)
-                elif instName not in dir(self):
+                elif instName not in dir(self) or instName in ['SITE_COUNT', 'run_pattern', 'teardown', 'setup', 'do_request', 'test_in_progress', 'test_done', 'do_init_state']:
                     setattr(self, instName, instrument)
                 elif instName not in ['logger']:
-                    self.error(' keyword {instName} not allowed in {TESTER_CONFIG_FILE}')
+                    self.log_error(f' keyword "{instName}" not allowed in {TESTER_CONFIG_FILE}')
 
         self.log_info(f"FileConfigurationTester.do_int_state({site_id}): done")
