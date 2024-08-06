@@ -118,20 +118,23 @@ class PatternItem(BaseFolderStructureItem):
     def import_file_item(self, file_types: str = ''):
         extensions = self._get_import_pattern_extensions()
         filetyp = file_types[file_types.find('.'):-1]
-        index = extensions[0].index(filetyp)
-        filelocation = extensions[2][index] if filetyp in extensions[0] else ''
+        if filetyp in extensions[0]:
+            index = extensions[0].index(filetyp)
+            filelocation = extensions[2][index]
+            cmd = extensions[1][index]
+        else:
+            filelocation = None
+            cmd = ''
         file_types = f'{filetyp[1:].upper()}.gz files (*{filetyp}.gz);;' + file_types
         file_name = self.file_system_operator.import_file(file_types, filelocation)
-        cmd = extensions[1][index]
+
         if file_name is not None and cmd != '':
-            print(file_name)
-            str(self.project_info.project_directory)
             relativ = cmd.find('..\\')
             if relativ > 0:
-                cmd = f'{cmd[:relativ]} {str(self.project_info.project_directory)}\\{cmd[relativ:]}'
+                cmd = f'{cmd[:relativ]} {str(self.project_info.project_directory)}\\{cmd[relativ:]} '
             cmd += file_name
+            print(f'call conerting call from Pattern import: {cmd})')
             output = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE).stdout.read()
-            print(output)
 
 
 class PatternItemChild(BaseFolderStructureItemChild):
