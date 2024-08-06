@@ -19,6 +19,8 @@ from ate_semiateplugins.pluginmanager import get_plugin_manager
 from ate_spyder.widgets.actions_on.hardwaresetup.HardwareWizardListItem import HardwareWizardListItem
 from ate_spyder.widgets.actions_on.hardwaresetup.ParallelismWidget import ParallelismWidget
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
+from ate_spyder.widgets.actions_on.model.Actions import ACTIONS
+from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.validation import valid_pcb_name_regex
 
 
@@ -511,18 +513,16 @@ class HardwareWizard(BaseDialog):
 
 # Pattern import
     def importPatternMenu(self, pos):
-        menu = QtWidgets.QMenu()
+        new_menu = QtWidgets.QMenu(self)
         index = self.importextension_list.indexAt(pos).row()
-        menuActions = []
-        actions = ["add", "remove"]
-        for action in actions:
-            menuActions.append(menu.addAction(action))
-        action = menu.exec_(self.importextension_list.mapToGlobal(pos))
+        self.add_action(new_menu, MenuActionTypes.Add(), MenuActionTypes.Add())
+        self.add_action(new_menu, MenuActionTypes.Delete(), MenuActionTypes.Delete())
+        action = new_menu.exec_(self.importextension_list.mapToGlobal(pos))
         widgets = [self.importextension_list, self.importconvert_list, self.importdefaultpath_list]
         if action is not None:
-            if action.text() == 'add':
+            if action.text() == 'New':
                 self._addimportextension_handler()
-            elif index is not None and action.text() == 'remove':
+            elif index is not None and action.text() == 'Remove':
                 for widget in widgets:
                     widget.takeItem(index)
 
@@ -551,6 +551,12 @@ class HardwareWizard(BaseDialog):
                 plist.append(value)
             mylist.append(plist)
         return mylist
+
+    def add_action(self, menu_action: QtWidgets.QMenu, action_type: MenuActionTypes, icon_type: MenuActionTypes):
+        action = QtWidgets.QAction(ACTIONS[action_type][1], menu_action)
+        action.setIcon(ACTIONS[icon_type][0])
+
+        menu_action.addAction(action)
 
     def CancelButtonPressed(self):
         self.reject()
