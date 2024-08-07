@@ -19,7 +19,6 @@ from ate_semiateplugins.pluginmanager import get_plugin_manager
 from ate_spyder.widgets.actions_on.hardwaresetup.HardwareWizardListItem import HardwareWizardListItem
 from ate_spyder.widgets.actions_on.hardwaresetup.ParallelismWidget import ParallelismWidget
 from ate_spyder.widgets.actions_on.utils.BaseDialog import BaseDialog
-from ate_spyder.widgets.actions_on.model.Actions import ACTIONS
 from ate_spyder.widgets.actions_on.model.Constants import MenuActionTypes
 from ate_spyder.widgets.validation import valid_pcb_name_regex
 
@@ -515,6 +514,7 @@ class HardwareWizard(BaseDialog):
     def importPatternMenu(self, pos):
         new_menu = QtWidgets.QMenu(self)
         index = self.importextension_list.indexAt(pos).row()
+
         self.add_action(new_menu, MenuActionTypes.Add(), MenuActionTypes.Add())
         self.add_action(new_menu, MenuActionTypes.Delete(), MenuActionTypes.Delete())
         action = new_menu.exec_(self.importextension_list.mapToGlobal(pos))
@@ -553,6 +553,8 @@ class HardwareWizard(BaseDialog):
         return mylist
 
     def add_action(self, menu_action: QtWidgets.QMenu, action_type: MenuActionTypes, icon_type: MenuActionTypes):
+        from ate_spyder.widgets.actions_on.model.Actions import ACTIONS
+
         action = QtWidgets.QAction(ACTIONS[action_type][1], menu_action)
         action.setIcon(ACTIONS[icon_type][0])
 

@@ -133,7 +133,7 @@ class PatternItem(BaseFolderStructureItem):
             if relativ > 0:
                 cmd = f'{cmd[:relativ]} {str(self.project_info.project_directory)}\\{cmd[relativ:]} '
             cmd += file_name
-            print(f'call conerting call from Pattern import: {cmd})')
+            print(f'run converting call from Pattern import: {cmd})')
             output = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE).stdout.read()
 
 
