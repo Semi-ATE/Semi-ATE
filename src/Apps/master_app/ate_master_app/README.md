@@ -21,7 +21,7 @@ Configuration of the master application is done by writing a JSON file called **
     "Handler": "HTO92-20F",
     "environment": "F1",
     "webui_host": "127.0.0.1",
-    "webui_port": "8081",
+    "webui_port": 8081,
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",
     "skip_jobdata_verification": false,

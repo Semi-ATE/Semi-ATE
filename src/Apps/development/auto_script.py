@@ -20,7 +20,7 @@ class Configs(Enum):
     host = "127.0.0.1"
     port = 1883
     webui_host = "127.0.0.1"
-    webui_port = "8081"
+    webui_port = 8081
 
     def __call__(self):
         return f'{self.value}'

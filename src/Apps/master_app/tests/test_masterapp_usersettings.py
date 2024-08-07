@@ -25,7 +25,7 @@ class TestApplication:
                 "site_layout": {"0": [0, 1], "1": [1, 2]},
                 'webui_root_path': '',
                 'webui_host': '',
-                'webui_port': '0',
+                'webui_port': 0,
                 'site_layout': [],
                 'develop_mode': False}
 

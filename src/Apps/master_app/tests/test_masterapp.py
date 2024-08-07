@@ -39,7 +39,7 @@ def default_configuration():
             'user_settings_filepath': 'master_user_settings.json',
             'webui_root_path': '',
             'webui_host': '',
-            'webui_port': '0',
+            'webui_port': 0,
             'site_layout': [],
             'develop_mode': False}
 

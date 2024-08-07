@@ -2,8 +2,8 @@ from ate_master_app.parameter_parser import parser_factory
 from ate_master_app.parameter_parser.xml_parameter_parser import XmlParameterParser
 from ate_master_app.parameter_parser.filesystem_data_source import FileSystemDataSource
 from ate_master_app.utils.master_configuration import MasterConfiguration
-from tests.test_masterapp import default_configuration
-from tests.utils import (create_xml_file, DEVICE_ID)
+from test_masterapp import default_configuration
+from utils import (create_xml_file, DEVICE_ID)
 
 import os
 
@@ -39,7 +39,7 @@ class TestParserFactory:
                 "site_layout": {"0": [0, 1], "1": [1, 2]},
                 'webui_root_path': '',
                 'webui_host': '',
-                'webui_port': '0',
+                'webui_port': 0,
                 'site_layout': [],
                 'develop_mode': False}
 
