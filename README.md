@@ -78,7 +78,7 @@ we use maxiconda (https://www.maxiconda.org) , because it is free and open sourc
 Create an environment in conda and install semi-ate in it:
 
 ```
-(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.5.1
+(base)~$ mamba create -n Semi-ATE python=3.9 spyder=5.5.5
 (base)~$ conda activate Semi-ATE
 (Semi-ATE)~$ mkdir -p ~/repos/Semi-ATE
 (Semi-ATE)~$ cd ~/repos/Semi-ATE

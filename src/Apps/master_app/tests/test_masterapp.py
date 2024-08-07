@@ -2,7 +2,7 @@ from typing import List
 import pytest
 import mock
 import os
-from tests.utils import (create_xml_file, DEVICE_ID)
+from utils import (create_xml_file, DEVICE_ID)
 from ate_master_app import master_application
 from ate_master_app import master_connection_handler
 from ate_master_app.utils.master_configuration import MasterConfiguration
