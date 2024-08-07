@@ -58,7 +58,6 @@ class Tester:
 def master_app():
     with mock.patch('ate_master_app.master_application.MasterApplication.get_tester', return_value=Tester()):
         cfg = default_configuration()
-        print(cfg)
         yield master_application.MasterApplication(MasterConfiguration(**cfg))
 
 

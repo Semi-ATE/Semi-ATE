@@ -137,7 +137,7 @@ The files ```master_config_file_template.json``` and
         "0"
     ],
     "webui_host": "127.0.0.1",
-    "webui_port": 8081,
+    "webui_port": "8081",
     "webui_root_path": ".",
     // the following fields are information to simulate a test-program execition
     "Handler": "HTO92-20F",
