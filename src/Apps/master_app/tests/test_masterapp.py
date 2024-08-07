@@ -39,9 +39,9 @@ def default_configuration():
             'user_settings_filepath': 'master_user_settings.json',
             'webui_root_path': '',
             'webui_host': '',
-            'webui_port': 0,
+            'webui_port': '0',
             'site_layout': [],
-            'develop_mode': False} 
+            'develop_mode': False}
 
 class Tester:
     def __init__(self):
@@ -58,6 +58,7 @@ class Tester:
 def master_app():
     with mock.patch('ate_master_app.master_application.MasterApplication.get_tester', return_value=Tester()):
         cfg = default_configuration()
+        print(cfg)
         yield master_application.MasterApplication(MasterConfiguration(**cfg))
 
 
@@ -100,11 +101,11 @@ class TestApplication:
 
     def test_masterapp_correct_number_of_sites_triggers_initialized(self):
         self.app.startup_done()
-        assert(self.app.state == 'connecting')
+        assert (self.app.state == 'connecting')
         self.trigger_control_state_change(self.app, "0", "idle")
-        assert(self.app.state == 'connecting')
+        assert (self.app.state == 'connecting')
         self.trigger_control_state_change(self.app, "1", "idle")
-        assert(self.app.state == 'initialized')
+        assert (self.app.state == 'initialized')
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -116,7 +117,7 @@ class TestApplication:
     def test_masterapp_loadlot_triggers_load_commands(self, mock1, mock2):
         self.app.startup_done()
         self.app.all_sites_detected()
-        assert(self.app.state == 'initialized')
+        assert (self.app.state == 'initialized')
         cmd = {'command': 'load', 'lot_number': LOT_NUMBER}
         self.app.load_command(cmd)
         master_connection_handler.MasterConnectionHandler.send_load_test_to_all_sites.assert_called_once()
@@ -131,22 +132,22 @@ class TestApplication:
     def test_masterapp_siteloadcomplete_triggers_ready(self, mock1, mock2):
         self.app.startup_done()
         self.app.all_sites_detected()
-        assert(self.app.state == 'initialized')
+        assert (self.app.state == 'initialized')
         cmd = {'command': 'load', 'lot_number': LOT_NUMBER}
         self.app.load_command(cmd)
 
         self.trigger_control_state_change(self.app, "1", "loading")
         self.trigger_control_state_change(self.app, "0", "loading")
 
-        assert(self.app.state == "loading")
+        assert (self.app.state == "loading")
         self.trigger_control_state_change(self.app, "0", "busy")
-        assert(self.app.state == "loading")
+        assert (self.app.state == "loading")
         self.trigger_test_state_change(self.app, "0", "idle")
 
         self.trigger_control_state_change(self.app, "1", "busy")
-        assert(self.app.state == "loading")
+        assert (self.app.state == "loading")
         self.trigger_test_state_change(self.app, "1", "idle")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -161,9 +162,9 @@ class TestApplication:
         cmd = {'command': 'load', 'lot_number': LOT_NUMBER}
         self.app.load_command(cmd)
         self.app.all_siteloads_complete()
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
         self.app.next(None)
-        assert(self.app.external_state == "testing")
+        assert (self.app.external_state == "testing")
         master_connection_handler.MasterConnectionHandler.send_next_to_all_sites.assert_called_once()
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
@@ -183,18 +184,18 @@ class TestApplication:
         self.set_testing_sites_strategy([[['0', '1']]])
         self.trigger_next_test()
 
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "0", "testing")
         self.trigger_test_state_change(self.app, "1", "testing")
 
         self.trigger_test_state_change(self.app, "1", "idle")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "0", "idle")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -209,7 +210,7 @@ class TestApplication:
         self.app.load_command(cmd)
         self.app.all_siteloads_complete()
         self.app.testapp_disconnected(1, None)
-        assert(self.app.state == "softerror")
+        assert (self.app.state == "softerror")
 
     def test_masterapp_no_sites_configured_triggers_error(self):
         cfg = default_configuration()
@@ -239,27 +240,27 @@ class TestApplication:
         self.set_testing_sites_strategy([[['0', '1']]])
         self.trigger_next_test()
 
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "0", "testing")
         self.trigger_test_state_change(self.app, "1", "testing")
 
         self.trigger_test_result_change(self.app, "0")
         self.trigger_test_result_change(self.app, "1")
 
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
         self.app.next(None)
 
         self.set_testing_sites_strategy([[['0', '1']]])
         self.trigger_next_test()
 
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "1", "testing")
         self.trigger_test_state_change(self.app, "0", "testing")
 
         self.trigger_test_result_change(self.app, "0")
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -274,7 +275,7 @@ class TestApplication:
         self.app.load_command(cmd)
         self.app.all_siteloads_complete()
         self.app.on_testapp_testresult_changed("0", None)
-        assert(self.app.state == "softerror")
+        assert (self.app.state == "softerror")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -290,10 +291,10 @@ class TestApplication:
         self.app.all_siteloads_complete()
         self.app.on_testapp_testresult_changed("0", None)
         self.trigger_test_state_change(self.app, "0", "crash")
-        assert(self.app.state == "softerror")
+        assert (self.app.state == "softerror")
         cmd = {'command': 'reset'}
         self.app.reset(cmd)
-        assert(self.app.state == "connecting")
+        assert (self.app.state == "connecting")
 
     @mock.patch.object(master_application.MasterApplication, 'get_test_parameters', return_value={
         'testapp_script_path': './thetest_application.py',                  # required
@@ -309,13 +310,13 @@ class TestApplication:
         self.app.all_siteloads_complete()
 
         self.app.next(None)
-        assert(self.app.external_state == "testing")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.external_state == "testing")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_state_change(self.app, "0", "testing")
         self.trigger_test_state_change(self.app, "1", "testing")
 
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         mocker.patch.object(self.app, 'apply_resource_config')
 
@@ -336,17 +337,17 @@ class TestApplication:
         self.app.startup_done()
         self.app.all_sites_detected()
         cmd = {'command': 'load', 'lot_number': WRONG_LOT_NUMBER}
-        assert(self.app.external_state == "initialized")
+        assert (self.app.external_state == "initialized")
         self.app.load_command(cmd)
-        assert(self.app.external_state == "initialized")
+        assert (self.app.external_state == "initialized")
 
     def test_master_received_wrong_lot_number1(self):
         self.app.startup_done()
         self.app.all_sites_detected()
         cmd = {'command': 'load', 'lot_number': LOT_NUMBER}
-        assert(self.app.external_state == "initialized")
+        assert (self.app.external_state == "initialized")
         self.app.load_command(cmd)
-        assert(self.app.external_state == "loading")
+        assert (self.app.external_state == "loading")
 
     def test_masterapp_testing_both_sites_request_resources_simultaneously(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -356,36 +357,36 @@ class TestApplication:
 
         # both sites request a non-default resource config and continue testing afterwards (using that resource)
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         # both sites are now finished with the resource and request the default config
         mocker.patch.object(self.app, 'apply_resource_config')
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         # now both sites continue testing until they are done
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     def test_masterapp_testing_both_sites_request_resources_separately(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -394,18 +395,18 @@ class TestApplication:
         self.trigger_next_test()
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
         self._trigger_resource_config_applied_callback(self.app)
 
         self.app.apply_resource_config.assert_called()
 
         self.trigger_next_test()
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self.app.apply_resource_config.assert_called()
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
     def test_masterapp_testing_first_site_completes_before_other_site_requests_resource(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -414,20 +415,20 @@ class TestApplication:
         self.trigger_next_test()
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "0", "idle")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     def test_masterapp_testing_first_site_requests_resource_before_other_site_completes(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -436,20 +437,20 @@ class TestApplication:
         self.trigger_next_test()
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
         self.trigger_test_state_change(self.app, "1", "idle")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     def test_masterapp_testing_site_completes_while_waiting_for_resource(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -458,23 +459,23 @@ class TestApplication:
         self.trigger_next_test()
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
         self.trigger_test_state_change(self.app, "0", "idle")
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     def test_masterapp_testing_site_completes_while_waiting_for_resource_other_order(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
@@ -483,49 +484,49 @@ class TestApplication:
         self.trigger_next_test()
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
         self.trigger_test_state_change(self.app, "1", "idle")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_masterapp_testing_all_sites_complete_while_waiting_for_resource(self, mocker):
         self._common_setup_for_testing_with_resource_synchronization(self.app, mocker)
 
         self.trigger_test_resource_change(self.app, "0", request_default_config=False)
-        assert(self.app.state == "testing_inprogress")
+        assert (self.app.state == "testing_inprogress")
 
         self.app.apply_resource_config.assert_not_called()
 
         self.trigger_test_resource_change(self.app, "1", request_default_config=False)
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self.trigger_test_result_change(self.app, "1")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
         self.trigger_test_state_change(self.app, "1", "idle")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
 
         self.trigger_test_result_change(self.app, "0")
-        assert(self.app.state == "testing_waiting_for_resource")
+        assert (self.app.state == "testing_waiting_for_resource")
         self.trigger_test_state_change(self.app, "0", "idle")
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
         # TODO: the callback should probably be canceled eventually, for now we just check that it doesn't cause an error
         self._trigger_resource_config_applied_callback(self.app)
-        assert(self.app.state == "ready")
+        assert (self.app.state == "ready")
 
     @staticmethod
     def _generate_PRR(part_id, sbin):
