@@ -22,7 +22,7 @@ class AutoScript(AutoScriptBase):
         self.context.tester.setup()
 
     def after_cycle_teardown(self):
-        self.logger.info(f"Cycle {self.cycle} finish")
+#        self.logger.info(f"Cycle {self.cycle} finish")
         self.cycle += 1
         if hasattr(self.context, 'SemiCtrl_Control_instance'):
             self.context.SemiCtrl_Control_instance.parent = None
