@@ -94,7 +94,7 @@ def test_output_parameter_with_usl_limit_returns_fail():
 
 def test_output_parameter_with_usl_limit_returns_pass():
     import numpy as np
-    op = OutputParameter("Op", -np.Inf, np.nan, 0, np.nan, 3, 1)
+    op = OutputParameter("Op", -np.inf, np.nan, 0, np.nan, 3, 1)
     op.set_bin(1, Result.Pass())
     op.write(2)
     assert (op.get_testresult()[0] is Result.Pass())
@@ -102,14 +102,14 @@ def test_output_parameter_with_usl_limit_returns_pass():
 
 def test_output_parameter_with_lsl_limit_returns_pass():
     import numpy as np
-    op = OutputParameter("Op", -3, np.nan, 0, np.nan, np.Inf, 1)
+    op = OutputParameter("Op", -3, np.nan, 0, np.nan, np.inf, 1)
     op.write(25)
     assert (op.get_testresult()[0] is Result.Pass())
 
 
 def test_output_parameter_with_lsl_limit_returns_fail():
     import numpy as np
-    op = OutputParameter("Op", -3, np.nan, 0, np.nan, np.Inf, 1)
+    op = OutputParameter("Op", -3, np.nan, 0, np.nan, np.inf, 1)
     op.set_bin(1, Result.Pass())
     op.write(-5)
     assert (op.get_testresult()[0] is Result.Fail())
@@ -117,7 +117,7 @@ def test_output_parameter_with_lsl_limit_returns_fail():
 
 def test_output_parameter_with_lsl_and_ltl_limit_returns_fail():
     import numpy as np
-    op = OutputParameter("Op", -3, -1, 0, np.nan, np.Inf, 1)
+    op = OutputParameter("Op", -3, -1, 0, np.nan, np.inf, 1)
     op.set_bin(1, Result.Pass())
     op.write(-2)
     assert (op.get_testresult()[0] is Result.Fail())
@@ -125,7 +125,7 @@ def test_output_parameter_with_lsl_and_ltl_limit_returns_fail():
 
 def test_output_parameter_with_lsl_and_ltl_limit_returns_pass():
     import numpy as np
-    op = OutputParameter("Op", -3, -1, 0, np.nan, np.Inf, 1)
+    op = OutputParameter("Op", -3, -1, 0, np.nan, np.inf, 1)
     op.set_bin(1, Result.Pass())
     op.write(-1)
     assert (op.get_testresult()[0] is Result.Pass())
@@ -133,7 +133,7 @@ def test_output_parameter_with_lsl_and_ltl_limit_returns_pass():
 
 def test_output_parameter_with_usl_and_utl_limit_returns_fail():
     import numpy as np
-    op = OutputParameter("Op", -np.Inf, np.nan, 0, 1, 3, 1)
+    op = OutputParameter("Op", -np.inf, np.nan, 0, 1, 3, 1)
     op.set_bin(1, Result.Pass())
     op.write(3)
     assert (op.get_testresult()[0] is Result.Fail())
