@@ -8,6 +8,7 @@ from ate_common.logger import LogLevel, Logger
 
 class MqttConnection:
     def __init__(self, host: str, port: int, mqtt_client_id: str, logger: Logger):
+        print('MqttConnection: ', host, port, mqtt_client_id )
         if aiomqtt.__version__ <= '0.1.3':
             self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
         else:
