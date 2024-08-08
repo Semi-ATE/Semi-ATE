@@ -8,12 +8,12 @@ from ate_common.logger import LogLevel, Logger
 
 class MqttConnection:
     def __init__(self, host: str, port: int, mqtt_client_id: str, logger: Logger):
-        print('MqttConnection: ', host, port, mqtt_client_id )
         if aiomqtt.__version__ <= '0.1.3':
             self.mqtt_client = aiomqtt.Client(client_id=mqtt_client_id)
+            self.mqtt_client.reconnect_delay_set(10, 15)
         else:
             self.mqtt_client = aiomqtt.Client(mqtt_client_id)
-        self.mqtt_client.reconnect_delay_set(10, 15)
+            #Todo:  actual Version from aiomqtt is > 2.3   -> some things need to be changed
         self.log = logger
         self.host = host
         self.port = port
