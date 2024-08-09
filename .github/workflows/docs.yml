@@ -1,0 +1,41 @@
+name: Documentation build
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    docs_build:
+        name: Documentation build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout branch
+              uses: actions/checkout@v3
+            - name: Install miniconda
+              uses: conda-incubator/setup-miniconda@v2
+              with:
+                auto-update-conda: true
+                activate-environment: docs
+                miniforge-version: latest
+                python-version: '3.10'
+            - name: Setup environment
+              run: |
+                conda install spyder
+                pip install sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
+                python scripts/package_tool.py --change-env cicd
+            - name: Build Sphinx
+              run: |
+                sphinx-build -b html docs/source/ docs/build/html
+            - name: Upload maxiconda to Github artifact
+              uses: actions/upload-artifact@v3
+              with:
+                path: docs/build/html/*
+                name: docs-output
+            - name: Deploy preview
+              uses: rossjrw/pr-preview-action@v1
+              with:
+                source-dir: ./docs/build/html
