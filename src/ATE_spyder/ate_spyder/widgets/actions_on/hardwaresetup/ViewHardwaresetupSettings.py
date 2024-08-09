@@ -1,8 +1,9 @@
-from ate_projectdatabase.Utils import DB_KEYS
 import os
 import re
 from enum import Enum
+from PyQt5 import QtCore
 
+from ate_projectdatabase.Utils import DB_KEYS
 from ate_spyder.widgets.actions_on.hardwaresetup.HardwareWizard import HardwareWizard
 
 
@@ -74,6 +75,18 @@ class ViewHardwaresetupSettings(HardwareWizard):
         dialog.populate_selected_instruments(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.INSTRUMENTS.KEY()])
         dialog.populate_selected_actuators(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.ACTUATOR.KEY()])
         dialog.populate_selected_gpfunctions(hw_configuration[DB_KEYS.HARDWARE.DEFINITION.GP_FUNCTIONS.KEY()])
+
+        if DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY() in hw_configuration:
+            patternimport = hw_configuration[DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY()]
+            if len(patternimport) > 0:
+                widgets = [dialog.importextension_list, dialog.importconvert_list, dialog.importdefaultpath_list]
+                windex = 0
+                for widget in widgets:
+                    widget.addItems(patternimport[windex])
+                    for index in range(len(dialog.importextension_list)):
+                        item = widget.item(index)
+                        item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
+                    windex += 1
 
         dialog.parallelism_widget.parallelism_store = dialog.project_info.get_hardware_parallelism_store(hw_name)
 

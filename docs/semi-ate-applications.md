@@ -58,7 +58,7 @@ Create the following files:
     "Handler": "Handler",
     "environment": "F1",
     "webui_host": "127.0.0.1",
-    "webui_port": "8081",
+    "webui_port": 8081,
     "webui_root_path": "./msct-webui",
     "jobsource": "filesystem",
     "jobformat": "xml.semi-ate",

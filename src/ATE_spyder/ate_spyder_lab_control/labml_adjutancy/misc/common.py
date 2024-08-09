@@ -26,7 +26,13 @@ def kill_proc_tree(pid=None, instance=None, including_parent=False):
         parent.wait(5)
     if instance is not None:
         instance.terminate()
-        del(instance)
+        del (instance)
+
+
+def complement_num(value, bits):
+    formatstring = '{:0%ib}' % bits
+    bvalue = formatstring.format(value)
+    return int(''.join({'0': '1', '1': '0'}[x] for x in bvalue), 2)
 
 
 def str2num(value, base=10, default=""):
@@ -97,7 +103,7 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
         mqttcmd = mqttcmd[: mqttcmd.find("(") + 1] + ")"
         typ = "func"
     elif typ is None and mqttcmd.find(':') < 0:
-        typ= "get"        
+        typ = "get"
     if mqttcheck and mqttcmd not in ["mqtt_status"] + parent.mqtt_list:
         instname = parent.instName if hasattr(self, "instName") else parent
         print(f"   Warning strcall: {instname} get {mqttcmd}, but it is not in the mqtt_list")
@@ -111,7 +117,7 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
             return None
         except Exception as ex:
             print(f"   strcall error: 'self.{instname}{command} := {value}' get an exception: {ex}")
-            return "ERROR"    
+            return "ERROR"
     elif typ == "get":
         try:
             value = eval(f"self.{command}")
@@ -132,7 +138,7 @@ def strcall(self, command, value=None, typ=None, mqttcheck=False):
         elif value is not None:
             para = value
         try:
-            result=eval(f"self.{command}({para})")
+            result = eval(f"self.{command}({para})")
             print(f"   self.{instname}{command}({para})")
             return result
         except Exception as ex:
@@ -313,9 +319,10 @@ def check(msg, target, actual, tolerance=0, mask=None):
         if mask is not None and (actual & mask) != (target & mask):
             error = 1
             msg = f"{msg}  target: 0x{target&mask:x} != actual: 0x{actual&mask:x}"
-        elif mask is None and actual != target:
+        elif mask is None and not (target - tolerance <= actual <= target + tolerance):    # actual != target:
             error = 1
-            msg = "{}  target: 0x{:x} != actual: 0x{:x}".format(msg, target, actual)
+            msg = f"{msg}  target: 0x{target:x} != actual: 0x{actual:x}" if tolerance == 0 \
+                else f"{msg}: 0x{target:x} +- 0x{tolerance:x} <> 0x{actual:x}"
         else:
             msg = "{} == 0x{:2x}".format(msg, actual)
     elif (type(actual) is str) or (type(actual) is bool):

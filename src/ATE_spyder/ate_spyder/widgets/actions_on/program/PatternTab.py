@@ -65,7 +65,6 @@ class PatternTab(QtWidgets.QWidget):
             self.parent.hardware.currentText(),
             self.parent.base.currentText(),
         )
-
         title_set = False
         for pattern in patterns:
             self.pattern_table.insertRow(self.pattern_table.rowCount())
@@ -139,7 +138,7 @@ class PatternTab(QtWidgets.QWidget):
                 continue
             text = combo.currentText()
             if not text:
-                self.feedback.setText(f'pattern: \'{pattern.text()}\' is not assigned yet')
+                self.feedback.setText(f'pattern: \'{pattern.text()}\' is not assigned yet\nassign it in Pattern->Pattern Map')
                 return False
 
         return True

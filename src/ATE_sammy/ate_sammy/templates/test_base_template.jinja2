@@ -129,4 +129,4 @@ class {{ definition['name'] }}_BC(DutTestCaseBase):
     def run_pattern(self, pattern_virtual_name: str, start_label: str = '', stop_label: str = '', timeout_in_ms: int = 1000):
         pattern_name = self.stil_tool._get_pattern_name(pattern_virtual_name)
 
-        self.tester.run_pattern(pattern_name, start_label, stop_label, timeout_in_ms)
+        return self.tester.run_pattern(pattern_name, start_label, stop_label, timeout_in_ms)

@@ -69,6 +69,11 @@ class DB_KEYS:
                 @staticmethod
                 def KEY() -> str:
                     return 'GPFunctions'
+                
+            class PATTERN_IMPORT:
+                @staticmethod
+                def KEY() -> str:
+                    return 'PatternImport'
 
     class SEQUENCE:
         OWNER_NAME = 'owner_name'

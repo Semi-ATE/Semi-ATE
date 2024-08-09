@@ -3,7 +3,7 @@ pydantic
 numpy
 pandas
 openpyxl
-spyder==5.4.3
+spyder==5.5.5
 semi-ate-common
 semi-ate-plugins
 semi-ate-project-database

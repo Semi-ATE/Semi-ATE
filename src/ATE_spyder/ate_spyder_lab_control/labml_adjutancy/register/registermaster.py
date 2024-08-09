@@ -34,7 +34,7 @@ from collections import OrderedDict  # , namedtuple
 from ate_common.logger import LogLevel
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes
 from labml_adjutancy.misc import environment
-from labml_adjutancy.misc.common import check, str2num
+from labml_adjutancy.misc import common
 
 __copyright__ = "Copyright 2023, Lab"
 __version__ = "0.0.3"
@@ -453,7 +453,7 @@ class Register:
             paddr = self._cpuaddr
         if paddr == -1:
             msg = "access not possible, interface in {!r} mode, please use e.g. tin".format(self._rm._protocol_typ)
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return paddr
 
     def writebase(self, bank):
@@ -483,13 +483,13 @@ class Register:
         if isinstance(value, int):
             if value > 2**length - 1:
                 msg = "{!r} too big for {} bits".format(value, length)
-                raise ValueError(msg)
+                self._rm.handle_exception(msg, ValueError, self._name)
             elif value < 0:
                 msg = "value = {!r} must be positive".format(value)
-                raise ValueError(msg)
+                self._rm.handle_exception(msg, ValueError, self._name)
         else:
             msg = "value {!r} is not an integer".format(value)
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return value
 
     @property
@@ -498,7 +498,7 @@ class Register:
             msg = "cache is empty\n"
             msg += "use either _cache = <value>, _use_reset(), "
             msg += "_read() or _write(<value>)"
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
         return self.__cache__
 
     @_cache.setter
@@ -577,6 +577,8 @@ class Register:
             current = self._rm._protocol.readreg(self._get_addr())
             current &= 2 ** self._len_slices() - 1
             self._check_r_err()
+        elif self.__cache__ is None:
+            current = self.read()
         else:
             current = self._cache
         # clear all bits between msb:lsb
@@ -675,9 +677,10 @@ class Register:
             mylogger.log_message(LogLevel.Error(), f"{self.__class__.__name__} protocol not defined!!")
             return -1
         value = self._read()
-        mylogger.log_message(LogLevel.Measure(), f"{self.__class__.__name__}.{self._name} == {hex(value)}")
+        if not self._rm._protocol.board.error:
+            mylogger.log_message(LogLevel.Measure(), f"{self.__class__.__name__}.{self._name} == {hex(value)}")
         if compare is not None:
-            error = check(f"{self.__class__.__name__}.{self._name}", compare, value, tolerance, mask)
+            error = common.check(f"{self.__class__.__name__}.{self._name}", compare, value, tolerance, mask)
             if onlycheck:
                 return error
             else:
@@ -706,7 +709,8 @@ class Register:
         if self._bank is not None and self._bank != "":
             self.writebase(self._bank)
         value = self._rm._protocol.readreg(self._get_addr())
-        value &= 2 ** self._len_slices() - 1
+        if not self._rm._protocol.board.error:
+            value &= 2 ** self._len_slices() - 1
         self._check_r_err()
         if value > -1:
             self._cache = value
@@ -735,13 +739,13 @@ class Register:
         if self._rm._protocol.board.error is True:
             msg = "can't read from interface - {!r}"
             msg = msg.format(self._rm._protocol.board.errortext)
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
 
     def _check_w_err(self):
         if self._rm._protocol.board.error is True:
             msg = "can't write to interface - {!r}"
             msg = msg.format(self._rm._protocol.board.errortext)
-            raise ValueError(msg)
+            self._rm.handle_exception(msg, ValueError, self._name)
 
     @property
     def value_table(self):
@@ -1222,7 +1226,7 @@ class RegisterMaster(mqtt_deviceattributes):
                     print(msg.format(name, item["blk"], bsl["posmax"]))
                 else:
                     try:
-                        valres = str2num(bsl["res"])
+                        valres = common.str2num(bsl["res"])
                     except ValueError:
                         valres = None
                     slices[name] = dict(
@@ -1413,7 +1417,7 @@ class RegisterMaster(mqtt_deviceattributes):
             value &= 2**self._len_slices - 1
         if compare is not None:
             bank = 0 if self._bank is None else self._bank
-            error = check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
+            error = common.check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
             if onlycheck:
                 return error
             else:
@@ -1473,6 +1477,17 @@ class RegisterMaster(mqtt_deviceattributes):
             except Exception:
                 pass
         mylogger.log_message(LogLevel.Info(), "Reset register Cache to resetvalues")
+
+    def handle_exception(self, msg, typ=None, name=None):
+        if mylogger is not None:
+            if name is None:
+                mylogger.error(msg)
+            else:
+                mylogger.error(f'{name}: {msg}')
+        elif typ is not None:
+            raise typ(msg)
+        else:
+            ValueError(msg)
 
     def set_configuration_values(self, data):
         """Only empty dummy function."""

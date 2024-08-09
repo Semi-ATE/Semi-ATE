@@ -65,7 +65,7 @@ Note: you should have your personal access token from github handy (you will nee
         "Handler": "HTO92-20F",
         "environment": "F1",
         "webui_host": "192.168.1.2",
-        "webui_port": "8081",
+        "webui_port": 8081,
         "webui_root_path": "./msct-webui",
         "jobsource": "filesystem",
         "jobformat": "xml.semi-ate",

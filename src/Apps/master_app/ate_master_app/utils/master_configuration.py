@@ -10,7 +10,7 @@ class MasterConfiguration(BaseModel):
     Handler: str
     environment: str
     webui_host: str
-    webui_port: str
+    webui_port: int
     webui_root_path: str
     jobsource: str
     jobformat: str

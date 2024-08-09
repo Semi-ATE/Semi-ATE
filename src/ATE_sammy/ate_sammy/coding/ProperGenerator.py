@@ -333,6 +333,7 @@ class test_proper_generator(BaseTestGenerator):
         return self.project_path.joinpath(self.project_path.name, hardware, base, name)
 
     def _generate_render_data(self, abs_path=''):
+        self.definition['runpattern'] = self._generate_run_pattern_section()
         return {'module_doc_string': prepare_module_docstring(),
                 'do_not_touch_section': self._generate_do_not_touch_section(),
                 'definition': self.definition}
@@ -353,15 +354,31 @@ class test_proper_generator(BaseTestGenerator):
             sec += '    ' + 'get patterns id:' + '\n'
 
             for pattern in self.definition['patterns']:
-                sec += '    ' + f'{pattern} = Patterns.{pattern} \n'
+                sec += '    ' + f'{pattern} = Patterns.{pattern}' + '\n'
 
+        docfirstline = True
         for doc in self.definition['docstring'][0].split('\n'):
-            sec += '    ' + doc + '\n'
+            if not docfirstline or doc.strip() != '':
+                sec += '    ' + doc + '\n'
+            docfirstline = False
 
+        sec += '\n'
         sec += self._stringify_table(input_table_content)
         sec += '\n'
         sec += self._stringify_table(output_table_content)
         sec += '    ' + self.do_not_touch_end + '\n'
+        return sec
+
+    def _generate_run_pattern_section(self):
+        sec = ''
+        if not self.definition['patterns']:
+            sec += '        ' + "# sleep used only for test puposes (CI build), without provoking sleep the test-app's state change from ready to testing could not be detected" + '\n'
+            sec += '        ' + "# must be removed when start implementing the test !!" + '\n'
+            sec += '        ' + "import time" + '\n'
+            sec += '        ' + "time.sleep(1)" + '\n'
+        else:
+            for pattern in self.definition['patterns']:
+                sec += '        ' + f"{pattern} = self.run_pattern(Patterns.{pattern})" + '\n'
         return sec
 
     @staticmethod

@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import socket
 from pathlib import Path
 import importlib
@@ -17,7 +16,7 @@ class FileConfigurationTester(TesterInterface):
         import __main__
 
         TesterInterface.__init__(self, logger)
-        self.hw_path = str(Path(__main__.__file__).parent.parent.parent)
+        self.hw_path = str(Path(__main__.__file__).parent.parent) + os.sep
 
     def pulse_trigger_out(self, pulse_width_ms):
         # ToDo: Implement with actual hardware.
@@ -40,12 +39,21 @@ class FileConfigurationTester(TesterInterface):
             if ad is not None and Path(testerconfig + "_" + ad + ".py").is_file():
                 extension = "_" + ad
 
+        if extension != "":
+            self.log_warning("You are not using the default Tester configuration file !!!")
+
         with open(testerconfigTemp, 'w') as f:
             f.write('# -*- coding: utf-8 -*-\n"""\n\n')
             f.write("Don't edit this file. It will be overwriten at runtime. Any manual edits will be lost\n")
             f.write('"""\n')
             f.write("import sys\n")
             f.write("logger = sys.argv[2]\n")
+        self.logger.debug = self.log_debug
+        self.logger.measure = self.log_measure
+        self.logger.info = self.log_info
+        self.logger.warning = self.log_warning
+        self.logger.error = self.log_error
+
         if Path(testerconfig + extension + ".py").is_file():
             self.log_info(f"Use Tester configuration file : {testerconfig + extension}.py")
             with open(testerconfigTemp, 'a') as dest:
@@ -54,7 +62,7 @@ class FileConfigurationTester(TesterInterface):
                 dest.writelines(lines)
             sys.argv.append('--labml')
             sys.argv.append(self.logger)
-            pythonPath = f'{self.hw_path.split(os.sep)[-3]}.{self.hw_path.split(os.sep)[-2].upper()}.'
+            pythonPath = f'{self.hw_path.split(os.sep)[-2].upper()}.'
             doExit = False
             try:
                 testerconfig = importlib.import_module(pythonPath + TESTER_CONFIG_FILE + "_tmp")
@@ -69,12 +77,19 @@ class FileConfigurationTester(TesterInterface):
                 raise Exception(msg)
         else:
             self.log_error(f"No Tester file configuration found, you have to create {self.hw_path + TESTER_CONFIG_FILE}.py")
+
         self.testerconfig = testerconfig
-        for instrument in dir(testerconfig):  # add information from each instrument to result.instruments
-            if instrument.find("_") != -1:
+
+        for instName in dir(testerconfig):  # add information from each instrument to result.instruments
+            if instName.find("_") == 0:
                 continue
-            instrument = getattr(testerconfig, instrument)
+            instrument = getattr(testerconfig, instName)
             if not inspect.isclass(instrument):  # filter out the class-definitions
                 if hasattr(instrument, "instName"):
                     setattr(self, instrument.instName, instrument)
+                elif instName not in dir(self) or instName in ['SITE_COUNT', 'run_pattern', 'teardown', 'setup', 'do_request', 'test_in_progress', 'test_done', 'do_init_state']:
+                    setattr(self, instName, instrument)
+                elif instName not in ['logger']:
+                    self.log_error(f' keyword "{instName}" not allowed in {TESTER_CONFIG_FILE}')
+
         self.log_info(f"FileConfigurationTester.do_int_state({site_id}): done")

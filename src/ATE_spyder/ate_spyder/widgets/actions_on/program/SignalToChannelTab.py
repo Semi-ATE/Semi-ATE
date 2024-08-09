@@ -38,7 +38,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
                 self.signal_to_channel_table.setItem(row_count, 0, self._generate_item(key))
                 self.signal_to_channel_table.setCellWidget(row_count, 1, self._generate_dropdown_item())
                 combo = self.signal_to_channel_table.cellWidget(row_count, 1)
-                combo.setCurrentIndex(value)
+                combo.setCurrentIndex(value+1)
                 if self.read_only:
                     self.signal_to_channel_table.item(row_count, 0).setFlags(flags)
                     combo.setEnabled(False)
@@ -57,6 +57,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
             channels = [f'{channel_idx}' for channel_idx in range(0, value + 1)]
             index = combo.currentIndex()
             combo.clear()
+            combo.addItem("")
             combo.addItems(channels)
             if combo.count() - 1 < index:
                 combo.setCurrentIndex(0)
@@ -81,6 +82,7 @@ class SignalToChannelTab(QtWidgets.QWidget):
         combo.setStyleSheet("QComboBox {" "border:0px solid;" "border-radius: 0px;" "combobox-popup: 0;" "background: transparent;" "}")
         combo.view().setStyleSheet("QListView{" "border:0px solid;" "border-radius: 0px;" "}")
         num_channels = self.num_channels.value()
+        combo.addItem("")
         combo.addItems([f'{channel_idx}' for channel_idx in range(0, num_channels + 1)])
         return combo
 

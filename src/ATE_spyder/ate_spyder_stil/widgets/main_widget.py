@@ -363,7 +363,7 @@ class STILContainer(PluginMainWidget):
                     message=err_msg, filename='Global', row=0, col=0))
             self.output_tree.append_file_msg(tree_msg)
 
-        output_folder = str(cwd.joinpath('pattern_output'))
+        output_folder = str(cwd.joinpath('pattern_output', self.project_info.active_hardware, self.project_info.active_base))
         args = ['sscl', '--port', str(self.stil_port), '-c', '-i']
         args += stil_files
         args += ['-m', sig_to_chan_path]

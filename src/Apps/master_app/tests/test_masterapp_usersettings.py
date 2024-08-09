@@ -10,24 +10,24 @@ class TestApplication:
 
     def default_configuration(self):
         return {'broker_host': '192.168.0.1',
-            'broker_port': '8991',
-            'sites': ["0", "1"],
-            'device_id': '0',
-            'jobsource': 'filesystem',
-            'jobformat': 'xml.semi-ate',
-            "filesystemdatasource_path": '',
-            "filesystemdatasource_jobpattern": "le306426001.xml",
-            'enable_timeouts': True,
-            'skip_jobdata_verification': False,
-            'environment': "abs",
-            'Handler': "HTO92-20F",
-            'tester_type': 'Semi-ATE Master Parallel Tester',
-            "site_layout": {"0": [0, 1], "1": [1, 2]},
-            'webui_root_path': '',
-            'webui_host': '',
-            'webui_port': 0,
-            'site_layout': [],
-            'develop_mode': False}
+                'broker_port': '8991',
+                'sites': ["0", "1"],
+                'device_id': '0',
+                'jobsource': 'filesystem',
+                'jobformat': 'xml.semi-ate',
+                "filesystemdatasource_path": '',
+                "filesystemdatasource_jobpattern": "le306426001.xml",
+                'enable_timeouts': True,
+                'skip_jobdata_verification': False,
+                'environment': "abs",
+                'Handler': "HTO92-20F",
+                'tester_type': 'Semi-ATE Master Parallel Tester',
+                "site_layout": {"0": [0, 1], "1": [1, 2]},
+                'webui_root_path': '',
+                'webui_host': '',
+                'webui_port': 0,
+                'site_layout': [],
+                'develop_mode': False}
 
     def default_configuration_with_persistent_user_settings(self):
         cfg = self.default_configuration()

@@ -4,9 +4,6 @@ from ate_common.logger import LogLevel
 
 class TesterInterface(ABC):
     SITE_COUNT = -1
-    
-    def __init__(self, logger=None):
-        self.logger = logger
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -44,7 +41,8 @@ class TesterInterface(ABC):
         pass
 
     def run_pattern(self, pattern_name: str, start_label: str = '', stop_label: str = '', timeout: int = 1000):
-        pass
+        self.log_error(f'tester: run_pattern({pattern_name}) is not implemented for this tester, return value = -1')
+        return -1
 
     def log_info(self, message: str):
         if self.logger is not None:

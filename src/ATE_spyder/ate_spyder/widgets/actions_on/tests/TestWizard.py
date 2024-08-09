@@ -797,7 +797,7 @@ class TestWizard(BaseDialog):
             shmoo_item.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)  # https://doc.qt.io/qt-5/qt.html#CheckState-enum
             shmoo_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsUserCheckable)  # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
         else:
-            if Min <= Default <= Max and Min != -np.Inf and Max != np.Inf:
+            if Min <= Default <= Max and Min != -np.inf and Max != np.inf:
                 shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable)
             else:
                 shmoo_item.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -861,7 +861,7 @@ class TestWizard(BaseDialog):
         min_item = self.__get_input_parameter_column(row, utils.InputColumnIndex.MIN())
         Min = min_item.data(QtCore.Qt.DisplayRole)
         if '∞' in Min:
-            attributes[InputColumnKey.MIN()] = -np.Inf
+            attributes[InputColumnKey.MIN()] = -np.inf
         else:
             Min = float(Min)
             attributes[InputColumnKey.MIN()] = float(f"{Min:{Fmt}}")
@@ -873,7 +873,7 @@ class TestWizard(BaseDialog):
         max_item = self.__get_input_parameter_column(row, utils.InputColumnIndex.MAX())
         Max = max_item.data(QtCore.Qt.DisplayRole)
         if '∞' in Max:
-            attributes[InputColumnKey.MAX()] = np.Inf
+            attributes[InputColumnKey.MAX()] = np.inf
         else:
             Max = float(Max)
             attributes[InputColumnKey.MAX()] = float(f"{Max:{Fmt}}")

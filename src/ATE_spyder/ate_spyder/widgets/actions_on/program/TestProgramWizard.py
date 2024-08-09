@@ -591,7 +591,7 @@ class TestProgramWizard(BaseDialog):
         self.tab_layout.setTabToolTip(PATTERN_TAB_INDEX, '')
         if self.pattern_tab.pattern_table.rowCount() == 0:
             self.tab_layout.setTabEnabled(PATTERN_TAB_INDEX, False)
-            self.tab_layout.setTabToolTip(PATTERN_TAB_INDEX, 'pattern list is empty')
+            self.tab_layout.setTabToolTip(PATTERN_TAB_INDEX, 'pattern list is empty.\nAdd a Pattern Map in the Test Wizard.')
 
     @QtCore.pyqtSlot()
     def _add_to_testprogram(self):

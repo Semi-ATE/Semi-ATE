@@ -59,7 +59,12 @@
         ]
       },
       "Instruments": [],
-      "GPFunctions": []
+      "GPFunctions": [],
+      "PatternImport": [
+        [],
+        [],
+        []
+      ]
     },
     "is_enabled": true
   }

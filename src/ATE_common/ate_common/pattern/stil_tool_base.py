@@ -19,7 +19,7 @@ class StilToolBase(ABC):
         # make sure compiled patterns exists
         for compiled_pattern in compiled_pattern_list:
             if not Path(compiled_pattern).exists():
-                raise Exception(f'pattern binary file: \'{compiled_pattern}\' is missing, make sure to compile all required pattern files')
+                raise Exception(f'pattern binary file: \"{compiled_pattern}\" is missing, make sure to compile all required pattern files')
 
         self._load_patterns_impl(compiled_pattern_list)
 
@@ -34,4 +34,5 @@ class StilToolBase(ABC):
         if not self._compiled_patterns.get(pattern_virtual_name):
             raise Exception(f'pattern: \'{pattern_virtual_name}\' is not loaded')
 
-        return Path(self._compiled_patterns[pattern_virtual_name]).stem
+        pattern = Path(self._compiled_patterns[pattern_virtual_name]) if self.pattern_withpath else Path(self._compiled_patterns[pattern_virtual_name]).stem
+        return pattern

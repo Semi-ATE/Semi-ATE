@@ -20,7 +20,7 @@ import paho.mqtt.client as mqttc
 import socket
 from .singleton import Singleton
 from PyQt5 import QtCore
-from labml_adjutancy.misc import common
+from . import common
 
 __author__ = "Zlin526F"
 __copyright__ = "Copyright 2023, Lab"
