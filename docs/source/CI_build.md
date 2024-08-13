@@ -2,8 +2,6 @@
 
 ## GitLab Runner
 
-__________
-
 Typen:
 
 * Specific GitLab Runner
