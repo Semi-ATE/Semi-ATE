@@ -199,6 +199,10 @@ jobs:
         run: |
           mamba install sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
           sphinx-build -b html docs/source/ docs/build/html
+          
+      - name: Fix output file permissions
+        run: |
+            sudo chown -R $USER:$USER docs
 
       - name: Upload docs to Github artifact
         uses: actions/upload-artifact@v3
