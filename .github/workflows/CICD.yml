@@ -194,6 +194,27 @@ jobs:
           check-manifest
 
           cd ../../../../
+          
+      - name: Build Sphinx
+        run: |
+            sphinx-build -b html docs/source/ docs/build/html
+
+      - name: Upload docs to Github artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: docs/build/html/*
+          name: docs-output
+          
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./docs/build/html
+ 
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./docs/build/html
+          branch: gh-pages
+          clean-exclude: pr-preview
 
       - name: Generate distribution sdist files
         run: |
