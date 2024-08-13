@@ -197,7 +197,8 @@ jobs:
           
       - name: Build Sphinx
         run: |
-            sphinx-build -b html docs/source/ docs/build/html
+          mamba install myst_parser sphinx-markdown-tables
+          sphinx-build -b html docs/source/ docs/build/html
 
       - name: Upload docs to Github artifact
         uses: actions/upload-artifact@v3
