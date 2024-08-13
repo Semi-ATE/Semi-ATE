@@ -197,7 +197,7 @@ jobs:
           
       - name: Build Sphinx
         run: |
-          mamba install myst-parser sphinx-markdown-tables
+          mamba install sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
           sphinx-build -b html docs/source/ docs/build/html
 
       - name: Upload docs to Github artifact
