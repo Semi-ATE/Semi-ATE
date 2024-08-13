@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semi-ATE in Production &mdash; Semi-ATE documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=cb0f6c17"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Overview of Semi-ATE Packages" href="semi-ate-packages.html" />
+    <link rel="prev" title="Semi-ATE" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Semi-ATE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-mamba-environment">Create Mamba Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt-broker">MQTT-Broker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#semi-ate-applications-and-testers">Semi-ATE Applications and Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-xml-job-file">Create XML Job File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#starting-the-applications">Starting the Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="semi-ate-packages.html">Overview of Semi-ATE Packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#which-packages-are-provided">Which Packages are provided?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-common">semi-ate-common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-project-database">semi-ate-project-database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-sammy">semi-ate-sammy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-spyder">semi-ate-spyder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-testers">semi-ate-testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-plugins">semi-ate-plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#diagrams">Diagrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#spyder-extension">Spyder Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#single-tester">Single Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#parallel-tester">Parallel Tester</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="API_UI_Websever.html">API zwischen UI und Webserver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#systemzustande">Systemzustände</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#zustandsdiagramm-der-masterapplikation">Zustandsdiagramm der Masterapplikation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#websockets">Websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#datenformat">Datenformat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#fe-komponenten">FE-Komponenten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#statuskomponente">Statuskomponente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#controlkomponente">Controlkomponente</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="binning.html">Semi-ATE.org binning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#definitions">Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#binning-strategy">Binning Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#grades-passbins">Grades / Passbins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#fail-bins">Fail Bins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-bins">Special Bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#generation-of-bin-codes">Generation of bin codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#additional-classification">Additional classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#influence-of-alarms-during-tests">Influence of alarms during tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#use-of-parameterlimits-for-classification">Use of parameterlimits for classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#the-bintable">The bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#deployment-of-the-bintable">Deployment of the bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-usecases">Special usecases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#mms-multiple-sockets">MMS, Multiple Sockets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CI_build.html">CI build</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#gitlab-runner">GitLab Runner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="CI_build.html#beispiel-config-toml">Beispiel config.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#beispiel-gitlab-ci-yml">Beispiel .gitlab-ci.yml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE Dev</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-prerequisites">Install Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#mqtt">MQTT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#environment">environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#create-new-environment-conda">create new environment (conda)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#deactivate-environment">deactivate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-requirements">Install Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-semi-ate-packages-ate-tes">Install Semi-ATE packages (ATE, TES)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-reference-plugin">Install Reference Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#installing-spyder">Installing Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-spyder-dependencies">Install Spyder Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#running-spyder">Running Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#tes-test-executive-software">TES: Test Executive Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#master-config-file">Master Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#control-config-file">Control Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#launch-applications">Launch applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#interacting-with-the-applications">Interacting with the applications</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#xml-configuration">XML configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#cluster-section">CLUSTER section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#station-section">STATION section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Import-Export.html">Import/Export</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#export">Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#import">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#what-it-is">What it is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-in-the-spyder-ui">ISC in the Spyder UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-resolvers">ISC Resolvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#performance-latency-considerations">Performance &amp; Latency Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#codegen-view-of-parameters">Codegen View of parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#runtime-view-of-parameters">Runtime View of parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#output-parameters">Output Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#availability-considerations">Availability Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#mutliple-caches">Mutliple Caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#behavior-of-remote-caches-plugins">Behavior of remote caches/plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Plugins.html">ATE.org Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#design-rationale">Design Rationale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#identification">Identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin">Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin-functionality">Plugin Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#tester">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#instances">Instances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id1">Importers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id2">Exporters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id3">Equipments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#devicepins">Devicepins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id4">Instruments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id5">General Purpose Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id6">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised"><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#complete-hookspec">Complete Hookspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#as-basic-example-plugin">As basic example plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin-installation">Plugin Installation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SequencerInterface.html">ATE Sequencer Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#api-as-seen-by-the-ate-runtime">API as seen by the ATE Runtime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#master">Master</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testoptions">Testoptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#the-runtime-as-seen-by-the-sequencer">The Runtime as seen by the sequencer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#proxies-shims">Proxies/Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testresults-testend">Testresults &amp; Testend</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#errorhandling-teardowns">Errorhandling &amp; Teardowns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#teardowns">Teardowns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-startup">During startup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-testexecution">During testexecution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#batch-end">Batch End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="softwareMigration.html">Software Release: Semi-ATE Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tool">Migration Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-strategy">Migration Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tests">Migration Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#disadvantages-and-advantages">Disadvantages and Advantages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#advantages">Advantages:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#disadvantages">Disadvantages:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Actuators:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="actuators/ActuatorControl.html">Semi-Ate.org Actuator Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol">The IOCtl Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#startup-shutdown">Startup &amp; shutdown</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#iocontrol-codes">IOControl Codes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#generic">Generic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#magfield">MagField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#former-part-of-plugin-spec-rework">Former part of plugin spec -&gt; rework</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#actuators">Actuators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol-master-testprogram">The IOCtl Protocol Master &lt;-&gt; Testprogram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html">The Magnetic Field Actuator (STL DCS6K, single channel)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#actuator-api">Actuator Api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#additional-api-functions">Additional Api Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#init-load">init_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#do-load-adaption">do_load_adaption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#setup-dcs6k">setup_dcs6k</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Build tool:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buildtool/buildtool.html">sammy, the Semi-ATE.org build- &amp; project tool</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#uusing-sammy">Uusing sammy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#verbs">Verbs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#generate">generate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#new">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#migrate">migrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development process:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html">Semi-ATE Project Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#spyder-environment">Spyder Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#project-setup">Project Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#definitions-section">Definitions Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#toolbar">Toolbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#tests-section">Tests Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#auto-script">Auto Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/TestInterface.html">Test Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#test-entry-point">Test Entry Point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#input-parameter">Input Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#output-parameter">Output Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#context">Context</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#tester">Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#instrument-actuator">Instrument &amp; Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#some-remarks">Some Remarks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Interface definitions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/control_interface.html">Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-erzeugt-werden">Daten die von Control erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-konsumiert-werden">Daten die von Control konsumiert werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#befehle-die-von-control-verstanden-werden">Befehle die von Control verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#load">Load</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/handler_interface.html">Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#befehle-die-vom-handler-verstanden-werden">Befehle die vom Handler verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#identify">identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-state">get-state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-temperature">get-temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#error">error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#send-layout">send-layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html">Interfacedefinitionen Semi-ATE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#grundsatzliches">Grundsätzliches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#topics">Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#befehle">Befehle</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/master_interface.html">Master</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-erzeugt-werden">Daten die vom Master erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#job">Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#peripherystate">PeripheryState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#befehle-die-vom-master-verstanden-werden">Befehle die vom Master verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#geteilte-peripherie-steuern">Geteilte Peripherie steuern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#handlerbefehle">Handlerbefehle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-konsumiert-werden">Daten die vom Master konsumiert werden</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html">TestApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-erzeugt-werden">Daten die von der Testapp erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#statusinfo">Statusinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#testresultat">Testresultat</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-konsumiert-werden">Daten die von der Testapp konsumiert werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#init">Init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#next">Next</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#terminate">Terminate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setloglevel">Setloglevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setting">Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setparameter">SetParameter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Test execution:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testExecution/TestExecution.html">Harmonize test execution via Plugin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#synchronization-master-and-tester">Synchronization Master and Tester</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#test-execution-scenario">Test Execution Scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-parallel-tester-single-testers">case of Parallel Tester &amp; Single Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-only-one-single-tester">case of only one Single Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#tester-plugin-interface">Tester Plugin Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#master-tester-interface">Master Tester Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#testprogram-tester-interface">TestProgram Tester Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#signal-flow">Signal Flow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Semi-ATE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Semi-ATE in Production</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/semi-ate-applications.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="semi-ate-in-production">
+<h1>Semi-ATE in Production<a class="headerlink" href="#semi-ate-in-production" title="Link to this heading"></a></h1>
+<p>This document describes how you can install the semi-ate applications to run test-programs in production mode. You will be guided how to install the required <em>conda packages</em>, to configure the applications and to generate a job-file.</p>
+<p>We assume the following:</p>
+<ul class="simple">
+<li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> installed</p></li>
+<li><p>You are running <em>Windows 10 64Bit</em></p></li>
+<li><p>You have already downloaded or generated some test program - via spyder - in folder <em>C:\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py</em>. The underlying hardware used when creating the semi-ate test project was <em>Semi-ATE Single Tester</em>.</p></li>
+<li><p>All provided commands are executed in a <strong>PowerShell</strong>.</p></li>
+<li><p>The windows user’s name is <strong>test_user</strong>, i.e. variable <code class="docutils literal notranslate"><span class="pre">$env:Username</span></code> is pointing to <strong>test_user</strong>. The user name is used to build paths. These paths are defined in the later mentioned configuration and job files. You have to adapt it to match your environment.</p></li>
+</ul>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#create-mamba-environment"><span class="xref myst">Generate a fresh <em>mamba environment</em></span></a></p></li>
+<li><p><a class="reference internal" href="#mqtt-broker"><span class="xref myst">Install and Start MQTT-Broker</span></a></p></li>
+<li><p><a class="reference internal" href="#semi-ate-applications-and-testers"><span class="xref myst">Install Semi-ATE applications and Testers</span></a>:</p>
+<ul>
+<li><p>Download and unzip web user interface aka. <a class="reference internal" href="#download-web-user-interface"><span class="xref myst"><em>msct_webui</em></span></a></p></li>
+<li><p>master application and a suitable configuration file (<em>master_config_file.json</em>)</p></li>
+<li><p>control application and a suitable configuration file (<em>control_config_file.json</em>)</p></li>
+<li><p>test application</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#create-xml-job-file"><span class="xref myst">JOB-File</span></a></p></li>
+</ul>
+<section id="create-mamba-environment">
+<h3>Create Mamba Environment<a class="headerlink" href="#create-mamba-environment" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Creation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">_app_py39_</span> <span class="pre">python=3.9</span> <span class="pre">-y</span></code></p></li>
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+</ul>
+</section>
+<section id="mqtt-broker">
+<h3>MQTT-Broker<a class="headerlink" href="#mqtt-broker" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Installation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">mosquitto</span> <span class="pre">-y</span></code></p></li>
+<li><p>Running Mosquitto-Broker <code class="docutils literal notranslate"><span class="pre">&amp;(Join-Path</span> <span class="pre">$env:USERPROFILE</span> <span class="pre">maxiconda\envs\_app_py39_\Library\sbin\mosquitto)</span> <span class="pre">-v</span></code></p></li>
+</ul>
+</section>
+<section id="semi-ate-applications-and-testers">
+<h3>Semi-ATE Applications and Testers<a class="headerlink" href="#semi-ate-applications-and-testers" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Installation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">semi-ate-master-app</span> <span class="pre">semi-ate-control-app</span> <span class="pre">semi-ate-test-app</span> <span class="pre">semi-ate-testers</span> <span class="pre">-y</span></code></p></li>
+</ul>
+<section id="download-web-user-interface">
+<h4>Download Web-User-Interface<a class="headerlink" href="#download-web-user-interface" title="Link to this heading"></a></h4>
+<p>On <a class="reference external" href="https://github.com/Semi-ATE/MSCT-WebUI/releases">MSCT-WebUI-Releases</a> download <em>msct-webui-X.X.X.zip</em>. Unzip the archive. It should create a folder named <em>msct-webui</em>.</p>
+</section>
+<section id="configurations">
+<h4>Configurations<a class="headerlink" href="#configurations" title="Link to this heading"></a></h4>
+<p>Create the following files:</p>
+<ol class="arabic simple">
+<li><p>master_config_file.json:</p></li>
+</ol>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;broker_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;broker_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1883</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SCT&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">&quot;0&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;Handler&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Handler&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;F1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;webui_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;webui_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8081</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;webui_root_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./msct-webui&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;jobsource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;filesystem&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;jobformat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xml.semi-ate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;skip_jobdata_verification&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;filesystemdatasource_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;filesystemdatasource_jobpattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;le123456000.xml&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;enable_timeouts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;user_settings_filepath&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;master_user_settings.json&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;site_layout&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]],</span>
+<span class="w">  </span><span class="nt">&quot;tester_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Semi_ATE Master Single Tester&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;loglevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>control_config_file.json:</p></li>
+</ol>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;broker_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;broker_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1883</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SCT&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;site_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;loglevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="create-xml-job-file">
+<h3>Create XML Job File<a class="headerlink" href="#create-xml-job-file" title="Link to this heading"></a></h3>
+<p>Create the job file <em>le123456000.xml</em> with the following content:</p>
+<div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;PROBE_FINAL_TEST&gt;</span>
+<span class="w">    </span><span class="nt">&lt;MAIN&gt;</span>
+<span class="w">        </span><span class="nt">&lt;MATCHCODE&gt;</span>DMSENSOR3FHRFUZ7U<span class="nt">&lt;/MATCHCODE&gt;</span>
+<span class="w">        </span><span class="nt">&lt;LOTNUMBER&gt;</span>123456.000<span class="nt">&lt;/LOTNUMBER&gt;</span>
+<span class="w">        </span><span class="nt">&lt;PACKAGEID_SHORT&gt;</span>UZ<span class="nt">&lt;/PACKAGEID_SHORT&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/MAIN&gt;</span>
+<span class="w">    </span><span class="nt">&lt;CLUSTER&gt;</span>
+<span class="w">        </span><span class="nt">&lt;TESTER&gt;</span>SCT<span class="nt">&lt;/TESTER&gt;</span>
+<span class="w">        </span><span class="nt">&lt;TESTER_ALIAS&gt;</span>SCT_1<span class="nt">&lt;/TESTER_ALIAS&gt;</span>
+<span class="w">        </span><span class="nt">&lt;HANDLER_PROBER&gt;</span>Handler<span class="nt">&lt;/HANDLER_PROBER&gt;</span>
+<span class="w">        </span><span class="nt">&lt;HANDLER_PROBER_ALIAS&gt;&lt;/HANDLER_PROBER_ALIAS&gt;</span>
+<span class="w">        </span><span class="nt">&lt;NADELKARTE&gt;&lt;/NADELKARTE&gt;</span>
+<span class="w">        </span><span class="nt">&lt;PINELEKTRONIK&gt;&lt;/PINELEKTRONIK&gt;</span>
+<span class="w">        </span><span class="nt">&lt;RUESTSATZ&gt;&lt;/RUESTSATZ&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/CLUSTER&gt;</span>
+<span class="w">    </span><span class="nt">&lt;TESTPROGRAM&gt;</span>
+<span class="w">        </span><span class="nt">&lt;EXEC_OPTIONS&gt;&lt;/EXEC_OPTIONS&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/TESTPROGRAM&gt;</span>
+<span class="w">    </span><span class="nt">&lt;HANDLERSECTION&gt;</span>
+<span class="w">        </span><span class="nt">&lt;TEMP1&gt;&lt;/TEMP1&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/HANDLERSECTION&gt;</span>
+<span class="w">    </span><span class="nt">&lt;PAT&gt;</span>
+<span class="w">        </span><span class="nt">&lt;PAT_RECIPE&gt;&lt;/PAT_RECIPE&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/PAT&gt;</span>
+<span class="w">    </span><span class="nt">&lt;STATION&gt;</span>
+<span class="w">        </span><span class="nt">&lt;STATION1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;USERTEXT1&gt;</span>F1N<span class="nt">&lt;/USERTEXT1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;TEMP1&gt;</span>25<span class="nt">&lt;/TEMP1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;TESTERPRG1&gt;</span>825A<span class="nt">&lt;/TESTERPRG1&gt;</span>
+<span class="w">            </span><span class="cm">&lt;!--&gt;</span>
+<span class="cm">            Adapt the value of the next XML tag in such a way that it points to the desired test program</span>
+<span class="cm">            &lt;--&gt;</span>
+<span class="w">            </span><span class="nt">&lt;PROGRAM_DIR1&gt;</span>C:\Users\test_user\project\src\HW0\PR\project_HW0_PR_die_production_prod.py<span class="nt">&lt;/PROGRAM_DIR1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;TESTER1&gt;</span>SCT<span class="nt">&lt;/TESTER1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;TESTER_ALIAS1&gt;</span>SCT_1<span class="nt">&lt;/TESTER_ALIAS1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;BINTABLE1&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;1&quot;</span><span class="w">     </span><span class="na">HBIN=</span><span class="s">&quot;1&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_GOOD1&quot;</span><span class="w">     </span><span class="na">GROUP=</span><span class="s">&quot;BT_PASS&quot;</span><span class="w">           </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Our best choice&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;12&quot;</span><span class="w">    </span><span class="na">HBIN=</span><span class="s">&quot;12&quot;</span><span class="w"> </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_CONT_OPEN&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_FAIL_CONT&quot;</span><span class="w">      </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Open Contacts&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;20&quot;</span><span class="w">    </span><span class="na">HBIN=</span><span class="s">&quot;13&quot;</span><span class="w"> </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_IDD&quot;</span><span class="w">       </span><span class="na">GROUP=</span><span class="s">&quot;BT_FAIL_ELECTRIC&quot;</span><span class="w">  </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Current Consumption&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;22&quot;</span><span class="w">    </span><span class="na">HBIN=</span><span class="s">&quot;42&quot;</span><span class="w"> </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_THD&quot;</span><span class="w">       </span><span class="na">GROUP=</span><span class="s">&quot;BT_FAIL_ELECTRIC&quot;</span><span class="w">  </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Total Harmonic Distortion&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60000&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60001&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;13&quot;</span><span class="w">    </span><span class="na">HBIN=</span><span class="s">&quot;12&quot;</span><span class="w"> </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_THD&quot;</span><span class="w">       </span><span class="na">GROUP=</span><span class="s">&quot;BT_FAIL_ELECTRICA&quot;</span><span class="w"> </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Total Harmonic Distortion&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;11&quot;</span><span class="w">    </span><span class="na">HBIN=</span><span class="s">&quot;12&quot;</span><span class="w"> </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_THD&quot;</span><span class="w">       </span><span class="na">GROUP=</span><span class="s">&quot;BT_FAIL_ELECTRICA&quot;</span><span class="w"> </span><span class="na">DESCRIPTION=</span><span class="s">&quot;Total Harmonic Distortion&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60001&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60002&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60003&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60004&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;ENTRY</span><span class="w"> </span><span class="na">SBIN=</span><span class="s">&quot;60005&quot;</span><span class="w"> </span><span class="na">HBIN=</span><span class="s">&quot;0&quot;</span><span class="w">  </span><span class="na">SBINNAME=</span><span class="s">&quot;SB_SMU_ALARM&quot;</span><span class="w"> </span><span class="na">GROUP=</span><span class="s">&quot;BT_ALARM&quot;</span><span class="w">          </span><span class="na">DESCRIPTION=</span><span class="s">&quot;SMU Compliance Warning&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;/BINTABLE1&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/STATION1&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/STATION&gt;</span>
+<span class="w">    </span><span class="nt">&lt;DIEELEMENT_COUNT&gt;</span>1<span class="nt">&lt;/DIEELEMENT_COUNT&gt;</span>
+<span class="w">    </span><span class="nt">&lt;DIEELEMENT&gt;</span>
+<span class="w">        </span><span class="nt">&lt;DIEELEMENT_NUMBER&gt;</span>1<span class="nt">&lt;/DIEELEMENT_NUMBER&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/DIEELEMENT&gt;</span>
+<span class="nt">&lt;/PROBE_FINAL_TEST&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="starting-the-applications">
+<h2>Starting the Applications<a class="headerlink" href="#starting-the-applications" title="Link to this heading"></a></h2>
+<p>In order to successfully run the applications we assume that all previous sections of this document have been applied:</p>
+<ol class="arabic">
+<li><p>Activate the conda environment <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Make sure that the current location contains the following files and folders:</p>
+<ul class="simple">
+<li><p>Master application configuration <em>master_config_file.json</em>, refer to <a class="reference internal" href="#configurations"><span class="xref myst">Configurations</span></a></p></li>
+<li><p>Control appliation configuration <em>control_config_file.json</em>, refer to <a class="reference internal" href="#configurations"><span class="xref myst">Configurations</span></a></p></li>
+<li><p>The job file <em>le123456000.xml</em>, refer to <a class="reference internal" href="#create-xml-job-file"><span class="xref myst">Create XML Job File</span></a>
+<a class="reference internal" href="#configurations"><span class="xref myst">Configurations</span></a></p></li>
+<li><p>The web-ui folder <em>msct-webui</em>, refer to <a class="reference internal" href="#download-web-user-interface"><span class="xref myst">Download Web-User-Interface</span></a></p></li>
+</ul>
+</li>
+<li><p>Make sure that some MQTT-Broker is running, refer to <a class="reference internal" href="#mqtt-broker"><span class="xref myst">MQTT-Broker</span></a></p></li>
+<li><p>Run master application by doing the following:</p>
+<div class="highlight-Powershell notranslate"><div class="highlight"><pre><span></span><span class="p">&gt;</span> <span class="n">launch_master</span>
+<span class="p">========</span> <span class="n">Running</span> <span class="n">on</span> <span class="n">http</span><span class="p">://</span><span class="n">127</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">1</span><span class="p">:</span><span class="n">8081</span> <span class="p">========</span>
+<span class="p">(</span><span class="n">Press</span> <span class="n">CTRL</span><span class="p">+</span><span class="n">C</span> <span class="n">to</span> <span class="n">quit</span><span class="p">)</span>
+<span class="n">master</span>   <span class="p">|</span><span class="n">22</span><span class="p">/</span><span class="n">06</span><span class="p">/</span><span class="n">2022</span> <span class="n">11</span><span class="p">:</span><span class="n">10</span><span class="p">:</span><span class="n">02</span> <span class="n">AM</span> <span class="p">|</span><span class="n">INFO</span>    <span class="p">|</span><span class="n">mqtt</span> <span class="n">connected</span>
+<span class="n">master</span>   <span class="p">|</span><span class="n">22</span><span class="p">/</span><span class="n">06</span><span class="p">/</span><span class="n">2022</span> <span class="n">11</span><span class="p">:</span><span class="n">10</span><span class="p">:</span><span class="n">02</span> <span class="n">AM</span> <span class="p">|</span><span class="n">INFO</span>    <span class="p">|</span><span class="n">Master</span> <span class="n">state</span> <span class="n">is</span> <span class="n">connecting</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run master control application by doing the following:</p>
+<div class="highlight-Powershell notranslate"><div class="highlight"><pre><span></span><span class="p">&gt;</span> <span class="n">launch_control</span>
+<span class="n">control</span> <span class="n">0</span><span class="p">|</span><span class="n">22</span><span class="p">/</span><span class="n">06</span><span class="p">/</span><span class="n">2022</span> <span class="n">11</span><span class="p">:</span><span class="n">11</span><span class="p">:</span><span class="n">20</span> <span class="n">AM</span> <span class="p">|</span><span class="n">INFO</span>    <span class="p">|</span><span class="n">mqtt</span> <span class="n">connected</span>
+<span class="n">control</span> <span class="n">0</span><span class="p">|</span><span class="n">22</span><span class="p">/</span><span class="n">06</span><span class="p">/</span><span class="n">2022</span> <span class="n">11</span><span class="p">:</span><span class="n">11</span><span class="p">:</span><span class="n">20</span> <span class="n">AM</span> <span class="p">|</span><span class="n">INFO</span>    <span class="p">|</span><span class="n">control</span> <span class="n">state</span> <span class="n">is</span><span class="p">:</span> <span class="n">idle</span>
+</pre></div>
+</div>
+</li>
+<li><p>Open some web browser and navigate to <a class="reference external" href="http://127.0.0.1:8081">http://127.0.0.1:8081</a></p></li>
+<li><p>In the browser navigate to the control tab and load the lot by providing the number <strong>123456.000</strong> in the load lot handling control.</p></li>
+<li><p>Next you can click on button <em>Start DUT-Test</em> in the Header.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Semi-ATE" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="semi-ate-packages.html" class="btn btn-neutral float-right" title="Overview of Semi-ATE Packages" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Semi-ATE contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script> 
+
+</body>
+</html>

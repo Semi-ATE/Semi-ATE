@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master &mdash; Semi-ATE documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=cb0f6c17"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="TestApp" href="testapp_interface.html" />
+    <link rel="prev" title="Interfacedefinitionen Semi-ATE" href="interfacedefinition_generell.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Semi-ATE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../semi-ate-applications.html">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-applications.html#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#create-mamba-environment">Create Mamba Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#mqtt-broker">MQTT-Broker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#semi-ate-applications-and-testers">Semi-ATE Applications and Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#create-xml-job-file">Create XML Job File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-applications.html#starting-the-applications">Starting the Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../semi-ate-packages.html">Overview of Semi-ATE Packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-packages.html#which-packages-are-provided">Which Packages are provided?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-common">semi-ate-common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-project-database">semi-ate-project-database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-sammy">semi-ate-sammy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-spyder">semi-ate-spyder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-testers">semi-ate-testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-plugins">semi-ate-plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-packages.html#diagrams">Diagrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#spyder-extension">Spyder Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#single-tester">Single Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#parallel-tester">Parallel Tester</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../API_UI_Websever.html">API zwischen UI und Webserver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#systemzustande">Systemzustände</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#zustandsdiagramm-der-masterapplikation">Zustandsdiagramm der Masterapplikation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#websockets">Websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#datenformat">Datenformat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#fe-komponenten">FE-Komponenten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../API_UI_Websever.html#statuskomponente">Statuskomponente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../API_UI_Websever.html#controlkomponente">Controlkomponente</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../binning.html">Semi-ATE.org binning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#definitions">Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#binning-strategy">Binning Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#grades-passbins">Grades / Passbins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#fail-bins">Fail Bins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#special-bins">Special Bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#generation-of-bin-codes">Generation of bin codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#additional-classification">Additional classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#influence-of-alarms-during-tests">Influence of alarms during tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#use-of-parameterlimits-for-classification">Use of parameterlimits for classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#the-bintable">The bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#deployment-of-the-bintable">Deployment of the bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#special-usecases">Special usecases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#mms-multiple-sockets">MMS, Multiple Sockets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../CI_build.html">CI build</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../CI_build.html#gitlab-runner">GitLab Runner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../CI_build.html#beispiel-config-toml">Beispiel config.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CI_build.html#beispiel-gitlab-ci-yml">Beispiel .gitlab-ci.yml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted.html">Getting Started with ATE Dev</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-prerequisites">Install Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../GettingStarted.html#mqtt">MQTT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#environment">environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#create-new-environment-conda">create new environment (conda)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#deactivate-environment">deactivate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-requirements">Install Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-semi-ate-packages-ate-tes">Install Semi-ATE packages (ATE, TES)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-reference-plugin">Install Reference Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#installing-spyder">Installing Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-spyder-dependencies">Install Spyder Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#running-spyder">Running Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#tes-test-executive-software">TES: Test Executive Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#master-config-file">Master Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#control-config-file">Control Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#launch-applications">Launch applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../GettingStarted.html#interacting-with-the-applications">Interacting with the applications</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#xml-configuration">XML configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../GettingStarted.html#cluster-section">CLUSTER section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../GettingStarted.html#station-section">STATION section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Import-Export.html">Import/Export</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Import-Export.html#export">Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Import-Export.html#import">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#what-it-is">What it is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#isc-in-the-spyder-ui">ISC in the Spyder UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#isc-resolvers">ISC Resolvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#performance-latency-considerations">Performance &amp; Latency Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#codegen-view-of-parameters">Codegen View of parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#runtime-view-of-parameters">Runtime View of parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#output-parameters">Output Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#availability-considerations">Availability Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#mutliple-caches">Mutliple Caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#behavior-of-remote-caches-plugins">Behavior of remote caches/plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Plugins.html">ATE.org Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#design-rationale">Design Rationale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#identification">Identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin">Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin-functionality">Plugin Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#tester">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#instances">Instances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id1">Importers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id2">Exporters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id3">Equipments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#devicepins">Devicepins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id4">Instruments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id5">General Purpose Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id6">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised"><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#complete-hookspec">Complete Hookspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#as-basic-example-plugin">As basic example plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin-installation">Plugin Installation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../SequencerInterface.html">ATE Sequencer Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#api-as-seen-by-the-ate-runtime">API as seen by the ATE Runtime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#master">Master</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#testoptions">Testoptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#the-runtime-as-seen-by-the-sequencer">The Runtime as seen by the sequencer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#proxies-shims">Proxies/Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#testresults-testend">Testresults &amp; Testend</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#errorhandling-teardowns">Errorhandling &amp; Teardowns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#teardowns">Teardowns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#during-startup">During startup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#during-testexecution">During testexecution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#batch-end">Batch End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../softwareMigration.html">Software Release: Semi-ATE Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-tool">Migration Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-strategy">Migration Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-tests">Migration Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#disadvantages-and-advantages">Disadvantages and Advantages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../softwareMigration.html#advantages">Advantages:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../softwareMigration.html#disadvantages">Disadvantages:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Actuators:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../actuators/ActuatorControl.html">Semi-Ate.org Actuator Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/ActuatorControl.html#the-ioctl-protocol">The IOCtl Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/ActuatorControl.html#startup-shutdown">Startup &amp; shutdown</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/ActuatorControl.html#iocontrol-codes">IOControl Codes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/ActuatorControl.html#generic">Generic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/ActuatorControl.html#magfield">MagField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/ActuatorControl.html#former-part-of-plugin-spec-rework">Former part of plugin spec -&gt; rework</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/ActuatorControl.html#actuators">Actuators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/ActuatorControl.html#the-ioctl-protocol-master-testprogram">The IOCtl Protocol Master &lt;-&gt; Testprogram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html">The Magnetic Field Actuator (STL DCS6K, single channel)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html#actuator-api">Actuator Api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html#additional-api-functions">Additional Api Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html#init-load">init_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html#do-load-adaption">do_load_adaption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../actuators/MagField-STL6k/STL6K-SingleChannel.html#setup-dcs6k">setup_dcs6k</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Build tool:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../buildtool/buildtool.html">sammy, the Semi-ATE.org build- &amp; project tool</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#uusing-sammy">Uusing sammy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#verbs">Verbs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#generate">generate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#new">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#migrate">migrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development process:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html">Semi-ATE Project Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#spyder-environment">Spyder Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#project-setup">Project Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#definitions-section">Definitions Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#toolbar">Toolbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#tests-section">Tests Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#auto-script">Auto Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developmentProcess/TestInterface.html">Test Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#test-entry-point">Test Entry Point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#input-parameter">Input Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#output-parameter">Output Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#context">Context</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/TestInterface.html#tester">Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/TestInterface.html#instrument-actuator">Instrument &amp; Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#some-remarks">Some Remarks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Interface definitions:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="control_interface.html">Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="control_interface.html#daten-die-von-control-erzeugt-werden">Daten die von Control erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="control_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="control_interface.html#daten-die-von-control-konsumiert-werden">Daten die von Control konsumiert werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="control_interface.html#befehle-die-von-control-verstanden-werden">Befehle die von Control verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="control_interface.html#load">Load</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="handler_interface.html">Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="handler_interface.html#befehle-die-vom-handler-verstanden-werden">Befehle die vom Handler verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="handler_interface.html#identify">identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="handler_interface.html#get-state">get-state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="handler_interface.html#get-temperature">get-temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="handler_interface.html#error">error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="handler_interface.html#send-layout">send-layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfacedefinition_generell.html">Interfacedefinitionen Semi-ATE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfacedefinition_generell.html#grundsatzliches">Grundsätzliches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfacedefinition_generell.html#topics">Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfacedefinition_generell.html#befehle">Befehle</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Master</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#daten-die-vom-master-erzeugt-werden">Daten die vom Master erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#job">Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#peripherystate">PeripheryState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#befehle-die-vom-master-verstanden-werden">Befehle die vom Master verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#geteilte-peripherie-steuern">Geteilte Peripherie steuern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handlerbefehle">Handlerbefehle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#daten-die-vom-master-konsumiert-werden">Daten die vom Master konsumiert werden</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testapp_interface.html">TestApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testapp_interface.html#daten-die-von-der-testapp-erzeugt-werden">Daten die von der Testapp erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#statusinfo">Statusinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#testresultat">Testresultat</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testapp_interface.html#daten-die-von-der-testapp-konsumiert-werden">Daten die von der Testapp konsumiert werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#init">Init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#next">Next</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#terminate">Terminate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#setloglevel">Setloglevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#setting">Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testapp_interface.html#setparameter">SetParameter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Test execution:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../testExecution/TestExecution.html">Harmonize test execution via Plugin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#synchronization-master-and-tester">Synchronization Master and Tester</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#test-execution-scenario">Test Execution Scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#case-of-parallel-tester-single-testers">case of Parallel Tester &amp; Single Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#case-of-only-one-single-tester">case of only one Single Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#tester-plugin-interface">Tester Plugin Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#master-tester-interface">Master Tester Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#testprogram-tester-interface">TestProgram Tester Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#signal-flow">Signal Flow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Semi-ATE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Master</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/interfaceDefinitions/master_interface.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="master">
+<h1>Master<a class="headerlink" href="#master" title="Link to this heading"></a></h1>
+<section id="daten-die-vom-master-erzeugt-werden">
+<h2>Daten die vom Master erzeugt werden<a class="headerlink" href="#daten-die-vom-master-erzeugt-werden" title="Link to this heading"></a></h2>
+<section id="statusinfo">
+<h3>Statusinfo<a class="headerlink" href="#statusinfo" title="Link to this heading"></a></h3>
+<p>Topic: &lt;device-id&gt;/Master/status</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feld</p></th>
+<th class="head"><p>Bedeutung/Zulässige Werte</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Command</p></td>
+<td><p>status</p></td>
+</tr>
+<tr class="row-odd"><td><p>interface_version</p></td>
+<td><p>Bezeichnet die Version der Schnittstelle Master -&gt; TestApp, die von dieser Version des Masters implementiert wird.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Beispiel:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;interface_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idle&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="job">
+<h2>Job<a class="headerlink" href="#job" title="Link to this heading"></a></h2>
+<p>Topic: &lt;device-id&gt;/Master/job
+In diesem Topic findet sich eine Reihe von Key-Value Paaren, die die Konfiguration für den aktuellen Testjob darstellen. Der Master ermittelt sie anhand der Losnummer und einer kofigurierten Quelle (z.B. Networkshare für Job.xml).</p>
+</section>
+<section id="peripherystate">
+<h2>PeripheryState<a class="headerlink" href="#peripherystate" title="Link to this heading"></a></h2>
+<p><strong>ToDo: Überarbeiten, gilt so nicht mehr!</strong></p>
+<p>Topic: &lt;device-id&gt;/Master/peripherystate</p>
+<p>Im diesem Topic teilt der Master den Zustand von Peripheriegeräten mit, die durch den Master kontrolliert werden, d.h. solche für die nur eine Instanz existiert. Die konkret verwendeten Peripheriegeräte sind noch offen. Die Daten in diesem Topic werden wie folgt organisiert:
+“&lt;PeripheryName&gt;.&lt;Attribute&gt;” : &lt;Value&gt;
+Somit besteht die Möglichkeit sowohl einfache “an/aus” Zustände als auch komplexere Zustände zu modellieren.</p>
+<p><strong>Ende Todo</strong></p>
+</section>
+<section id="befehle-die-vom-master-verstanden-werden">
+<h2>Befehle die vom Master verstanden werden<a class="headerlink" href="#befehle-die-vom-master-verstanden-werden" title="Link to this heading"></a></h2>
+<p>Der Master empfängt Befehle im Topic Master/command. Alle Befehle, auf die eine Antwort geschickt wird postet der Master im Topic Master/response</p>
+<section id="geteilte-peripherie-steuern">
+<h3>Geteilte Peripherie steuern<a class="headerlink" href="#geteilte-peripherie-steuern" title="Link to this heading"></a></h3>
+<p><strong>TODO - Abschnitt überarbeiten</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feld</p></th>
+<th class="head"><p>Bedeutung/Zulässige Werte</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Command</p></td>
+<td><p>„togglesharedperiphery“</p></td>
+</tr>
+<tr class="row-odd"><td><p>peripheryType</p></td>
+<td><p>&lt; name &gt;</p></td>
+</tr>
+<tr class="row-even"><td><p>param&lt;0-n&gt;</p></td>
+<td><p>Parameter für Peripherie</p></td>
+</tr>
+</tbody>
+</table>
+<p>Weist den Master an ein Stück Peripherie anzusteuern, das
+für alle Testprogramme gleich ist (z.B. Magnetfeldgenerator).
+Der Master meldet Vollzug, indem das korrespondierende Feld im Topic “&lt;device-id&gt;/Master/peripherystate” auf den geforderten Wert gesetzt wird. Das Parameterfeld ist als Beispiel zu verstehen. Je nach konkreter Peripherie werden unterschiedliche Parameter gebraucht. Hierzu muss eine seperate Dokumentation geschrieben werden.</p>
+<p><strong>Ende ToDo</strong></p>
+<p><strong>Beispiel</strong>:
+Im Test wird gefordert, dass der Fluxkompensator auf 100 bozos geschaltet wird.</p>
+<p>Der aktuelle Peripheriestatus ist:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;fluxcompensator&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="err">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>TestApp postet:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fluxcompensator&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;param0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Nach Empfang der Nachricht der Testapp steuert der Master den Fluxkompensator an.</p>
+<p>:information_source: Der Master stellt sicher, dass die angeforderte Peripherie im korrekten Zustand ist, wenn der Vollzug meldet, d.h. etwaige Einschwingzeiten sind vom Testprogramm nicht seperat zu berücksichtigen, sondern wurden zum Zeitpunkt der Vollzugsmeldung durch den Master (bzw. das Plugin, welches die Ressourcensteuerung implementiert!) bereits berückstichtigt.</p>
+<p>:warning: Wird eine Ressource angefordert, die nicht existiert, so geht der Master in den Fehlerzustand.</p>
+<p>:warning: Erhält der Master verschiedene Befehle für die gleiche Peripherie (z.B. Site A fordert “Magnetfeld an”, Site B fordert “Magnetfeld aus”), während noch eine Zustandsänderung pendent ist, so geht er in den Fehlerzustand über.</p>
+<p>:warning: Zu einem Zeitpunkt kann nur genau eine Ressourcenanforderung aktiv sein. Werden zwei verschiedene Ressourcen angefordert, so geht der Master in den Fehlerzustand über.</p>
+<p>:warning: Der Master synchronisiert den Zugriff auf die geteilten Peripherien derart, dass eine Änderung erst durchgeführt wird, wenn dieselbe Anfrage von allen aktiven Sites gesendet wurde. Es wird davon ausgegangen, dass auf allen Sites dasselbe Programm läuft und demnach auch immer zum gleichen Zeitpunkt während des Testablaufs von allen Sites dieselbe gemeinsame Ressource verwendet wird. Derzeit sind noch keine Timeouts für diesen Vorgang definiert.</p>
+<p><strong>Auflösen von geteilten Peripherien</strong>: Der Master verwendet Pluggy um für geteilte Peripherien das richtige Businessobjekt zu ermitteln, dabei wird der Peripherytype als Aktuatorfähigkeit interpretiert. Der Master instanziert sich ein Aktuatorobjekt mit dem Call “get_actuator” aus den installierten Plugins. Er verwendet die erste Implementierung, die gemeldet wird. Das bedeutet, dass mehrere Aktuatorimplementierungen für denselben Aktuator (die durchaus aus verschiedenen Plugins kommen können!) zu unvorhersehbarem Verhalten führen.</p>
+</section>
+<section id="handlerbefehle">
+<h3>Handlerbefehle<a class="headerlink" href="#handlerbefehle" title="Link to this heading"></a></h3>
+<p>Topic: &lt;device-id&gt;/Master/cmd</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feld</p></th>
+<th class="head"><p>Bedeutung/Zulässige Werte</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>type</p></td>
+<td><p>&lt;command_type&gt;</p></td>
+</tr>
+<tr class="row-odd"><td><p>value</p></td>
+<td><p>&lt;payload&gt;</p></td>
+</tr>
+</tbody>
+</table>
+<p>payload kann mehere key paramters haben. Dies im Falle von load lot
+informationen über das zu ladene lot (Losnumber, Temperature, etc..). Viele Befehle werden mit dem Zustand des Master quittiert, d.h. die interne Zustandsmaschine des Masters wechselt den Zustand aufgrund eines Befehls, was auf dem Master/status Topic zu beobachten ist. Dementsprechend muss eine Handlersteuerung dieses Topic überwachen.</p>
+<p>Unterstützte Befehle</p>
+<section id="site-layout">
+<h4>site-layout<a class="headerlink" href="#site-layout" title="Link to this heading"></a></h4>
+<p>Der site-layout Befehl teilt dem Master mit welches physische Layout die Sites des Testers zueinander haben.
+Der Master ermittelt anhand dieses Layouts, welche Pingpong Konfiguration zu verwenden ist.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;site-layout&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span>
+<span class="w">                </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>[0, 1] are the x and y coordinates</p></li>
+<li><p>the index of the tuple (x and y) is the sideid
+from the example above:</p>
+<ul>
+<li><p>siteid 0 ==&gt;  (x: 0, y: 1)</p></li>
+</ul>
+</li>
+<li><p>Für jede Site des Testers wird ein Eintrag im “sites” Array erwartet.</p></li>
+<li><p>Die Positionen müssen mit den Positionen, die im Master hinterlegt sind übereinstimmen.</p></li>
+</ul>
+<p>Positionen der Sites im Master:</p>
+<ul class="simple">
+<li><p>Der Master speichert die Sitepositionen als vielfaches der Größe einer Site, mit dem 0 Punkt links oben.</p></li>
+<li><p>Es gibt keine negativen Koordinaten für Sites.</p></li>
+<li><p>Der Master erlaubt einen Versatz vom 0-Punkt von maximal <Anzahl Sites> - 1, d.h. bei 4 Sites ist die Maximale X Koordinate 3.</p></li>
+<li><p>Es gibt keine Bruchteile von Schritten, sondern nur ganze Zahlen.</p></li>
+</ul>
+<p>Der Nutzer des Interface ist dafür verantwortlich die Sitekoordinaten mittels einer geeigneten Transformation in das Masterkoordinatensystem zu überführen.</p>
+<p>Randbedingungen:</p>
+<ul class="simple">
+<li><p>Der Master akzeptiert dieses Paket nur, solange noch kein Testprogramm geladen ist.</p></li>
+<li><p>Sollte ein Testprogramm geladen werden, bevor dieses Paket geladen wurde, so verwendet der Master eine in seiner  Konfigurationsdatei hinterlegtes Layout. Hierbei handelt es sich um einen Fallback um es weiterhin zu ermöglichen Lose über das WebUI zu ermöglichen wenn kein Handler verfügbar ist.</p></li>
+</ul>
+</section>
+<section id="load">
+<h4>load<a class="headerlink" href="#load" title="Link to this heading"></a></h4>
+<p>Der Loadbefehl weist die Masterapplikation an ein Los zu laden.
+Bei Erfolg wechselt der Master in den Zustand XXX</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;load&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;lotnumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;sublotnumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;devicetype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;measurementtemperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Der Loadbefehl weist die Masterapplikation an ein Los zu laden</p>
+<ul class="simple">
+<li><p><strong>lotnumber</strong>: Losnummer</p></li>
+<li><p>sublotnumer: Sublosnummer / Wafernummer</p></li>
+<li><p>devicetype: Device Type</p></li>
+<li><p>measurementtemperature: Eingestellte Test-Temperatur</p></li>
+</ul>
+<p>Bei Erfolg wechselt der Master in den Zustand XXX</p>
+</section>
+<section id="next">
+<h4>next<a class="headerlink" href="#next" title="Link to this heading"></a></h4>
+<p>Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge von Sites zu starten. Der Master wechselt während die Tests laufen in den Zustand XXX und nach Testabschluss in den Zustand YYY. Die Handlerapplikation darf keinen neuen Testbefehl schicken, solange der Zustand XXX nicht erreicht wurde, selbst dann nicht, wenn der Master bereits Testergebnisse publiziert hat.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;next&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;siteid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;site-id&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;partid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">&quot;binning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">&quot;logflag&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">&quot;additionalinfo&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="err">(mehr</span><span class="w"> </span><span class="err">si</span><span class="kc">tes</span><span class="err">)</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>siteid</strong>: Siteid einer Site, auf der getestet werden soll. Diese Siteid muss mit einer Site übereinstimmen, die beim Master angemeldet ist.</p></li>
+<li><p><strong>partid</strong>: Bauteilnummer</p></li>
+<li><p><strong>binning</strong>: Bin Ergebnis einer vorherigen Teststation für das Bauteil</p></li>
+<li><p><strong>logflag</strong>:  LOG FLAG</p></li>
+<li><p><strong>additionalinfo</strong>: Informationen die Zwischen meherere Tester ausgetauscht werden</p></li>
+</ul>
+<p><strong>Fehlerfälle</strong>:
+Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in den Zustand “Error”.</p>
+</section>
+<section id="end-lot">
+<h4>end lot<a class="headerlink" href="#end-lot" title="Link to this heading"></a></h4>
+<p>Der Endlotbefehl weist die Masterapplikation ihre Testapplikation zu beenden. Bei Erfolg wechselt der Master in den Zustand XXX</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;endlot&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="identify">
+<h4>identify<a class="headerlink" href="#identify" title="Link to this heading"></a></h4>
+<p>Der identifybefehl weist die Masterapplikation sein ID(Name) zu schicken. Die Antwort ist:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identify&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identify&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="get-state">
+<h4>get-state<a class="headerlink" href="#get-state" title="Link to this heading"></a></h4>
+<p>Der get-state Befehl weist die Masterapplikation seinen Zustand zu schicken. Der Master published daraufhin seinen aktuellen Zustand im status Topic.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Antwort durch den Master</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">               </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>ToDo: Hier sollten nur die Statemachinezustände des Masters stehen. Der Handler muss sehen, wie er damit klarkommt.</strong></p>
+<ul class="simple">
+<li><p>BUSY</p></li>
+<li><p>LOT = loading</p></li>
+<li><p>INIT</p></li>
+<li><p>OK</p></li>
+<li><p>ERR</p></li>
+<li><p>CHECKSUM = checksum error</p></li>
+<li><p>NOT_IMPL</p></li>
+<li><p>INVAL_LOT</p></li>
+<li><p>NO_LOT</p></li>
+<li><p>HAVE_LOT</p></li>
+<li><p>UN_ERR = unrecorverable error</p></li>
+</ul>
+</section>
+<section id="get-host">
+<h4>get-host<a class="headerlink" href="#get-host" title="Link to this heading"></a></h4>
+<p>Der get-host Befehl weist die Masterapplikation seinen host information zu schicken. Diese werden verwendet, um auf dem Master WebUI zugreifen zu können.
+Der Master published daraufhin die information in seinem response topic.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Antwort durch den Master</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">/&lt;por</span><span class="kc">t</span><span class="mi">-</span><span class="kc">nu</span><span class="err">m/&gt;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="daten-die-vom-master-konsumiert-werden">
+<h2>Daten die vom Master konsumiert werden<a class="headerlink" href="#daten-die-vom-master-konsumiert-werden" title="Link to this heading"></a></h2>
+<p>Der Master konsumiert Statusinformationen aus den Topics:</p>
+<ul class="simple">
+<li><p>&lt;device-id&gt;/Control/status</p></li>
+<li><p>&lt;device-id&gt;/TestApp/status</p></li>
+<li><p>&lt;device-id&gt;/Periphery/status</p></li>
+<li><p>&lt;handler-id&gt;/Handler/status</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="interfacedefinition_generell.html" class="btn btn-neutral float-left" title="Interfacedefinitionen Semi-ATE" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="testapp_interface.html" class="btn btn-neutral float-right" title="TestApp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Semi-ATE contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script> 
+
+</body>
+</html>

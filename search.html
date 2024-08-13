@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search &mdash; Semi-ATE documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=cb0f6c17"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="#" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Semi-ATE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="semi-ate-applications.html">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#create-mamba-environment">Create Mamba Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#mqtt-broker">MQTT-Broker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#semi-ate-applications-and-testers">Semi-ATE Applications and Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#create-xml-job-file">Create XML Job File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#starting-the-applications">Starting the Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="semi-ate-packages.html">Overview of Semi-ATE Packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#which-packages-are-provided">Which Packages are provided?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-common">semi-ate-common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-project-database">semi-ate-project-database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-sammy">semi-ate-sammy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-spyder">semi-ate-spyder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-testers">semi-ate-testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-plugins">semi-ate-plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#diagrams">Diagrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#spyder-extension">Spyder Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#single-tester">Single Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#parallel-tester">Parallel Tester</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="API_UI_Websever.html">API zwischen UI und Webserver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#systemzustande">Systemzustände</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#zustandsdiagramm-der-masterapplikation">Zustandsdiagramm der Masterapplikation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#websockets">Websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#datenformat">Datenformat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#fe-komponenten">FE-Komponenten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#statuskomponente">Statuskomponente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#controlkomponente">Controlkomponente</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="binning.html">Semi-ATE.org binning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#definitions">Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#binning-strategy">Binning Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#grades-passbins">Grades / Passbins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#fail-bins">Fail Bins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-bins">Special Bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#generation-of-bin-codes">Generation of bin codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#additional-classification">Additional classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#influence-of-alarms-during-tests">Influence of alarms during tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#use-of-parameterlimits-for-classification">Use of parameterlimits for classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#the-bintable">The bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#deployment-of-the-bintable">Deployment of the bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-usecases">Special usecases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#mms-multiple-sockets">MMS, Multiple Sockets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CI_build.html">CI build</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#gitlab-runner">GitLab Runner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="CI_build.html#beispiel-config-toml">Beispiel config.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#beispiel-gitlab-ci-yml">Beispiel .gitlab-ci.yml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE Dev</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-prerequisites">Install Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#mqtt">MQTT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#environment">environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#create-new-environment-conda">create new environment (conda)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#deactivate-environment">deactivate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-requirements">Install Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-semi-ate-packages-ate-tes">Install Semi-ATE packages (ATE, TES)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-reference-plugin">Install Reference Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#installing-spyder">Installing Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-spyder-dependencies">Install Spyder Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#running-spyder">Running Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#tes-test-executive-software">TES: Test Executive Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#master-config-file">Master Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#control-config-file">Control Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#launch-applications">Launch applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#interacting-with-the-applications">Interacting with the applications</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#xml-configuration">XML configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#cluster-section">CLUSTER section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#station-section">STATION section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Import-Export.html">Import/Export</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#export">Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#import">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#what-it-is">What it is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-in-the-spyder-ui">ISC in the Spyder UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-resolvers">ISC Resolvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#performance-latency-considerations">Performance &amp; Latency Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#codegen-view-of-parameters">Codegen View of parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#runtime-view-of-parameters">Runtime View of parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#output-parameters">Output Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#availability-considerations">Availability Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#mutliple-caches">Mutliple Caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#behavior-of-remote-caches-plugins">Behavior of remote caches/plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Plugins.html">ATE.org Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#design-rationale">Design Rationale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#identification">Identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin">Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin-functionality">Plugin Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#tester">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#instances">Instances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id1">Importers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id2">Exporters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id3">Equipments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#devicepins">Devicepins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id4">Instruments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id5">General Purpose Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#id6">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised"><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins.html#complete-hookspec">Complete Hookspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#as-basic-example-plugin">As basic example plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Plugins.html#plugin-installation">Plugin Installation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SequencerInterface.html">ATE Sequencer Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#api-as-seen-by-the-ate-runtime">API as seen by the ATE Runtime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#master">Master</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testoptions">Testoptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#the-runtime-as-seen-by-the-sequencer">The Runtime as seen by the sequencer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#proxies-shims">Proxies/Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testresults-testend">Testresults &amp; Testend</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#errorhandling-teardowns">Errorhandling &amp; Teardowns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#teardowns">Teardowns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-startup">During startup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-testexecution">During testexecution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#batch-end">Batch End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="softwareMigration.html">Software Release: Semi-ATE Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tool">Migration Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-strategy">Migration Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tests">Migration Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#disadvantages-and-advantages">Disadvantages and Advantages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#advantages">Advantages:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#disadvantages">Disadvantages:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Actuators:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="actuators/ActuatorControl.html">Semi-Ate.org Actuator Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol">The IOCtl Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#startup-shutdown">Startup &amp; shutdown</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#iocontrol-codes">IOControl Codes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#generic">Generic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#magfield">MagField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#former-part-of-plugin-spec-rework">Former part of plugin spec -&gt; rework</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#actuators">Actuators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol-master-testprogram">The IOCtl Protocol Master &lt;-&gt; Testprogram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html">The Magnetic Field Actuator (STL DCS6K, single channel)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#actuator-api">Actuator Api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#additional-api-functions">Additional Api Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#init-load">init_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#do-load-adaption">do_load_adaption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#setup-dcs6k">setup_dcs6k</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Build tool:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buildtool/buildtool.html">sammy, the Semi-ATE.org build- &amp; project tool</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#uusing-sammy">Uusing sammy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#verbs">Verbs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#generate">generate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#new">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#migrate">migrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development process:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html">Semi-ATE Project Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#spyder-environment">Spyder Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#project-setup">Project Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#definitions-section">Definitions Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#toolbar">Toolbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#tests-section">Tests Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#auto-script">Auto Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/TestInterface.html">Test Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#test-entry-point">Test Entry Point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#input-parameter">Input Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#output-parameter">Output Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#context">Context</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#tester">Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#instrument-actuator">Instrument &amp; Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#some-remarks">Some Remarks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Interface definitions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/control_interface.html">Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-erzeugt-werden">Daten die von Control erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-konsumiert-werden">Daten die von Control konsumiert werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#befehle-die-von-control-verstanden-werden">Befehle die von Control verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#load">Load</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/handler_interface.html">Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#befehle-die-vom-handler-verstanden-werden">Befehle die vom Handler verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#identify">identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-state">get-state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-temperature">get-temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#error">error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#send-layout">send-layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html">Interfacedefinitionen Semi-ATE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#grundsatzliches">Grundsätzliches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#topics">Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#befehle">Befehle</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/master_interface.html">Master</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-erzeugt-werden">Daten die vom Master erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#job">Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#peripherystate">PeripheryState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#befehle-die-vom-master-verstanden-werden">Befehle die vom Master verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#geteilte-peripherie-steuern">Geteilte Peripherie steuern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#handlerbefehle">Handlerbefehle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-konsumiert-werden">Daten die vom Master konsumiert werden</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html">TestApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-erzeugt-werden">Daten die von der Testapp erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#statusinfo">Statusinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#testresultat">Testresultat</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-konsumiert-werden">Daten die von der Testapp konsumiert werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#init">Init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#next">Next</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#terminate">Terminate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setloglevel">Setloglevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setting">Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setparameter">SetParameter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Test execution:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testExecution/TestExecution.html">Harmonize test execution via Plugin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#synchronization-master-and-tester">Synchronization Master and Tester</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#test-execution-scenario">Test Execution Scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-parallel-tester-single-testers">case of Parallel Tester &amp; Single Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-only-one-single-tester">case of only one Single Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#tester-plugin-interface">Tester Plugin Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#master-tester-interface">Master Tester Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#testprogram-tester-interface">TestProgram Tester Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#signal-flow">Signal Flow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Semi-ATE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Search</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <noscript>
+  <div id="fallback" class="admonition warning">
+    <p class="last">
+      Please activate JavaScript to enable the search functionality.
+    </p>
+  </div>
+  </noscript>
+
+  
+  <div id="search-results">
+  
+  </div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Semi-ATE contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+  <script>
+    jQuery(function() { Search.loadIndex("searchindex.js"); });
+  </script>
+  
+  <script id="searchindexloader"></script>
+   
+
+
+</body>
+</html>
