@@ -72,8 +72,8 @@ html_theme_options = {
     'titles_only': False
 }
 html_title = "Semi-ATE documentation"
-#html_logo = "path/to/logo.png"
-#html_favicon = "path/to/favicon.ico"
+html_logo = "_static/pictures/logo.png"
+html_favicon = '_static/pictures/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
