@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Semi-ATE'
-copyright = '2022, Semi-ATE contributors'
+copyright = '2024, Semi-ATE contributors'
 author = 'Semi-ATE contributors'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.14'
+release = '1.0.15'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,7 +32,8 @@ release = '1.0.14'
 # ones.
 extensions = [
     'myst_parser',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+	'sphinx.ext.githubpages'
 ]
 
 # Add source suffix to support extensions with the required parser
