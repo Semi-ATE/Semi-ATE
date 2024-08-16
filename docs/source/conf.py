@@ -33,7 +33,7 @@ release = '1.0.15'
 extensions = [
     'myst_parser',
     'sphinx_markdown_tables',
-	'sphinx.ext.githubpages'
+	'sphinx.ext.githubpages',
 ]
 
 # Add source suffix to support extensions with the required parser
@@ -51,6 +51,8 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -79,3 +81,7 @@ html_favicon = '_static/pictures/favicon.ico'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+def setup(app):
+    app.add_css_file('css/custom.css')  # add custom style sheet
