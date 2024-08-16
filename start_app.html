@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting Started with ATE Dev &mdash; Semi-ATE documentation</title>
+  <title>TES: Test Executive Software &mdash; Semi-ATE documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=9c6baf1e" />
@@ -22,9 +22,7 @@
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Example Project" href="exampleProject/exampleproject.html" />
-    <link rel="prev" title="Semi-ATE in Production" href="semi-ate-applications.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,7 +46,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="semi-ate-applications.html">Semi-ATE in Production</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#requirements">Requirements</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#create-mamba-environment">Create Mamba Environment</a></li>
@@ -60,16 +58,16 @@
 <li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#starting-the-applications">Starting the Applications</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started with ATE Dev</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#we-assume-the-following">We assume the following</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mqtt">MQTT</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#environment">Environment:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE Dev</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#we-assume-the-following">We assume the following</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#mqtt">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#environment">Environment:</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#create-new-environment-conda-mamba">create new environment (conda/mamba)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#activate-environment">activate environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-semi-ate-packages-for-developers">Install Semi-ATE packages for developers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-spyder">Running Spyder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#create-new-environment-conda-mamba">create new environment (conda/mamba)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-semi-ate-packages-for-developers">Install Semi-ATE packages for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#running-spyder">Running Spyder</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exampleProject/exampleproject.html">Example Project</a><ul>
@@ -386,9 +384,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Getting Started with ATE Dev</li>
+      <li class="breadcrumb-item active">TES: Test Executive Software</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/GettingStarted.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/start_app.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -396,91 +394,105 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>Last change: Aug 16, 2024</p>
-<section id="getting-started-with-ate-dev">
-<h1>Getting Started with ATE Dev<a class="headerlink" href="#getting-started-with-ate-dev" title="Link to this heading"></a></h1>
-<p>This document describes how to install semi-ate for developers to develop and test your test-flows. For example, for evaluation a sensor device or to use a test flow later in production.</p>
-<p>You will be guided how to install the required <em>conda packages</em>, to configure <a class="reference external" href="https://www.spyder-ide.org/">spyder</a> with different plugins, so that you can then create
-test sequences with different tests with relatively little effort.</p>
-<section id="we-assume-the-following">
-<h2>We assume the following<a class="headerlink" href="#we-assume-the-following" title="Link to this heading"></a></h2>
+  <section id="tes-test-executive-software">
+<h1>TES: Test Executive Software<a class="headerlink" href="#tes-test-executive-software" title="Link to this heading"></a></h1>
+<p>In this step we will configure the software components as if they were run on a Mini SCT device.
+From Semi-ATE root navigate to ATE/TES/apps.</p>
+<p>current directory: Semi-ATE</p>
+<div class="highlight-Console notranslate"><div class="highlight"><pre><span></span><span class="go">cd ATE/TES/apps</span>
+</pre></div>
+</div>
+<p>The files <code class="docutils literal notranslate"><span class="pre">master_config_file_template.json</span></code> and
+<code class="docutils literal notranslate"><span class="pre">control_config_file_template.json</span></code> serve as the basic configuration for our system. Copy these two files adjust them, so that:</p>
 <ul class="simple">
-<li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> installed (maxiconda is comparable to <a class="reference external" href="https://www.anaconda.com/">Anaconda</a> but completely license-free).
-You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later.
-This is not practical. And you should install maxiconda only for you, not for all users.
-Maxiconda is not running together with Anaconda, you  have to  deinstall Anaconda first!
-And if c:\users\&lt;your username&gt;\.condarc exist, than remove this file.</p></li>
-<li><p>You are running <em>Windows 10 64Bit</em> or an <em>linux system</em>.</p></li>
+<li><p>The broker_host address points to the host, where your mqtt broker is running</p></li>
+<li><p>Both files have the same device id (this is required, so that master and control application can “find” each other).</p></li>
+<li><p>Leave the rest of the file contents as is.</p></li>
+<li><p>Rename the files to <code class="docutils literal notranslate"><span class="pre">master_config_file.json</span></code> and <code class="docutils literal notranslate"><span class="pre">control_config_file.json</span></code> respectively.</p></li>
 </ul>
 </section>
-<section id="mqtt">
-<h2>MQTT<a class="headerlink" href="#mqtt" title="Link to this heading"></a></h2>
-<p>The components use MQTT for communication, so an MQTT server must
-be available. The easiest solution is to use HBMQTT, which is a
-Python based broker. It can be installed via PIP or conda/mamba.</p>
-<p>You can also use <a class="reference external" href="https://mosquitto.org/download/">mosquitto</a>.
-Download and install as administrator to your PC (ask your IT service desk for support).</p>
-<section id="environment">
-<h3>Environment:<a class="headerlink" href="#environment" title="Link to this heading"></a></h3>
-</section>
-</section>
-<section id="create-new-environment-conda-mamba">
-<h2>create new environment (conda/mamba)<a class="headerlink" href="#create-new-environment-conda-mamba" title="Link to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">init</span>     <span class="o">//</span> <span class="n">once</span> <span class="n">you</span> <span class="n">initialize</span> <span class="n">conda</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">custom</span> <span class="n">terminal</span> <span class="n">using</span>
-<span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">this</span> <span class="n">command</span> <span class="ow">or</span>
-<span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">you</span> <span class="n">are</span> <span class="n">using</span> <span class="n">conda</span> <span class="n">terminal</span> <span class="n">you</span> <span class="n">don</span><span class="s1">&#39;t need to run it again</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>  <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span> <span class="n">spyder</span><span class="o">=</span><span class="mf">5.5.5</span>
+<section id="master-config-file">
+<h1>Master Config File<a class="headerlink" href="#master-config-file" title="Link to this heading"></a></h1>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;broker_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// mqtt broker</span>
+<span class="w">    </span><span class="nt">&quot;broker_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1883</span><span class="p">,</span><span class="w">        </span><span class="c1">// mqtt port</span>
+<span class="w">    </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SCT-81-1F&quot;</span><span class="p">,</span><span class="w">   </span><span class="c1">// unique device id</span>
+<span class="w">    </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">                  </span><span class="c1">// list of site_ids (these are control applications with the respective id)</span>
+<span class="w">        </span><span class="s2">&quot;0&quot;</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;webui_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;webui_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8081</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;webui_root_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// the following fields are information to simulate a test-program execition</span>
+<span class="w">    </span><span class="nt">&quot;Handler&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTO92-20F&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;F1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;jobsource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;filesystem&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;jobformat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xml.semi-ate&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;filesystemdatasource_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;filesystemdatasource_jobpattern&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;le306426001_template.xml&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;enable_timeouts&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;skip_jobdata_verification&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;user_settings_filepath&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;master_user_settings.json&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
+<p>:warning: if no mqtt broker is available, mosquitto could be installed
+<a class="reference external" href="https://mosquitto.org/downloadconfigure">https://mosquitto.org/downloadconfigure</a></p>
 </section>
-<section id="activate-environment">
-<h2>activate environment<a class="headerlink" href="#activate-environment" title="Link to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">activate</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">append</span> <span class="n">channels</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+<section id="control-config-file">
+<h1>Control Config File<a class="headerlink" href="#control-config-file" title="Link to this heading"></a></h1>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;broker_host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// mqtt broker</span>
+<span class="w">    </span><span class="nt">&quot;broker_port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1883</span><span class="p">,</span><span class="w">         </span><span class="c1">// mqtt port</span>
+<span class="w">    </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SCT-81-1F&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1">// unique device_id (should match the one configured in master)</span>
+<span class="w">    </span><span class="nt">&quot;site_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0&quot;</span><span class="w">               </span><span class="c1">// site_id which should be in the master sites list</span>
+<span class="p">}</span>
 </pre></div>
 </div>
+<p>These configurations are valid once the comments are removed.</p>
 </section>
-<section id="install-semi-ate-packages-for-developers">
-<h2>Install Semi-ATE packages for developers<a class="headerlink" href="#install-semi-ate-packages-for-developers" title="Link to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">~/</span><span class="n">repos</span><span class="o">/</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>                                 <span class="o">//</span><span class="ow">or</span> <span class="n">use</span> <span class="n">a</span> <span class="n">directory</span> <span class="n">of</span> <span class="n">your</span> <span class="n">choice</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">cd</span> <span class="o">~/</span><span class="n">repos</span><span class="o">/</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="o">/</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="o">.</span><span class="n">git</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">cd</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">package_tool</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">change</span><span class="o">-</span><span class="n">env</span> <span class="n">cicd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">cd</span> <span class="n">src</span><span class="o">/</span><span class="n">ATE_spyder</span><span class="o">/</span><span class="n">ate_spyder_lab_control</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+<section id="launch-applications">
+<h1>Launch applications<a class="headerlink" href="#launch-applications" title="Link to this heading"></a></h1>
+<p>From within the apps folder execute the following commands (you’ll need two open two terminals to do this, and you’ll have to activate the environment for both terminals):</p>
+<div class="highlight-Console notranslate"><div class="highlight"><pre><span></span><span class="go">python launch_master.py</span>
 </pre></div>
 </div>
-</section>
-<section id="running-spyder">
-<h2>Running Spyder<a class="headerlink" href="#running-spyder" title="Link to this heading"></a></h2>
-<p>To launch the Spyder IDE navigate to the Spyder folder and activate the previously created environment, then run the following
-command:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">activate</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">spyder</span>
+<div class="highlight-Console notranslate"><div class="highlight"><pre><span></span><span class="go">python launch_control.py</span>
 </pre></div>
 </div>
-<p>than check View-&gt;Panes and enable the necessary panes</p>
-<a class="hover400 reference internal image-reference" href="_images/semiate_enable_panes.png"><img alt="Spyder_enable_docstyle" class="hover400" src="_images/semiate_enable_panes.png" style="width: 400px;" /></a>
-<p>and View-&gt;Toolbars</p>
-<blockquote>
-<div><a class="hover400 reference internal image-reference" href="_images/semiate_enable_toolbar.png"><img alt="Spyder_enable_docstyle" class="hover400" src="_images/semiate_enable_toolbar.png" style="width: 400px;" /></a>
-</div></blockquote>
-<p>Now we are ready to open an existing project or create a new one.</p>
+<section id="interacting-with-the-applications">
+<h2>Interacting with the applications<a class="headerlink" href="#interacting-with-the-applications" title="Link to this heading"></a></h2>
+<p>When both applications are running, the web-ui is reachable on:
+<a class="reference external" href="http://localhost:8081">http://localhost:8081</a></p>
+<p>localhost = “127.0.0.1”  -&gt; configured with the webui_host setting in “master_config_file.json”</p>
+<p>8081 -&gt; configured with the webui_port setting in “master_config_file.json”</p>
+</section>
+</section>
+<section id="xml-configuration">
+<h1>XML configuration<a class="headerlink" href="#xml-configuration" title="Link to this heading"></a></h1>
+<p>inside apps folder there will be also an xml file template that could be configured as follow:</p>
+<section id="cluster-section">
+<h2>CLUSTER section<a class="headerlink" href="#cluster-section" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>We have prepared an <a class="reference internal" href="exampleProject/exampleproject.html#exampleproject"><span class="std std-ref">Example Project</span></a>.  to help you get started quickly.</p></li>
-<li><p>or you read the capital <a class="reference internal" href="index.html#semiatedevelopment"><span class="std std-ref">Development process:</span></a>.</p></li>
+<li><p>TESTER should match the device-id name configured via configuration file</p></li>
+<li><p>HANDLER_PROBER should match the Handler name configured via configuration file</p></li>
 </ul>
+</section>
+<section id="station-section">
+<h2>STATION section<a class="headerlink" href="#station-section" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>TESTER# should also match the device-id already configured</p></li>
+<li><p>PROGRAM_DIR# best if it is an absolute path of the test-program file (.py)</p></li>
+</ul>
+<p>if the config files template are taken then the only thing that should be adapted is the PROGRAM_DIR#</p>
+<p>if other checks are missing or other information should also be checked from the xml file, please be free to report !</p>
 </section>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="semi-ate-applications.html" class="btn btn-neutral float-left" title="Semi-ATE in Production" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="exampleProject/exampleproject.html" class="btn btn-neutral float-right" title="Example Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
