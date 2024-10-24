@@ -335,16 +335,16 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues=None, debug=False):
     return startadr, data
 
 
-def writeVlogMemFile(fileName, mem, a_dig=4, d_dig=8, header=["", "verilog memory data file", ""]):
+def writeVlogMemFile(fileName, mem, a_dig=4, d_dig=8, adroffset=0, adrinc=1, header=["", "verilog memory data file", ""]):
     """
-    writeVlogMemFile(fileName, mem, a_dig, d_dig, comment)
-
-    writes memory data to a file in verilog hex format
+    Write memory data to a file in verilog hex format.
 
       fileName........path to verilog file
       mem.............list with integer memory data
       a_dig...........min address digits
       d_dig...........min data digits
+      adroffset.......adress offset
+      adrinc..........increment adr by
       header..........string list placed as comments
                       at top of file
 
@@ -358,7 +358,7 @@ def writeVlogMemFile(fileName, mem, a_dig=4, d_dig=8, header=["", "verilog memor
         fi.write(f'// {comment}\n')
     for i, v in enumerate(mem):
         if v is not None:
-            fi.write('@{:0{}x} {:0{}x}\n'.format(i, a_dig, v, d_dig))
+            fi.write('@{:0{}x} {:0{}x}\n'.format(i*adrinc+adroffset, a_dig, v, d_dig))
     fi.write(' ')
     fi.close()
     return True
