@@ -39,7 +39,16 @@ from labml_adjutancy.misc import common
 __copyright__ = "Copyright 2023, Lab"
 __version__ = "0.0.3"
 
+
 mylogger = None
+
+
+class Logger():
+    """Basic Logger, if a real logger not necessary."""
+
+    def log_message(self, level, msg):
+        """Print out the message."""
+        print(msg)
 
 
 class RegDB(object):
@@ -679,13 +688,13 @@ class Register:
         value = self._read()
         if not self._rm._protocol.board.error:
             mylogger.log_message(LogLevel.Measure(), f"{self.__class__.__name__}.{self._name} == {hex(value)}")
+        self._rm.publish_set(f"{self._name}.read", value)
         if compare is not None:
             error = common.check(f"{self.__class__.__name__}.{self._name}", compare, value, tolerance, mask)
             if onlycheck:
                 return error
             else:
                 return error, value
-        self._rm.publish_set(f"{self._name}.read", value)
         return value
 
     def write(self, value=None):
@@ -697,7 +706,7 @@ class Register:
         msg = f"{self.__class__.__name__}.{self._name} := "
         msg = f"{msg} {hex(result)}" if value is not None else f"{msg} {result}"
         mylogger.log_message(LogLevel.Measure(), msg)
-        self._rm.publish_get(f"{self._name}.write", value)
+        self._rm.publish_get(f"{self._name}.write", result)
         return result
 
     def res(self):
@@ -1167,7 +1176,7 @@ class RegisterMaster(mqtt_deviceattributes):
         super().__init__()
         self.mqtt_all = ["filename", "use"]
         filename = os.environ.get("registermaster") if filename is None else filename   #TODO! remove envronment, use setup instead
-        mylogger = logger
+        mylogger = logger if logger is not None else Logger()
         _setattr("instName", instname)
         _setattr("filename", filename)
         _setattr("_cached", False)
@@ -1285,7 +1294,6 @@ class RegisterMaster(mqtt_deviceattributes):
                 num = len_max - reg._len_slices()
                 unit = "bits" if num > 1 else "bit"
                 msg = msg.format(num, unit, reg._name)
-                # logger.warning(msg)
         try:
             self.use = "tin"
         except AttributeError:
@@ -1479,11 +1487,12 @@ class RegisterMaster(mqtt_deviceattributes):
         mylogger.log_message(LogLevel.Info(), "Reset register Cache to resetvalues")
 
     def handle_exception(self, msg, typ=None, name=None):
+        global mylogger
         if mylogger is not None:
             if name is None:
-                mylogger.error(msg)
+                mylogger.log_message(LogLevel.Error(), msg)
             else:
-                mylogger.error(f'{name}: {msg}')
+                mylogger.log_message(LogLevel.Error(), f'{name}: {msg}')
         elif typ is not None:
             raise typ(msg)
         else:

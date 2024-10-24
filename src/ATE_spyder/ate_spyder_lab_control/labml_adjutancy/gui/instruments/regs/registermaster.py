@@ -20,6 +20,7 @@ from PyQt5 import QtWidgets
 from labml_adjutancy.gui.instruments.base_instrument import Gui as Guibase
 from labml_adjutancy.gui.instruments.base_instrument import load_ui
 from labml_adjutancy.register.registermaster import RegisterMaster
+from ate_common.logger import LogLevel
 
 # from labml_adjutancy.misc.common import color
 
@@ -91,7 +92,7 @@ class Gui(Guibase):
         """common mqtt receive messages, get raw mqtt-Data for more information"""
         if super().mqttreceive(instName, msg):
             return
-        self.logger.debug(f"{instName}.mqttreceive: {msg} ")  # e.q. msg={'type': 'set', 'cmd': 'TEST7.read', 'payload': 1608}
+#        self.logger.log_message(LogLevel.Debug(), f"{instName}.mqttreceive: {msg} ")  # e.q. msg={'type': 'set', 'cmd': 'TEST7.read', 'payload': 1608}
         # if you change a widget with the mqtt command, you have to use the widget.blockSignals(True/False)
         if "cmd" in tuple(msg.keys()) and "payload" in tuple(msg.keys()):
             mycmd = msg["cmd"].split(".")
@@ -102,10 +103,10 @@ class Gui(Guibase):
                 else:
                     self.regstatus(f"{mycmd[0]} not found in the registermaster")
             else:
-                self.logger.warning(f"{instName} {msg['cmd']} not found -> do nothing")
+                self.logger.log_message(LogLevel.Warning(), f"{instName} {msg['cmd']} not found -> do nothing")
 
     def registerframe(self, register, value):
-        self.logger.debug(f"      call registerframe with {register} {value}")
+        # self.logger.log_message(LogLevel.Debug(), f"      call registerframe with {register} {value}")
         register._cache = value
         table = register.value_table
         width = register._len_slices()
@@ -188,13 +189,14 @@ class Gui(Guibase):
         try:
             self.regs = RegisterMaster(filename=self._filename)
             self.regs.init()
+            self.regs.reset_regs(default=0)
         except Exception as ex:
             self.regstatus(f"could not load {self._filename}")
             msg = f"registermaster.filename something is wrong :-( : {ex}"
-            self.logger.error(msg)
+            self.logger.log_message(LogLevel.Error(), msg)
             print(msg)
             return
-        self.logger.info(f"registermaster.filename set to {self._filename}")
+        self.logger.log_message(LogLevel.Info(), f"registermaster.filename set to {self._filename}")
         self.myframe.Lfilename.setText(self._filename)
         print(f"registermaster.filename set to {self._filename}")
 
@@ -216,7 +218,7 @@ class Gui(Guibase):
     def openexcel(self):
         filename = pathlib.Path(self.filename)
         msg = f"start excel {filename}"
-        self.logger.info(msg)
+        self.logger.log_message(LogLevel.Info(), msg)
         os.system(msg)
 
     def toggleBhold(self, hold):
@@ -237,7 +239,7 @@ class Gui(Guibase):
             myregister.show()
 
     def readreg(self, regname):
-        self.logger.error(f" readreg {regname} ")
+        self.logger.log_message(LogLevel.Error(), f" readreg {regname} ")
         self.publish(f"{regname}.read")
 
 
