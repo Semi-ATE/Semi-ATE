@@ -190,6 +190,7 @@ class Gui(Guibase):
             self.regs = RegisterMaster(filename=self._filename)
             self.regs.init()
             self.regs.reset_regs(default=0)
+            self.regstatus(" ")
         except Exception as ex:
             self.regstatus(f"could not load {self._filename}")
             msg = f"registermaster.filename something is wrong :-( : {ex}"
