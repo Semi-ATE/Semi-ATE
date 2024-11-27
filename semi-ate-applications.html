@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Getting Started with ATE Dev" href="GettingStarted.html" />
+    <link rel="next" title="Getting Started with ATE for developers" href="GettingStarted.html" />
     <link rel="prev" title="Semi-ATE" href="index.html" /> 
 </head>
 
@@ -58,7 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#starting-the-applications">Starting the Applications</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE Dev</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE for developers</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#we-assume-the-following">We assume the following</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#mqtt">MQTT</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#environment">Environment:</a></li>
@@ -400,7 +400,7 @@
 <p>We assume the following:</p>
 <ul class="simple">
 <li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> installed</p></li>
-<li><p>You are running <em>Windows 10 64Bit</em></p></li>
+<li><p>You are running <em>Windows &gt;=10 64Bit</em></p></li>
 <li><p>You have already downloaded or generated some test program - via spyder - in folder <em>C:\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py</em>. The underlying hardware used when creating the semi-ate test project was <em>Semi-ATE Single Tester</em>.</p></li>
 <li><p>All provided commands are executed in a <strong>PowerShell</strong>.</p></li>
 <li><p>The windows user’s name is <strong>test_user</strong>, i.e. variable <code class="docutils literal notranslate"><span class="pre">$env:Username</span></code> is pointing to <strong>test_user</strong>. The user name is used to build paths. These paths are defined in the later mentioned configuration and job files. You have to adapt it to match your environment.</p></li>
@@ -432,7 +432,7 @@
 <ul class="simple">
 <li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
 <li><p>Installation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">mosquitto</span> <span class="pre">-y</span></code></p></li>
-<li><p>Running Mosquitto-Broker <code class="docutils literal notranslate"><span class="pre">&amp;(Join-Path</span> <span class="pre">$env:USERPROFILE</span> <span class="pre">maxiconda\envs\_app_py39_\Library\sbin\mosquitto)</span> <span class="pre">-v</span></code></p></li>
+<li><p>Running Mosquitto-Broker <code class="docutils literal notranslate"><span class="pre">&amp;(Join-Path</span> <span class="pre">$env:USERPROFILE</span> <span class="pre">AppData\Local\maxiconda\envs\_app_py39_\Library\sbin\mosquitto)</span> <span class="pre">-v</span></code></p></li>
 </ul>
 </section>
 <section id="semi-ate-applications-and-testers">
@@ -597,7 +597,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Semi-ATE" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="GettingStarted.html" class="btn btn-neutral float-right" title="Getting Started with ATE Dev" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="GettingStarted.html" class="btn btn-neutral float-right" title="Getting Started with ATE for developers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

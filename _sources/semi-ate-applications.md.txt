@@ -5,7 +5,7 @@ This document describes how you can install the semi-ate applications to run tes
 We assume the following:
 
 * You have [maxiconda](https://www.maxiconda.org/) installed
-* You are running *Windows 10 64Bit*
+* You are running *Windows >=10 64Bit*
 * You have already downloaded or generated some test program - via spyder - in folder *C:\\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py*. The underlying hardware used when creating the semi-ate test project was *Semi-ATE Single Tester*.
 * All provided commands are executed in a **PowerShell**.
 * The windows user's name is **test_user**, i.e. variable `$env:Username` is pointing to **test_user**. The user name is used to build paths. These paths are defined in the later mentioned configuration and job files. You have to adapt it to match your environment.
@@ -30,7 +30,7 @@ We assume the following:
 
 * Environment Activation `conda activate _app_py39_`
 * Installation `mamba install -c conda-forge mosquitto -y`
-* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE maxiconda\envs\_app_py39_\Library\sbin\mosquitto) -v`
+* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE AppData\Local\maxiconda\envs\_app_py39_\Library\sbin\mosquitto) -v`
 
 ### Semi-ATE Applications and Testers
 
