@@ -2,8 +2,8 @@ Last change: |today|
 
 
 
-Getting Started with ATE Dev
-============================
+Getting Started with ATE for developers
+=======================================
 
 This document describes how to install semi-ate for developers to develop and test your test-flows. For example, for evaluation a sensor device or to use a test flow later in production.
 
