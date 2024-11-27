@@ -1,0 +1,32 @@
+ *  add custom css stylesheet*
+
+@import url("theme.css");
+
+.wy-nav-content {
+    max-width: 90%;
+}
+
+ <style>
+img.hover150 {
+ transition: transform 0.8s;
+} 
+img.hover150 {
+ transition: transform 0.2s;
+}
+img.hover200 {
+ transition: transform 0.2s;
+}
+img.hover400 {
+ transform: translate(200px, 0px);
+}
+img.hover150:hover {
+ transform: scale(1.5, 1.5);
+}
+img.hover200:hover {
+ transform: scale(2.0, 2.0);
+}
+img.hover400:hover {
+ transform: scale(4.0, 4.0);
+ transition: transform 1.5s;
+}
+</style>

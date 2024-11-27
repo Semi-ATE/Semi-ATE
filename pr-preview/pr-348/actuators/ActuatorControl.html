@@ -1,0 +1,858 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semi-Ate.org Actuator Control &mdash; Semi-ATE documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=9c6baf1e" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=6f77e80e"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The Magnetic Field Actuator (STL DCS6K, single channel)" href="MagField-STL6k/STL6K-SingleChannel.html" />
+    <link rel="prev" title="Software Release: Semi-ATE Project" href="../softwareMigration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Semi-ATE
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../semi-ate-applications.html">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-applications.html#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#create-mamba-environment">Create Mamba Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#mqtt-broker">MQTT-Broker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#semi-ate-applications-and-testers">Semi-ATE Applications and Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-applications.html#create-xml-job-file">Create XML Job File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-applications.html#starting-the-applications">Starting the Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted.html">Getting Started with ATE for developers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#we-assume-the-following">We assume the following</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#mqtt">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../GettingStarted.html#environment">Environment:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#create-new-environment-conda-mamba">create new environment (conda/mamba)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#install-semi-ate-packages-for-developers">Install Semi-ATE packages for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted.html#running-spyder">Running Spyder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../exampleProject/exampleproject.html">Example Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../exampleProject/exampleproject.html#open-project">Open Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../semi-ate-packages.html">Overview of Semi-ATE Packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-packages.html#which-packages-are-provided">Which Packages are provided?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-common">semi-ate-common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-project-database">semi-ate-project-database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-sammy">semi-ate-sammy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-spyder">semi-ate-spyder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-testers">semi-ate-testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#semi-ate-plugins">semi-ate-plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../semi-ate-packages.html#diagrams">Diagrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#spyder-extension">Spyder Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#single-tester">Single Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../semi-ate-packages.html#parallel-tester">Parallel Tester</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../API_UI_Websever.html">API zwischen UI und Webserver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#systemzustande">Systemzustände</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#zustandsdiagramm-der-masterapplikation">Zustandsdiagramm der Masterapplikation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#websockets">Websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#datenformat">Datenformat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../API_UI_Websever.html#fe-komponenten">FE-Komponenten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../API_UI_Websever.html#statuskomponente">Statuskomponente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../API_UI_Websever.html#controlkomponente">Controlkomponente</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../binning.html">Semi-ATE.org binning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#definitions">Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#binning-strategy">Binning Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#grades-passbins">Grades / Passbins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#fail-bins">Fail Bins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#special-bins">Special Bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#generation-of-bin-codes">Generation of bin codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#additional-classification">Additional classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#influence-of-alarms-during-tests">Influence of alarms during tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#use-of-parameterlimits-for-classification">Use of parameterlimits for classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#the-bintable">The bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#deployment-of-the-bintable">Deployment of the bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../binning.html#special-usecases">Special usecases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../binning.html#mms-multiple-sockets">MMS, Multiple Sockets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../CI_build.html">CI build</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../CI_build.html#gitlab-runner">GitLab Runner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../CI_build.html#beispiel-config-toml">Beispiel config.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CI_build.html#beispiel-gitlab-ci-yml">Beispiel .gitlab-ci.yml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Import-Export.html">Import/Export</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Import-Export.html#export">Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Import-Export.html#import">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#what-it-is">What it is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#isc-in-the-spyder-ui">ISC in the Spyder UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#isc-resolvers">ISC Resolvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#performance-latency-considerations">Performance &amp; Latency Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#codegen-view-of-parameters">Codegen View of parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#runtime-view-of-parameters">Runtime View of parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#output-parameters">Output Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Interstage-Communication.html#availability-considerations">Availability Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#mutliple-caches">Mutliple Caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interstage-Communication.html#behavior-of-remote-caches-plugins">Behavior of remote caches/plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Plugins.html">ATE.org Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#design-rationale">Design Rationale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#identification">Identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin">Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin-functionality">Plugin Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#tester">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#instances">Instances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id1">Importers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id2">Exporters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id3">Equipments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#devicepins">Devicepins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id4">Instruments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id5">General Purpose Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#id6">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised"><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Plugins.html#complete-hookspec">Complete Hookspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#as-basic-example-plugin">As basic example plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Plugins.html#plugin-installation">Plugin Installation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../SequencerInterface.html">ATE Sequencer Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#api-as-seen-by-the-ate-runtime">API as seen by the ATE Runtime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#master">Master</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#testoptions">Testoptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#the-runtime-as-seen-by-the-sequencer">The Runtime as seen by the sequencer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#proxies-shims">Proxies/Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#testresults-testend">Testresults &amp; Testend</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../SequencerInterface.html#errorhandling-teardowns">Errorhandling &amp; Teardowns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#teardowns">Teardowns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#during-startup">During startup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#during-testexecution">During testexecution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SequencerInterface.html#batch-end">Batch End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../softwareMigration.html">Software Release: Semi-ATE Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-tool">Migration Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-strategy">Migration Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#migration-tests">Migration Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../softwareMigration.html#disadvantages-and-advantages">Disadvantages and Advantages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../softwareMigration.html#advantages">Advantages:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../softwareMigration.html#disadvantages">Disadvantages:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Actuators:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Semi-Ate.org Actuator Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-ioctl-protocol">The IOCtl Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#startup-shutdown">Startup &amp; shutdown</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#iocontrol-codes">IOControl Codes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generic">Generic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#magfield">MagField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#former-part-of-plugin-spec-rework">Former part of plugin spec -&gt; rework</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#actuators">Actuators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-ioctl-protocol-master-testprogram">The IOCtl Protocol Master &lt;-&gt; Testprogram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html">The Magnetic Field Actuator (STL DCS6K, single channel)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html#actuator-api">Actuator Api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html#additional-api-functions">Additional Api Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html#init-load">init_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html#do-load-adaption">do_load_adaption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MagField-STL6k/STL6K-SingleChannel.html#setup-dcs6k">setup_dcs6k</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Build tool:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../buildtool/buildtool.html">sammy, the Semi-ATE.org build- &amp; project tool</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#uusing-sammy">Uusing sammy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#verbs">Verbs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#generate">generate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#new">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#migrate">migrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../buildtool/buildtool.html#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../buildtool/buildtool.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development process:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html">Semi-ATE Project Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#spyder-environment">Spyder Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#project-setup">Project Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#definitions-section">Definitions Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#toolbar">Toolbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#tests-section">Tests Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/SemiATEDevelopment.html#auto-script">Auto Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developmentProcess/TestInterface.html">Test Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#test-entry-point">Test Entry Point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#input-parameter">Input Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#output-parameter">Output Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#context">Context</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/TestInterface.html#tester">Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../developmentProcess/TestInterface.html#instrument-actuator">Instrument &amp; Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../developmentProcess/TestInterface.html#some-remarks">Some Remarks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Interface definitions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../interfaceDefinitions/control_interface.html">Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/control_interface.html#daten-die-von-control-erzeugt-werden">Daten die von Control erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/control_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/control_interface.html#daten-die-von-control-konsumiert-werden">Daten die von Control konsumiert werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/control_interface.html#befehle-die-von-control-verstanden-werden">Befehle die von Control verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/control_interface.html#load">Load</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html">Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#befehle-die-vom-handler-verstanden-werden">Befehle die vom Handler verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#identify">identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#get-state">get-state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#get-temperature">get-temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#error">error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/handler_interface.html#send-layout">send-layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaceDefinitions/interfacedefinition_generell.html">Interfacedefinitionen Semi-ATE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/interfacedefinition_generell.html#grundsatzliches">Grundsätzliches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/interfacedefinition_generell.html#topics">Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/interfacedefinition_generell.html#befehle">Befehle</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaceDefinitions/master_interface.html">Master</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#daten-die-vom-master-erzeugt-werden">Daten die vom Master erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#job">Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#peripherystate">PeripheryState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#befehle-die-vom-master-verstanden-werden">Befehle die vom Master verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#geteilte-peripherie-steuern">Geteilte Peripherie steuern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#handlerbefehle">Handlerbefehle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/master_interface.html#daten-die-vom-master-konsumiert-werden">Daten die vom Master konsumiert werden</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html">TestApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-erzeugt-werden">Daten die von der Testapp erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#statusinfo">Statusinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#testresultat">Testresultat</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-konsumiert-werden">Daten die von der Testapp konsumiert werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#init">Init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#next">Next</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#terminate">Terminate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#setloglevel">Setloglevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#setting">Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interfaceDefinitions/testapp_interface.html#setparameter">SetParameter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Test execution:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../testExecution/TestExecution.html">Harmonize test execution via Plugin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#synchronization-master-and-tester">Synchronization Master and Tester</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#test-execution-scenario">Test Execution Scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#case-of-parallel-tester-single-testers">case of Parallel Tester &amp; Single Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#case-of-only-one-single-tester">case of only one Single Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#tester-plugin-interface">Tester Plugin Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#master-tester-interface">Master Tester Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../testExecution/TestExecution.html#testprogram-tester-interface">TestProgram Tester Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../testExecution/TestExecution.html#signal-flow">Signal Flow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Semi-ATE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Semi-Ate.org Actuator Control</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/actuators/ActuatorControl.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="semi-ate-org-actuator-control">
+<h1>Semi-Ate.org Actuator Control<a class="headerlink" href="#semi-ate-org-actuator-control" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>An actuator is always controlled by a program, that listens to a given mqtt Topic.</p></li>
+<li><p>We can have multiple instances of the program.</p></li>
+<li><p>Each instance shall use slightly different topics.</p></li>
+</ul>
+<p>Use Case I: A single actuator
+We have a single actuator of a given type in our testcell. The tester will use this actuator to control environmental aspects
+of the testcell.</p>
+<p>Use Case II: Multiple actuators
+We have multiple actuators of different types in our testcell. The tester will use these actuators to control different environmental aspects
+of the testcell.</p>
+<p>Use Case III: Mutliple actuators of the same type.
+We have multiple actuators of the same type in our testcell. Each tester has its own set of actuators.
+Note, that we do not need multiple actuators of the same type per teststation/tester.</p>
+<section id="the-ioctl-protocol">
+<h2>The IOCtl Protocol<a class="headerlink" href="#the-ioctl-protocol" title="Link to this heading"></a></h2>
+<p>The Master &lt;-&gt; Testprogram interface for actuators is based on controlcodes with parameters, such as:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fluxcompensator&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;param0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The masterapplication synchronizes access to actuators among all members of the same testergroup, i.e. The actuator will only
+be controlled, once all testers have sent the same of the IOCtl they want to use. Once the this has happened the master shall
+post the io-control-request as received from the sites to the topic:</p>
+<p>ATE/&lt;deviceid&gt;/fluxcompensator/io-control/request</p>
+<p>-&gt; Each running actuator service shall be aware of the device id it caters to. As soon as it receives a request on the mentioned
+topic it shall perform the required action and send the result on the topic:
+ATE/&lt;deviceid&gt;/fluxcompensator/io-control/response</p>
+<p>The response shall have the following form:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Data */</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The result field shall <em>at least</em> contain the following two fields:</p>
+<ul class="simple">
+<li><p>status: Encodes wether or not the call was successful. In case of success this field shall always have the value “ok” and “timeout” if the operation timed out. Other values (i.e. errors!) are implementation defined.</p></li>
+<li><p>error_message: The error message shall contain a human readable reason why a call failed. This field is optional, if status is “ok”</p></li>
+<li><p>Note, that the master will not relay the result of the io-control back to the testprogram. The testprogram itself must watch the actuator’s responsetopic!</p></li>
+</ul>
+<section id="startup-shutdown">
+<h3>Startup &amp; shutdown<a class="headerlink" href="#startup-shutdown" title="Link to this heading"></a></h3>
+<p>During startup the actuator shall observer the master application’s statustopic and send a message advertising its existence
+to ATE/<deviceid>/<actuatortype>/status as soon as it receives a status message from the master.
+with the following form:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;available&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Further: The actuator shall instruct the broker to post a last-will message of the following form:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;crashed&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Note</strong> This message is used to automatically notify the master in case of a crash of the actuator application. If the
+actuator shuts down gracefully (however that happens!), if shall replace the last-will message with:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;terminated&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The master will - as soon as it receives any of the previous two messages - no longer allow any tests to commence.</p>
+</section>
+</section>
+<section id="iocontrol-codes">
+<h2>IOControl Codes<a class="headerlink" href="#iocontrol-codes" title="Link to this heading"></a></h2>
+<p>All actuator classes define their own set of controlcodes, depending on the type of service the actuator provides.</p>
+<section id="generic">
+<h3>Generic<a class="headerlink" href="#generic" title="Link to this heading"></a></h3>
+<p>Apart from these codes, each actuator shall implement the following IOControl codes:</p>
+<section id="dry-call">
+<h4>Dry Call<a class="headerlink" href="#dry-call" title="Link to this heading"></a></h4>
+<p>The “Dry Call” represents a sanity check, in as far as that the sending program asks the actuatorimplementation, wether or not
+it is able to perform a call with a given set of parameters. This functionality can be used to check wether a given testprogram
+can be executed in a meaningful way on a given setup. E.g.: If a testprogram requires an actuator to produce 500 mA of current,
+but the actuator can only produce 250 mA this testprogram would be incompatible with the respective environment. Upon receiving
+a drycall request, the actuatorimplementation shall check if the parameters and the provided ioctl could be made into an actual
+call. Note that the actuator shall <em>not</em> perform that call.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-drycall&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// These lines are the same, as with the actual call</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;millitesla&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-drycall-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;bad_ioctl | missing_parameter |badparamvalue | error&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>done: Magfield set to the specified value.</p></li>
+<li><p>badioctl: The iocl_name is not supported by the actuator</p></li>
+<li><p>badparamvalue: At least one of the given parameters is in some way invalid. The actuator implementation shall provide an errormessage indicating the bad parameter.</p></li>
+<li><p>error: An unspecified error has occured. The actuatorimplementation shall provide an errormessage indicating the source of the error.</p></li>
+</ul>
+<p>Attention: The actuatorimplementation can never guarantee, that a given call will be successful, as such, a drycall can only verify, that the provided parameters are within the expected bounds and that the call is probably legal with respect to the actual actuator implementation.</p>
+</section>
+</section>
+<section id="magfield">
+<h3>MagField<a class="headerlink" href="#magfield" title="Link to this heading"></a></h3>
+<section id="set-field">
+<h4>Set Field<a class="headerlink" href="#set-field" title="Link to this heading"></a></h4>
+<p>The set field command shall enable the magnetic field and set its strength to the given value. Setting the strangth to 0 millitesla shall not disable the device but instead use it to create a “true” 0 millitesla field (taking into account earths magnetic field!)</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;millitesla&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;badfieldstrength&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>done: Magfield set to the specified value.</p></li>
+<li><p>badfieldstrength: The provided fieldstrength denotes a value that is either invalid or cannot be produced by the concrete actuator.</p></li>
+</ul>
+</section>
+<section id="disable-field">
+<h4>Disable Field<a class="headerlink" href="#disable-field" title="Link to this heading"></a></h4>
+<p>The disable field command shall physically disable the magnetic field (i.e. the powersource shall be disabled).</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;disable&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;disable&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>done: Magfield was disabled.</p></li>
+<li><p>error: An unspecified error has occured. In this case the error_message field shall be present to provide context. <em>Attention</em> : If an error occured the actuator might not have been able to disable the field.</p></li>
+</ul>
+</section>
+<section id="program-curve">
+<h4>Program Curve<a class="headerlink" href="#program-curve" title="Link to this heading"></a></h4>
+<p>The program curve io command shall instruct the actuator to store a given curve of field strengths. The curve is presented as array of tuples, where the first value of the tuple denotes the field strength (in millitesla!) and the second value denotes the time (in seconds!) for which this strength should be kept.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;magfield&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;program_curve&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;hull&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="err">val</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">0</span><span class="p">},{</span><span class="err">val</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">1</span><span class="p">}],</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;program_curve&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;invalidid&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;curvetoolarge&quot;</span><span class="w"> </span><span class="err">|</span><span class="s2">&quot;error&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>done: The curve has been stored</p></li>
+<li><p>invalidid: The provided curve id is invalid (depending on the actuator implementation it might be outside of the range of permitted ids)</p></li>
+<li><p>curvetoolarge: The sent curve is too large for the implementation (e.g. STL6k will only allow 1024 points at this time)</p></li>
+<li><p>error: An unspecified error has occured. In this case the error_message field shall be present to provide context.</p></li>
+</ul>
+</section>
+<section id="play-curve">
+<h4>Play curve<a class="headerlink" href="#play-curve" title="Link to this heading"></a></h4>
+<p>The play curve command shall instruct the actuator (or the softwareimplementation) to playback a previously programmed curve. This function has no overridable timeout, but shall instead only timeout 2 seconds after the curve should have completed.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>done: The requested curve has been played back. The magfield is now switched off</p></li>
+<li><p>unknown: The requested curve id is unknown.</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>After a curve has been played the actuator shall always disable the magnetic field.</p></li>
+</ul>
+</section>
+<section id="play-curve-stepwise">
+<h4>Play curve stepwise<a class="headerlink" href="#play-curve-stepwise" title="Link to this heading"></a></h4>
+<p>The play curve stepwise function shall instruct the actuator to playback a previously defined curve, while waiting for explicit instructions to switch between different points of the curve. When a curve is played using this function the duration value for each curvepoint shall be ignored.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve_stepwise&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve_stepwise&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>ok: The requested curve has been started, the first curve point has been applied.</p></li>
+<li><p>unknown: The requested curve id is unknown.</p></li>
+</ul>
+</section>
+<section id="curve-step">
+<h4>Curve step<a class="headerlink" href="#curve-step" title="Link to this heading"></a></h4>
+<p>The curvestep function shall instruct to move to the next curvepoint in a currently running stepwise playback. The step shall be performed immediately and shall ignore any timing settings of the curve.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_step&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_step&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;done&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;notplaying&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>ok: The step was performed, the curve has further steps.</p></li>
+<li><p>done: The curve has playe back its last point and can not proceed any further. Magfield is now switched off.</p></li>
+<li><p>notplaying: There is currently no playback active.</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>Emitting a curve_step command, after receiving status “done” shall cause the actuator implementation to return status “notplaying”</p></li>
+<li><p>Emitting a curve_step command, after receiving status “notplaying” shall cause the actuator implementation to return status “notplaying”.</p></li>
+<li><p>Reaching the “done” state shall cause the actuator to disable the magfield.</p></li>
+</ul>
+</section>
+<section id="curve-stop">
+<h4>Curve stop<a class="headerlink" href="#curve-stop" title="Link to this heading"></a></h4>
+<p>The curve_stop function shall abort a stepwise playback of a curve and disable the magfield.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_stop&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Result:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_stop&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;notplaying&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Explaination of status codes:</p>
+<ul class="simple">
+<li><p>ok: The curve playback was aborted and the magfield is now disabled</p></li>
+<li><p>notplaying: There is currently no playback active.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="former-part-of-plugin-spec-rework">
+<h2>Former part of plugin spec -&gt; rework<a class="headerlink" href="#former-part-of-plugin-spec-rework" title="Link to this heading"></a></h2>
+<section id="actuators">
+<h3>Actuators<a class="headerlink" href="#actuators" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_actuator</span><span class="p">(</span><span class="n">required_capability</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActuatorInstance</span>
+<span class="n">get_actuator_proxy</span><span class="p">(</span><span class="n">required_capability</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActuatorInstance</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of an actuator that provides the required capability. This hook is intended for use in tests only. If the environment cannot resolve the service (e.g. because none is available) it shall <em>immediatly</em> throw an exception containing the missing capability. Do not return None in this case as it makes diagnostics harder than a well thought out error string.</p>
+<p>A note on actuator capabilities: The capabilities are stored by the runtime environment. If a test asks for an actuator that provides a given capability, the test environemt shall find actuator that best matches this request, taking into account:</p>
+<ul class="simple">
+<li><p>The physical hardware on which the test is running</p></li>
+<li><p>The available actuators</p></li>
+<li><p>The physical location &amp; connection of the actuators</p></li>
+</ul>
+<p>The master application uses the <code class="docutils literal notranslate"><span class="pre">get_actuator</span></code> hook to obtain an actuator providing the required capability. It assumes
+the following interface for the returned object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">init</span><span class="p">(</span><span class="n">mqtt_client</span><span class="p">)</span>
+    <span class="k">async</span> <span class="n">device_io_control</span><span class="p">(</span><span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Option</span><span class="p">[</span><span class="n">Data</span><span class="p">]</span>
+    <span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The masterapplication will lazily initialize an actuator, when it is first required, by calling init. Whenever an iocontrol
+request is sent by one of the connected testprograms the master will wait until all testprograms have sent the same request.
+Once this happend, it will call device_io_control for the actuator in question, using the parameters sent with the first call
+as <code class="docutils literal notranslate"><span class="pre">data</span></code> parameter and returning any non-none value to the callers.</p>
+<p><strong>Attention</strong> device_io_control is required to be a python <strong>async</strong> function and the master app will await on this function. This means, that
+device_io_control must <em>never</em> block, as this will cause the masterapp’s mqtt connection to stall forever.
+A canonical way to implement a device_io_control that does not return immediately and waits for <em>something</em> to happen would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">peripheral</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
+
+    <span class="k">def</span> <span class="nf">on_event_happened</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>implementing the client side of an actuator is similar to the masterside, as it also involves async code. The codegenerator
+assumes, that all actuatorproxies provide a set_mqtt_client function through which a reference to the testprogram’s mqtt client
+can be set.</p>
+<section id="using-mqtt-in-actuators">
+<h4>Using mqtt in actuators<a class="headerlink" href="#using-mqtt-in-actuators" title="Link to this heading"></a></h4>
+<p>If the actuator implementation needs to use mqtt it should use the <strong>init</strong> call to subscribe to any relevant topics. For the internal routing to work correctly the peripheral will have to call “register_route” as well.</p>
+<p><strong>Note</strong>: Actuators will only be unloaded, once an unload command is issued to the master application. The masterapp will call close on all actuators, that were previously loaded. The peripheral is expected to unsubscribe from mqtt and to deregister all routes.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">class</span> <span class="nc">mqtt_peripheral</span><span class="p">():</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+            <span class="c1"># Always store the actual lambda/callback to use for registration</span>
+            <span class="c1"># and unregistration. Don&#39; use ad-hoc lambdas as this will</span>
+            <span class="c1"># always create a new lambda and cause the instance of the peripheral</span>
+            <span class="c1"># to never be released due to it being kept alive by the lambdas.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_message_received</span>
+        
+        <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span> <span class="o">=</span> <span class="n">mqtt_client</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">register_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
+        
+        <span class="k">def</span> <span class="nf">on_message_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+            <span class="c1"># This code is called whenever a message arrives on &quot;SomePeripheral/command&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
+
+        <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">unregister_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
+  
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="the-ioctl-protocol-master-testprogram">
+<h2>The IOCtl Protocol Master &lt;-&gt; Testprogram<a class="headerlink" href="#the-ioctl-protocol-master-testprogram" title="Link to this heading"></a></h2>
+<p>ATE/&lt;deviceid&gt;/TestApp/peripherystate/<siteid>/request</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../softwareMigration.html" class="btn btn-neutral float-left" title="Software Release: Semi-ATE Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="MagField-STL6k/STL6K-SingleChannel.html" class="btn btn-neutral float-right" title="The Magnetic Field Actuator (STL DCS6K, single channel)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Semi-ATE contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script> 
+
+</body>
+</html>
