@@ -104,9 +104,13 @@ class PatternItem(BaseFolderStructureItem):
         open(Path(self.root).joinpath(pattern_res), 'w').close()
 
     def _get_import_pattern_extensions(self):
+        result = [[''], [''], ['']]
         if self.project_info is None:
-            return [[''], [''], ['']]
-        return self.project_info.get_hardware_definition(self.project_info.active_hardware)[DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY()]
+            return result
+        hardware_definition = self.project_info.get_hardware_definition(self.project_info.active_hardware)
+        if DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY() in hardware_definition:
+            result = hardware_definition[DB_KEYS.HARDWARE.DEFINITION.PATTERN_IMPORT.KEY()]
+        return result
 
     def _add_action_import_file(self, menu_action: QtWidgets.QMenu, action_type: str, icon_type: MenuActionTypes, callback: Callable):
         action = QtWidgets.QAction(action_type, menu_action)

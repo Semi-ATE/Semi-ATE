@@ -49,6 +49,7 @@ if __name__ == '__main__':
     output_path.mkdir(exist_ok=True)
     harness_strategy = create_harness(params.harness_strategytype, mqtt.get_mqtt_client(), str(output_path.joinpath(program_name)))
     context = common.make_context(source, params, sequencer, auto_script, execution_strategy, mqtt, harness_strategy)
+    context.parent_path = str(Path(parent_path).parent)
     auto_script.set_context(context)
     auto_script.set_logger(context.get_logger())
     auto_script.before_start_setup()

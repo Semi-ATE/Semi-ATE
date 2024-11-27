@@ -215,7 +215,7 @@ class ProjectSetup(object):
                         name = instrument.instName
                     else:
                         name = instrument.__class__.__name__
-                        if name in ['Logger', 'module', 'function']:
+                        if name in ['Logger', 'module', 'function'] or instName in ['Type', 'base', 'run', 'do', 'hardware', 'sbins']:
                             continue
                     # self.write('instruments', name, instrument.__class__)   # default is 'self.result.instruments'
                     self.write('instruments', instName, str(instrument.__class__))   # default is 'self.result.instruments'
@@ -466,21 +466,6 @@ class ProjectSetup(object):
             result = result[0]
         return result
 
-    def micid(self, typ):
-        micid = self.lastresult
-        if typ == 'hal':
-            value = ((micid[0] << 16)) + micid[1]
-            self.logger.log_message(LogLevel.Info(), f'MicID == {hex(value)}')
-            self.write(self.lastmacro, 'Y', value & 0x7f)          # Y = Bit 6-0
-            self.logger.log_message(LogLevel.Info(), f'      Y == {value & 0x7f}')
-            self.write(self.lastmacro, 'X', (value >> 7) & 0x7f)   # Y = Bit 13-7
-            self.logger.log_message(LogLevel.Info(), f'      X == {(value >> 7) & 0x7f}')
-            self.write(self.lastmacro, 'WNR', (value >> 14) & 0x1f)   # WNR = Bit 18-14
-            self.logger.log_message(LogLevel.Info(), f' WNR == {(value >> 14) & 0x1f}')
-            self.write(self.lastmacro, 'PLNR', (value >> 19) & 0x1fff)   # PLNR = Bit31-19
-            self.logger.log_message(LogLevel.Info(), f' PLNR == {(value >> 19) & 0x1fff}')
-        return value
-
     def regDump(self, liste='default', invert=False, output=None):
         """Read values from Register and return with a list of their values.
 
@@ -496,9 +481,9 @@ class ProjectSetup(object):
               * True : use reg that are not in the list
               * False : use reg that are in the list
 
-           output :  :
-              * None : return with a list of all registers (or adresses) and their values
-              *'wr2setup' : write return with a list of all registers and their values to setup.result.regs.regDump
+           output :
+              = None       : return with a list of all registers (or adresses) and their values
+              = 'wr2setup' : write return with a list of all registers and their values to setup.result.regs.regDump
         """
         knownParameter = [None, 'wr2setup']
         if output not in knownParameter:
@@ -568,7 +553,7 @@ class ProjectSetup(object):
             self.write(f'{self.testbench_name}.regDumpDat', dumpname, memdump)
         else:
             self.logger.log_message(LogLevel.Info(), 'testbench name not defined, could not write regDumpDat to {self._SETUPFILE}')
-        return error, allregs
+        return error, memdump, allregs
 
     def regDumpSave2DUT(self, mode='default', compare='cache'):
         """Write the register with values to the device.
