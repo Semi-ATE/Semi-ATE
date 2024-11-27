@@ -616,27 +616,6 @@ class ProjectSetup(object):
             self.logger.log_message(LogLevel.Info(), f'{self.instName}.regDumpSave2DUT: no register values changed in the tests')
         return result
 
-    def unlock(self):
-        self.logger.log_message(LogLevel.Info(), f'Try {self.instName}.unlock')
-        # self.parent.interface.check_acknowledge = False
-        forcebank = self.parent.regs._forcebank
-        self.parent.regs._forcebank = False
-        for unlock in self.regs.unlock:
-            try:
-                self.parent.regs.register[unlock[0]].write(unlock[1])
-            except KeyError:
-                self.logger.log_message(LogLevel.Error(), f"{self.instName}.unlock  register {unlock[0]} doesn't exist in registermaster")
-        NVPROGM = self.parent.regs.NVPROGM._read()     # self.parent.regs.register[self.setup.reg_progm]._read()
-        self.parent.regs._forcebank = forcebank
-        if self.parent.regs.NVPROGM.UNLCK == 0:         # self.parent.regs.__dict__[self.tcc.setup.reg_progm].UNLCK==0:
-            self.logger.log_message(LogLevel.Error(), "      -> could't unlock...... NVPROGM = 0x{:04x}".format(NVPROGM))
-            result = -1
-        else:
-            self.logger.log_message(LogLevel.Info(), "      -> ok, unlocked,  0x{:04x}".format(NVPROGM))
-            result = 0
-        # self.parent.interface.check_acknowledge = True
-        return (NVPROGM, result)
-
     def close(self):
         """Write EEPROM/NVRAM with the rescue values and close all instruments.
 
