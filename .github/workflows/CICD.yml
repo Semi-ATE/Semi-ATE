@@ -19,10 +19,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ['3.8', '3.9', '3.10']
+        PYTHON_VERSION: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
       - name: Checkout Pull Requests
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Environment Dependencies
         run: |
@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y libgit2-dev xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
 
       - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
@@ -41,7 +41,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install spyder=5.5.5
+          mamba install spyder=6.0.3
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
