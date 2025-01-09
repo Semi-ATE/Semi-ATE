@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Harmonize test execution via Plugin &mdash; Semi-ATE documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=9c6baf1e" />
 
@@ -444,7 +444,7 @@ there is not need to synchronize.</p>
 <p>Master Application shall know how to synchronize the available Single Tester and be able to use the Tester Plugin to control their tests execution.</p>
 <p>Tester Plugin should implement the following functions:</p>
 <ul>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">release_test_execution</span><span class="p">(</span><span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">release_test_execution</span><span class="p">(</span><span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>the <strong>release_test_execution</strong> function will be used to signalize that the next test for the specified sites, can run.
@@ -459,7 +459,7 @@ this event is needed as soon as all requests from all defined sites are received
 </li>
 </ul>
 </li>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">async</span> <span class="k">def</span> <span class="nf">get_sites_states</span><span class="p">(</span><span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_sites_states</span><span class="p">(</span><span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
 </pre></div>
 </div>
 <p>the <strong>get_sites_states</strong> is an async function that returns a list of all GPIOs suppose to be connected to a MSCT (list length = 16) within a given timeout.</p>
@@ -475,7 +475,7 @@ this event is needed as soon as all requests from all defined sites are received
 <p>Test Program should after each test execution signalize, that it is ready to carry on with the next test, then wait till the master application sends a response to continue the execution.</p>
 <p>Tester Plugin should implement the following function:</p>
 <ul>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">do_request</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span><span class="w"> </span><span class="nf">do_request</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
 </pre></div>
 </div>
 <p><strong>do_request</strong> function will be called as soon as a next command is received
@@ -485,17 +485,17 @@ depend on the type of the Tester ether Parallel Tester or Single Tester, we can 
 <li><p>in case of Single Tester: the function will return always true. Tests must not be synchronized in this case.</p></li>
 </ul>
 </li>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">test_in_progress</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span><span class="w"> </span><span class="nf">test_in_progress</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>test_in_progress</strong> function signalize the site is busy (e.g testing)</p>
 </li>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">test_done</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span><span class="w"> </span><span class="nf">test_done</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>test_done</strong> function signalize that the site is done with testing and wait to be released again</p>
 </li>
-<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">do_init_state</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span><span class="w"> </span><span class="nf">do_init_state</span><span class="p">(</span><span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>do_init_state</strong> function sets the tester gpio state to low</p>

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ATE Sequencer Specification &mdash; Semi-ATE documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=9c6baf1e" />
 
@@ -468,7 +468,7 @@ Suppose we have an object called the “K2000”, which can be activated or deac
 <span class="n">resource</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
 
 
-<span class="k">class</span> <span class="nc">k2000</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">k2000</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">hdl</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dev/tty0/&quot;</span><span class="p">)</span>
         <span class="n">write</span><span class="p">(</span><span class="n">hdl</span><span class="p">,</span> <span class="s2">&quot;do stuff)</span>

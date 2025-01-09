@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ATE.org Plugins &mdash; Semi-ATE documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=9c6baf1e" />
 
@@ -580,22 +580,22 @@ An importer is expected to have the following interface:</p>
 Tester will also be provided with a logger</p>
 <p>A tester is expected to have the following interface:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_sites_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
-<span class="k">def</span> <span class="nf">do_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
-<span class="k">def</span> <span class="nf">test_in_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">test_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">do_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_in_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>note</strong>: <code class="docutils literal notranslate"><span class="pre">get_tester</span></code> will also be used in the hwsetup in semi-ate-plugin to determine the number of sites supported with which the parallelism is configured. Therefore, prevent any interaction with the tester hardware while instantiating the tester (e.g in <code class="docutils literal notranslate"><span class="pre">__init__</span></code> function) and use the <code class="docutils literal notranslate"><span class="pre">setup()</span></code> and <code class="docutils literal notranslate"><span class="pre">teardown()</span></code> functions for that.</p>
 <p><strong>note</strong>: <code class="docutils literal notranslate"><span class="pre">get_sites_count</span></code> shall not be implemented by the tester itself as it’s already implemented in the base class (<code class="docutils literal notranslate"><span class="pre">TesterInterface</span></code>). Though, it’s required that tester implementation declare the <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> static class variable. (see example below)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TesterInterface</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TesterInterface</span><span class="p">:</span>
     <span class="n">SITE_COUNT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">def</span> <span class="nf">get_site_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_site_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="o">...</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SITE_COUNT</span>
 
-<span class="k">class</span> <span class="nc">TestImpl</span><span class="p">(</span><span class="n">TesterInterface</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TestImpl</span><span class="p">(</span><span class="n">TesterInterface</span><span class="p">):</span>
     <span class="n">SITE_COUNT</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># rest</span>
@@ -620,9 +620,9 @@ This hook shall return an instance type of the concrete tester</p>
 <p>This hook shall return an instance of a tester master type with the given name.</p>
 <p>A tester master is expected to have the following interface:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_sites_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
-<span class="k">def</span> <span class="nf">get_site_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
-<span class="k">def</span> <span class="nf">release_test_execution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">get_strategy_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_site_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">release_test_execution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_strategy_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -673,81 +673,81 @@ function:</p>
 <h3>As basic example plugin<a class="headerlink" href="#as-basic-example-plugin" title="Link to this heading"></a></h3>
 <p>The example in this chapter containes the most basic plugin possible.</p>
 <p><strong>File</strong>: PluginSrc\PluginB\__init__.py</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pluggy</span>
-<span class="kn">from</span> <span class="nn">ATE.semiateplugins.hookspec</span> <span class="kn">import</span> <span class="n">hookimpl</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pluggy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ATE.semiateplugins.hookspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">hookimpl</span>
 
-<span class="k">class</span> <span class="nc">ThePlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ThePlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_plugin_identification</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plugin_identification</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{}</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_exporter_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_exporter_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_equipment_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_equipment_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_devicepin_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_devicepin_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_instrument_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_instrument_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_tester_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tester_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookspec</span><span class="o">.</span><span class="n">ate</span><span class="o">.</span><span class="n">hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_exporter</span><span class="p">(</span><span class="n">exporter_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exporter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_exporter</span><span class="p">(</span><span class="n">exporter_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exporter</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_equipment</span><span class="p">(</span><span class="n">equipment_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipmentInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_equipment</span><span class="p">(</span><span class="n">equipment_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipmentInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_devicepin_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_devicepin_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_instrument_proxy</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_instrument_proxy</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_tester</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tester</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_tester_type</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tester_type</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_tester_master</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tester_master</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_general_purpose_function</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionInstance</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_general_purpose_function</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionInstance</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@hookimpl</span>
-    <span class="k">def</span> <span class="nf">get_configuration_options</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_options</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </pre></div>
 </div>
@@ -756,7 +756,7 @@ function:</p>
 <h3>Plugin Installation<a class="headerlink" href="#plugin-installation" title="Link to this heading"></a></h3>
 <p>Plugins are installed by means of setuptools (Pluggy supports plugin discovery through setuptools entrypoints). For this to work we need a setup.py for each plugin:</p>
 <p><strong>File</strong>: PluginSrc\setup.py</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">setuptools</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup</span>
 <span class="n">setup</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SomeAtePlugin&quot;</span><span class="p">,</span>
     <span class="n">install_requires</span><span class="o">=</span><span class="s2">&quot;ate.org&quot;</span><span class="p">,</span>

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Semi-ATE Project Development &mdash; Semi-ATE documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=9c6baf1e" />
 
@@ -543,7 +543,7 @@ Product
 <p>Generating a test as described above will automatically generate code that may be used to write custom test code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Default implementation for test.&quot;&quot;&quot;</span>
         <span class="o">...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">new_parameter1</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
@@ -582,16 +582,16 @@ The <code class="docutils literal notranslate"><span class="pre">do</span></code
 <p>The auto script is a hardware setup specific interface which is used by the test program to execute user code automatically.</p>
 <p>The auto script has the following interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">before_start_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">before_start_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">after_cycle_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_cycle_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">after_terminate_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_terminate_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">after_exception_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_exception_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
         <span class="k">pass</span>
 </pre></div>
 </div>

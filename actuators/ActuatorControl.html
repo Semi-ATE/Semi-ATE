@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Semi-Ate.org Actuator Control &mdash; Semi-ATE documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=9c6baf1e" />
 
@@ -764,18 +764,18 @@ as <code class="docutils literal notranslate"><span class="pre">data</span></cod
 <p><strong>Attention</strong> device_io_control is required to be a python <strong>async</strong> function and the master app will await on this function. This means, that
 device_io_control must <em>never</em> block, as this will cause the masterapp’s mqtt connection to stall forever.
 A canonical way to implement a device_io_control that does not return immediately and waits for <em>something</em> to happen would be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">peripheral</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">peripheral</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
 
-    <span class="k">def</span> <span class="nf">on_event_happened</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_event_happened</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -787,8 +787,8 @@ can be set.</p>
 <p>If the actuator implementation needs to use mqtt it should use the <strong>init</strong> call to subscribe to any relevant topics. For the internal routing to work correctly the peripheral will have to call “register_route” as well.</p>
 <p><strong>Note</strong>: Actuators will only be unloaded, once an unload command is issued to the master application. The masterapp will call close on all actuators, that were previously loaded. The peripheral is expected to unsubscribe from mqtt and to deregister all routes.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">class</span> <span class="nc">mqtt_peripheral</span><span class="p">():</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">class</span><span class="w"> </span><span class="nc">mqtt_peripheral</span><span class="p">():</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
             <span class="c1"># Always store the actual lambda/callback to use for registration</span>
             <span class="c1"># and unregistration. Don&#39; use ad-hoc lambdas as this will</span>
@@ -796,20 +796,20 @@ can be set.</p>
             <span class="c1"># to never be released due to it being kept alive by the lambdas.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_message_received</span>
         
-        <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span> <span class="o">=</span> <span class="n">mqtt_client</span>
             <span class="n">mqtt_client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
             <span class="n">mqtt_client</span><span class="o">.</span><span class="n">register_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
         
-        <span class="k">def</span> <span class="nf">on_message_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">on_message_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
             <span class="c1"># This code is called whenever a message arrives on &quot;SomePeripheral/command&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
             <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
 
-        <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
             <span class="n">mqtt_client</span><span class="o">.</span><span class="n">unregister_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
   
