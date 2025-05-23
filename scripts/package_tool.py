@@ -93,7 +93,8 @@ def setup(packages: Package, setup_command: SetupCommand):
                                 readme.write(line)
 
                 # Generate SDIST
-                process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
+                process = Popen(['python', '-m build'], cwd=str(path))
+                
                 exit_code = process.wait()
 
                 # Revert readme changes
