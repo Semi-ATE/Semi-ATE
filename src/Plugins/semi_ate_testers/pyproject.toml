@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "semi-ate-testers"
+dynamic = ["version"]
+description = "semi-ate-testers is an example implementation of a plugin that can be consumed by the semi-ate-spyder plugin and the master application."
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "GPL-2.0-only"
+authors = [
+    { name = "The Semi-ATE Project Contributors", email = "ate.organization@gmail.com" }
+]
+requires-python = ">= 3.9"
+dependencies = [
+	"requests",
+	"pydantic",
+	"semi-ate-common",
+	"semi-ate-plugins"
+]
+
+[project.urls]
+repository = "https://github.com/Semi-ATE/Semi-ATE"
+Documentation = "https://semi-ate.github.io/Semi-ATE/"
+
+[tool.hatch.version]
+	path = "semi_ate_testers/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+      packages = ["semi_ate_testers"]
