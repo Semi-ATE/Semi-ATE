@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "integration-test-common"
+dynamic = ["version"]
+description = "Handler application that that steers the master application"
+license = "GPL-2.0-only"
+authors = [
+    { name = "The Semi-ATE Project Contributors", email = "ate.organization@gmail.com" }
+]
+requires-python = ">= 3.9"
+keywords = [
+    "Semiconductor",
+    "ATE",
+    "Automatic Test Equipment",
+    "Spyder",
+    "Plugin"
+]
+classifiers = [
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance"
+]
+dependencies = []
+
+[project.urls]
+	repository = "https://github.com/Semi-ATE/Semi-ATE"
+	Documentation = "https://semi-ate.github.io/Semi-ATE/"
+
+[tool.hatch.version]
+	path = "Common/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+	packages = ["Common"]
