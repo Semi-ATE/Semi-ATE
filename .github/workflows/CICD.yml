@@ -224,6 +224,7 @@ jobs:
       - name: Generate distribution sdist files
         run: |
           cd scripts
+          python -m pip install build
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
           mkdir output
