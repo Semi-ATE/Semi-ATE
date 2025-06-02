@@ -1,0 +1,803 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATE.org Plugins &mdash; Semi-ATE documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=9c6baf1e" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=6f77e80e"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ATE Sequencer Specification" href="SequencerInterface.html" />
+    <link rel="prev" title="Semi-ATE Interstage Communication" href="Interstage-Communication.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Semi-ATE
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="semi-ate-applications.html">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#create-mamba-environment">Create Mamba Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#mqtt-broker">MQTT-Broker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#semi-ate-applications-and-testers">Semi-ATE Applications and Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-applications.html#create-xml-job-file">Create XML Job File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-applications.html#starting-the-applications">Starting the Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with ATE for developers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#we-assume-the-following">We assume the following</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#mqtt">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html#environment">Environment:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#create-new-environment-conda-mamba">create new environment (conda/mamba)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#activate-environment">activate environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-semi-ate-packages-for-developers">Install Semi-ATE packages for developers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#running-spyder">Running Spyder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exampleProject/exampleproject.html">Example Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exampleProject/exampleproject.html#open-project">Open Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="semi-ate-packages.html">Overview of Semi-ATE Packages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#which-packages-are-provided">Which Packages are provided?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-common">semi-ate-common</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-project-database">semi-ate-project-database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-sammy">semi-ate-sammy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-spyder">semi-ate-spyder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-testers">semi-ate-testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#semi-ate-plugins">semi-ate-plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="semi-ate-packages.html#diagrams">Diagrams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#spyder-extension">Spyder Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#single-tester">Single Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="semi-ate-packages.html#parallel-tester">Parallel Tester</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="API_UI_Websever.html">API zwischen UI und Webserver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#systemzustande">Systemzustände</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#zustandsdiagramm-der-masterapplikation">Zustandsdiagramm der Masterapplikation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#websockets">Websockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#datenformat">Datenformat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API_UI_Websever.html#fe-komponenten">FE-Komponenten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#statuskomponente">Statuskomponente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API_UI_Websever.html#controlkomponente">Controlkomponente</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="binning.html">Semi-ATE.org binning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#definitions">Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#binning-strategy">Binning Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#grades-passbins">Grades / Passbins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#fail-bins">Fail Bins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-bins">Special Bins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#generation-of-bin-codes">Generation of bin codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#additional-classification">Additional classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#influence-of-alarms-during-tests">Influence of alarms during tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#use-of-parameterlimits-for-classification">Use of parameterlimits for classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#the-bintable">The bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#deployment-of-the-bintable">Deployment of the bintable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binning.html#special-usecases">Special usecases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="binning.html#mms-multiple-sockets">MMS, Multiple Sockets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CI_build.html">CI build</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#gitlab-runner">GitLab Runner</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="CI_build.html#beispiel-config-toml">Beispiel config.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="CI_build.html#beispiel-gitlab-ci-yml">Beispiel .gitlab-ci.yml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Import-Export.html">Import/Export</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#export">Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Import-Export.html#import">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#what-it-is">What it is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-in-the-spyder-ui">ISC in the Spyder UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#isc-resolvers">ISC Resolvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#performance-latency-considerations">Performance &amp; Latency Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#codegen-view-of-parameters">Codegen View of parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#runtime-view-of-parameters">Runtime View of parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#output-parameters">Output Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Interstage-Communication.html#availability-considerations">Availability Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#mutliple-caches">Mutliple Caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interstage-Communication.html#behavior-of-remote-caches-plugins">Behavior of remote caches/plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ATE.org Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#design-rationale">Design Rationale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#identification">Identification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plugin">Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plugin-functionality">Plugin Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tester">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#instances">Instances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Importers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Exporters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Equipments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#devicepins">Devicepins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Instruments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">General Purpose Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised"><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-hookspec">Complete Hookspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#as-basic-example-plugin">As basic example plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plugin-installation">Plugin Installation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SequencerInterface.html">ATE Sequencer Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#api-as-seen-by-the-ate-runtime">API as seen by the ATE Runtime</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#master">Master</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testoptions">Testoptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#the-runtime-as-seen-by-the-sequencer">The Runtime as seen by the sequencer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#proxies-shims">Proxies/Shims</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#testresults-testend">Testresults &amp; Testend</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SequencerInterface.html#errorhandling-teardowns">Errorhandling &amp; Teardowns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#teardowns">Teardowns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-startup">During startup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#during-testexecution">During testexecution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SequencerInterface.html#batch-end">Batch End</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="softwareMigration.html">Software Release: Semi-ATE Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tool">Migration Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-strategy">Migration Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#migration-tests">Migration Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="softwareMigration.html#disadvantages-and-advantages">Disadvantages and Advantages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#advantages">Advantages:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="softwareMigration.html#disadvantages">Disadvantages:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Actuators:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="actuators/ActuatorControl.html">Semi-Ate.org Actuator Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol">The IOCtl Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#startup-shutdown">Startup &amp; shutdown</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#iocontrol-codes">IOControl Codes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#generic">Generic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#magfield">MagField</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#former-part-of-plugin-spec-rework">Former part of plugin spec -&gt; rework</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/ActuatorControl.html#actuators">Actuators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/ActuatorControl.html#the-ioctl-protocol-master-testprogram">The IOCtl Protocol Master &lt;-&gt; Testprogram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html">The Magnetic Field Actuator (STL DCS6K, single channel)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#actuator-api">Actuator Api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#additional-api-functions">Additional Api Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#init-load">init_load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#do-load-adaption">do_load_adaption</a></li>
+<li class="toctree-l3"><a class="reference internal" href="actuators/MagField-STL6k/STL6K-SingleChannel.html#setup-dcs6k">setup_dcs6k</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Build tool:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buildtool/buildtool.html">sammy, the Semi-ATE.org build- &amp; project tool</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#uusing-sammy">Uusing sammy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#verbs">Verbs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#generate">generate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#new">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#migrate">migrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="buildtool/buildtool.html#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="buildtool/buildtool.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development process:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html">Semi-ATE Project Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#spyder-environment">Spyder Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#project-setup">Project Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#definitions-section">Definitions Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#toolbar">Toolbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#tests-section">Tests Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/SemiATEDevelopment.html#auto-script">Auto Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developmentProcess/TestInterface.html">Test Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#test-entry-point">Test Entry Point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#input-parameter">Input Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#output-parameter">Output Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#context">Context</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#tester">Tester</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developmentProcess/TestInterface.html#instrument-actuator">Instrument &amp; Actuator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developmentProcess/TestInterface.html#some-remarks">Some Remarks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Interface definitions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/control_interface.html">Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-erzeugt-werden">Daten die von Control erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#daten-die-von-control-konsumiert-werden">Daten die von Control konsumiert werden</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/control_interface.html#befehle-die-von-control-verstanden-werden">Befehle die von Control verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/control_interface.html#load">Load</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/handler_interface.html">Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#befehle-die-vom-handler-verstanden-werden">Befehle die vom Handler verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#identify">identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-state">get-state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#get-temperature">get-temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#error">error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/handler_interface.html#send-layout">send-layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html">Interfacedefinitionen Semi-ATE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#grundsatzliches">Grundsätzliches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#topics">Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/interfacedefinition_generell.html#befehle">Befehle</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/master_interface.html">Master</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-erzeugt-werden">Daten die vom Master erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#statusinfo">Statusinfo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#job">Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#peripherystate">PeripheryState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#befehle-die-vom-master-verstanden-werden">Befehle die vom Master verstanden werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#geteilte-peripherie-steuern">Geteilte Peripherie steuern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/master_interface.html#handlerbefehle">Handlerbefehle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/master_interface.html#daten-die-vom-master-konsumiert-werden">Daten die vom Master konsumiert werden</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html">TestApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-erzeugt-werden">Daten die von der Testapp erzeugt werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#statusinfo">Statusinfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#testresultat">Testresultat</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#daten-die-von-der-testapp-konsumiert-werden">Daten die von der Testapp konsumiert werden</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#init">Init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#next">Next</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#terminate">Terminate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setloglevel">Setloglevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setting">Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaceDefinitions/testapp_interface.html#setparameter">SetParameter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Test execution:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testExecution/TestExecution.html">Harmonize test execution via Plugin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#synchronization-master-and-tester">Synchronization Master and Tester</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#test-execution-scenario">Test Execution Scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-parallel-tester-single-testers">case of Parallel Tester &amp; Single Testers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#case-of-only-one-single-tester">case of only one Single Tester</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#tester-plugin-interface">Tester Plugin Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#master-tester-interface">Master Tester Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="testExecution/TestExecution.html#testprogram-tester-interface">TestProgram Tester Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testExecution/TestExecution.html#signal-flow">Signal Flow</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Semi-ATE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ATE.org Plugins</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Plugins.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ate-org-plugins">
+<h1>ATE.org Plugins<a class="headerlink" href="#ate-org-plugins" title="Link to this heading"></a></h1>
+<p>This document describes the Plugin Api (or “hookspec” in pluggy terms) of an ATE.org plugin.</p>
+<p>Each ATE.org Plugin provides means to access its contents in different forms. Most notably:</p>
+<ul class="simple">
+<li><p>Identification of contents</p></li>
+<li><p>Instances of contents</p></li>
+</ul>
+<section id="design-rationale">
+<h2>Design Rationale<a class="headerlink" href="#design-rationale" title="Link to this heading"></a></h2>
+<p>The API Design in this document tries to take into account the way the IDE is structured as well as the way Pluggy works. We focus on the following points:</p>
+<ul class="simple">
+<li><p>Ease of integration</p></li>
+<li><p>Flexibility</p></li>
+<li><p>Extensibility</p></li>
+</ul>
+</section>
+<section id="identification">
+<h2>Identification<a class="headerlink" href="#identification" title="Link to this heading"></a></h2>
+<p>We use the “identification” functions to discover the functionality provided by a given plugin. The plugin shall provide a number of functions, that allow us to query that functionality.</p>
+<section id="plugin">
+<h3>Plugin<a class="headerlink" href="#plugin" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_plugin_identification</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">plugin_ident</span>
+</pre></div>
+</div>
+<p>This hook shall return a dictionary with the following layout:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Plugin Name&quot;</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Plugin Version&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="plugin-functionality">
+<h3>Plugin Functionality<a class="headerlink" href="#plugin-functionality" title="Link to this heading"></a></h3>
+<p>A given plugin publishes its functionality by means of Importers/Exporters/Actuators/Instruments/Equipments/Testers. Each of these can be queried by means of a “get_x_names” function where x is the name of the respective functionality. The returnvalue of the get_x_names functions is always a list of dictionaries, where each dictionary has the following layout:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">display_name</span><span class="p">:</span> <span class="s2">&quot;Display Name&quot;</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Object Version&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Object Name&quot;</span>
+</pre></div>
+</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p>display_name denotes the string, that is used to display the the object in the ATE.org UI.</p></li>
+<li><p>Version denotes the Version of the code, that is used for the respective object</p></li>
+<li><p>Name: Denotes the actual internal name by which the object is identified within the plugin. The plugin must be able to return an instance of the object when the get_x hook is called with the string name as x_name parameter. Note that the object name must be unqique across all plugins. Therefore it is advisable to prefix the objectname with the pluginname. E.g:</p></li>
+<li><p>Plugin: Semi-ATE</p></li>
+<li><p>Object: CSVFileImporter</p></li>
+<li><p>Name: Semi-ATE.CSVFileImporter</p></li>
+</ul>
+<section id="importers">
+<h4>Importers<a class="headerlink" href="#importers" title="Link to this heading"></a></h4>
+<p>An importer is an object that is able to import a wafermap from a given (importer-specific) datasource and in a given format. E.g. there might be an importer that imports data as .CSV value from a database.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span>    <span class="n">get_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+<section id="exporters">
+<h4>Exporters<a class="headerlink" href="#exporters" title="Link to this heading"></a></h4>
+<p>An exporter is an object that is able to export a wafermap from to a given (exporter-specific) datasink and in a given format. E.g. ther might be an exporter that export to .CSV.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">get_exporter_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+<section id="equipments">
+<h4>Equipments<a class="headerlink" href="#equipments" title="Link to this heading"></a></h4>
+<p>An equipment object is used to access the specific functionality of prober or handler.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">get_equipment_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+<section id="devicepin-importer">
+<h4>Devicepin Importer<a class="headerlink" href="#devicepin-importer" title="Link to this heading"></a></h4>
+<p>A devicepin importer is used to import the pinset, that is accessible for a given device.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">get_devicepin_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+<section id="instruments">
+<h4>Instruments<a class="headerlink" href="#instruments" title="Link to this heading"></a></h4>
+<p>An instrument is a piece of hardware, that is used to measure a given aspect of the DUT. It is usually used in a lab context.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">get_instrument_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+<section id="general-purpose-functions">
+<h4>General Purpose Functions<a class="headerlink" href="#general-purpose-functions" title="Link to this heading"></a></h4>
+<p>General Purpose Functions are plugin functionality that needs to be available to tests, but that is not tied to a specific usage scenario.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_general_purpose_function_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<p>The complete layout of the results of this function is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="s2">&quot;Display Name&quot;</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Object Version&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Object Name&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tester">
+<h3>Tester<a class="headerlink" href="#tester" title="Link to this heading"></a></h3>
+<p>The following function returns all installed testers use to be run beyond the Single Tester, which will be used by the testprogram to synchronize the test execution</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_tester_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="instances">
+<h2>Instances<a class="headerlink" href="#instances" title="Link to this heading"></a></h2>
+<p>All hooks that deal with the instanciation of objects are provided the name of the plugin that should actually create the instance. The reason is, that pluggy will call each hook for all registered plugins, so a call to “get_importer” will be executed for each plugin, using the same parameter. Since we want to avoid nameclashes of objects we must uniquely identify the actual type of object we want created. See the section on object names for this.</p>
+<p>A note on dependencies:
+Importers and exporters are allowed to depend on PyQt to provide their own UI, if necessary. Actuators, Instruments and Equiments should not depend on PyQt - these objects are created by testcases and usually used in a headless environment (i.e. the tester itself!)</p>
+<section id="id1">
+<h3>Importers<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of an importer with the given name.
+An importer is expected to have the following interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">do_import</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">data</span>
+    <span class="n">get_abort_reason</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">string</span>
+</pre></div>
+</div>
+<p>The importer shall show it’s own import dialog (which may well be just a file chooser!), perform the import and return the imported data in an - as of now - not yet specified format. If the import fails/is canceled do_import() shall not propagate any exception to the application, but instead return “None”. The plugin shall expose the reason, why no data was returned when get_abort_reason is called.</p>
+</section>
+<section id="id2">
+<h3>Exporters<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_exporter</span><span class="p">(</span><span class="n">exporter_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exporter</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of an exporter with the given name.</p>
+<p>An importer is expected to have the following interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">do_export</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+    <span class="n">get_abort_reason</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">string</span>
+</pre></div>
+</div>
+<p>The exporter shall show it’s own export dialog (which may well be just a file chooser!) and perform the export. If the export fails/is canceled do_export() shall not propagate any exception to the application, but instead return <code class="docutils literal notranslate"><span class="pre">False</span></code>. The plugin shall expose the reason, why no data was exported when get_abort_reason is called.</p>
+</section>
+<section id="id3">
+<h3>Equipments<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_equipment</span><span class="p">(</span><span class="n">equipment_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipmentInstance</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of a given equipment. The returned instance has no specified interface. This hook is intended for use in tests only.</p>
+<p>If the plugin is unable to resolve the equipment name it shall <em>immediatly</em> throw an exception containing the missing equipment’s name. Do not return None in this case as it makes diagnostics harder than a well thought out error string.</p>
+</section>
+<section id="devicepins">
+<h3>Devicepins<a class="headerlink" href="#devicepins" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_devicepin_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of a given importer. The returned instance has no specified interface. This hook is intended for use in tests only.</p>
+<p>If the plugin is unable to resolve the importer name it shall <em>immediatly</em> throw an exception containing the missing importer’s name. Do not return None in this case as it makes diagnostics harder than a well thought out error string.</p>
+<p>An importer is expected to have the following interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">do_import</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">data</span>
+    <span class="n">get_abort_reason</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">string</span>
+</pre></div>
+</div>
+<p>The importer shall show it’s own import dialog (which may well be just a file chooser!), perform the import and return the imported data in an - as of now - not yet specified format. If the import fails/is canceled do_import() shall not propagate any exception to the application, but instead return “None”. The plugin shall expose the reason, why no data was returned when get_abort_reason is called.</p>
+</section>
+<section id="id4">
+<h3>Instruments<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span>
+<span class="n">get_instrument_proxy</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of a given instrument. The returned instance has no specified interface. This hook is intended for use in tests only.</p>
+<p>If the plugin is unable to resolve the instrument name it shall <em>immediatly</em> throw an exception containing the missing instrument’s name. Do not return None in this case as it makes diagnostics harder than a well thought out error string.</p>
+</section>
+<section id="id5">
+<h3>General Purpose Functions<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<p>General Purpose Functions are plugin functionality that needs to be available to tests, but that is not tied to a specific usage scenario.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_general_purpose_function</span><span class="p">(</span><span class="n">func_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionInstance</span>
+</pre></div>
+</div>
+<p>Note that a “Function” in this context denotes an object that can have an arbitrary interface. The runtime environment will make an instance of the object available for each test program and test</p>
+</section>
+<section id="id6">
+<h3>Tester<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_tester</span><span class="p">(</span><span class="n">tester_name</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of a tester with the given name.
+Tester will also be provided with a logger</p>
+<p>A tester is expected to have the following interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_sites_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+<span class="k">def</span> <span class="nf">do_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+<span class="k">def</span> <span class="nf">test_in_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">site_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>note</strong>: <code class="docutils literal notranslate"><span class="pre">get_tester</span></code> will also be used in the hwsetup in semi-ate-plugin to determine the number of sites supported with which the parallelism is configured. Therefore, prevent any interaction with the tester hardware while instantiating the tester (e.g in <code class="docutils literal notranslate"><span class="pre">__init__</span></code> function) and use the <code class="docutils literal notranslate"><span class="pre">setup()</span></code> and <code class="docutils literal notranslate"><span class="pre">teardown()</span></code> functions for that.</p>
+<p><strong>note</strong>: <code class="docutils literal notranslate"><span class="pre">get_sites_count</span></code> shall not be implemented by the tester itself as it’s already implemented in the base class (<code class="docutils literal notranslate"><span class="pre">TesterInterface</span></code>). Though, it’s required that tester implementation declare the <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> static class variable. (see example below)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TesterInterface</span><span class="p">:</span>
+    <span class="n">SITE_COUNT</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">get_site_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SITE_COUNT</span>
+
+<span class="k">class</span> <span class="nc">TestImpl</span><span class="p">(</span><span class="n">TesterInterface</span><span class="p">):</span>
+    <span class="n">SITE_COUNT</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># rest</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised">
+<h2><strong>note</strong>: if the declaration of <code class="docutils literal notranslate"><span class="pre">SITE_COUNT</span></code> is missing an exception will be raised<a class="headerlink" href="#note-if-the-declaration-of-site-count-is-missing-an-exception-will-be-raised" title="Link to this heading"></a></h2>
+<p>get_tester_type(tester_name)
+This hook shall return an instance type of the concrete tester</p>
+<p>The type will be used to generate the code containing the tester type information which is necessary to provide the IDE with the type information needed to activate the autocompletion support</p>
+<p><strong>note</strong>: both <code class="docutils literal notranslate"><span class="pre">get_tester</span></code> and <code class="docutils literal notranslate"><span class="pre">get_tester_type</span></code> functions have almost the same implementation but not the same output type, they return <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">tester</span> <span class="pre">instance</span></code> and <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">tester</span> <span class="pre">class</span></code> respectively.</p>
+<ul class="simple">
+<li><p>from <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">tester</span> <span class="pre">instance</span></code> we could operate on the tester (e.g setup the tester, etc…)</p></li>
+<li><p>from <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">tester</span> <span class="pre">class</span></code> we extract/collect some metadata too facilitate the development process (see above)</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_tester_master</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span>
+</pre></div>
+</div>
+<p>This hook shall return an instance of a tester master type with the given name.</p>
+<p>A tester master is expected to have the following interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_sites_count</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+<span class="k">def</span> <span class="nf">get_site_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
+<span class="k">def</span> <span class="nf">release_test_execution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_strategy_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<p>Pluginobjects may provide configuration data in the form of key-value pairs. Each plugin shall provide a list of configuration options for a given object when the function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_configuration_options</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">String</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>is called. It is up to the runtime to use the data (e.g. for creating a configuartion dialog). All objects shall support the
+function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_configuration_values</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>to apply a given set of configuration options. Each object shall be implemented such, that it is able to use the provided values on the fly.</p>
+<p>Note: The configuration values are plain strings and have no notion of types.</p>
+</section>
+<section id="complete-hookspec">
+<h2>Complete Hookspec<a class="headerlink" href="#complete-hookspec" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">get_plugin_identification</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">plugin_ident</span>
+<span class="n">get_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_exporter_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_equipment_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_devicepin_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_instrument_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_general_purpose_function_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+<span class="n">get_tester_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]</span>
+
+<span class="n">get_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span>
+<span class="n">get_exporter</span><span class="p">(</span><span class="n">exporter_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exporter</span>
+<span class="n">get_equipment</span><span class="p">(</span><span class="n">equipment_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipmentInstance</span>
+<span class="n">get_devicepin_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span>
+
+<span class="n">get_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span>
+<span class="n">get_instrument_proxy</span><span class="p">(</span><span class="n">required_capability</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentProxy</span>
+
+<span class="n">get_tester</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span>
+<span class="n">get_tester_type</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span>
+<span class="n">get_tester_master</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span>
+
+<span class="n">get_general_purpose_function</span><span class="p">(</span><span class="n">func_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionInstance</span>
+
+<span class="n">get_configuration_options</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">String</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>The hookspecmarker is “ate.org”</p>
+<section id="as-basic-example-plugin">
+<h3>As basic example plugin<a class="headerlink" href="#as-basic-example-plugin" title="Link to this heading"></a></h3>
+<p>The example in this chapter containes the most basic plugin possible.</p>
+<p><strong>File</strong>: PluginSrc\PluginB\__init__.py</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pluggy</span>
+<span class="kn">from</span> <span class="nn">ATE.semiateplugins.hookspec</span> <span class="kn">import</span> <span class="n">hookimpl</span>
+
+<span class="k">class</span> <span class="nc">ThePlugin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_plugin_identification</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_exporter_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_equipment_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_devicepin_importer_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_instrument_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_tester_names</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookspec</span><span class="o">.</span><span class="n">ate</span><span class="o">.</span><span class="n">hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_exporter</span><span class="p">(</span><span class="n">exporter_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exporter</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_equipment</span><span class="p">(</span><span class="n">equipment_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipmentInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_devicepin_importer</span><span class="p">(</span><span class="n">importer_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Importer</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_instrument_proxy</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstrumentInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_tester</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_tester_type</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_tester_master</span><span class="p">(</span><span class="n">tester_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TesterInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_general_purpose_function</span><span class="p">(</span><span class="n">function_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionInstance</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@hookimpl</span>
+    <span class="k">def</span> <span class="nf">get_configuration_options</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</pre></div>
+</div>
+</section>
+<section id="plugin-installation">
+<h3>Plugin Installation<a class="headerlink" href="#plugin-installation" title="Link to this heading"></a></h3>
+<p>Plugins are installed by means of setuptools (Pluggy supports plugin discovery through setuptools entrypoints). For this to work we need a setup.py for each plugin:</p>
+<p><strong>File</strong>: PluginSrc\setup.py</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+<span class="n">setup</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SomeAtePlugin&quot;</span><span class="p">,</span>
+    <span class="n">install_requires</span><span class="o">=</span><span class="s2">&quot;ate.org&quot;</span><span class="p">,</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ate.org&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;plug = PluginB:ThePlugin&quot;</span><span class="p">]},</span>
+    <span class="n">py_modules</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;PluginB&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Interstage-Communication.html" class="btn btn-neutral float-left" title="Semi-ATE Interstage Communication" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="SequencerInterface.html" class="btn btn-neutral float-right" title="ATE Sequencer Specification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Semi-ATE contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script> 
+
+</body>
+</html>
