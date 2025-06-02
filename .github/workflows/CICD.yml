@@ -119,7 +119,7 @@ jobs:
           sudo apt-get update --fix-missing
 
       - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
           python-version: 3.9
