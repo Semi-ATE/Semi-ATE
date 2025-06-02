@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Dummy.Plugin"
+dynamic = ["version"]
+description = "Dummy ate plugin for working with ATE projects"
+license = "GPL-2.0-only"
+authors = [
+    { name = "The Semi-ATE Project Contributors", email = "ate.organization@gmail.com" }
+]
+requires-python = ">= 3.9"
+dependencies = [
+	"requests"
+]
+
+[project.urls]
+	repository = "https://github.com/Semi-ATE/Semi-ATE"
+	Documentation = "https://semi-ate.github.io/Semi-ATE/"
+
+[tool.hatch.version]
+	path = "dummy_tester/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+	packages = ["dummy_tester"]
+
+[project.entry-points."ate.org"]
+	dummytester = "dummy_tester:Plugin"
+

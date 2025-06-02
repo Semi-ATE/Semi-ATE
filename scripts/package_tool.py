@@ -6,9 +6,11 @@ from enum import Enum
 from typing import List, Union
 from package_list import distribution_packages, integration_test_packages
 import re
+import sys
 from os.path import basename, join
 from os import unlink
 from os import name as osname
+from os import environ
 
 
 class SetupCommand(Enum):
@@ -66,6 +68,7 @@ def setup(packages: Package, setup_command: SetupCommand):
     init_path_list = _compute_package_list(packages, PackageType.InitDirPath)
 
     install_requirements(zip(setup_path_list, init_path_list))
+    env = environ.copy()
 
     for p in zip(setup_path_list, init_path_list):
         path = Path(Path(__file__).parents[0], p[0])
@@ -93,7 +96,8 @@ def setup(packages: Package, setup_command: SetupCommand):
                                 readme.write(line)
 
                 # Generate SDIST
-                process = Popen(['python', 'setup.py', setup_command()], cwd=str(path))
+                process = Popen([sys.executable, '-m', 'build'], cwd=str(path), env=env)
+                
                 exit_code = process.wait()
 
                 # Revert readme changes

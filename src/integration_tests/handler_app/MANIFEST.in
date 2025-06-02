@@ -1,4 +1,0 @@
-include requirements/run.txt
-include dummy_handler_app/README.md
-exclude requirements/test.txt
-recursive-exclude tests *

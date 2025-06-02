@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "semi-ate-master-app"
+dynamic = ["version"]
+description = "Master application used for steering the control applications in an ATE test environment."
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "GPL-2.0-only"
+authors = [
+    { name = "The Semi-ATE Project Contributors", email = "ate.organization@gmail.com" }
+]
+requires-python = ">= 3.9"
+keywords = [
+    "Semiconductor",
+    "ATE",
+    "Automatic Test Equipment",
+    "Spyder",
+    "Plugin"
+]
+classifiers = [
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance"
+]
+dependencies = [
+	"semi-ate-common",
+	"semi-ate-apps-common",
+	"semi-ate-plugins",
+	"aiohttp==3.7.4",
+	"xmltodict",
+	"transitions",
+	"pydantic"
+]
+
+[project.optional-dependencies]
+test = [
+	"mock==4.0.3",
+    "pytest==7.1.1",
+    "pytest-mock==3.7.0",
+]
+
+[project.urls]
+repository = "https://github.com/Semi-ATE/Semi-ATE"
+Documentation = "https://semi-ate.github.io/Semi-ATE/"
+
+[project.scripts]
+	launch_master = "ate_master_app.launch_master:main"
+
+[tool.hatch.version]
+	path = "ate_master_app/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+      packages = ["ate_master_app"]

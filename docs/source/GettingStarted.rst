@@ -44,7 +44,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.9 spyder=5.5.5
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.9 spyder=5.5.6
 
 
 activate environment
