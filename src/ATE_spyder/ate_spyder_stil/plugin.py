@@ -9,12 +9,11 @@
 # Standard library imports
 
 # Third-party imports
-from qtpy.QtCore import Qt, Signal
+from qtpy.QtCore import Signal
 
 # Spyder imports
-from spyder.api.plugins import SpyderDockablePlugin
-from spyder.api.exceptions import SpyderAPIError
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
+from spyder.api.fonts import SpyderFontType
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import (
     on_plugin_available, on_plugin_teardown)
@@ -28,7 +27,6 @@ from ate_spyder.widgets.constants import ATEToolbars
 
 # Localization
 _ = get_translation("spyder")
-
 
 
 class STIL(SpyderDockablePlugin):
@@ -96,7 +94,7 @@ class STIL(SpyderDockablePlugin):
 
     def update_font(self):
         color_scheme = self.get_color_scheme()
-        font = self.get_font()
+        font = self.get_font(SpyderFontType.Monospace)
         self.get_widget().update_font(font, color_scheme)
 
     # -------------------- Plugin initialization ------------------------------

@@ -110,6 +110,8 @@ class ATE(SpyderDockablePlugin):
 
         # extend semi-ate toolbar with labml extension (written by Zlin526F)
         lab_ml_package_name = 'labml-adjutancy'
+#TODO:  UserWarning: import pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html.
+# The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
         import pkg_resources
         packages = [pkg.key for pkg in pkg_resources.working_set]
         if lab_ml_package_name in packages:
@@ -134,11 +136,11 @@ class ATE(SpyderDockablePlugin):
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
+#CJ debug        self.sig_run_cell.connect(editor.run_cell)                   # TODO: in Spyder 6.0.7 not available anymore!
+#CJ debug         self.sig_debug_cell.connect(editor.debug_cell)              # TODO: in Spyder 6.0.7 not available anymore!
 
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
-        widget.sig_save_all.connect(editor.save_all)
+#CJ debug         widget.sig_save_all.connect(editor.save_all)                # TODO: in Spyder 6.0.7 not available anymore!
 
     @on_plugin_teardown(plugin=Plugins.Toolbar)
     def on_toolbar_teardown(self):

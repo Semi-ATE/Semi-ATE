@@ -87,9 +87,9 @@ class LabControlPlugin(SpyderDockablePlugin):
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
-        self.sig_stop_debugging.connect(editor.stop_debugging)
+#CJ        self.sig_run_cell.connect(editor.run_cell)                   # TODO: in spyder 6 not available :-(
+#CJ        self.sig_debug_cell.connect(editor.debug_cell)
+#CJ        self.sig_stop_debugging.connect(editor.stop_debugging)
 
     def runflow_changed(self, progname: str):
         widget: LabControl = self.get_widget()

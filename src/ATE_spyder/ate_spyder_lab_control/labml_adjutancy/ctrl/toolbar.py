@@ -21,14 +21,13 @@ class ToolbarItems:
 
 
 class ControlToolBar(ApplicationToolbar):
-    ID = "control"
 
     # --- Signals
     # ------------------------------------------------------------------------
     sig_run_changed = Signal(str)
 
     def __init__(self, parent, identifier):
-        super().__init__(parent, identifier)
+        super().__init__(parent, "control", identifier)
         self.parent = parent
         self.project_info: ProjectNavigation = parent.project_info
 

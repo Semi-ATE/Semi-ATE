@@ -95,9 +95,9 @@ class TestRunnerPlugin(SpyderDockablePlugin):
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
-        self.sig_stop_debugging.connect(editor.stop_debugging)
+#CJ debug        self.sig_run_cell.connect(editor.run_cell)
+#CJ debug        self.sig_debug_cell.connect(editor.debug_cell)
+#CJ_debug        self.sig_stop_debugging.connect(editor.stop_debugging)
 
     # ----------------------- Plugin teardown ---------------------------------
 

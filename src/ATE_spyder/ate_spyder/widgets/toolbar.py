@@ -24,10 +24,9 @@ class ToolbarItems:
 
 
 class ToolBar(ApplicationToolbar):
-    ID = 'ate_toolbar'
 
     def __init__(self, project_info, parent, identifier):
-        super().__init__(parent, identifier)
+        super().__init__(parent, 'ate_toolbar', identifier)
         self.parent = parent
         self.setMovable(False)
         self.active_tester = ''
