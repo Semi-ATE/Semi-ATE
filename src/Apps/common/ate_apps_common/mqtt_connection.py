@@ -17,6 +17,7 @@ class MqttConnection:
         self.response_data = None
         self.mqtt_client = None
         self.last_will = {}
+        self.__aenter__()
 
     async def __aenter__(self):
         self.mqtt_client = Client(hostname=self.host, port=self.port, client_id=self.mqtt_client_id, **self.last_will)
@@ -83,6 +84,8 @@ class MqttConnection:
                 self.router.inject_message(topic, payload)
 
     def set_last_will(self, topic, msg):
+        if self.mqtt_client is not None:
+            print(f"set_last_will({topic}, {msg}) after connection to the client is not possible")
         self.last_will = {
             "last_will_topic": topic,
             "last_will_payload": msg,
@@ -90,22 +93,25 @@ class MqttConnection:
             "last_will_retain": False
         }
 
+    # CJ mit der neuen aiomqtt muss das geändert werden, es gibt kein on_connect, on_disconnect, on_message mehr!!
+    def init_mqtt_client_callbacks(self, on_connect, on_disconnect):
+        #self.mqtt_client.on_connect = on_connect
+        #self.mqtt_client.on_disconnect = on_disconnect
+        #self.mqtt_client.on_message = self._on_message_handler
+        print("init_mqtt_client_callbacks not necessary....")
 
-    # def init_mqtt_client_callbacks(self, on_connect, on_disconnect):
-    #     self.mqtt_client.on_connect = on_connect
-    #     self.mqtt_client.on_disconnect = on_disconnect
-    #     self.mqtt_client.on_message = self._on_message_handler
+    def _on_message_handler(self, client, userdata, msg):
+        self.router.inject_message(msg.topic, msg.payload)
 
-    # def start_loop(self):
-    #     self.mqtt_client.connect_async(self.host, self.port)
-    #     self.mqtt_client.loop_start()
 
-    # async def stop_loop(self):
-    #     await self.mqtt_client.loop_stop()
+# CJ: braucht man das noch so?????
+    def start_loop(self):
+        self.mqtt_client.connect_async(self.host, self.port)
+        self.mqtt_client.loop_start()
 
-    # def response_received(self, topic, data):
-    #     self.response_data = data
-    #     self.response_event.set()
+    async def stop_loop(self):
+        await self.mqtt_client.loop_stop()
 
-    # def _on_message_handler(self, client, userdata, msg):
-    #     self.router.inject_message(msg.topic, msg.payload)
+    def response_received(self, topic, data):
+        self.response_data = data
+        self.response_event.set()
