@@ -23,21 +23,21 @@ class HandlerConnectionHandler:
         self._handler_id = _handler_id
         self._event = event
         self._message_queue = Queue()
+        self._mqtt = MqttConnection(host, port, self._client_id, log)
 
     def start(self):
-        self._mqtt = MqttConnection(self._host, self._port, self._client_id, self._log)
-        self._log.set_mqtt_client(self._mqtt)
-        self._mqtt.init_mqtt_client_callbacks(self._on_connect,
-                                              self._on_disconnect)
-
-        self._mqtt.register_route("Master", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
-        self._mqtt.register_route("Handler", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
-
         self._mqtt.set_last_will(
             self._generate_handler_status_topic(),
             self._mqtt.create_message(
                 self._generate_status_message('crash', '')))
-        self._mqtt.start_loop()
+        self._mqtt.register_route("Master", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
+        self._mqtt.register_route("Handler", lambda topic, payload: self.dispatch_masterapp_message(topic, self._mqtt.decode_payload(payload)))
+
+        self._log.set_mqtt_client(self._mqtt)
+        self._mqtt.init_mqtt_client_callbacks(self._on_connect,
+                                              self._on_disconnect)
+        self._mqtt.start_loop(on_disconnect=self._on_disconnect)
+        self._on_connect()
 
     async def stop(self):
         await self._mqtt.stop_loop()
@@ -55,7 +55,7 @@ class HandlerConnectionHandler:
                      qos=2,
                      retain=False)
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self):
         self._app.startup_done('connection to broker is established')
 
         for device_id in self._device_ids:

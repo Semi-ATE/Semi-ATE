@@ -7,13 +7,12 @@ import asyncio
 
 def ensure_asyncio_event_loop_compatibility_for_windows():
     """
-    WindowsProactorEventLoopPolicy is required for
+    WindowsSelectorEventLoopPolicy is required for
     asyncio.create_subprocess_exec or it will fail with
     NotImplementedError.
-    It is default in Python 3.8 but not in older versions.
     """
-    if sys.platform == 'win32':
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    if sys.platform.startswith('win'):
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 class ControlApplication:
@@ -38,11 +37,8 @@ class ControlApplication:
             self.device_id,
             self.log)
         self.connection_handler.start()
-        try:
-            while True:
-                await asyncio.sleep(1)
-        except asyncio.CancelledError:
-            await self.connection_handler.stop()
+        while True:
+            await asyncio.sleep(1)
 
     def run(self):
         try:

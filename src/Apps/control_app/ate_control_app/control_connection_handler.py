@@ -142,8 +142,6 @@ class ControlConnectionHandler:
         mqtt_client_id = f'controlapp.{device_id}.{site_id}'
         self.mqtt = MqttConnection(host, port, mqtt_client_id, self.log)
         self.log.set_mqtt_client(self)
-        self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
-                                             self._on_disconnect_handler)
 
         self.mqtt.register_route(self._generate_base_topic_cmd(), lambda topic, payload: self.on_message_handler(topic, payload))
         self.mqtt.register_route(self._generate_base_topic_status_master(), lambda topic, payload: self.on_message_handler(topic, payload))
@@ -160,10 +158,12 @@ class ControlConnectionHandler:
             self._generate_base_topic_status(),
             self.mqtt.create_message(
                 self._generate_status_message('crash', '')))
-        self.mqtt.start_loop()
+        self.mqtt.start_loop(on_disconnect=self._on_disconnect_handler)
+        self._on_connect_handler()
 
     async def stop(self):
-        await self.mqtt.stop_loop()
+        if self.mqtt is not None:
+            await self.mqtt.stop_loop()
 
     def publish_state(self, state, error_message, statedict=None):
         self.mqtt.publish(self._generate_base_topic_status(),
@@ -227,7 +227,7 @@ class ControlConnectionHandler:
         # TODO: handle status messages
         return
 
-    def _on_connect_handler(self, client, userdata, flags, conect_res):
+    def _on_connect_handler(self):
         self.log.log_message(LogLevel.Info(), 'mqtt connected')
 
         self.mqtt.subscribe(self._generate_base_topic_cmd())
@@ -245,7 +245,7 @@ class ControlConnectionHandler:
         else:
             return
 
-    def _on_disconnect_handler(self, client, userdata, distc_res):
+    def _on_disconnect_handler(self, distc_res):
         self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
 
     def _generate_status_message(self, state, error_message, statedict=None):

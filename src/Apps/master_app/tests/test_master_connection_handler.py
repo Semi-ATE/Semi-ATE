@@ -1,14 +1,16 @@
 from ate_master_app.master_connection_handler import MasterConnectionHandler
-from ate_apps_common.mqtt_connection import MqttConnection
+from ate_apps_common.mqtt_connection import MqttConnection, ensure_asyncio_event_loop_compatibility_for_windows
 from ate_common.logger import Logger
 
 PORT = 1883
 HOST = '10.9.1.6'
+# HOST = '127.0.0.1'
 SITE = 0
 DEVICEID = "sct01"
 HANDLERID = "abc"
 
 SITES = [0, 1, 2]
+ensure_asyncio_event_loop_compatibility_for_windows()
 
 
 class Msg:
@@ -44,11 +46,15 @@ class TestApplication:
                                                           DEVICEID,
                                                           HANDLERID,
                                                           self)
+        self.connection_handler.start()
         self.controlsite = None
         self.controlmsg = None
         self.testappsite = None
         self.testappmsg = None
         self.handler_command = None
+
+    def startup_done(self):
+        pass
 
     def teardown_method(self):
         self.connection_handler = None
@@ -63,7 +69,7 @@ class TestApplication:
 
         msg.topic = "ate/sct01/Control/status/site1"
         msg.payload = "{\"state\" : \"busy\"}"
-        self.connection_handler.mqtt._on_message_handler(None, None, msg)
+        self.connection_handler.mqtt._on_message_handler(msg)
         assert(self.controlsite == "1")
 
     def test_masterconnhandler_testapp_Status_event_is_dispatched(self):
@@ -71,7 +77,7 @@ class TestApplication:
 
         msg.topic = "ate/sct01/TestApp/status/site1"
         msg.payload = "{\"state\" : \"busy\"}"
-        self.connection_handler.mqtt._on_message_handler(None, None, msg)
+        self.connection_handler.mqtt._on_message_handler(msg)
         assert(self.testappsite == "1")
 
 # ToDo: Implement me!
@@ -97,5 +103,5 @@ class TestApplication:
 
         msg.topic = "ate/sct01/Master/cmd"
         msg.payload = "{\"type\" : \"identfy\", \"payload\": \"[]\"}"
-        self.connection_handler.mqtt._on_message_handler(None, None, msg)
+        self.connection_handler.mqtt._on_message_handler(msg)
         assert(self.handler_command is not None)

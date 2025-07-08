@@ -1,12 +1,15 @@
 # """ master App """
 
 # External imports
+import sys
 from transitions.core import MachineError
 from transitions.extensions import HierarchicalMachine as Machine
 from queue import Empty, Full, Queue
 import asyncio
+if sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 import mimetypes
-import sys
+
 
 from typing import Callable, List
 
@@ -910,3 +913,5 @@ class MasterApplication(MultiSiteTestingModel):
             task_handler.run()
         except KeyboardInterrupt:
             pass
+        except Exception as e:
+            print(e)

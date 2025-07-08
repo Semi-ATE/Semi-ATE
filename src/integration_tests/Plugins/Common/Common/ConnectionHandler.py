@@ -1,5 +1,4 @@
 from threading import Event
-import asyncio
 import json
 
 from ate_common.logger import LogLevel, Logger
@@ -18,27 +17,23 @@ class ConnectionHandler:
         self._port = port
         self._event = event
         self._topicFactory = self._parent.factory
+        self._mqtt = MqttConnection(host, port, self._client_id, logger)
 
         self.is_running = True
-        asyncio.run(self.start())
+        self.start()
 
-    async def start(self):
-        self._mqtt = MqttConnection(self._host, self._port, self._client_id, self._log)
-        self._log.set_mqtt_client(self._mqtt)
-        self._mqtt.init_mqtt_client_callbacks(self._on_connect,
-                                              self._on_disconnect)
+    def start(self):
+        self._mqtt.set_last_will(
+                self._topicFactory.tester_status_topic(self._client_id),
+                self._mqtt.create_message(
+                    self._topicFactory.tester_status_message('crash')))
 
         self._mqtt.register_route("Tester", lambda topic, payload: self.dispatch_tester_message(topic, self._mqtt.decode_payload(payload)))
         self._mqtt.register_route("TestApp", lambda topic, payload: self.dispatch_tester_message(topic, self._mqtt.decode_payload(payload)))
 
-        self._mqtt.set_last_will(
-            self._topicFactory.tester_status_topic(self._client_id),
-            self._mqtt.create_message(
-                self._topicFactory.tester_status_message('crash')))
-
-        self._mqtt.start_loop()
-
-        await self.do_for_ever()
+        self._log.set_mqtt_client(self._mqtt)
+        self._mqtt.start_loop(on_disconnect=self._on_disconnect)
+        self._on_connect()
 
     def subscribe(self, topic):
         self._mqtt.subscribe(topic)
@@ -52,13 +47,12 @@ class ConnectionHandler:
                      qos=2,
                      retain=False)
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self):
         for topic in self._parent.get_topics():
             self.subscribe(topic)
-
         self.publish_state('running')
 
-    def _on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, rc):
         self._log.log_message(LogLevel.Debug(), "disconnected")
 
     def dispatch_tester_message(self, topic, message):

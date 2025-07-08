@@ -20,8 +20,7 @@ class MasterConnectionHandler:
         self.status_consumer = status_consumer
         self.log = status_consumer.log
         self.mqtt = MqttConnection(host, port, mqtt_client_id, self.log)
-        self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
-                                             self._on_disconnect_handler)
+
         self.sites = sites
         self.device_id = device_id
         self.connected_flag = False
@@ -37,7 +36,8 @@ class MasterConnectionHandler:
             self._generate_base_topic_status(),
             self.mqtt.create_message(
                 self._generate_status_message('crash')))
-        self.mqtt.start_loop()
+        self.mqtt.start_loop(on_disconnect=self._on_disconnect_handler)
+        self._on_connect_handler()
 
     async def stop(self):
         await self.mqtt.stop_loop()
@@ -157,7 +157,7 @@ class MasterConnectionHandler:
 
         return to_exec_command()
 
-    def _on_connect_handler(self, client, userdata, flags, conect_res):
+    def _on_connect_handler(self):
         self.log.log_message(LogLevel.Info(), 'mqtt connected')
         self.connected_flag = True
 
@@ -170,7 +170,7 @@ class MasterConnectionHandler:
         self.status_consumer.startup_done()
         self.send_reset_to_all_sites()
 
-    def _on_disconnect_handler(self, client, userdata, distc_res):
+    def _on_disconnect_handler(self, distc_res):
         self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
         self.connected_flag = False
 

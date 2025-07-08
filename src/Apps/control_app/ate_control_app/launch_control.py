@@ -30,10 +30,12 @@ def launch_control(config_file_path=None, user_config_dict=None):
     f = ControlApplication(configuration)
     f.run()
 
+
 def main():
     user_config = parse_config_dict_from_command_line()
     launch_control(config_file_path=DEFAULT_CONFIGFILE_PATH,
                    user_config_dict=user_config)
+
 
 if __name__ == "__main__":
     main()
