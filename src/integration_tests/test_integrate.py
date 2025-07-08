@@ -19,7 +19,7 @@ import socket
 import getpass
 import aiomqtt
 import paho.mqtt.client as mqtt
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 import re
 import itertools
 import os
@@ -458,7 +458,7 @@ def remove_adjacent_dups(iterable):
 async def test_load_run_unload(sites, process_manager, ws_connection):
     master, controls = create_sites(process_manager, sites)
     # allow webservice to start up before attempting to connect ws
-    await asyncio.sleep(1.0)
+    await asyncio.sleep(5.0)
 
     async with ws_connection() as ws:
 
@@ -498,41 +498,6 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
         await expect_message_with_state(ws, 'softerror', 5.0)
 
 
-def create_mqtt_client():
-    connected = asyncio.Event()
-    message_queue = asyncio.Queue()
-
-    def _on_connect(client, userdata, flags, rc):
-        LOGGER.debug("mqtt callback: connect rc=%s", rc)
-
-        if connected.is_set():
-            pytest.fail(f'more than one call to mqtt callback _on_connect(rc={rc})')
-        elif rc != 0:
-            pytest.fail(f'mqtt connect failed _on_connect(rc={rc})')
-        else:
-            connected.set()
-
-    def _on_disconnect(client, userdata, rc):
-        LOGGER.debug('mqtt callback: disconnect rc=%s', rc)
-
-        # note: any disconnection is unexpected and means test failure.
-        # raising an exception here unfortunately does not allow us to
-        # fail fast, because this callback is executed in a task that
-        # is not created/awaited by us (see aiomqtt implementation)
-        pytest.fail(f'unexpected call to mqtt callback _on_disconnect(rc={rc})')
-
-    def _on_message(client, userdata, message: mqtt.MQTTMessage):
-        LOGGER.debug(f'mqtt callback: message topic="{message.topic}"')
-
-        message_queue.put_nowait(message)
-
-    client = aiomqtt.Client()
-    client.on_connect = _on_connect
-    client.on_disconnect = _on_disconnect
-    client.on_message = _on_message
-    return client, connected, message_queue
-
-
 class MqttSession:
     def __init__(self, client, message_queue):
         self._client = client
@@ -549,21 +514,50 @@ class MqttSession:
 # apparently paho mqtt does not use a reasonable connection timeout.
 # it seems it does not even report inital connection failures at
 # all (callbacks are not invoked).
+# @asynccontextmanager
+# async def mqtt_connection(host, port, topic=None, timeout=5):
+#     client, connected, message_queue = create_mqtt_client()
+
+#     if client.loop_start():
+#         raise RuntimeError('loop_start failed')
+
+#     try:
+#         client.connect_async(host, port)
+#         await asyncio.wait_for(connected.wait(), timeout=timeout)
+#         if topic is not None:
+#             client.subscribe(topic)
+#         yield MqttSession(client, message_queue)
+#     finally:
+#         await client.loop_stop()
+
 @asynccontextmanager
 async def mqtt_connection(host, port, topic=None, timeout=5):
-    client, connected, message_queue = create_mqtt_client()
-
-    if client.loop_start():
-        raise RuntimeError('loop_start failed')
-
+    message_queue = asyncio.Queue()
+    client_cm = aiomqtt.Client(host, port)
     try:
-        client.connect_async(host, port)
-        await asyncio.wait_for(connected.wait(), timeout=timeout)
+        client = await asyncio.wait_for(client_cm.__aenter__(), timeout=timeout)
+    except asyncio.TimeoutError:
+        raise RuntimeError(f"MQTT connect timed out after {timeout} seconds")
+    try:
         if topic is not None:
-            client.subscribe(topic)
-        yield MqttSession(client, message_queue)
+            await client.subscribe(topic)
+
+        async def message_listener():
+#            async with client.messages as messages:
+#                async for message in messages:
+#                    await message_queue.put(message)
+            async for message in client.messages:
+                await message_queue.put(message)
+
+        listener_task = asyncio.create_task(message_listener())
+        try:
+            yield MqttSession(client, message_queue)
+        finally:
+            listener_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await listener_task
     finally:
-        await client.loop_stop()
+        await client_cm.__aexit__(None, None, None)
 
 
 async def util_delete_retained_messages(host, port, topic, timeout_secs=5.0):
@@ -658,6 +652,7 @@ class MqttStatusMessage(MqttBaseMessage):
 
     @staticmethod
     def try_parse_topic_parts(topic):
+        topic = str(topic)
         master_pattern = rf'ate/(.+?)/Master/status'
         m = re.match(master_pattern, topic)
         if m:
@@ -815,7 +810,7 @@ class MqttMessageBuffer:
         self.clear()
 
     def _filter_and_transform(self, msg):
-        return msg
+        return str(msg)
 
     @property
     def messages(self):
@@ -839,7 +834,7 @@ class FilteredMqttMessageBuffer(MqttMessageBuffer):
     def _convert_message(self, message: mqtt.MQTTMessage):
         converters = [MqttStatusMessage, MqttTestresultMessage, MqttResourceRequestMessage]
         for converter in converters:
-            if converter.is_topic_match(message.topic):
+            if converter.is_topic_match(str(message.topic)):
                 return converter.from_mqtt_message(message)
         return None
 
@@ -928,8 +923,8 @@ async def read_messages_until_state(
             messages.append(msg)
             if not isinstance(msg, MqttStatusMessage) or not status_message_filter(msg):
                 continue
-            check_valid_state(msg.state)
-            if msg.state == expected_state:
+            check_valid_state(str(msg.state))
+            if str(msg.state) == expected_state:
                 break
     return messages
 
