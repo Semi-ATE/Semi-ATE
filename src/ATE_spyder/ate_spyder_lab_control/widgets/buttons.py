@@ -146,7 +146,7 @@ class Button(QtWidgets.QToolButton):
 
     def msg2gui(self, topic, msg):
         if self.guiInstance is None:
-            print(f"    {self.instanceName}.msg2gui: guiInstance is None ")
+            # print(f"    {self.instanceName}.msg2gui: guiInstance is None ")
             return
         # print(f"   {app.instance.topinstname}  {app.name}: subtopic: {app.instance.subtopic}")
         name = None
@@ -185,8 +185,9 @@ class Button(QtWidgets.QToolButton):
                     print(f"Error: {name} I don't now what to do with this message: '{cmd} = {msg}'")
             except Exception as ex:
                 msg = f"{name} something goes wrong: '{topic} = {msg}'  {ex}"
-                print(msg)
-                self.logger.error(msg)
+                if value is not None:
+                    print(msg)
+                    self.logger.error(msg)
 
     def gui_disconnect(self):
         self.setStyleSheet(self.sytle_button["disconnect"])

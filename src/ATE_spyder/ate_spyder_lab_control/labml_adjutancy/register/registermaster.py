@@ -686,7 +686,7 @@ class Register:
             mylogger.log_message(LogLevel.Error(), f"{self.__class__.__name__} protocol not defined!!")
             return -1
         value = self._read()
-        if not self._rm._protocol.board.error:
+        if not self._rm._protocol.board.error and value is not None:
             mylogger.log_message(LogLevel.Measure(), f"{self.__class__.__name__}.{self._name} == {hex(value)}")
         self._rm.publish_set(f"{self._name}.read", value)
         if compare is not None:
@@ -718,10 +718,10 @@ class Register:
         if self._bank is not None and self._bank != "":
             self.writebase(self._bank)
         value = self._rm._protocol.readreg(self._get_addr())
-        if not self._rm._protocol.board.error:
+        if not self._rm._protocol.board.error and value is not None:
             value &= 2 ** self._len_slices() - 1
         self._check_r_err()
-        if value > -1:
+        if value is not None and value > -1:
             self._cache = value
         return value
 
@@ -1420,14 +1420,17 @@ class RegisterMaster(mqtt_deviceattributes):
             adr = self.set_bank(adr)
         if self._bank is not None and self._bank != "":
             self._protocol.writebase(self._bank)
-        value = self._protocol.readreg(adr)
+        value = self._protocol.readreg(adr, compare=compare, tolerance=tolerance, mask=mask)
         if self._len_slices is not None:
             value &= 2**self._len_slices - 1
         if compare is not None:
             bank = 0 if self._bank is None else self._bank
-            error = common.check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
-            if onlycheck:
+            if value is not None:
+                error = common.check(f"{hex(bank+adr)}", compare, value, tolerance, mask)
+            if onlycheck and value is not None:
                 return error
+            elif onlycheck:
+                return 0
             else:
                 return error, value
         return value
