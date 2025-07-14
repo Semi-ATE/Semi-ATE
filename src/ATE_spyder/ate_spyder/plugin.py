@@ -9,6 +9,8 @@ from ate_spyder.widgets.navigation import ProjectNavigation
 # Third party imports
 from qtpy.QtCore import Signal
 from qtpy.QtGui import QIcon
+from packaging.version import Version
+from spyder import __version__ as spyder_version
 from spyder.api.plugins import Plugins, SpyderDockablePlugin
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import (
@@ -136,11 +138,18 @@ class ATE(SpyderDockablePlugin):
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-#CJ debug        self.sig_run_cell.connect(editor.run_cell)                   # TODO: in Spyder 6.0.7 not available anymore!
-#CJ debug         self.sig_debug_cell.connect(editor.debug_cell)              # TODO: in Spyder 6.0.7 not available anymore!
+        if Version(spyder_version) < Version('6.0'):                         # CJ because in Spyder 6.0.7 not available anymore!
+            self.sig_run_cell.connect(editor.run_cell)
+            self.sig_debug_cell.connect(editor.debug_cell)
+            widget.sig_save_all.connect(editor.save_all)
+        elif Version(spyder_version) < Version('6.1'):
+            print("Plugin : Run button not functional ")
+        elif Version(spyder_version) >= Version('6.1'):
+            # self.sig_run_cell.connect(editor.run_cell)                     # CJ open issue: https://github.com/spyder-ide/spyder/issues/24519
+            # self.sig_debug_cell.connect(editor.debug_cell)                 # "
+            widget.sig_save_all.connect(editor.save_all)
 
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
-#CJ debug         widget.sig_save_all.connect(editor.save_all)                # TODO: in Spyder 6.0.7 not available anymore!
 
     @on_plugin_teardown(plugin=Plugins.Toolbar)
     def on_toolbar_teardown(self):
