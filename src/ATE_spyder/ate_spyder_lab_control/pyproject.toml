@@ -69,6 +69,5 @@ dependencies = [
 	lab_gui = "plugin_gui:LabGuiPlugin"
 
 [project.entry-points."ate.org"]
-	labmlplug = "generalpurposefunc:Plugin"
 	semiplug = "plugin_semictrl:Plugin"
 
