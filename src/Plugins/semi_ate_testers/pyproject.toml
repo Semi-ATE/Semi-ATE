@@ -28,3 +28,6 @@ Documentation = "https://semi-ate.github.io/Semi-ATE/"
 
 [tool.hatch.build.targets.wheel]
       packages = ["semi_ate_testers"]
+
+[project.entry-points."ate.org"]
+	plug = "semi_ate_testers:Plugin"
