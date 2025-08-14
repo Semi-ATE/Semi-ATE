@@ -186,13 +186,13 @@ class ProjectSetup(object):
     def create_dotdic(self, dic, root=None):
         """Make from a dictionary a dot-dictionary with diclist."""
         for mydic in dic.keys():
-            if type(dic[mydic]) == dict:
+            if type(dic[mydic]) is dict:
                 if root is not None:
                     object.__setattr__(root, mydic, self.create_dotdic(dic[mydic]))
                 dic[mydic] = self.create_dotdic(dic[mydic])
-            elif type(dic[mydic]) == list:
+            elif type(dic[mydic]) is list:
                 dic[mydic] = diclist(self, dic[mydic])
-            elif type(dic[mydic]) == str and dic[mydic].find(':') > 0:          # found an arange-function -> change to setupstr
+            elif type(dic[mydic]) is str and dic[mydic].find(':') > 0:          # found an arange-function -> change to setupstr
                 dic[mydic] = setupstr(dic[mydic])
         return dotdict(dic)
 
@@ -295,13 +295,13 @@ class ProjectSetup(object):
 
         """
         for key in jsontable:
-            if type(jsontable) == dict:
+            if type(jsontable) is dict:
                 value = jsontable[key]
             else:
                 value = key
-            if type(value) == dict or type(value) == list:
+            if type(value) is dict or type(value) is list:
                 self._replaceSomeThing(value)
-            elif type(value) == str and value.find('$') > -1:   # find environment variables inside the value?
+            elif type(value) is str and value.find('$') > -1:   # find environment variables inside the value?
                 tmp = value.split('/')
                 nvalue = ''
                 for s in tmp:
@@ -313,12 +313,12 @@ class ProjectSetup(object):
                         s = ''
                     nvalue += s + '/'
                 if nvalue != '':
-                    if type(jsontable) == dict:
+                    if type(jsontable) is dict:
                         jsontable[key] = nvalue[:-1]
                     else:
                         jsontable[1] = nvalue[:-1]
-            elif type(value) == str and len(value) > 0 and value[0] == '/' and os.name == "nt" and value.find(f'{self.network}') != 0:
-                if type(jsontable) == dict:
+            elif type(value) is str and len(value) > 0 and value[0] == '/' and os.name == "nt" and value.find(f'{self.network}') != 0:
+                if type(jsontable) is dict:
                     jsontable[key] = self.network + value
                 else:
                     jsontable[1] = self.network + value
@@ -404,7 +404,7 @@ class ProjectSetup(object):
         return result
 
     def call(self, mycmd, value=None, senderror=True):              # TODO! : replace call with common.strcall()
-        if type(mycmd) == str:
+        if type(mycmd) is str:
             mycmd = mycmd.split(',')
         result = []
         for cmd in mycmd:
@@ -466,7 +466,7 @@ class ProjectSetup(object):
             result = result[0]
         return result
 
-    def regDump(self, liste='default', invert=False, output=None):
+    def regDump(self, liste='default', invert=False, output=None, bwidth=16):
         """Read values from Register and return with a list of their values.
 
         Parameters
@@ -495,10 +495,13 @@ class ProjectSetup(object):
         dumplist = []
         mylist = self.parent.regs.register
         invert = False
-        if type(liste) == list:
+        if type(liste) is list:
             dumplist = liste
+
         if liste == 'default' and hasattr(self.regs, 'dump'):
             dumplist = self.regs.dump
+        elif type(liste) is dotdict:
+            dumplist = liste
         elif hasattr(self.regs, 'nodump'):
             dumplist = self.regs.nodump
             invert = True
@@ -506,13 +509,15 @@ class ProjectSetup(object):
             dumplist = self.parent.regs.register
         else:
             dumplist = liste
-        if type(dumplist) == str:
+
+        if type(dumplist) is str:
             foundtcc = dumplist.find('self.')
             dumplist = dumplist[5:] if foundtcc == 0 else dumplist
             dump = self.call(dumplist, senderror=False)
         else:
             dump = dumplist
-        if type(dump) == dotdict:                           # if it's a memorymap with different addr for the protocoll?
+
+        if type(dump) is dotdict:                           # if it's a memorymap with different addr for the protocoll?
             try:
                 dump = dump[self.parent.regs.use]
             except Exception:
@@ -524,7 +529,7 @@ class ProjectSetup(object):
         index = 0
         for regname in mylist:
             if (invert and regname not in dump) or (not invert and regname in dump):
-                if type(regname) == str:
+                if type(regname) is str:
                     addr = self.parent.regs.register[regname].addr
                     bank = self.parent.regs.register[regname]._bank
                     value = self.parent.regs.register[regname].read()
@@ -536,7 +541,7 @@ class ProjectSetup(object):
                     if self.parent.regs._len_slices is not None:
                         width = self.parent.regs._len_slices // 4
                     else:
-                        width = 4
+                        width = bwidth // 4
                     regname = self.parent.regs.find(addr)
                     if regname is None:
                         regname = f'{dumplist}_{hex(index)}'
@@ -549,7 +554,7 @@ class ProjectSetup(object):
                 memdump.append(value)
                 index += 1
         if self.testbench_name is not None:
-            dumpname = liste.split('.')[-1] if type(liste) == str else 'dump'
+            dumpname = liste.split('.')[-1] if type(liste) is str else 'dump'
             self.write(f'{self.testbench_name}.regDumpDat', dumpname, memdump)
         else:
             self.logger.log_message(LogLevel.Info(), 'testbench name not defined, could not write regDumpDat to {self._SETUPFILE}')
@@ -574,7 +579,7 @@ class ProjectSetup(object):
         if not hasattr(self, 'parent') or not hasattr(self, 'result') or not hasattr(self.result, 'regs'):
             self.logger.log_message(LogLevel.Warning(), f"{self.__class__}.regDumpSave2DUT: no setup.result.regs found, could'nt write back the original register values")
             return -1
-        if type(mode) == list:
+        if type(mode) is list:
             dump = mode
         elif mode == 'default' and 'dump' in self.result.regs:
             dump = self.result.regs.dump
@@ -589,8 +594,8 @@ class ProjectSetup(object):
             if reg is str and not self.parent.regs.register[reg]._rw:     # TODO: check rw if a real rw-information
                 continue
             addr = -1
-            if type(mode) != list:
-                if type(reg) == dict or type(reg) == dotdict:
+            if type(mode) is not list:
+                if type(reg) is dict or type(reg) is dotdict:
                     originial = common.str2num(tuple(reg.values())[0]['dat'])
                     addr = common.str2num(tuple(reg.values())[0]['addr'])
                 else:
@@ -708,7 +713,7 @@ class ProjectSetup(object):
                 except Exception:
                     file.write(f"ERROR!!!: coudn't write {item} as json dump {more}{cr}")
             else:
-                if type(value) == str:
+                if type(value) is str:
                     value = f'"{value.replace(os.sep, "/")}"'
                 space(ident, length)
                 if item != value:
@@ -724,7 +729,7 @@ class ProjectSetup(object):
 
     def set_configuration_values(self, data):
         """Only empty dummy function."""
-        self.logger.log_message(LogLevel.Warning(), 'TDK Micronas Labor.ProjectSetup: set_configuration_values only dummy function..................................')
+        self.logger.log_message(LogLevel.Warning(), 'TDK Micronas Labor.ProjectSetup: set_configuration_values only dummy function..................')
         pass
 
     def apply_configuration(self, data):
