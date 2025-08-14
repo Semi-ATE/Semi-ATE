@@ -67,7 +67,7 @@ class FileConfigurationTester(TesterInterface):
             try:
                 testerconfig = importlib.import_module(pythonPath + TESTER_CONFIG_FILE + "_tmp")
             except Exception as ex:
-                msg = f'exception in {TESTER_CONFIG_FILE} : {ex}'
+                msg = f'exception in {self.hw_path}{TESTER_CONFIG_FILE}.py : {ex}'
                 self.log_error(msg)
                 doExit = True
                 testerconfig = None
