@@ -129,7 +129,7 @@ def readMemFile(filename, typ=None, interpret=None):
         else:
             typ = f'.{file_extension}'
     if not choice(typ, ['verilog', 'txt']):
-        return False
+        return False, None
     if typ == 'verilog':
         start, data = readVlogMemFile(filename, 0)      # TODO!:  change  readVlogMemFile to get automatically the size
     elif typ == 'txt':
@@ -170,7 +170,7 @@ def readtxtMemFile(fileName, memSize=None, bitsize_source=None, bitsize_target=N
     """
     file = openFile(fileName)
     if file is None:
-        return None
+        return None, None
     base_adr = numerative['adr'] if (numerative is not None and 'adr' in numerative.keys()) else 10
     base_dat = numerative['dat'] if (numerative is not None and 'dat' in numerative.keys()) else 10
 
@@ -276,6 +276,8 @@ def readVlogMemFile(fileName, memSize=0, defaultvalues=None, debug=False):
 
       data............memory data integer list, None entries for
                       not used/initialized values
+
+    TODO: if more than 1 Byte in the line they use only the first value
 
     """
     fi = openFile(fileName, 'rt')
