@@ -1,0 +1,48 @@
+<mxfile host="65bd71144e">
+    <diagram id="hTkNLgbPbQm3F6Gnynun" name="Page-1">
+        <mxGraphModel dx="1966" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="&lt;p style=&quot;margin: 0px ; margin-top: 6px ; text-align: center&quot;&gt;&lt;b&gt;master app&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin: 0px ; margin-left: 8px&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="100" width="340" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="&lt;p style=&quot;margin: 0px ; margin-top: 6px ; text-align: center&quot;&gt;&lt;b&gt;semi-ate-testers&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_plugin_identification()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_importer_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_exporter_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_equipment_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_instrument_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_tester_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ ...&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="460" width="340" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="3" target="2" edge="1">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="260" y="400" as="sourcePoint"/>
+                        <mxPoint x="420" y="400" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="5" value="" style="endArrow=block;endSize=16;endFill=0;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="3" edge="1" target="7">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="450" y="450" as="sourcePoint"/>
+                        <mxPoint x="760" y="310" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="355" y="360"/>
+                            <mxPoint x="760" y="360"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="7" value="&lt;p style=&quot;margin: 0px ; margin-top: 6px ; text-align: center&quot;&gt;&lt;b&gt;semi-ate-plugins&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_plugin_identification()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_importer_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_exporter_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_equipment_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_instrument_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ get_tester_names()&lt;/p&gt;&lt;p style=&quot;margin: 0px 0px 0px 8px&quot;&gt;+ ...&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="99" width="340" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="9" edge="1">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="-10" y="460" as="sourcePoint"/>
+                        <mxPoint x="240" y="300" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="-90" y="440"/>
+                            <mxPoint x="240" y="440"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="9" value="&lt;p style=&quot;margin: 0px ; margin-top: 6px ; text-align: center&quot;&gt;&lt;b&gt;semi-ate-apps-common&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p style=&quot;margin: 0px ; margin-left: 8px&quot;&gt;+ MqttConnection&lt;/p&gt;&lt;p style=&quot;margin: 0px ; margin-left: 8px&quot;&gt;+ StdfTestResultAggretor&lt;/p&gt;" style="align=left;overflow=fill;html=1;dropTarget=0;" parent="1" vertex="1">
+                    <mxGeometry x="-260" y="460" width="340" height="200" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
