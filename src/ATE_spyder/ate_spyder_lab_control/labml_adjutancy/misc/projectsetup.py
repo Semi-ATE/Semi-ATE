@@ -732,6 +732,11 @@ class ProjectSetup(object):
         self.logger.log_message(LogLevel.Warning(), 'TDK Micronas Labor.ProjectSetup: set_configuration_values only dummy function..................')
         pass
 
+    def do_fetch(self, idnr):
+        if idnr != 1:
+            self.logger.log_message(LogLevel.Error(), f'The projectsetup modul supports only one id, but get id number={idnr}')
+        pass
+
     def apply_configuration(self, data):
         if 'Network prefix' in data and data['Network prefix'] != '' and os.name == "nt":
             self.network = data['Network prefix']
