@@ -12,7 +12,7 @@ class ResolverBase:
         if self._is_valid_value(measurement, power):
             return measurement
 
-        raise Exception("input value cannot be extracted")
+        raise Exception(f"input value=({measurement}) cannot be extracted, outside from min(={self._min * power}) and max(={self._max * power})")
 
     @staticmethod
     def _get_power(exponent_input: int, exponent_output: int):
