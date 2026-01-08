@@ -172,7 +172,19 @@ Creating or editing a test program will open the following wizard:
 
 The created test program will be available under the corresponding group.
 
-__note__: Unlike the test code the test program code shall never be edited as it contains all information to run the associated tests.
+__note__: Unlike the test code the test program code shall never be edited as it contains all information to run the associated tests. The test program code is regenerated when something is changed in the flow.
+
+### Different input types in the flow
+
+![ ](images/flow_inputtype.png)
+The default value for the input type is ‘static’. This means that within a flow, the value of Value is transferred. 
+If you set the type to ‘local’ (right-click menu), you can open a menu under Value where you can define which output parameter of a test its values are taken from.
+
+Here is an example:
+![ ](images/flow_value.png)
+If an output parameter or test cannot be selected, the possible value is not within the limits of the input value. 
+In this case, the limits of the input or output parameter must be adjusted accordingly.
+
 
 #### Toolbar Extension
 

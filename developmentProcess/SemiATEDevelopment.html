@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#toolbar">Toolbar</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tests-section">Tests Section</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#flows-section">Flows Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#different-input-types-in-the-flow">Different input types in the flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#auto-script">Auto Script</a></li>
 </ul>
 </li>
@@ -570,7 +571,17 @@ The <code class="docutils literal notranslate"><span class="pre">do</span></code
 <p>Creating or editing a test program will open the following wizard:</p>
 <p><img alt=" " src="../_images/test_program.png" /></p>
 <p>The created test program will be available under the corresponding group.</p>
-<p><strong>note</strong>: Unlike the test code the test program code shall never be edited as it contains all information to run the associated tests.</p>
+<p><strong>note</strong>: Unlike the test code the test program code shall never be edited as it contains all information to run the associated tests. The test program code is regenerated when something is changed in the flow.</p>
+</section>
+<section id="different-input-types-in-the-flow">
+<h3>Different input types in the flow<a class="headerlink" href="#different-input-types-in-the-flow" title="Link to this heading"></a></h3>
+<p><img alt=" " src="../_images/flow_inputtype.png" />
+The default value for the input type is ‘static’. This means that within a flow, the value of Value is transferred.
+If you set the type to ‘local’ (right-click menu), you can open a menu under Value where you can define which output parameter of a test its values are taken from.</p>
+<p>Here is an example:
+<img alt=" " src="../_images/flow_value.png" />
+If an output parameter or test cannot be selected, the possible value is not within the limits of the input value.
+In this case, the limits of the input or output parameter must be adjusted accordingly.</p>
 <section id="toolbar-extension">
 <h4>Toolbar Extension<a class="headerlink" href="#toolbar-extension" title="Link to this heading"></a></h4>
 <p><img alt=" " src="../_images/semiate_toolbar_extension.png" /></p>
