@@ -74,7 +74,10 @@ class MultiMeasurement(Measurement):
         self._measurement = []
 
     def write_impl(self, measurement):
-        self._measurement.append(measurement)
+        if isinstance(measurement, list):
+            self._measurement += measurement
+        else:
+            self._measurement.append(measurement)
 
     def read_impl(self):
         return self._measurement
@@ -152,8 +155,13 @@ class OutputParameter:
         return self._exponent
 
     def write(self, measurement: float):
+        if not self._mpr and isinstance(measurement, list):
+            raise ValueError(f"value={measurement} must be float not list")
         self._measurement.write(measurement)
-        self._measurements.append(measurement)
+        if isinstance(measurement, list):
+            self._measurements += measurement
+        else:
+            self._measurements.append(measurement)
 
     def default(self):
         if math.isnan(self._ltl):
