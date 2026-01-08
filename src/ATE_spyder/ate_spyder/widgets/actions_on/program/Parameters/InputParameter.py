@@ -27,7 +27,10 @@ class InputParameter(ParameterBase):
         self.format = ParameterField(input_params[InputColumnKey.FMT()])
         self.unit = ParameterField(input_params[InputColumnKey.UNIT()])
         self.exponent = ParameterField(input_params[InputColumnKey.POWER()])
-        self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=editable)
+        # self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=editable)
+        # TODO: Sequencer.Dynamic() for the temperature is not running. As long as that has not been clarified, you can also change the temperature type.
+        self.type = self.InputParameterFieldType(ResolverTypes.Static() if input_params.get('type') is None else input_params['type'], editable=ParameterEditability.Editable())
+
         self.default = ParameterField(self.format_value(input_params[InputColumnKey.DEFAULT()]), editable=editable)
         self.value = copy.deepcopy(self.default) if input_params.get('value') is None else ParameterField(self._get_value(input_params))
         self.valid = True

@@ -146,7 +146,7 @@ class OutputParameter:
         return self._test_description + '.' + self._name
 
     def get_measurement(self):
-        return self._measurement.read()
+        return self._measurement.read() if not self._mpr else self._measurements
 
     def get_exponent(self):
         return self._exponent
@@ -177,10 +177,10 @@ class OutputParameter:
 
     def set_limits(self, id: int, ltl: float, utl: float):
         self._id = id
-        if(ltl > utl):
+        if (ltl > utl):
             raise ValueError("LTL must be smaller than UTL")
 
-        if(ltl < self._lsl or utl > self._usl):
+        if (ltl < self._lsl or utl > self._usl):
             raise ValueError("Testlimits must not violate speclimits")
 
         self._ltl = ltl
