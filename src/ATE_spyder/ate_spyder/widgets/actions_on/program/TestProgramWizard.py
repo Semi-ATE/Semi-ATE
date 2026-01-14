@@ -1278,14 +1278,15 @@ class TestProgramWizard(BaseDialog):
 
     def _get_input_parameter_types(self) -> dict:
         item = self.selectedTests.selectedItems()[0]
-        if item.row() == 0 or self._is_parameter_shmooable(item):
-            return {ResolverTypes.Static(): self._static_selected}
+        # if item.row() == 0 or self._is_parameter_shmooable(item):
+        #    return {ResolverTypes.Static(): self._static_selected}
 
         menu_entries = {ResolverTypes.Static(): self._static_selected, ResolverTypes.Local(): self._local_selected}
 
         # ToDo: Use displayname instead of objectname!
-        for gpfun in self._available_gp_functions:
-            menu_entries[gpfun] = self.__make_lambda(gpfun)
+        # until now only static and local allowed
+        # for gpfun in self._available_gp_functions:
+        #     menu_entries[gpfun] = self.__make_lambda(gpfun)
 
         return menu_entries
 

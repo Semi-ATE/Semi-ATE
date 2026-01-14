@@ -18,8 +18,8 @@ class InputParameter(ParameterBase):
     def __init__(self, name, input_params):
         editable = ParameterEditability.Editable()
 
-        if name == 'Temperature':
-            editable = ParameterEditability.NotEditable()
+#        if name == 'Temperature':
+#            editable = ParameterEditability.NotEditable()
 
         self.name = ParameterField(name)
         self.min = ParameterField(input_params[InputColumnKey.MIN()])
