@@ -579,9 +579,13 @@ The <code class="docutils literal notranslate"><span class="pre">do</span></code
 The default value for the input type is ‘static’. This means that within a flow, the value of Value is transferred.
 If you set the type to ‘local’ (right-click menu), you can open a menu under Value where you can define which output parameter of a test its values are taken from.</p>
 <p>Here is an example:
-<img alt=" " src="../_images/flow_value.png" />
+<img alt=" " src="../_images/flow_value.png" /></p>
+<p><strong>Hint:</strong>
 If an output parameter or test cannot be selected, the possible value is not within the limits of the input value.
 In this case, the limits of the input or output parameter must be adjusted accordingly.</p>
+<p><img alt=" " src="../_images/menunotavailable.png" /></p>
+<p>In this example, the lower limit for the ‘Temperature’ parameter in the Set_Temperature test is set to -45,000. However, the input parameter for the test for which you want to adopt the output parameter is set to -40.0 for the lower limit. This means that the associated parameter could be passed as a value smaller than allowed. To prevent this from happening, the parameter is not included in the menu in the first place.
+<img alt=" " src="../_images/outputparameter.png" /></p>
 <section id="toolbar-extension">
 <h4>Toolbar Extension<a class="headerlink" href="#toolbar-extension" title="Link to this heading"></a></h4>
 <p><img alt=" " src="../_images/semiate_toolbar_extension.png" /></p>

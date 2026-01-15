@@ -182,9 +182,15 @@ If you set the type to ‘local’ (right-click menu), you can open a menu under
 
 Here is an example:
 ![ ](images/flow_value.png)
+
+**Hint:**
 If an output parameter or test cannot be selected, the possible value is not within the limits of the input value. 
 In this case, the limits of the input or output parameter must be adjusted accordingly.
 
+![ ](images/menunotavailable.png)
+
+In this example, the lower limit for the ‘Temperature’ parameter in the Set_Temperature test is set to -45,000. However, the input parameter for the test for which you want to adopt the output parameter is set to -40.0 for the lower limit. This means that the associated parameter could be passed as a value smaller than allowed. To prevent this from happening, the parameter is not included in the menu in the first place.
+![ ](images/outputparameter.png)
 
 #### Toolbar Extension
 
