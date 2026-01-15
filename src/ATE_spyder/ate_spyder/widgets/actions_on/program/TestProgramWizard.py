@@ -145,12 +145,7 @@ class TestProgramWizard(BaseDialog):
         self.parametersInput.horizontalHeader().setSectionResizeMode(InputFieldsPosition.Value(), QtWidgets.QHeaderView.ResizeToContents)
         self.parametersInput.horizontalHeader().setStretchLastSection(True)
         self.parametersInput.itemDoubleClicked.connect(self._double_click_handler_input_param)
-        # as for now we only support static resolver type, thus input parameter's default value is set manually via test program wizard
-        # (local resolver will not be supported)
-        # local resolver make it possible to pass an output parameter value of a test as the input parameter of the next test
-        # this was implemented before start dealing with MPRs but it's not clear how to implement this for MPR.
-        # TODO: re-enable as soon a decision was made
-        # self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
+        self.parametersInput.customContextMenuRequested.connect(self._context_menu_input_params)
         self.parametersInput.itemClicked.connect(self._input_param_table_clicked)
 
         self.parametersOutput.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -1283,14 +1278,15 @@ class TestProgramWizard(BaseDialog):
 
     def _get_input_parameter_types(self) -> dict:
         item = self.selectedTests.selectedItems()[0]
-        if item.row() == 0 or self._is_parameter_shmooable(item):
-            return {ResolverTypes.Static(): self._static_selected}
+        # if item.row() == 0 or self._is_parameter_shmooable(item):
+        #    return {ResolverTypes.Static(): self._static_selected}
 
         menu_entries = {ResolverTypes.Static(): self._static_selected, ResolverTypes.Local(): self._local_selected}
 
         # ToDo: Use displayname instead of objectname!
-        for gpfun in self._available_gp_functions:
-            menu_entries[gpfun] = self.__make_lambda(gpfun)
+        # until now only static and local allowed
+        # for gpfun in self._available_gp_functions:
+        #     menu_entries[gpfun] = self.__make_lambda(gpfun)
 
         return menu_entries
 
@@ -1301,7 +1297,7 @@ class TestProgramWizard(BaseDialog):
         return parameter.is_shmooable()
 
     def _set_out_params(self):
-        action = self.sender()
+        action = self.sender().sender()
         parent = action.parent()
         input_name = self._get_selected_input_parameter_name()
         parameter = self._custom_parameter_handler.get_input_parameter(self._selected_test_instance(), input_name)
@@ -1362,7 +1358,9 @@ class TestProgramWizard(BaseDialog):
 
         column = item.column()
         row = item.row()
-        if column not in (InputFieldsPosition.Type(), InputFieldsPosition.Value()) or row == 0:
+        # TODO: Sequencer.Dynamic() for the temperature is not running. As long as that has not been clarified, you can also change the temperature type.
+        # if column not in (InputFieldsPosition.Type(), InputFieldsPosition.Value()) or row == 0:
+        if column not in (InputFieldsPosition.Type(), InputFieldsPosition.Value()):
             return
 
         type = self.parametersInput.item(row, InputFieldsPosition.Type()).text()

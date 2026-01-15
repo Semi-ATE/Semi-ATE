@@ -74,7 +74,10 @@ class MultiMeasurement(Measurement):
         self._measurement = []
 
     def write_impl(self, measurement):
-        self._measurement.append(measurement)
+        if isinstance(measurement, list):
+            self._measurement += measurement
+        else:
+            self._measurement.append(measurement)
 
     def read_impl(self):
         return self._measurement
@@ -146,14 +149,19 @@ class OutputParameter:
         return self._test_description + '.' + self._name
 
     def get_measurement(self):
-        return self._measurement.read()
+        return self._measurement.read() if not self._mpr else self._measurements
 
     def get_exponent(self):
         return self._exponent
 
     def write(self, measurement: float):
+        if not self._mpr and isinstance(measurement, list):
+            raise ValueError(f"value={measurement} must be float not list")
         self._measurement.write(measurement)
-        self._measurements.append(measurement)
+        if isinstance(measurement, list):
+            self._measurements += measurement
+        else:
+            self._measurements.append(measurement)
 
     def default(self):
         if math.isnan(self._ltl):
@@ -177,10 +185,10 @@ class OutputParameter:
 
     def set_limits(self, id: int, ltl: float, utl: float):
         self._id = id
-        if(ltl > utl):
+        if (ltl > utl):
             raise ValueError("LTL must be smaller than UTL")
 
-        if(ltl < self._lsl or utl > self._usl):
+        if (ltl < self._lsl or utl > self._usl):
             raise ValueError("Testlimits must not violate speclimits")
 
         self._ltl = ltl

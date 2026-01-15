@@ -49,6 +49,7 @@ class ViewTestProgramWizard(TestProgramWizard):
         dialog.target.setEnabled(False)
         dialog.user_name.setEnabled(False)
         dialog.sequencerType.setEnabled(False)
+        # dialog.sequencerType.setEnabled(True)  # TODO: If you then select variable temperature, a syntax error occurs in the main program being created.
 
         dialog.hardware.addItem(program_configuration['hardware'])
         dialog.base.addItem(program_configuration['base'])
