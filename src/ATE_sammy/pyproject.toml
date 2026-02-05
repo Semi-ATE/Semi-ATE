@@ -40,7 +40,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Quality Assurance"
 ]
-dependencies = []
+dependencies = [
+    "graphviz"
+    ]
 
 [project.urls]
 repository = "https://github.com/Semi-ATE/Semi-ATE"
@@ -48,6 +50,7 @@ Documentation = "https://semi-ate.github.io/Semi-ATE/"
 
 [project.scripts]
 	sammy = "ate_sammy.sammy:main"
+	createFlow = "ate_sammy.scripts.create_flow:main"
 
 [tool.hatch.version]
 	path = "ate_sammy/__init__.py"
