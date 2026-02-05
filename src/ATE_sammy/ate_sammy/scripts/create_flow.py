@@ -122,7 +122,7 @@ class Flowchart():
             if id+1 < length:
                 flowdict["edges"].append({"from": str(id), "to": str(id+1)})
             if branchlabel:
-                createbranch(branchlabel, id, 'yellow')
+                createbranch(branchlabel, id)
             return id+1
 
         flowdict = {"nodes": [], "edges": []}
