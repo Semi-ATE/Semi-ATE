@@ -36,6 +36,7 @@ Contents
    :caption: Build tool:
 
    buildtool/buildtool.md
+   buildtool/scripts.md
    
 .. _semiatedevelopment:
 
