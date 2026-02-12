@@ -21,10 +21,9 @@ class Flowchart():
     tags = ["#flow:", "#->"]
 
     def __init__(self, path, project, version, hardware="HW0", base="FT", target="DummyDevice", group="production", name="qdbflow"):
-        kversion = version[1] + version[3]
         path = os.getcwd() if path is None else path+os.sep
-        definitions = f"{path}/{project}{kversion}/definitions"
-        sequence = f"sequence/sequence{project}{kversion}_{hardware}_{base}_{target}_{group}_{name}.json"
+        definitions = f"{path}/{project}{version}/definitions"
+        sequence = f"sequence/sequence{project}{version}_{hardware}_{base}_{target}_{group}_{name}.json"
 
         with open(f"{definitions}/{sequence}", "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -42,7 +41,7 @@ class Flowchart():
         self.path = Path(definitions).parent.parent
         self.flowdict = self._docs2flow(docs)
         self.project = project
-        self.kversion = kversion
+        self.version = version
         self.hardware = hardware
         self.base = base
         self.target = target
@@ -159,7 +158,11 @@ class Flowchart():
                             elif not samebox:
                                 flowlabel += line[phash + len(hash)+1:] + "\n"
                             else:
-                                print("{hash} should not happen....")
+                                id = createbox(id)
+                                length += 1
+                                samebox = False
+                                flowlabel = f"{key} - {line.split(':')[-1]}\n"
+                                branchlabel = ""
 
                             if ":" in flowlabel.split("\n")[1]:
                                 label_summary = flowlabel.split("\n")[1]
@@ -188,7 +191,7 @@ class Flowchart():
 
     def create(self, output_file=None, format="png"):
         """Create a Flowdiagramm from a Dictionary."""
-        output_file = output_file if output_file is not None else f"{self.project}{self.kversion}_{self.hardware}_{self.base}_{self.target}_{self.group}_{self.name}"
+        output_file = output_file if output_file is not None else f"{self.project}{self.version}_{self.hardware}_{self.base}_{self.target}_{self.group}_{self.name}"
         dot = Digraph(comment="Flowchart", format=format)
         dot.attr(rankdir="TB", size="10")       # TB = Top to Bottom
         dot.attr(ranksep='0.4')
@@ -228,9 +231,9 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Script for creating a graphical representation from a flow of Semi-Ate, with comments taken from the description of the individual tests.")
     # Pflicht-Parameter
-    parser.add_argument("--path", default=None, help=r'Pfad, z. B. "C:\\Users\\jung\\ATE\\packages"')
-    parser.add_argument("--project", required=True, help="Projektname, z. B. CHIP")
-    parser.add_argument("--version", required=True, help='Version, z. B. "0205"')
+    parser.add_argument("--project", required=True, help="Projektname, e.g. CHIP")
+    parser.add_argument("--version", required=True, help='Version, e.g. B. "23"')
+    parser.add_argument("--path", default=None, help=r'Path, e.g. "C:\\Users\\jung\\ATE\\packages"')    
 
     # Optionale Parameter mit Defaults
     parser.add_argument("--hw", default="HW0", help="Hardware (default: HW0)")
@@ -247,3 +250,4 @@ def main():
     flow = Flowchart(args.path, args.project, args.version, args.hw, args.base, args.target, args.group, args.name)
     flow.create(format="png")
     flow.create(format="pdf")
+
