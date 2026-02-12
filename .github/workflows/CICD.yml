@@ -41,7 +41,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install spyder=6.0.8
+          mamba install spyder=6.1.2
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
@@ -91,7 +91,7 @@ jobs:
           cd ../../
 
       - name: Start Mosquitto
-        uses: namoshek/mosquitto-github-action@v2
+        uses: namoshek/mosquitto-github-action@v1
         with:
           version: '1.6'
           ports: '1883:1883 8883:8883'
