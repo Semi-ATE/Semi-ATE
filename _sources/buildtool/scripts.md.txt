@@ -17,6 +17,10 @@ createFlow [-h] [--path PATH] --project PROJECT --version VERSION [--hw HW] [--b
         ":"          indicates a summary of tests. The 'test name' is the string
                      between #flow and the :.
 
-Example: 
+Example:
 
-![description from a testbench] (./images/description_testbench.png)
+![description from a testbench](images/description_testbench.png)
+
+
+and the generated png:
+![description from a testbench](images/flow.png)
