@@ -232,14 +232,13 @@ def parse_args():
     import argparse
 
     parser = argparse.ArgumentParser(description="Script for creating a graphical representation from a flow of Semi-Ate, with comments taken from the description of the individual tests.")
+
     # Pflicht-Parameter
-#    parser.add_argument("--project", required=True, help="Projektname, e.g. CHIP")
-#    parser.add_argument("--version", required=True, help='Version, e.g. B. "23"')
     parser.add_argument("project", help="Projektname, e.g. CHIP")
     parser.add_argument("version", help='Version, e.g. B. "23"')
-    parser.add_argument("--path", default=None, help=r'Path, e.g. "C:\\Users\\jung\\ATE\\packages"')    
 
     # Optionale Parameter mit Defaults
+    parser.add_argument("--path", default=None, help=r'Path, e.g. "C:\\Users\\jung\\ATE\\packages"')    
     parser.add_argument("--hw", default="HW0", help="Hardware (default: HW0)")
     parser.add_argument("--base", default="FT", help="Base (default: FT)")
     parser.add_argument("--target", default="DummyDevice", help="Target (default: DummyDevice)")
