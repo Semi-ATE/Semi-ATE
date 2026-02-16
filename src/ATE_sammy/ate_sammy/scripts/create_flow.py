@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional   # , Tuple
 from graphviz import Digraph
 
+__version__ = '0.0.1'
 
 class Flowchart():
     """
@@ -14,7 +15,7 @@ class Flowchart():
         “#Flow:”     Instead of the general description, the string after the tag is used.
                      If additional lines are used, they must be indented.
         "->"         The string is then displayed in a separate node, which is arranged horizontally to the previous box.
-                     The Tag "#Flow:" must have been used previously.
+                     The Tag "#F__version__low:" must have been used previously.
         ":"          indicates a summary of tests. The 'test name' is the string between #flow and the :.
     """
 
@@ -24,6 +25,7 @@ class Flowchart():
         path = os.getcwd() if path is None else path+os.sep
         definitions = f"{path}/{project}{version}/definitions"
         sequence = f"sequence/sequence{project}{version}_{hardware}_{base}_{target}_{group}_{name}.json"
+        print(f'Flowchart({__version__}):')
 
         with open(f"{definitions}/{sequence}", "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -231,8 +233,10 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Script for creating a graphical representation from a flow of Semi-Ate, with comments taken from the description of the individual tests.")
     # Pflicht-Parameter
-    parser.add_argument("--project", required=True, help="Projektname, e.g. CHIP")
-    parser.add_argument("--version", required=True, help='Version, e.g. B. "23"')
+#    parser.add_argument("--project", required=True, help="Projektname, e.g. CHIP")
+#    parser.add_argument("--version", required=True, help='Version, e.g. B. "23"')
+    parser.add_argument("project", help="Projektname, e.g. CHIP")
+    parser.add_argument("version", help='Version, e.g. B. "23"')
     parser.add_argument("--path", default=None, help=r'Path, e.g. "C:\\Users\\jung\\ATE\\packages"')    
 
     # Optionale Parameter mit Defaults
