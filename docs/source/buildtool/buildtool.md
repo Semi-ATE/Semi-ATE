@@ -1,7 +1,7 @@
 # sammy, the Semi-ATE.org build- & project tool
 Semi-ATE is split up into several modules, one of which is the buildtool "sammy" which is used to generate the executable part of all projects. The IDE uses sammy as backend when a project is edited to generate an uptodate state of the project. 
 
-## Uusing sammy
+## Using sammy
 sammy always works in the cwd and uses the __\<verb>__ __\<noun>__ __\<param>__ notation for its control.
 
 ## Verbs

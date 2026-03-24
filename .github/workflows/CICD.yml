@@ -9,6 +9,17 @@ jobs:
   test:
     name: Py${{ matrix.PYTHON_VERSION }}
     runs-on: ubuntu-latest
+    services:
+      mosquitto:
+        image: eclipse-mosquitto:1.6
+        ports:
+          - 1883:1883
+          - 8883:8883
+        options: >-
+          --health-cmd "nc -z localhost 1883 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5      
     defaults:
       run:
         shell: bash -l {0}
@@ -89,12 +100,6 @@ jobs:
           cd src/integration_tests/
           xvfb-run --auto-servernum pytest migrate_check --asyncio-mode=strict --cov=../ATE_sammy/ate_sammy
           cd ../../
-
-      - name: Start Mosquitto
-        uses: namoshek/mosquitto-github-action@v1
-        with:
-          version: '1.6'
-          ports: '1883:1883 8883:8883'
 
       - name: Run test_integrate
         run: |
