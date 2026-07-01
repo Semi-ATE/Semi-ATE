@@ -9,54 +9,79 @@ jobs:
   test:
     name: Py${{ matrix.PYTHON_VERSION }}
     runs-on: ubuntu-latest
+
     services:
       mosquitto:
-        image: eclipse-mosquitto:1.6
+        image: eclipse-mosquitto:2
         ports:
           - 1883:1883
-          - 8883:8883
-        options: >-
-          --health-cmd "nc -z localhost 1883 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5      
+
     defaults:
       run:
         shell: bash -l {0}
+
     env:
-      CI: 'true'
-      OS: 'linux'
+      CI: "true"
+      OS: "linux"
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ['3.9', '3.10', '3.11'] # 3.12 can not resolve some library
+        PYTHON_VERSION: ["3.9", "3.10", "3.11"] # 3.12 can not resolve some library
+
     steps:
-      - name: Checkout Pull Requests
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Environment Dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install -y libgit2-dev xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
+          sudo apt-get install -y \
+            libgit2-dev \
+            xvfb \
+            x11-utils \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0 \
+            libxcb-xfixes0 \
+            xdotool
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
-          channel-priority: false    # "strict"
+          channel-priority: false
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
 
       - name: Setup environment
         run: |
-          mamba install spyder=5.5.6
+          mamba install -y spyder=5.5.6
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
           conda list
+
+      - name: Wait for Mosquitto
+        run: |
+          for i in {1..30}; do
+            if timeout 1 bash -c '</dev/tcp/127.0.0.1/1883' 2>/dev/null; then
+              echo "Mosquitto is ready"
+              exit 0
+            fi
+            echo "Waiting for Mosquitto... ($i/30)"
+            sleep 2
+          done
+
+          echo "Mosquitto did not become ready in time"
+          exit 1
 
       - name: Run ATE_projectdatabase tests
         run: |
@@ -65,7 +90,6 @@ jobs:
           cd ../../
 
       - name: Run ATE_spyder tests
-        shell: bash -l {0}
         run: |
           cd src/ATE_spyder
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
@@ -110,16 +134,16 @@ jobs:
   generate_artifacts:
     needs: test
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash -l {0}
 
     steps:
-      - name: Checkout Pull Requests
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install Environment Dependencies
-        shell: bash
+      - name: Install system dependencies
         run: |
           sudo apt-get update --fix-missing
 
@@ -128,26 +152,25 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: 3.9
-          channel-priority: false # "strict"
+          channel-priority: false
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
 
-      - name: Compute Version
+      - name: Compute version
         id: computed_version
         run: |
-          if [[ ${{ github.event.release.tag_name != '' }} != false ]]
-          then
-            echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
-          else
-            echo ::set-output name=VERSION::$(echo "0.0.0")
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="0.0.0"
           fi
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Apply version
         run: |
-          echo Version is ${{ steps.computed_version.outputs.VERSION }}
+          echo "Version is ${{ steps.computed_version.outputs.VERSION }}"
           cd scripts
-          python package_tool.py --tag-version ${{ steps.computed_version.outputs.VERSION }}
+          python package_tool.py --tag-version "${{ steps.computed_version.outputs.VERSION }}"
           cd ..
 
       - name: Setup environment
@@ -199,28 +222,29 @@ jobs:
           check-manifest
 
           cd ../../../../
-          
+
       - name: Build Sphinx
         run: |
-          mamba install sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
+          mamba install -y sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
           sphinx-build -b html docs/source/ docs/build/html
-          
+
       - name: Fix output file permissions
         run: |
-            sudo chown -R $USER:$USER docs
+          sudo chown -R $USER:$USER docs
 
-      - name: Upload docs to Github artifact
+      - name: Upload docs to GitHub artifact
         uses: actions/upload-artifact@v4
         with:
           path: docs/build/html/*
           name: docs-output
-          
+
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./docs/build/html
- 
-      - uses: JamesIves/github-pages-deploy-action@v4
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: ./docs/build/html
           branch: gh-pages
@@ -232,23 +256,24 @@ jobs:
           python -m pip install build
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
-          mkdir output
+          mkdir -p output
           find . -iname '*.tar.gz' -exec cp '{}' output \;
 
       - name: Check distribution files
         run: |
           twine check output/*
 
-      - name: Upload Build Artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: output
           path: ./output
 
   publish:
-    if: ${{ github.event.release.tag_name != '' }}
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
     needs: generate_artifacts
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash -l {0}
@@ -259,11 +284,10 @@ jobs:
           python -m pip install twine
 
       - name: Get artifacts from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: output
-          path: |
-            output
+          path: output
 
       - name: Extend Release Assets
         uses: alexellis/upload-assets@0.3.0
@@ -272,6 +296,8 @@ jobs:
         with:
           asset_paths: '["output/*"]'
 
-      - name: Upload to PyPi using twine
+      - name: Upload to PyPI using twine
         run: |
-          for i in `find output/ -type f`; do twine upload -u __token__ -p  ${{ secrets.PYPI_TOKEN }} $i; done
+          for i in $(find output/ -type f); do
+            twine upload -u __token__ -p "${{ secrets.PYPI_TOKEN }}" "$i"
+          done
