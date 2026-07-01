@@ -12,7 +12,7 @@ jobs:
 
     services:
       mosquitto:
-        image: eclipse-mosquitto:2
+        image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
 
@@ -31,25 +31,13 @@ jobs:
         PYTHON_VERSION: ["3.9", "3.10", "3.11"] # 3.12 can not resolve some library
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Pull Requests
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install Environment Dependencies
         run: |
           sudo apt-get update --fix-missing
-          sudo apt-get install -y \
-            libgit2-dev \
-            xvfb \
-            x11-utils \
-            libxkbcommon-x11-0 \
-            libxcb-icccm4 \
-            libxcb-image0 \
-            libxcb-keysyms1 \
-            libxcb-randr0 \
-            libxcb-render-util0 \
-            libxcb-xinerama0 \
-            libxcb-xfixes0 \
-            xdotool
+          sudo apt-get install -y libgit2-dev xvfb x11-utils libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 xdotool
 
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v3
@@ -71,17 +59,30 @@ jobs:
 
       - name: Wait for Mosquitto
         run: |
-          for i in {1..30}; do
-            if timeout 1 bash -c '</dev/tcp/127.0.0.1/1883' 2>/dev/null; then
-              echo "Mosquitto is ready"
-              exit 0
-            fi
-            echo "Waiting for Mosquitto... ($i/30)"
-            sleep 2
-          done
+          python - <<'PY'
+          import socket
+          import sys
+          import time
 
-          echo "Mosquitto did not become ready in time"
-          exit 1
+          host = "127.0.0.1"
+          port = 1883
+
+          for i in range(30):
+              s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              s.settimeout(1)
+              try:
+                  if s.connect_ex((host, port)) == 0:
+                      print("Mosquitto is ready")
+                      sys.exit(0)
+              finally:
+                  s.close()
+
+              print(f"Waiting for Mosquitto... ({i+1}/30)")
+              time.sleep(2)
+
+          print("Mosquitto did not become ready in time")
+          sys.exit(1)
+          PY
 
       - name: Run ATE_projectdatabase tests
         run: |
@@ -140,10 +141,10 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Pull Requests
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install Environment Dependencies
         run: |
           sudo apt-get update --fix-missing
 
@@ -157,7 +158,7 @@ jobs:
           mamba-version: "*"
           show-channel-urls: true
 
-      - name: Compute version
+      - name: Compute Version
         id: computed_version
         run: |
           VERSION="${{ github.event.release.tag_name }}"
@@ -168,7 +169,7 @@ jobs:
 
       - name: Apply version
         run: |
-          echo "Version is ${{ steps.computed_version.outputs.VERSION }}"
+          echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
           python package_tool.py --tag-version "${{ steps.computed_version.outputs.VERSION }}"
           cd ..
@@ -232,7 +233,7 @@ jobs:
         run: |
           sudo chown -R $USER:$USER docs
 
-      - name: Upload docs to GitHub artifact
+      - name: Upload docs to Github artifact
         uses: actions/upload-artifact@v4
         with:
           path: docs/build/html/*
@@ -263,7 +264,7 @@ jobs:
         run: |
           twine check output/*
 
-      - name: Upload build artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: output
@@ -296,7 +297,7 @@ jobs:
         with:
           asset_paths: '["output/*"]'
 
-      - name: Upload to PyPI using twine
+      - name: Upload to PyPi using twine
         run: |
           for i in $(find output/ -type f); do
             twine upload -u __token__ -p "${{ secrets.PYPI_TOKEN }}" "$i"
