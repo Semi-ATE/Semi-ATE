@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Py${{ matrix.PYTHON_VERSION }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     services:
       mosquitto:
