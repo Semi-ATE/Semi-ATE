@@ -51,11 +51,12 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install -y spyder=5.5.6
-          cd scripts
-          python package_tool.py --change-env cicd
-          cd ..
-          conda list
+          pip install -r requirements/requirements-lock.txt
+          # mamba install -y spyder=5.5.6
+          #cd scripts
+          #python package_tool.py --change-env cicd
+          #cd ..
+          #conda list
 
       - name: Wait for Mosquitto
         run: |
