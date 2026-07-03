@@ -83,6 +83,13 @@ jobs:
           print("Mosquitto did not become ready in time")
           sys.exit(1)
           PY
+          
+      - name: 🔍 Show installed packages
+        shell: bash -el {0}
+        run: |
+          conda list | grep -E "mosquitto|aiohttp|asyncio|aiomqtt|paho"
+          python --version
+          python -c "import aiohttp; print('aiohttp:', aiohttp.__version__)"
 
       - name: Run ATE_projectdatabase tests
         run: |
