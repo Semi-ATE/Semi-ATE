@@ -84,7 +84,7 @@ jobs:
           sys.exit(1)
           PY
           
-      - name: 🔍 Show installed packages
+      - name: Show installed packages
         shell: bash -el {0}
         run: |
           conda list | grep -E "mosquitto|aiohttp|asyncio|aiomqtt|paho"
