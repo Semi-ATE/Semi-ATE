@@ -50,7 +50,7 @@ jobs:
           show-channel-urls: true
 
       - name: Setup environment
-        #run: |
+        run: |
           mamba install -y spyder=5.5.6
           cd scripts
           python package_tool.py --change-env cicd
