@@ -207,6 +207,9 @@ class TestProgram:
 
     def import_tests_executions(self, executions: Dict[str, List[int]]):
         for parallelism_name, ping_pong_list in executions.items():
+            if len(ping_pong_list) != len(self._tests):
+                print(f'ping_pong != len(self._tests) {len(ping_pong_list)}, {len(self._tests)} ')
+                print('   correct the file definitions/program/program*.json')
             assert len(ping_pong_list) == len(self._tests)
             for index, test in enumerate(self._tests):
                 test.executions[parallelism_name] = ping_pong_list[index]
