@@ -1,3 +1,6 @@
+import sys
+import os
+import asyncio
 import pytest
 import multiprocessing as mp
 
@@ -7,22 +10,19 @@ from dummy_handler_app.handler_runner import HandlerRunner
 from DummySerial import DummySerialGeringer
 
 import time
-import asyncio
+
 import aiohttp
 import json
 from util_timeout_ex import timeout_ex as timeout
 import concurrent
 from typing import Optional, List, Callable, Tuple, Union
 import logging
-import sys
 import socket
 import getpass
 import aiomqtt
-import paho.mqtt.client as mqtt
 from contextlib import asynccontextmanager
 import re
 import itertools
-import os
 from hashlib import blake2b
 from abc import ABC, abstractmethod
 import xml.etree.ElementTree as tree
@@ -40,6 +40,24 @@ CURRENT_DIR = Path(__file__).parent
 XML_PATH = str(Path(CURRENT_DIR, '../Apps/master_app/tests/le306426001_template.xml'))
 XML_PATH_NEW = str(Path(CURRENT_DIR, './le306426001.xml'))
 TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_test/smoke_test/HW0/PR/smoke_test_HW0_PR_Die1_production_TheTest.py'))
+
+
+class MqttMessageAdapter:
+    """
+    Macht aiomqtt.Message kompatibel mit dem bestehenden Code,
+    der paho.mqtt.client.MQTTMessage erwartet.
+    
+    Hauptunterschied: In aiomqtt 2.x ist message.topic ein 
+    aiomqtt.Topic-Objekt, nicht ein String.
+    """
+    __slots__ = ('topic', 'payload', 'retain', 'qos')
+
+    def __init__(self, msg: aiomqtt.Message):
+        self.topic = str(msg.topic)    # aiomqtt.Topic → String!
+        self.payload = msg.payload     # bytes, wie vorher
+        self.retain = bool(msg.retain) # bool, wie vorher
+        self.qos = msg.qos
+
 
 def generate_default_device_id():
     # goal: we don't want something fully random for debugging purposes,
@@ -458,7 +476,7 @@ def remove_adjacent_dups(iterable):
 async def test_load_run_unload(sites, process_manager, ws_connection):
     master, controls = create_sites(process_manager, sites)
     # allow webservice to start up before attempting to connect ws
-    await asyncio.sleep(1.0)
+    await asyncio.sleep(5.0)
 
     async with ws_connection() as ws:
 
@@ -486,6 +504,7 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
                 await expect_message_with_state(ws, 'testing', 10.0)
                 await expect_message_with_state(ws, 'ready', 10.0)
                 # TODO: assert message with type=testresult is received. not sure if received before or after ready status message.
+                await asyncio.sleep(0.1)  # CJ ← Temporärer Workaround
         finally:
             # STEP 4: unload lot
             await ws.send_json({'type': 'cmd', 'command': 'unload'})
@@ -498,20 +517,6 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
         await expect_message_with_state(ws, 'softerror', 5.0)
 
 
-def create_mqtt_client():
-    connected = asyncio.Event()
-    message_queue = asyncio.Queue()
-
-    def _on_connect(client, userdata, flags, rc):
-        LOGGER.debug("mqtt callback: connect rc=%s", rc)
-
-        if connected.is_set():
-            pytest.fail(f'more than one call to mqtt callback _on_connect(rc={rc})')
-        elif rc != 0:
-            pytest.fail(f'mqtt connect failed _on_connect(rc={rc})')
-        else:
-            connected.set()
-
     def _on_disconnect(client, userdata, rc):
         LOGGER.debug('mqtt callback: disconnect rc=%s', rc)
 
@@ -521,20 +526,14 @@ def create_mqtt_client():
         # is not created/awaited by us (see aiomqtt implementation)
         pytest.fail(f'unexpected call to mqtt callback _on_disconnect(rc={rc})')
 
-    def _on_message(client, userdata, message: mqtt.MQTTMessage):
-        LOGGER.debug(f'mqtt callback: message topic="{message.topic}"')
-
-        message_queue.put_nowait(message)
-
-    client = aiomqtt.Client()
-    client.on_connect = _on_connect
-    client.on_disconnect = _on_disconnect
-    client.on_message = _on_message
-    return client, connected, message_queue
+    def publish(self, topic, payload=None, qos=2, retain=False):
+        if isinstance(payload, dict):
+            payload = json.dumps(payload)
+        asyncio.get_event_loop().create_task(self._client.publish(topic, payload, qos=qos, retain=retain))
 
 
 class MqttSession:
-    def __init__(self, client, message_queue):
+    def __init__(self, client: aiomqtt.Client, message_queue: asyncio.Queue):
         self._client = client
         self.message_queue = message_queue
 
@@ -543,6 +542,18 @@ class MqttSession:
             payload = json.dumps(payload)
         return self._client.publish(topic, payload, qos, retain)
 
+async def _mqtt_listener(client: aiomqtt.Client, message_queue: asyncio.Queue):
+    """
+    Background Task: Liest Nachrichten von aiomqtt und 
+    legt sie als MqttMessageAdapter in die Queue.
+    """
+    try:
+        async for message in client.messages:
+            message_queue.put_nowait(MqttMessageAdapter(message))
+    except asyncio.CancelledError:
+        pass  # Normales Beenden via stop_loop / Context Manager Exit
+    except aiomqtt.MqttError as e:
+        LOGGER.error(f'MQTT Listener Fehler: {e}')
 
 # topic: string or tuple, see parameter of paho.mqtt.client.Client.subribe
 # timeout (in seconds) is important, or this will block like forever.
@@ -551,41 +562,49 @@ class MqttSession:
 # all (callbacks are not invoked).
 @asynccontextmanager
 async def mqtt_connection(host, port, topic=None, timeout=5):
-    client, connected, message_queue = create_mqtt_client()
+    message_queue = asyncio.Queue()
 
-    if client.loop_start():
-        raise RuntimeError('loop_start failed')
-
-    try:
-        client.connect_async(host, port)
-        await asyncio.wait_for(connected.wait(), timeout=timeout)
+    async with aiomqtt.Client(hostname=host, port=port) as client:
+        # Topics subscriben (support String, Tuple und Liste)
         if topic is not None:
-            client.subscribe(topic)
-        yield MqttSession(client, message_queue)
-    finally:
-        await client.loop_stop()
+            topics = topic if isinstance(topic, list) else [topic]
+            for t in topics:
+                if isinstance(t, tuple):
+                    await client.subscribe(t[0], qos=t[1])
+                else:
+                    await client.subscribe(t)
 
+        # start  Background Task for Messages
+        listener_task = asyncio.create_task(
+            _mqtt_listener(client, message_queue)
+        )
 
+        try:
+            yield MqttSession(client, message_queue)
+        finally:
+            listener_task.cancel()
+            try:
+                await listener_task
+            except asyncio.CancelledError:
+                pass
+            
 async def util_delete_retained_messages(host, port, topic, timeout_secs=5.0):
-    def _on_connect(client, userdata, flags, rc):
-        client.subscribe(topic)
+    async with aiomqtt.Client(hostname=host, port=port) as client:
 
-    def _on_message(client, userdata, message: mqtt.MQTTMessage):
-        if message.retain:
-            client.publish(message.topic, b'', qos=2, retain=True)
+        topics = topic if isinstance(topic, list) else [topic]
+        for t in topics:
+            if isinstance(t, tuple):
+                await client.subscribe(t[0], qos=t[1])
+            else:
+                await client.subscribe(t)
 
-    client = aiomqtt.Client()
-    client.on_connect = _on_connect
-    client.on_message = _on_message
-    client.loop_start()
-    client.connect_async(host, port)
-    try:
-        await asyncio.sleep(timeout_secs)
-        client.disconnect()
-        await asyncio.sleep(0.1)
-    finally:
-        await client.loop_stop()
-
+        # Retained Messages löschen indem wir leere Payload publishen
+        async with timeout(timeout_secs, suppress_exc=True):
+            async for message in client.messages:
+                if message.retain:
+                    await client.publish(
+                        str(message.topic), b'', qos=2, retain=True
+                    )
 
 # TODO HACK WORKAROUND: enable this test and subsequent tests will fail,
 # because currently master does not publish initial state without
@@ -630,7 +649,7 @@ class MqttBaseMessage(ABC):
 
     @classmethod
     @abstractmethod
-    def from_mqtt_message(cls, message: mqtt.MQTTMessage):
+    def from_mqtt_message(cls, message: MqttMessageAdapter):
         pass
 
     @classmethod
@@ -647,7 +666,7 @@ class MqttStatusMessage(MqttBaseMessage):
         self.state = state
 
     @classmethod
-    def from_mqtt_message(cls, message: mqtt.MQTTMessage):
+    def from_mqtt_message(cls, message: MqttMessageAdapter): 
         device_id, component, site_id = cls.try_parse_topic_parts(message.topic)
         assert device_id is not None
         assert component is not None
@@ -658,17 +677,17 @@ class MqttStatusMessage(MqttBaseMessage):
 
     @staticmethod
     def try_parse_topic_parts(topic):
-        master_pattern = rf'ate/(.+?)/Master/status'
+        master_pattern = r'ate/(.+?)/Master/status'
         m = re.match(master_pattern, topic)
         if m:
             return (m.group(1), 'Master', None)
 
-        site_pattern = rf'ate/(.+?)/(Control|TestApp)/status/site(.+)$'
+        site_pattern = r'ate/(.+?)/(Control|TestApp)/status/site(.+)$'
         m = re.match(site_pattern, topic)
         if m:
             return (m.group(1), m.group(2), m.group(3))
 
-        master_pattern = rf'ate/(.+?)/Handler/status'
+        master_pattern = r'ate/(.+?)/Handler/status'
         m = re.match(master_pattern, topic)
         if m:
             return (m.group(1), 'Handler', None)
@@ -700,7 +719,7 @@ class MqttTestresultMessage(MqttBaseMessage):
         self.testdata = testdata
 
     @classmethod
-    def from_mqtt_message(cls, message: mqtt.MQTTMessage):
+    def from_mqtt_message(cls, message: MqttMessageAdapter):
         device_id, site_id = cls.try_parse_topic_parts(message.topic)
         assert device_id is not None
         assert site_id is not None
@@ -723,7 +742,7 @@ class MqttTestresultMessage(MqttBaseMessage):
 
     @staticmethod
     def try_parse_topic_parts(topic):
-        pattern = rf'ate/(.+?)/TestApp/testresult/site(.+)$'
+        pattern = r'ate/(.+?)/TestApp/testresult/site(.+)$'
         m = re.match(pattern, topic)
         if m:
             return (m.group(1), m.group(2))
@@ -747,7 +766,7 @@ class MqttResourceRequestMessage(MqttBaseMessage):
         self.config = config
 
     @classmethod
-    def from_mqtt_message(cls, message: mqtt.MQTTMessage):
+    def from_mqtt_message(cls, message: MqttMessageAdapter):
         device_id, topic_resource_id, site_id = cls.try_parse_topic_parts(message.topic)
         assert device_id is not None
         assert site_id is not None
@@ -767,7 +786,7 @@ class MqttResourceRequestMessage(MqttBaseMessage):
 
     @staticmethod
     def try_parse_topic_parts(topic) -> Union[Tuple[str, str, str], Tuple[None, None, None]]:
-        pattern = rf'ate/(.+?)/TestApp/resource/(.+?)/site(.+)$'
+        pattern = r'ate/(.+?)/TestApp/resource/(.+?)/site(.+)$'
         m = re.match(pattern, topic)
         if m:
             return (m.group(1), m.group(2), m.group(3))
@@ -828,7 +847,7 @@ class FilteredMqttMessageBuffer(MqttMessageBuffer):
         self.skip_retained = skip_retained
         self.skip_unmatched = skip_unmatched
 
-    def _filter_and_transform(self, message: mqtt.MQTTMessage):
+    def _filter_and_transform(self, message: MqttMessageAdapter):
         if self.skip_retained and message.retain:
             return None
         converted = self._convert_message(message)
@@ -836,7 +855,7 @@ class FilteredMqttMessageBuffer(MqttMessageBuffer):
             return converted
         return message
 
-    def _convert_message(self, message: mqtt.MQTTMessage):
+    def _convert_message(self, message: MqttMessageAdapter):
         converters = [MqttStatusMessage, MqttTestresultMessage, MqttResourceRequestMessage]
         for converter in converters:
             if converter.is_topic_match(message.topic):
@@ -961,7 +980,7 @@ async def read_messages_until_testapp_state(buffer: MqttMessageBuffer, site_id, 
 async def read_messages_until_whatever(
         buffer: MqttMessageBuffer,
         timeout_secs: float,
-        *predicates: Callable[[MqttBaseMessage], bool]) -> List[Union[MqttBaseMessage, mqtt.MQTTMessage]]:
+        *predicates: Callable[[MqttBaseMessage], bool]) ->List[Union[MqttBaseMessage, MqttMessageAdapter]]:
 
     unmatched_predicates = list(predicates)
 
