@@ -19,7 +19,7 @@ from typing import Optional, List, Callable, Tuple, Union
 import logging
 import socket
 import getpass
-import aiomqtt
+import paho.mqtt.client as mqtt
 from contextlib import asynccontextmanager
 import re
 import itertools
@@ -44,20 +44,65 @@ TEST_PROGRAM = str(Path(CURRENT_DIR, '../ATE_spyder/tests/qt/smoketest/smoke_tes
 
 class MqttMessageAdapter:
     """
-    Macht aiomqtt.Message kompatibel mit dem bestehenden Code,
-    der paho.mqtt.client.MQTTMessage erwartet.
-    
-    Hauptunterschied: In aiomqtt 2.x ist message.topic ein 
-    aiomqtt.Topic-Objekt, nicht ein String.
+    Kompatibilitäts-Adapter für paho MQTTMessage.
+    Ersetzt den direkten paho-Typ im restlichen Code.
     """
     __slots__ = ('topic', 'payload', 'retain', 'qos')
 
-    def __init__(self, msg: aiomqtt.Message):
-        self.topic = str(msg.topic)    # aiomqtt.Topic → String!
-        self.payload = msg.payload     # bytes, wie vorher
-        self.retain = bool(msg.retain) # bool, wie vorher
-        self.qos = msg.qos
+    def __init__(self, topic: str, payload: bytes, retain: bool, qos: int = 0):
+        self.topic = topic
+        self.payload = payload
+        self.retain = retain
+        self.qos = qos
 
+    @classmethod
+    def from_paho(cls, message: mqtt.MQTTMessage) -> 'MqttMessageAdapter':
+        return cls(
+            topic=str(message.topic),
+            payload=bytes(message.payload),
+            retain=bool(message.retain),
+            qos=int(message.qos)
+        )
+
+
+def create_mqtt_client():
+    loop = asyncio.get_event_loop()
+    connected = asyncio.Event()
+    message_queue = asyncio.Queue()
+
+    def _on_connect(client, userdata, flags, rc):
+        LOGGER.debug("mqtt callback: connect rc=%s", rc)
+        if connected.is_set():
+            loop.call_soon_threadsafe(
+                lambda: pytest.fail(
+                    f'more than one call to mqtt callback _on_connect(rc={rc})')
+            )
+        elif rc != 0:
+            loop.call_soon_threadsafe(
+                lambda: pytest.fail(
+                    f'mqtt connect failed _on_connect(rc={rc})')
+            )
+        else:
+            loop.call_soon_threadsafe(connected.set)
+
+    def _on_disconnect(client, userdata, rc):
+        LOGGER.debug('mqtt callback: disconnect rc=%s', rc)
+        if rc != 0:
+            LOGGER.warning(
+                f'unexpected mqtt disconnect rc={rc} '
+                f'(is not created/awaited by us, see aiomqtt implementation)'
+            )
+
+    def _on_message(client, userdata, message: mqtt.MQTTMessage):
+        LOGGER.debug(f'mqtt callback: message topic="{message.topic}"')
+        adapter = MqttMessageAdapter.from_paho(message)
+        loop.call_soon_threadsafe(message_queue.put_nowait, adapter)
+
+    client = mqtt.Client()
+    client.on_connect = _on_connect
+    client.on_disconnect = _on_disconnect
+    client.on_message = _on_message
+    return client, connected, message_queue
 
 def generate_default_device_id():
     # goal: we don't want something fully random for debugging purposes,
@@ -533,7 +578,7 @@ async def test_load_run_unload(sites, process_manager, ws_connection):
 
 
 class MqttSession:
-    def __init__(self, client: aiomqtt.Client, message_queue: asyncio.Queue):
+    def __init__(self, client: mqtt.Client, message_queue: asyncio.Queue):
         self._client = client
         self.message_queue = message_queue
 
@@ -542,19 +587,6 @@ class MqttSession:
             payload = json.dumps(payload)
         return self._client.publish(topic, payload, qos, retain)
 
-async def _mqtt_listener(client: aiomqtt.Client, message_queue: asyncio.Queue):
-    """
-    Background Task: Liest Nachrichten von aiomqtt und 
-    legt sie als MqttMessageAdapter in die Queue.
-    """
-    try:
-        async for message in client.messages:
-            message_queue.put_nowait(MqttMessageAdapter(message))
-    except asyncio.CancelledError:
-        pass  # Normales Beenden via stop_loop / Context Manager Exit
-    except aiomqtt.MqttError as e:
-        LOGGER.error(f'MQTT Listener Fehler: {e}')
-
 # topic: string or tuple, see parameter of paho.mqtt.client.Client.subribe
 # timeout (in seconds) is important, or this will block like forever.
 # apparently paho mqtt does not use a reasonable connection timeout.
@@ -562,49 +594,45 @@ async def _mqtt_listener(client: aiomqtt.Client, message_queue: asyncio.Queue):
 # all (callbacks are not invoked).
 @asynccontextmanager
 async def mqtt_connection(host, port, topic=None, timeout=5):
-    message_queue = asyncio.Queue()
+    client, connected, message_queue = create_mqtt_client()
+    client.loop_start()
 
-    async with aiomqtt.Client(hostname=host, port=port) as client:
-        # Topics subscriben (support String, Tuple und Liste)
+    try:
+        client.connect_async(host, port)
+        await asyncio.wait_for(connected.wait(), timeout=timeout)
+
         if topic is not None:
+            # paho.subscribe() akzeptiert Liste von (topic, qos) Tuples
             topics = topic if isinstance(topic, list) else [topic]
-            for t in topics:
-                if isinstance(t, tuple):
-                    await client.subscribe(t[0], qos=t[1])
-                else:
-                    await client.subscribe(t)
+            client.subscribe(topics)
 
-        # start  Background Task for Messages
-        listener_task = asyncio.create_task(
-            _mqtt_listener(client, message_queue)
-        )
+        yield MqttSession(client, message_queue)
 
-        try:
-            yield MqttSession(client, message_queue)
-        finally:
-            listener_task.cancel()
-            try:
-                await listener_task
-            except asyncio.CancelledError:
-                pass
+    finally:
+        client.disconnect()
+        client.loop_stop()
             
 async def util_delete_retained_messages(host, port, topic, timeout_secs=5.0):
-    async with aiomqtt.Client(hostname=host, port=port) as client:
+    client = mqtt.Client()
 
+    def _on_connect(c, u, f, rc):
         topics = topic if isinstance(topic, list) else [topic]
-        for t in topics:
-            if isinstance(t, tuple):
-                await client.subscribe(t[0], qos=t[1])
-            else:
-                await client.subscribe(t)
+        c.subscribe(topics)
 
-        # Retained Messages löschen indem wir leere Payload publishen
-        async with timeout(timeout_secs, suppress_exc=True):
-            async for message in client.messages:
-                if message.retain:
-                    await client.publish(
-                        str(message.topic), b'', qos=2, retain=True
-                    )
+    def _on_message(c, u, message: mqtt.MQTTMessage):
+        if message.retain:
+            c.publish(message.topic, b'', qos=2, retain=True)
+
+    client.on_connect = _on_connect
+    client.on_message = _on_message
+    client.loop_start()
+    client.connect_async(host, port)
+    try:
+        await asyncio.sleep(timeout_secs)
+    finally:
+        client.disconnect()
+        await asyncio.sleep(0.1)
+        client.loop_stop()
 
 # TODO HACK WORKAROUND: enable this test and subsequent tests will fail,
 # because currently master does not publish initial state without
@@ -1330,29 +1358,32 @@ async def test_master_reset_if_error_occurred(sites, process_manager, ws_connect
         _ = create_master(process_manager, sites)
         await read_messages_until_master_state(buffer, 'connecting', 5.0, ['connecting'])
 
-        # create controls, wait for initialized (all controls connected)
+        # create controls, wait for initialized
         control = create_controls(process_manager, sites)
         await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
 
+        # ── Phase 1: Load → softerror ─────────────────────────────────────
+        # WebSocket 1: wird vom Server beim Eintritt in softerror geschlossen!
         async with ws_connection() as ws:
-            # load
             await ws.send_json({'type': 'cmd', 'command': 'load', 'lot_number': f'{JOB_LOT_NUMBER}'})
             await read_messages_until_master_state(buffer, 'ready', 5.0, ['initialized', 'loading', 'ready'])
 
-            # kill control: since we can't provoke crash of testapp from here we just kill the controlapp
+            # kill control to trigger softerror
             process_manager.kill_processes(*(c.proc_name for c in control))
             await read_messages_until_master_state(buffer, 'softerror', 5.0, ['initialized', 'softerror'])
+        # ← WebSocket 1 wird hier sauber vom Client geschlossen (oder war schon vom Server zu)
 
-            await asyncio.sleep(0.5)
+        # ── Phase 2: Reset ────────────────────────────────────────────────
+        # WebSocket 2: neue Verbindung - alte war durch softerror geschlossen!
+        await asyncio.sleep(0.5)
 
-            # reset command from websocket
+        async with ws_connection() as ws:
             await ws.send_json({'type': 'cmd', 'command': 'reset'})
             await read_messages_until_master_state(buffer, 'connecting', 5.0, ['softerror', 'connecting'])
 
             # recreate control
             control = create_controls(process_manager, sites)
             await read_messages_until_master_state(buffer, 'initialized', 5.0, ['connecting', 'initialized'])
-
 
 # @pytest.mark.asyncio
 # @pytest.mark.parametrize('stop_on_fail_enabled', [True, False, None])  # None included for default (True)
