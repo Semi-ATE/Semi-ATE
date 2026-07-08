@@ -82,10 +82,6 @@ class DefaultExecutionStrategy:
         if not self._execution_strategy:
             raise Exception('execution strategy is not configured yet, no configuration is received')
 
-        if self._test_num >= len(self._execution_strategy):
-            self._test_num = len(self._execution_strategy) - 1
-            return []
-
         import copy
         stages = copy.deepcopy(self._execution_strategy[self.test_num])
 
@@ -121,7 +117,6 @@ class DefaultExecutionStrategy:
 
     def reset_stages(self):
         if len(self._stage_exectution_strategy):
-            import logging
-            logging.warning(f'reset_stages: unhandled stages cleared: {self._stage_exectution_strategy}')
-            self._stage_exectution_strategy.clear()
+            raise Exception(f'cannot reset execution_strategy, the following stages are not handled yet: {self._stage_exectution_strategy}')
+
         self._test_num = -1

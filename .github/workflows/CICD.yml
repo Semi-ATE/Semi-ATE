@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10", "3.11"]        # 3.12 doesn't run with spyder 5.5.6
+        PYTHON_VERSION: ["3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout Pull Requests
@@ -159,7 +159,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          python-version: 3.11
+          python-version: 3.9
           channel-priority: false
           channels: "conda-forge"
           mamba-version: "*"

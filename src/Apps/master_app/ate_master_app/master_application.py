@@ -341,7 +341,8 @@ class MasterApplication(MultiSiteTestingModel):
     def on_error_occurred(self, message):
         self.log.log_message(LogLevel.Error(), f'Master entered state error, reason: {message}')
         self.error_message = message
-        self._loop.call_soon_threadsafe(self.testing_event.clear)
+        self.testing_event.clear()
+
         self.testing_strategy.reset_stages()
 
     def on_load_error(self):
@@ -501,8 +502,9 @@ class MasterApplication(MultiSiteTestingModel):
     def on_test_app_response_to_next_command(self):
         self.disarm_timeout()
         self.arm_timeout(TEST_TIMEOUT, lambda: self.timeout("not all sites completed the active test"))
-        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: None, lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
-        self._loop.call_soon_threadsafe(self.testing_event.set)
+        self.pendingTransitionsTest = SequenceContainer([TestState.Idle], self.configuredSites, lambda: None,
+                                                        lambda site, state: self.on_error(f"Bad statetransition of testapp {site} during test to {state}"))
+        self.testing_event.set()
 
     def _extract_sites_information(self, parameters):
         try:
@@ -566,7 +568,7 @@ class MasterApplication(MultiSiteTestingModel):
         self._reset_execution_strategy()
 
     def on_allsitetestscomplete(self):
-        self._loop.call_soon_threadsafe(self.testing_event.clear)
+        self.testing_event.clear()
         self._send_test_results()
         self.test_results = []
         self.disarm_timeout()
