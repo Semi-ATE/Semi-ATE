@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10"] # 3.12 can not resolve some library
+        PYTHON_VERSION: ["3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout Pull Requests

@@ -2,11 +2,15 @@
 
 This document describes how you can install the semi-ate applications to run test-programs in production mode. You will be guided how to install the required *conda packages*, to configure the applications and to generate a job-file.
 
+## Note
+
+These installation instructions apply only if you already have test programs that were written using the Spyder environment. If that is not the case, then you must use  [Getting Started with ATE for developers](https://semi-ate.github.io/Semi-ATE/GettingStarted.html#). 
+
 We assume the following:
 
-* You have [maxiconda](https://www.maxiconda.org/) installed
-* You are running *Windows >=10 64Bit*
-* You have already downloaded or generated some test program - via spyder - in folder *C:\\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py*. The underlying hardware used when creating the semi-ate test project was *Semi-ATE Single Tester*.
+* You have [maxiconda](https://www.maxiconda.org/) or  [miniconda] (https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) installed
+* You are running *Windows >=10 64Bit* or ubuntu >= 24 64 Bit
+* You have already downloaded or generated  some test program - via spyder - in folder *C:\\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py*. The underlying hardware used when creating the semi-ate test project was *Semi-ATE Single Tester*.
 * All provided commands are executed in a **PowerShell**.
 * The windows user's name is **test_user**, i.e. variable `$env:Username` is pointing to **test_user**. The user name is used to build paths. These paths are defined in the later mentioned configuration and job files. You have to adapt it to match your environment.
 
@@ -23,18 +27,18 @@ We assume the following:
 
 ### Create Mamba Environment
 
-* Creation `mamba create -n _app_py39_ python=3.9 -y`
-* Environment Activation `conda activate _app_py39_`
+* Creation `mamba create -n _app_py310_ python=3.10 -y`
+* Environment Activation `conda activate _app_py310_`
 
 ### MQTT-Broker
 
-* Environment Activation `conda activate _app_py39_`
+* Environment Activation `conda activate _app_py310_`
 * Installation `mamba install -c conda-forge mosquitto -y`
-* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE AppData\Local\maxiconda\envs\_app_py39_\Library\sbin\mosquitto) -v`
+* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE AppData\Local\maxiconda\envs\_app_py310_\Library\sbin\mosquitto) -v`
 
 ### Semi-ATE Applications and Testers
 
-* Environment Activation `conda activate _app_py39_`
+* Environment Activation `conda activate _app_py310_`
 * Installation `mamba install -c conda-forge semi-ate-master-app semi-ate-control-app semi-ate-test-app semi-ate-testers -y`
 
 #### Download Web-User-Interface
