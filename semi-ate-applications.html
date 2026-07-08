@@ -16,7 +16,7 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=6f77e80e"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -48,6 +48,7 @@
               <p class="caption" role="heading"><span class="caption-text">Introduction:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Semi-ATE in Production</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#note">Note</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#create-mamba-environment">Create Mamba Environment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mqtt-broker">MQTT-Broker</a></li>
@@ -399,14 +400,18 @@
   <section id="semi-ate-in-production">
 <h1>Semi-ATE in Production<a class="headerlink" href="#semi-ate-in-production" title="Link to this heading"></a></h1>
 <p>This document describes how you can install the semi-ate applications to run test-programs in production mode. You will be guided how to install the required <em>conda packages</em>, to configure the applications and to generate a job-file.</p>
+<section id="note">
+<h2>Note<a class="headerlink" href="#note" title="Link to this heading"></a></h2>
+<p>These installation instructions apply only if you already have test programs that were written using the Spyder environment. If that is not the case, then you must use  <a class="reference external" href="https://semi-ate.github.io/Semi-ATE/GettingStarted.html#">Getting Started with ATE for developers</a>.</p>
 <p>We assume the following:</p>
 <ul class="simple">
-<li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> installed</p></li>
-<li><p>You are running <em>Windows &gt;=10 64Bit</em></p></li>
-<li><p>You have already downloaded or generated some test program - via spyder - in folder <em>C:\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py</em>. The underlying hardware used when creating the semi-ate test project was <em>Semi-ATE Single Tester</em>.</p></li>
+<li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> or  [miniconda] (https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) installed</p></li>
+<li><p>You are running <em>Windows &gt;=10 64Bit</em> or ubuntu &gt;= 24 64 Bit</p></li>
+<li><p>You have already downloaded or generated  some test program - via spyder - in folder <em>C:\%UserProfile%\project\src\HW0\PR\project_HW0_PR_die_production_prod.py</em>. The underlying hardware used when creating the semi-ate test project was <em>Semi-ATE Single Tester</em>.</p></li>
 <li><p>All provided commands are executed in a <strong>PowerShell</strong>.</p></li>
 <li><p>The windows user’s name is <strong>test_user</strong>, i.e. variable <code class="docutils literal notranslate"><span class="pre">$env:Username</span></code> is pointing to <strong>test_user</strong>. The user name is used to build paths. These paths are defined in the later mentioned configuration and job files. You have to adapt it to match your environment.</p></li>
 </ul>
+</section>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -425,22 +430,22 @@
 <section id="create-mamba-environment">
 <h3>Create Mamba Environment<a class="headerlink" href="#create-mamba-environment" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Creation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">_app_py39_</span> <span class="pre">python=3.9</span> <span class="pre">-y</span></code></p></li>
-<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Creation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">_app_py311_</span> <span class="pre">python=3.11</span> <span class="pre">-y</span></code></p></li>
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py311_</span></code></p></li>
 </ul>
 </section>
 <section id="mqtt-broker">
 <h3>MQTT-Broker<a class="headerlink" href="#mqtt-broker" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py311_</span></code></p></li>
 <li><p>Installation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">mosquitto</span> <span class="pre">-y</span></code></p></li>
-<li><p>Running Mosquitto-Broker <code class="docutils literal notranslate"><span class="pre">&amp;(Join-Path</span> <span class="pre">$env:USERPROFILE</span> <span class="pre">AppData\Local\maxiconda\envs\_app_py39_\Library\sbin\mosquitto)</span> <span class="pre">-v</span></code></p></li>
+<li><p>Running Mosquitto-Broker <code class="docutils literal notranslate"><span class="pre">&amp;(Join-Path</span> <span class="pre">$env:USERPROFILE</span> <span class="pre">AppData\Local\maxiconda\envs\_app_py311_\Library\sbin\mosquitto)</span> <span class="pre">-v</span></code></p></li>
 </ul>
 </section>
 <section id="semi-ate-applications-and-testers">
 <h3>Semi-ATE Applications and Testers<a class="headerlink" href="#semi-ate-applications-and-testers" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Environment Activation <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py311_</span></code></p></li>
 <li><p>Installation <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">semi-ate-master-app</span> <span class="pre">semi-ate-control-app</span> <span class="pre">semi-ate-test-app</span> <span class="pre">semi-ate-testers</span> <span class="pre">-y</span></code></p></li>
 </ul>
 <section id="download-web-user-interface">
@@ -560,7 +565,7 @@
 <h2>Starting the Applications<a class="headerlink" href="#starting-the-applications" title="Link to this heading"></a></h2>
 <p>In order to successfully run the applications we assume that all previous sections of this document have been applied:</p>
 <ol class="arabic">
-<li><p>Activate the conda environment <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py39_</span></code></p></li>
+<li><p>Activate the conda environment <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">_app_py311_</span></code></p></li>
 <li><p>Make sure that the current location contains the following files and folders:</p>
 <ul class="simple">
 <li><p>Master application configuration <em>master_config_file.json</em>, refer to <a class="reference internal" href="#configurations"><span class="xref myst">Configurations</span></a></p></li>
