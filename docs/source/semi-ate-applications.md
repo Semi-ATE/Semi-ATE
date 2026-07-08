@@ -4,7 +4,7 @@ This document describes how you can install the semi-ate applications to run tes
 
 ## Note
 
-These installation instructions apply only if you already have test programs that were written using the Spyder environment. If that is not the case, then you must use  [Getting Started with ATE for developers](https://semi-ate.github.io/Semi-ATE/GettingStarted.html#). 
+These installation instructions apply only if you already have test programs that were written using the Spyder environment. If that is not the case, then you must use  [Getting Started with ATE for developers](https://semi-ate.github.io/Semi-ATE/GettingStarted.html#). 
 
 We assume the following:
 
@@ -27,18 +27,18 @@ We assume the following:
 
 ### Create Mamba Environment
 
-* Creation `mamba create -n _app_py310_ python=3.10 -y`
-* Environment Activation `conda activate _app_py310_`
+* Creation `mamba create -n _app_py311_ python=3.11 -y`
+* Environment Activation `conda activate _app_py311_`
 
 ### MQTT-Broker
 
-* Environment Activation `conda activate _app_py310_`
+* Environment Activation `conda activate _app_py311_`
 * Installation `mamba install -c conda-forge mosquitto -y`
-* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE AppData\Local\maxiconda\envs\_app_py310_\Library\sbin\mosquitto) -v`
+* Running Mosquitto-Broker `&(Join-Path $env:USERPROFILE AppData\Local\maxiconda\envs\_app_py311_\Library\sbin\mosquitto) -v`
 
 ### Semi-ATE Applications and Testers
 
-* Environment Activation `conda activate _app_py310_`
+* Environment Activation `conda activate _app_py311_`
 * Installation `mamba install -c conda-forge semi-ate-master-app semi-ate-control-app semi-ate-test-app semi-ate-testers -y`
 
 #### Download Web-User-Interface
@@ -157,7 +157,7 @@ Create the job file *le123456000.xml* with the following content:
 
 In order to successfully run the applications we assume that all previous sections of this document have been applied:
 
-1. Activate the conda environment `conda activate _app_py39_`
+1. Activate the conda environment `conda activate _app_py311_`
 2. Make sure that the current location contains the following files and folders:
     * Master application configuration *master_config_file.json*, refer to [Configurations](#configurations)
     * Control appliation configuration *control_config_file.json*, refer to [Configurations](#configurations)
