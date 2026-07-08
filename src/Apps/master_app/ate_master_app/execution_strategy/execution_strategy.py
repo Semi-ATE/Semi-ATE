@@ -78,28 +78,29 @@ class DefaultExecutionStrategy:
     def _get_testing_sites(self, sites: List[str]) -> List[str]:
         if self._test_num == -1:
             return []
-    
+
         if not self._execution_strategy:
-            raise Exception('execution strategy is not configured yet')
-    
+            raise Exception('execution strategy is not configured yet, no configuration is received')
+
         if self._test_num >= len(self._execution_strategy):
-            raise Exception(
-                f'test_num {self._test_num} out of range '
-                f'(strategy has {len(self._execution_strategy)} entries)'
-            )
-    
+            self._test_num = len(self._execution_strategy) - 1
+            return []
+
         import copy
         stages = copy.deepcopy(self._execution_strategy[self.test_num])
-    
+
+        # all sites not contained in the list of sites that should test,
+        # must be removed from the execution strategy
         for stage in stages:
             for index, site in enumerate(stage):
                 if site in sites:
                     continue
+
                 stage.pop(index)
                 break
-    
-        return [stage for stage in stages if len(stage)]
 
+        # return all non empty list
+        return [stage for stage in stages if len(stage)]
 
     async def get_site_states(self, timeout: int) -> List[int]:
         return await self.tester.get_site_states(timeout)
@@ -120,9 +121,7 @@ class DefaultExecutionStrategy:
 
     def reset_stages(self):
         if len(self._stage_exectution_strategy):
-            raise Exception(
-                f'cannot reset execution_strategy, '
-                f'the following stages are not handled yet: '
-                f'{self._stage_exectution_strategy}'
-            )
+            import logging
+            logging.warning(f'reset_stages: unhandled stages cleared: {self._stage_exectution_strategy}')
+            self._stage_exectution_strategy.clear()
         self._test_num = -1
