@@ -1,3 +1,4 @@
+import asyncio
 from ate_common.logger import LogLevel
 from aiohttp import web, WSMsgType, WSCloseCode
 from pathlib import Path
@@ -161,30 +162,32 @@ class WebsocketCommunicationHandler:
     async def receive(self, request):
         ws = web.WebSocketResponse(heartbeat=1.0)
         await ws.prepare(request)
-
+    
         connection_id = str(uuid.uuid1())
         ws_connection = WebSocketConnection(ws, connection_id)
         self._websockets.add(ws_connection)
-
+    
         await self._send_connection_id_to_ws(ws, connection_id)
-
-        # master should propagate the available settings each time a page reloaded
-        # or new websocket connection is required
+    
         self.handle_new_connection(connection_id)
         await self.send_configuration(self._app['master_app'].configuration, ws_connection)
-
+    
         self._log.log_message(LogLevel.Debug(), 'websocket connection opened.')
-
+    
         try:
             async for msg in ws:
                 if msg.type == WSMsgType.TEXT:
                     self.handle_client_message(msg.data)
                 elif msg.type == WSMsgType.ERROR:
-                    self._log.log_message(LogLevel.Error(), f'ws connection closed with exception: {ws.exception()}')
+                    self._log.log_message(
+                        LogLevel.Error(),
+                        f'ws connection closed with exception: {ws.exception()}'
+                    )
         finally:
-            pass
-
-        self._discard_ws_connection_if_needed()
+            self._websockets.discard(ws_connection)
+            self._discard_ws_connection_if_needed()
+    
+        return ws
 
     def _discard_ws_connection_if_needed(self):
         self._websockets = set([ws for ws in self._websockets if ws.is_alive()])
@@ -208,6 +211,8 @@ async def index_handler(request):
 
 
 async def webservice_init(app):
+    app['master_app']._loop = asyncio.get_running_loop()
+
     static_file_path = app['static_file_path']
     ws_comm_handler = WebsocketCommunicationHandler(app)
     if Path(static_file_path, 'index.html').exists() == False:
@@ -227,11 +232,6 @@ async def webservice_init(app):
                     web.get('/logging', index_handler),
                     web.get('/bin', index_handler),
                     web.get('/ws', ws_comm_handler.receive)])
-    # From the aiohttp documentation it is known to use
-    # add_static only when developing things
-    # normally static content should be processed by
-    # webservers like (nginx or apache)
-    # In the case of Single Tester it is okay to use add_static
     app.router.add_static('/', path=static_file_path, name='static')
     app['ws_comm_handler'] = ws_comm_handler
 
