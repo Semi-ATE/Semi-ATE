@@ -45,6 +45,7 @@ class ControlApplication:
             await self.connection_handler.stop()
 
     def run(self):
+        ensure_asyncio_event_loop_compatibility_for_windows()
         try:
             asyncio.run(self._run_task())
         except KeyboardInterrupt:

@@ -16,22 +16,19 @@ INTERFACE_VERSION = 1
 class ControlAppMachine:
     states = ['idle', 'loading', 'busy', 'error', 'resetting']
 
-    # multiple space code style "error" will be ignored for a better presentation of the possible state machine transitions
     transitions = [
-        {'source': 'idle',      'dest': 'loading',   'trigger': 'load',                   'after': 'on_load'},                 # noqa: E241
-        {'source': 'loading',   'dest': 'busy',      'trigger': 'testapp_active'},                                             # noqa: E241
-        {'source': 'busy',      'dest': 'idle',      'trigger': 'testapp_exit',           'after': 'on_test_app_exit'},        # noqa: E241
-        {'source': 'idle',      'dest': 'idle',      'trigger': 'testapp_exit',           'after': 'on_test_app_exit'},        # noqa: E241
-
-        {'source': '*',         'dest': 'resetting', 'trigger': 'reset',                  'after': 'on_reset'},                # noqa: E241
-        {'source': 'resetting', 'dest': 'idle',      'trigger': 'to_idle'},                                                    # noqa: E241
-
-        {'source': '*',         'dest': 'error',     'trigger': 'load_error',             'after': 'on_error'},                 # noqa: E241
-        {'source': '*',         'dest': 'error',     'trigger': 'test_app_error',         'after': 'on_error'},                 # noqa: E241
-        {'source': '*',         'dest': 'error',     'trigger': 'error',                  'after': 'on_error'},                 # noqa: E241
+        {'source': 'idle',      'dest': 'loading',   'trigger': 'load',          'after': 'on_load'},
+        {'source': 'loading',   'dest': 'busy',      'trigger': 'testapp_active'},
+        {'source': 'busy',      'dest': 'idle',      'trigger': 'testapp_exit',   'after': 'on_test_app_exit'},
+        {'source': 'idle',      'dest': 'idle',      'trigger': 'testapp_exit',   'after': 'on_test_app_exit'},
+        {'source': '*',         'dest': 'resetting', 'trigger': 'reset',          'after': 'on_reset'},
+        {'source': 'resetting', 'dest': 'idle',      'trigger': 'to_idle'},
+        {'source': '*',         'dest': 'error',     'trigger': 'load_error',     'after': 'on_error'},
+        {'source': '*',         'dest': 'error',     'trigger': 'test_app_error', 'after': 'on_error'},
+        {'source': '*',         'dest': 'error',     'trigger': 'error',          'after': 'on_error'},
     ]
 
-    def __init__(self, conhandler):
+    def __init__(self, conhandler, loop: asyncio.AbstractEventLoop):
         self._conhandler = conhandler
         self.log = conhandler.log
         self.prev_state = ''
@@ -41,14 +38,22 @@ class ControlAppMachine:
         self.stderr = None
         self.do_reset = False
 
-        self.machine = Machine(model=self, states=self.states, transitions=self.transitions, initial='idle', after_state_change=self.publish_current_state)
+        # ✅ FIX: Loop speichern - kommt aus ControlConnectionHandler
+        #         der immer inside async context erstellt wird
+        self._loop = loop
+
+        self.machine = Machine(
+            model=self,
+            states=self.states,
+            transitions=self.transitions,
+            initial='idle',
+            after_state_change=self.publish_current_state
+        )
 
     def publish_current_state(self, info: str):
         self._conhandler.publish_state(self.state, self._error_message)
-
         if self.prev_state != self.state:
             self.log.log_message(LogLevel.Info(), f'control state is: {self.state}')
-
         self.prev_state = self.state
 
     def on_master_state_changed(self, info: str):
@@ -56,26 +61,30 @@ class ControlAppMachine:
 
     async def _run_testapp_task(self, testapp_params: dict):
         try:
-            args = [str(sys.executable), testapp_params['testapp_script_path'],
+            args = [str(sys.executable),
+                    testapp_params['testapp_script_path'],
                     '--device_id', self._conhandler.device_id,
                     '--site_id', self._conhandler.site_id,
                     '--broker_host', self._conhandler.broker_host,
                     '--broker_port', str(self._conhandler.broker_port),
-                    '--parent-pid', str(os.getpid()),  # TODO: this should be configurable in future: it will make the testapp kill itself if this parent process dies
+                    '--parent-pid', str(os.getpid()),
                     '--bin_strategytype', 'external',
                     '--harness_strategytype', 'external',
-                    # '--ptvsd-enable-attach',  # uncomment this to enable attaching the remote debugger
-                    # '--ptvsd-wait-for-attach',  # uncomment this to enable attaching the remote debugger AND waiting for an remote debugger to be attached before initialization
                     *testapp_params.get('testapp_script_args', [])]
 
-            os.environ[testapp_params['testapp_script_path'].split('.')[0]] = f"{testapp_params['bin_table']}"
-            self.process = await asyncio.create_subprocess_exec(*args,
-                                                                cwd=testapp_params.get('cwd'),
-                                                                stdout=asyncio.subprocess.PIPE,
-                                                                stderr=asyncio.subprocess.PIPE)
+            os.environ[testapp_params['testapp_script_path'].split('.')[0]] = \
+                f"{testapp_params['bin_table']}"
+
+            self.process = await asyncio.create_subprocess_exec(
+                *args,
+                cwd=testapp_params.get('cwd'),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
             self.testapp_active(self.process.pid)
             _, self.stderr = await self.process.communicate()
             self.testapp_exit(self.process.returncode)
+
         except asyncio.CancelledError:
             self._terminate()
 
@@ -85,28 +94,29 @@ class ControlAppMachine:
     def on_load(self, testapp_params: dict):
         self._error_message = ''
         self.log.log_message(LogLevel.Info(), f'test_program parameters: {str(testapp_params)}')
+
         if not self._does_test_program_exist(testapp_params):
-            self.load_error(f'Test program could not be found: {testapp_params["cwd"]}/{testapp_params["testapp_script_path"]}')
+            self.load_error(
+                f'Test program could not be found: '
+                f'{testapp_params["cwd"]}/{testapp_params["testapp_script_path"]}'
+            )
             return
 
-        _ = asyncio.create_task(self._run_testapp_task(testapp_params))
+        asyncio.run_coroutine_threadsafe(
+            self._run_testapp_task(testapp_params),
+            self._loop
+        )
 
     @staticmethod
     def _does_test_program_exist(testapp_params: dict):
         path = Path(testapp_params.get('cwd'))
-        if not path.joinpath(testapp_params['testapp_script_path']).exists():
-            return False
-
-        return True
+        return path.joinpath(testapp_params['testapp_script_path']).exists()
 
     def on_test_app_exit(self, return_code: int):
         self.process = None
-
-        # ignore testprogram cancellation if reset is required
         if self.do_reset:
             self.do_reset = False
             return
-
         if return_code != 0:
             self._error_message = self.stderr.decode('ascii')
             self.test_app_error(f'test program ends with an error:\n {self._error_message}')
@@ -117,7 +127,6 @@ class ControlAppMachine:
                 self._terminate()
         except Exception as e:
             self.log.log_message(LogLevel.Error(), f"could not terminate testapp properly: {e}")
-
         self.do_reset = True
         self.to_idle(_)
 
@@ -131,29 +140,43 @@ class ControlAppMachine:
 
 class ControlConnectionHandler:
 
-    """ handle connection """
-
     def __init__(self, host, port, site_id, device_id, logger):
         self.broker_host = host
         self.broker_port = port
         self.site_id = site_id
         self.device_id = device_id
         self.log = logger
+
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # Fallback falls außerhalb async context aufgerufen
+            self._loop = asyncio.get_event_loop()
+
         mqtt_client_id = f'controlapp.{device_id}.{site_id}'
         self.mqtt = MqttConnection(host, port, mqtt_client_id, self.log)
         self.log.set_mqtt_client(self)
-        self.mqtt.init_mqtt_client_callbacks(self._on_connect_handler,
-                                             self._on_disconnect_handler)
-
-        self.mqtt.register_route(self._generate_base_topic_cmd(), lambda topic, payload: self.on_message_handler(topic, payload))
-        self.mqtt.register_route(self._generate_base_topic_status_master(), lambda topic, payload: self.on_message_handler(topic, payload))
+        self.mqtt.init_mqtt_client_callbacks(
+            self._on_connect_handler,
+            self._on_disconnect_handler
+        )
+        self.mqtt.register_route(
+            self._generate_base_topic_cmd(),
+            lambda topic, payload: self.on_message_handler(topic, payload)
+        )
+        self.mqtt.register_route(
+            self._generate_base_topic_status_master(),
+            lambda topic, payload: self.on_message_handler(topic, payload)
+        )
 
         self.commands = {
             "loadTest": self.__load_test_program,
             "reset": self.__reset_after_error,
             "setloglevel": self.__set_log_level,
         }
-        self._statemachine = ControlAppMachine(self)
+
+        # ✅ Loop an ControlAppMachine weitergeben
+        self._statemachine = ControlAppMachine(self, self._loop)
 
     def start(self):
         self.mqtt.set_last_will(
@@ -166,17 +189,18 @@ class ControlConnectionHandler:
         await self.mqtt.stop_loop()
 
     def publish_state(self, state, error_message, statedict=None):
-        self.mqtt.publish(self._generate_base_topic_status(),
-                          self.mqtt.create_message(
-                              self._generate_status_message(state, error_message, statedict)),
-                          retain=False)
+        self.mqtt.publish(
+            self._generate_base_topic_status(),
+            self.mqtt.create_message(
+                self._generate_status_message(state, error_message, statedict)),
+            retain=False)
 
     def publish_log_information(self, log):
         self.mqtt.publish(
             topic=self._generate_log_topic(),
             payload=json.dumps(self.log_payload(log)),
             qos=0,
-            retain=False),
+            retain=False)
 
     def send_log(self, log):
         self.publish_log_information(log)
@@ -206,11 +230,14 @@ class ControlConnectionHandler:
             assert data['type'] == 'cmd'
             cmd = data['command']
             sites = data['sites']
-
             self.log.log_message(LogLevel.Debug(), f'received command: {cmd}')
 
             if self.site_id not in sites:
-                self.log.log_message(LogLevel.Warning(), f'ignoring TestApp cmd for other sites {sites} (current site_id is {self.site_id})')
+                self.log.log_message(
+                    LogLevel.Warning(),
+                    f'ignoring TestApp cmd for other sites {sites} '
+                    f'(current site_id is {self.site_id})'
+                )
                 return
 
             to_exec_command = self.commands.get(cmd)
@@ -219,17 +246,14 @@ class ControlConnectionHandler:
                 return
 
             to_exec_command(data)
-
         except Exception as e:
             self._statemachine.error(str(e))
 
     def on_status_message(self, message):
-        # TODO: handle status messages
         return
 
     def _on_connect_handler(self, client, userdata, flags, conect_res):
         self.log.log_message(LogLevel.Info(), 'mqtt connected')
-
         self.mqtt.subscribe(self._generate_base_topic_cmd())
         self.mqtt.subscribe(self._generate_base_topic_status_master())
         self._statemachine.publish_current_state(None)
@@ -242,8 +266,6 @@ class ControlConnectionHandler:
             self.on_status_message(payload)
         elif "cmd" in topic:
             self.on_cmd_message(payload)
-        else:
-            return
 
     def _on_disconnect_handler(self, client, userdata, distc_res):
         self.log.log_message(LogLevel.Info(), f'mqtt disconnected (rc: {distc_res})')
@@ -260,20 +282,17 @@ class ControlConnectionHandler:
         return message
 
     def _generate_base_topic_status(self) -> str:
-        return "ate/" + self.device_id + "/Control/status/site" + self.site_id
+        return f"ate/{self.device_id}/Control/status/site{self.site_id}"
 
     def _generate_log_topic(self) -> str:
-        return "ate/" + self.device_id + "/Control/log/site" + self.site_id
+        return f"ate/{self.device_id}/Control/log/site{self.site_id}"
 
     def _generate_base_topic_cmd(self) -> str:
-        return "ate/" + self.device_id + "/Control/cmd"
+        return f"ate/{self.device_id}/Control/cmd"
 
     def _generate_base_topic_status_master(self) -> str:
-        return "ate/" + self.device_id + "/Master/status"
+        return f"ate/{self.device_id}/Master/status"
 
     @staticmethod
     def log_payload(log_info):
-        return {
-            "type": "log",
-            "payload": log_info
-        }
+        return {"type": "log", "payload": log_info}

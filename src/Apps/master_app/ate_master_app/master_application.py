@@ -139,7 +139,6 @@ class MasterApplication(MultiSiteTestingModel):
         self.log = Logger('master')
 
         self.configuredSites = master_configuration.sites
-        # Sanity check for bad configurations:
         if len(self.configuredSites) == 0:
             self.log.log_message(LogLevel.Error(), 'Master got no sites assigned')
             sys.exit()
@@ -154,15 +153,29 @@ class MasterApplication(MultiSiteTestingModel):
         self.log.set_logger_level(self.loglevel)
         self.develop_mode = master_configuration.develop_mode
 
-        self.connectionHandler = MasterConnectionHandler(self.broker_host, self.broker_port, self.configuredSites, self.device_id, self.handler_id, self)
-        self.peripheral_controller = PeripheralController(self.connectionHandler.mqtt, self.device_id)
+        try:
+            self._loop = asyncio.get_event_loop()
+            if self._loop.is_closed():
+                self._loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._loop)
+        except RuntimeError:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+
+        self.connectionHandler = MasterConnectionHandler(
+            self.broker_host, self.broker_port,
+            self.configuredSites, self.device_id,
+            self.handler_id, self
+        )
+        self.peripheral_controller = PeripheralController(
+            self.connectionHandler.mqtt, self.device_id
+        )
 
         self.received_site_test_results = []
         self.received_sites_test_results = ResultsCollector(MAX_NUM_OF_TEST_PROGRAM_RESULTS)
 
         self.loaded_lot_number = ""
         self.error_message = ''
-
         self.last_published_state = ''
         self.summary_counter = 0
         self.tsr_messages = []
@@ -171,7 +184,6 @@ class MasterApplication(MultiSiteTestingModel):
         self._result_info_handler = ResultInformationHandler(self.sites)
 
         self.test_results = []
-
         self.dummy_partid = 1
         self._first_part_tested = False
         self._stdf_aggregator = None
@@ -283,15 +295,24 @@ class MasterApplication(MultiSiteTestingModel):
                 self.timeoutHandle = None
 
     def arm_timeout(self, timeout_in_seconds: float, callback: Callable):
-        if self.enableTimeouts:
-            self.disarm_timeout()
-            self.timeoutHandle = asyncio.get_event_loop().call_later(timeout_in_seconds, callback)
+        def _schedule_timeout():
+            self.timeoutHandle = self._loop.call_later(timeout_in_seconds, callback)
+    
+        if not self.enableTimeouts:
+            return
+        self.disarm_timeout()
+       
+        if self._loop.is_running():
+            self._loop.call_soon_threadsafe(_schedule_timeout)
+        else:
+            _schedule_timeout()
 
     def repost_state_if_connecting(self):
         # TODO: no reason to keep this ??
         if self.state == "connecting":
             self.publish_state()
-            asyncio.get_event_loop().call_later(1, lambda: self.repost_state_if_connecting())
+            self._loop.call_soon_threadsafe(
+            self._loop.call_later, 1, self.repost_state_if_connecting )
 
     def on_startup_done(self):
         self.repost_state_if_connecting()
@@ -736,21 +757,17 @@ class MasterApplication(MultiSiteTestingModel):
 
     def apply_resource_config(self, resource_request: dict, on_resource_config_applied_callback: Callable):
         resource_id = resource_request['periphery_type']
-
+    
         async def periphery_io_control_task():
             try:
                 result = await self.periphery_io_control(resource_request)
                 on_resource_config_applied_callback()
                 self.connectionHandler.publish_ioctl_response(resource_request, result)
             except asyncio.TimeoutError:
-                # Applying the resource configuration ran into a timeout.
-                # We err-out in this case.
                 self.connectionHandler.publish_ioctl_timeout(resource_request)
-                # TBD: Dunno if this is actually that much of a good idea,
-                # as nothing is wrong with the tester per se here.
                 self.on_error(f"Failed to control resource {resource_id}. Reason: Timeout.")
-
-        asyncio.get_event_loop().create_task(periphery_io_control_task())
+    
+        asyncio.run_coroutine_threadsafe(periphery_io_control_task(), self._loop)
 
     async def periphery_io_control(self, resource_request):
         resource_id = resource_request['periphery_type']

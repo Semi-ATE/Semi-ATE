@@ -110,12 +110,16 @@ class ATE(SpyderDockablePlugin):
 
         # extend semi-ate toolbar with labml extension (written by Zlin526F)
         lab_ml_package_name = 'labml-adjutancy'
-        import pkg_resources
-        packages = [pkg.key for pkg in pkg_resources.working_set]
-        if lab_ml_package_name in packages:
+
+        from importlib.metadata import version, PackageNotFoundError
+
+        try:
+            version(lab_ml_package_name)  # wirft PackageNotFoundError wenn nicht installiert
             from labml_adjutancy.ctrl.toolbar import ControlToolBar
             control_toolbar = ControlToolBar(widget, "ATE Plugin control toolbar")
             widget.toolbar.add_external_toolbar_item(control_toolbar.get_items())
+        except PackageNotFoundError:
+            pass  # Paket ist nicht installiert → nichts tun
 
         toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.build()

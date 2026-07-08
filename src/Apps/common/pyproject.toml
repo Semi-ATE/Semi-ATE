@@ -41,7 +41,8 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance"
 ]
 dependencies = [
-	"aiomqtt==0.1.3",
+	"paho-mqtt",
+    "aiohttp",
 	"Semi-ATE-STDF",
 	"semi-ate-common"
 ]

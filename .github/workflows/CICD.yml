@@ -9,28 +9,27 @@ jobs:
   test:
     name: Py${{ matrix.PYTHON_VERSION }}
     runs-on: ubuntu-latest
+
     services:
       mosquitto:
         image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
-          - 8883:8883
-        options: >-
-          --health-cmd "nc -z localhost 1883 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5      
+
     defaults:
       run:
         shell: bash -l {0}
+
     env:
-      CI: 'true'
-      OS: 'linux'
+      CI: "true"
+      OS: "linux"
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ['3.9', '3.10', '3.11'] # 3.12 can not resolve some library
+        PYTHON_VERSION: ["3.10", "3.11"]    # 3.12 doesn't run with Spyder 5.5.6
+
     steps:
       - name: Checkout Pull Requests
         uses: actions/checkout@v4
@@ -45,18 +44,52 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.PYTHON_VERSION }}
-          channel-priority: false    # "strict"
+          channel-priority: false
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
 
       - name: Setup environment
         run: |
-          mamba install spyder=6.0.8
+          mamba install -y spyder=6.0.8
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
           conda list
+
+      - name: Wait for Mosquitto
+        run: |
+          python - <<'PY'
+          import socket
+          import sys
+          import time
+
+          host = "127.0.0.1"
+          port = 1883
+
+          for i in range(30):
+              s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              s.settimeout(1)
+              try:
+                  if s.connect_ex((host, port)) == 0:
+                      print("Mosquitto is ready")
+                      sys.exit(0)
+              finally:
+                  s.close()
+
+              print(f"Waiting for Mosquitto... ({i+1}/30)")
+              time.sleep(2)
+
+          print("Mosquitto did not become ready in time")
+          sys.exit(1)
+          PY
+          
+      - name: Show installed packages
+        shell: bash -el {0}
+        run: |
+          conda list | grep -E "mosquitto|aiohttp|asyncio|aiomqtt|paho"
+          python --version
+          python -c "import aiohttp; print('aiohttp:', aiohttp.__version__)"
 
       - name: Run ATE_projectdatabase tests
         run: |
@@ -65,7 +98,6 @@ jobs:
           cd ../../
 
       - name: Run ATE_spyder tests
-        shell: bash -l {0}
         run: |
           cd src/ATE_spyder
           xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
@@ -110,16 +142,16 @@ jobs:
   generate_artifacts:
     needs: test
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash -l {0}
 
     steps:
       - name: Checkout Pull Requests
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Environment Dependencies
-        shell: bash
         run: |
           sudo apt-get update --fix-missing
 
@@ -127,8 +159,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          python-version: 3.9
-          channel-priority: false # "strict"
+          python-version: "3.10"
+          channel-priority: false
           channels: "conda-forge"
           mamba-version: "*"
           show-channel-urls: true
@@ -136,18 +168,17 @@ jobs:
       - name: Compute Version
         id: computed_version
         run: |
-          if [[ ${{ github.event.release.tag_name != '' }} != false ]]
-          then
-            echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
-          else
-            echo ::set-output name=VERSION::$(echo "0.0.0")
+          VERSION="${{ github.event.release.tag_name }}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="0.0.0"
           fi
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Apply version
         run: |
           echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
-          python package_tool.py --tag-version ${{ steps.computed_version.outputs.VERSION }}
+          python package_tool.py --tag-version "${{ steps.computed_version.outputs.VERSION }}"
           cd ..
 
       - name: Setup environment
@@ -199,28 +230,29 @@ jobs:
           check-manifest
 
           cd ../../../../
-          
+
       - name: Build Sphinx
         run: |
-          mamba install sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
+          mamba install -y sphinx sphinx-rtd-theme myst-parser sphinx-markdown-tables
           sphinx-build -b html docs/source/ docs/build/html
-          
+
       - name: Fix output file permissions
         run: |
-            sudo chown -R $USER:$USER docs
+          sudo chown -R $USER:$USER docs
 
       - name: Upload docs to Github artifact
         uses: actions/upload-artifact@v4
         with:
           path: docs/build/html/*
           name: docs-output
-          
+
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./docs/build/html
- 
-      - uses: JamesIves/github-pages-deploy-action@v4
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: ./docs/build/html
           branch: gh-pages
@@ -232,7 +264,7 @@ jobs:
           python -m pip install build
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
-          mkdir output
+          mkdir -p output
           find . -iname '*.tar.gz' -exec cp '{}' output \;
 
       - name: Check distribution files
@@ -246,9 +278,10 @@ jobs:
           path: ./output
 
   publish:
-    if: ${{ github.event.release.tag_name != '' }}
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
     needs: generate_artifacts
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash -l {0}
@@ -259,11 +292,10 @@ jobs:
           python -m pip install twine
 
       - name: Get artifacts from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: output
-          path: |
-            output
+          path: output
 
       - name: Extend Release Assets
         uses: alexellis/upload-assets@0.3.0
@@ -274,4 +306,6 @@ jobs:
 
       - name: Upload to PyPi using twine
         run: |
-          for i in `find output/ -type f`; do twine upload -u __token__ -p  ${{ secrets.PYPI_TOKEN }} $i; done
+          for i in $(find output/ -type f); do
+            twine upload -u __token__ -p "${{ secrets.PYPI_TOKEN }}" "$i"
+          done
