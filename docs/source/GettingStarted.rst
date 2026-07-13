@@ -13,7 +13,7 @@ test sequences with different tests with relatively little effort.
 We assume the following
 -----------------------
 
-* You have `maxiconda <https://www.maxiconda.org/>`_ installed (maxiconda is comparable to `Anaconda <https://www.anaconda.com/>`_ but completely license-free).
+* You have installed Maxiconda, Anaconda or `Miniforge <https://conda-forge.org/download/> on your computer.
   You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later. 
   This is not practical. And you should install maxiconda only for you, not for all users.
   Maxiconda is not running together with Anaconda, you  have to  deinstall Anaconda first!
@@ -44,7 +44,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.11 spyder=5.5.6
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.10 spyder=5.5.6
 
 
 activate environment
@@ -62,6 +62,7 @@ Install Semi-ATE packages for developers
   >>> (Semi-ATE) PS:> git clone https://github.com/Semi-ATE/Semi-ATE.git
   >>> (Semi-ATE) PS:> cd Semi-ATE
   >>> (Semi-ATE) PS:> python scripts/package_tool.py --change-env cicd
+  >>> (Semi-ATE) PS:> conda install svgelements, xlrd, widgetsnbextension, lxml, jupyterlab_widgets, ipywidgets   # it is better to use conda than pip
   >>> (Semi-ATE) PS:> cd src/ATE_spyder/ate_spyder_lab_control
   >>> (Semi-ATE) PS:> pip install -e .
 
