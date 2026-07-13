@@ -61,7 +61,8 @@ test = [
 	"hypothesis==5.5.2",
 	"mock==4.0.3",
 	"pytest==7.1.1",
-	"pytest-asyncio",
+	"pytest-asyncio"
+	"pytest-cov",
 	"pytest-qt==4.0.2",
 	"pytest-mock==3.7.0"
 ]

@@ -62,7 +62,6 @@ Install Semi-ATE packages for developers
   >>> (Semi-ATE) PS:> git clone https://github.com/Semi-ATE/Semi-ATE.git
   >>> (Semi-ATE) PS:> cd Semi-ATE
   >>> (Semi-ATE) PS:> python scripts/package_tool.py --change-env cicd
-  >>> (Semi-ATE) PS:> conda install svgelements, xlrd, widgetsnbextension, lxml, jupyterlab_widgets, ipywidgets   # it is better to use conda than pip
   >>> (Semi-ATE) PS:> cd src/ATE_spyder/ate_spyder_lab_control
   >>> (Semi-ATE) PS:> pip install -e .
 
