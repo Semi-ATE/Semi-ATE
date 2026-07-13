@@ -52,9 +52,12 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-	"mock==4.0.3",
-    "pytest==7.1.1",
-    "pytest-mock==3.7.0",
+	"mock",
+	"pytest-asyncio",
+	"pytest-cov",
+	"async-timeout",
+    "pytest",
+    "pytest-mock",
 ]
 
 [project.urls]

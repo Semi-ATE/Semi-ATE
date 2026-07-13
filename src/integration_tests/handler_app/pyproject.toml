@@ -49,8 +49,8 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-	"mock==4.0.3",
-	"pytest==7.1.1",
+	"mock",
+	"pytest",
 ]
 
 [project.urls]
