@@ -175,7 +175,8 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Apply version
-        run: |
+        run: |        
+          conda install tomli
           echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
           python package_tool.py --tag-version "${{ steps.computed_version.outputs.VERSION }}"
