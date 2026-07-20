@@ -100,7 +100,7 @@ jobs:
       - name: Run ATE_spyder tests
         run: |
           cd src/ATE_spyder
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          xvfb-run --auto-servernum pytest tests -s --asyncio-mode=strict --cov=ate_spyder
           cd ../../
 
       - name: Run Apps/common tests

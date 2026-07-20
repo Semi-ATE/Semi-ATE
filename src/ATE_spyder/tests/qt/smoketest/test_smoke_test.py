@@ -582,6 +582,12 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
     new_test_program.ping_pong_widget.cur_ping_pong_config.stages[1].stage.add(1)
     new_test_program.ping_pong_widget._verify_ping_pong()
 
+    # print some debug information, if test not ok
+    result = new_test_program._custom_parameter_handler.get_test('DBC_1')
+    print(f"DEBUG get_test result: {result}")
+    print(f"DEBUG _tests: {new_test_program._custom_parameter_handler._tests}")
+    print(f"DEBUG _tests names: {[t.get_test_name() for t in new_test_program._custom_parameter_handler._tests]}")
+    
     # use ping_pong in execution
     new_test_program._custom_parameter_handler.get_test('DBC_1')[0].executions['PR2A'] = new_test_program.ping_pong_widget.cur_parallelism.get_ping_pong(NEW_NAME).id
 
