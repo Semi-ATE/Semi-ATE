@@ -537,6 +537,7 @@ def test_create_new_test_program_cancel_before_enter_name(new_test_program, qtbo
 
 
 def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard, qtbot):
+    print("DEBUG test_create_new_test_program_enter_name")
     new_test_program._verify()
     # hack: we cannot simulate combo box selection
     new_test_program.availableTests.addItem(definitions['test'])
@@ -549,6 +550,7 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
         item = iterator.value()
 
         item.setText(1, 'bin_1')
+        print(f"   DEBUG item: {item.text(0)}")
 
         iterator += 1
 
@@ -584,9 +586,9 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
 
     # print some debug information, if test not ok
     result = new_test_program._custom_parameter_handler.get_test('DBC_1')
-    print(f"DEBUG get_test result: {result}")
-    print(f"DEBUG _tests: {new_test_program._custom_parameter_handler._tests}")
-    print(f"DEBUG _tests names: {[t.get_test_name() for t in new_test_program._custom_parameter_handler._tests]}")
+    print(f"   DEBUG get_test result: {result}")
+    print(f"   DEBUG _tests: {new_test_program._custom_parameter_handler._tests}")
+    print(f"   DEBUG _tests names: {[t.get_test_name() for t in new_test_program._custom_parameter_handler._tests]}")
     
     # use ping_pong in execution
     new_test_program._custom_parameter_handler.get_test('DBC_1')[0].executions['PR2A'] = new_test_program.ping_pong_widget.cur_parallelism.get_ping_pong(NEW_NAME).id
@@ -622,3 +624,8 @@ def test_pattern_folder_exists(project_navigation: ProjectNavigation):
 
     assert hw_path.joinpath('PR', 'Die1').exists()
     assert hw_path.joinpath('FT', 'Device1').exists()
+
+
+if __name__ == "__main__":
+    import pytest
+    pytest.main(["-v", "-s", "../.."]) 
