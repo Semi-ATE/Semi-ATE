@@ -541,6 +541,7 @@ def test_create_new_test_program_enter_name(new_test_program: TestProgramWizard,
     new_test_program._verify()
     # hack: we cannot simulate combo box selection
     new_test_program.availableTests.addItem(definitions['test'])
+    print(f"DEBUG definitions = {definitions}")
     new_test_program.availableTests.item(0).setSelected(True)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)
     qtbot.mouseClick(new_test_program.testAdd, QtCore.Qt.LeftButton)

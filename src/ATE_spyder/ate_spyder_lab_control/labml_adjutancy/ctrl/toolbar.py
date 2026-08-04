@@ -1,10 +1,15 @@
 from enum import Enum
+import logging
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from qtpy.QtCore import Signal
 from spyder.api.widgets.toolbars import ApplicationToolbar
 
 from ate_spyder.widgets.navigation import ProjectNavigation
+from spyder import __version__ as spyder_version
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 class Event(Enum):
@@ -28,7 +33,10 @@ class ControlToolBar(ApplicationToolbar):
     sig_run_changed = Signal(str)
 
     def __init__(self, parent, identifier):
-        super().__init__(parent, identifier)
+        if spyder_version > "5.5.6":
+            super().__init__(parent=parent, title="ATE Plugin toolbar", toolbar_id=identifier)
+        else:
+            super().__init__(parent, identifier)
         self.parent = parent
         self.project_info: ProjectNavigation = parent.project_info
 
@@ -44,6 +52,7 @@ class ControlToolBar(ApplicationToolbar):
         self._setup_runflow()
 
     def _run_flow(self):
+        logger.debug("ControlToolBar:_run_flow start")
         prog_path = self.project_info.project_directory.joinpath(
             self.project_info.project_directory.name,
             self.project_info.active_hardware,
@@ -51,8 +60,10 @@ class ControlToolBar(ApplicationToolbar):
         )
 
         self.project_info.parent.sig_edit_goto_requested.emit(str(prog_path), 1, "")
+        logger.debug("ControlToolBar:_run_flow sig_run_cell.emit()")
         self.project_info.parent.sig_run_cell.emit()
         self.project_info.parent.sig_ate_progname.emit(self.runflow_combo.currentText())
+        logger.debug(f"ControlToolBar:_run_flow {str(prog_path)} done")
 
     @QtCore.pyqtSlot()
     def _post_main_plugin_init(self):

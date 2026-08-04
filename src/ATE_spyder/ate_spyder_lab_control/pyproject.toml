@@ -66,7 +66,7 @@ dependencies = [
 
 [project.entry-points."spyder.plugins"]
 	lab_control = "plugin_control:LabControlPlugin"
-	lab_gui = "plugin_gui:LabGuiPlugin"
+	# lab_gui = "plugin_gui:LabGuiPlugin"
 
 [project.entry-points."ate.org"]
 	semiplug = "plugin_semictrl:Plugin"

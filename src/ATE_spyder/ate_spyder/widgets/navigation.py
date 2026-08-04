@@ -3,6 +3,7 @@ Created on Tue Mar  3 14:08:04 2020
 
 @author: hoeren
 """
+import logging
 from argparse import Namespace
 from glob import glob
 from pathlib import Path
@@ -16,7 +17,7 @@ from ate_projectdatabase.Hardware.ParallelismStore import ParallelismStore
 from ate_common.parameter import InputColumnKey
 from ate_projectdatabase.Utils import BaseType
 
-from qtpy.QtCore import QObject, Signal
+from qtpy.QtCore import QObject
 from ate_spyder.widgets.constants import TableIds as TableId
 from ate_spyder.widgets.constants import UpdateOptions
 
@@ -37,6 +38,8 @@ from ate_projectdatabase.Types import Types
 from ate_projectdatabase.Settings import Settings
 from ate_projectdatabase.Version import Version
 
+# Logging
+logger = logging.getLogger(__name__)
 
 definitions = {Types.Maskset(): Maskset}
 tables = {'hardwares': Hardware,
@@ -59,10 +62,12 @@ class ProjectNavigation(QObject):
     verbose = True
 
     def __init__(self, project_directory, workspace_path, parent):
+        logger.debug("ProjectNavigation:__init__ start")
         super().__init__(parent)
         self.parent = parent
         self.workspace_path = workspace_path
         self.__call__(project_directory)
+        logger.debug("ProjectNavigation:__init__ done")
 
     def __call__(self, project_directory):
         # determine OS, determine user & desktop
@@ -107,16 +112,16 @@ class ProjectNavigation(QObject):
             self._validate_pattern_folder_structure()
 
         if self.verbose:
-            print("Navigator:")
-            print(f"  - operating system = '{self.os}'")
-            print(f"  - user = '{self.user}'")
-            print(f"  - desktop path = '{self.desktop_path}'")
-            print(f"  - template path = '{self.template_directory}'")
-            print(f"  - project path = '{self.project_directory}'")
-            print(f"  - active target = '{self.active_target}'")
-            print(f"  - active hardware = '{self.active_hardware}'")
-            print(f"  - active base = '{self.active_base}'")
-            print(f"  - project name = '{self.project_name}'")
+            logger.info("ProjectNavigation:")
+            logger.info(f"  - operating system = '{self.os}'")
+            logger.info(f"  - user = '{self.user}'")
+            logger.info(f"  - desktop path = '{self.desktop_path}'")
+            logger.info(f"  - template path = '{self.template_directory}'")
+            logger.info(f"  - project path = '{self.project_directory}'")
+            logger.info(f"  - active target = '{self.active_target}'")
+            logger.info(f"  - active hardware = '{self.active_hardware}'")
+            logger.info(f"  - active base = '{self.active_base}'")
+            logger.info(f"  - project name = '{self.project_name}'")
 
     def update_toolbar_elements(self, active_hardware, active_base, active_target):
         self.active_hardware = active_hardware
@@ -570,7 +575,7 @@ class ProjectNavigation(QObject):
             temp = runpy.run_path(standard_test_names[name])
             # TODO: fix this
             if not temp['dialog'](name, hardware, base):
-                print(f"... no joy creating standard test '{name}'")
+                logger.info(f"ProjectNavigation.tests_get_standard_tests... no joy creating standard test '{name}'")
         else:
             raise Exception(f"{name} not a standard test ... WTF!")
 

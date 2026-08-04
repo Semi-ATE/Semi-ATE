@@ -8,8 +8,12 @@ Created on Thu Jan  7 17:18:03 2021
 
 
 """
+import logging
 from ate_semiateplugins.hookspec import hookimpl
 from labml_adjutancy.ctrl.labctrl import LabCtrl
+
+# Logging
+logger = logging.getLogger(__name__)
 
 __author__ = "Zlin526F"
 __credits__ = ["Zlin526F"]
@@ -87,7 +91,7 @@ class Plugin:
     @hookimpl
     def get_importer(importer_name):
         if Plugin.prefix() in importer_name:
-            print(f"{Plugin.prefix()}.get_importer")
+            logger.debug(f"{Plugin.prefix()}.get_importer")
             return LabCtrl()
 
     @hookimpl
@@ -99,29 +103,29 @@ class Plugin:
     @hookimpl
     def get_equipment(equipment_name):
         if "SemiCtrl." in equipment_name:
-            print(f"{Plugin.prefix()}.get_equipment")
+            logger.debug(f"{Plugin.prefix()}.get_equipment")
             return LabCtrl()
 
     @hookimpl
     def get_devicepin_importer(importer_name):
         if "SemiCtrl." in importer_name:
-            print(f"{Plugin.prefix()}.get_devicepin_importer")
+            logger.debug(f"{Plugin.prefix()}.get_devicepin_importer")
             return LabCtrl()
 
     @hookimpl
     def get_instrument(instrument_name: str, logger):
         if instrument_name == "SemiCtrl.Control":
-            print(f"{Plugin.prefix()}.get_instrument")
+            logger.debug(f"{Plugin.prefix()}.get_instrument")
             return LabCtrl(logger)
 
     @hookimpl
     def get_instrument_proxy(instrument_name):
         if Plugin.prefix() in instrument_name:
-            print(f"{Plugin.prefix()}.get_instrument_proxy")
+            logger.debug(f"{Plugin.prefix()}.get_instrument_proxy")
             return LabCtrl()
 
     @hookimpl
     def get_configuration_options(object_name):
         if Plugin.prefix() in object_name:
-            print(f"{Plugin.prefix()}.get_configuration_options")
+            logger.debug(f"{Plugin.prefix()}.get_configuration_options")
             return LabCtrl.parameter[object_name]

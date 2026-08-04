@@ -12,6 +12,7 @@ test sequences with different tests with relatively little effort.
 
 We assume the following
 -----------------------
+* You have installed the GitPython package in your base environment or are using GitHub Desktop.
 
 * You have installed Maxiconda, Anaconda or `Miniforge <https://conda-forge.org/download/> on your computer.
   You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later. 
@@ -44,7 +45,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.10 spyder=5.5.6
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.11 spyder=6.1.5
 
 
 activate environment

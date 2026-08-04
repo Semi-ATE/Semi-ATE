@@ -3,7 +3,6 @@ ATE widget.
 """
 # Standard library imports
 import os
-import os.path as osp
 from pathlib import Path
 import shutil
 import logging
@@ -29,8 +28,6 @@ from ate_spyder.widgets.vcs.local import LocalGitProvider
 from ate_spyder.widgets.vcs.github import GitHubInitialization
 
 # Third party imports
-from qtpy.QtCore import Qt, Signal
-from qtpy.QtWidgets import QTreeView, QVBoxLayout, QDialog
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 
@@ -101,6 +98,7 @@ class ATEWidget(PluginMainWidget):
     sig_ate_progname = Signal(str)
 
     def __init__(self, name, plugin, parent=None):
+        logger.debug(f"ATEWidget:__init__ {name}, {plugin}")
         super().__init__(name, plugin, parent)
 
         self.model = None
@@ -115,7 +113,6 @@ class ATEWidget(PluginMainWidget):
         # TODO: simplify the navigator to get ride of 'workspace_path'
         homedir = os.path.expanduser("~")
         self.project_info = ProjectNavigation('', homedir, self)
-
         self.toolbar = ToolBar(self.project_info, self, "ATE Plugin toolbar")
 
         # Layout
@@ -127,6 +124,7 @@ class ATEWidget(PluginMainWidget):
         self.vcs_handlers: Dict[str, Type[VCSInitializationProvider]] = {}
         self.register_version_control_provider(LocalGitProvider)
         self.register_version_control_provider(GitHubInitialization)
+        logger.debug("ATEWidget:__init__ done")
 
     # --- PluginMainWidget API
     # ------------------------------------------------------------------------
@@ -139,21 +137,14 @@ class ATEWidget(PluginMainWidget):
     def setup(self):
         pass
 
-    # --- PluginMainWidget API
-    # ------------------------------------------------------------------------
-    def get_title(self):
-        return _('ATE')
-
-    def get_focus_widget(self):
-        return self.tree
-
-    def setup(self):
-        return
-
-    def on_option_update(self, option, value):
+    def on_option_update(self, option, value):              # for Spyder 5
+        pass
+    
+    def on_conf_change(self, option, section, value):       # for Spyder 6
+        """This is called when a configuration value changes"""
         pass
 
-    def update_actions(self):
+    def update_actions(self):                               # for Spyder 5+6
         pass
 
     # --- PluginMainWidget API
@@ -184,6 +175,7 @@ class ATEWidget(PluginMainWidget):
         item.exec_context_menu()
 
     def set_tree(self):
+        logger.debug("ATEWidget:set_tree")
         from ate_spyder.widgets.actions_on.model.TreeModel import TreeModel
         self.model = TreeModel(self.project_info, parent=self)
         self.model.edit_file.connect(self.open_test_file)
@@ -191,6 +183,7 @@ class ATEWidget(PluginMainWidget):
         self.model.edit_test_params.connect(self.edit_test)
         self.tree.setModel(self.model)
         self.tree.doubleClicked.connect(self.item_double_clicked)
+        logger.debug("ATEWidget:set_tree done")
 
     def item_double_clicked(self, index):
         try:
@@ -216,9 +209,12 @@ class ATEWidget(PluginMainWidget):
     def edit_test(self):
         # save all pending changes before editing any test, it doesn't matter if it is open !
         # to make sure that any changes provoke new code generation do not override the own code
+        logger.debug("ATEWidget:edit_test start")
         self.sig_save_all.emit()
+        logger.debug("ATEWidget:edit_test done")
 
     def create_project(self, project_path) -> bool:
+        logger.debug(f"ATEWidget:create_project {project_path}")
         # status = new_project_dialog(self.project_info, project_path)
         self.project_dialog = ProjectWizard(
             self, self.vcs_handlers, self.project_info, project_path)
@@ -227,6 +223,7 @@ class ATEWidget(PluginMainWidget):
         self.project_dialog.open()
 
     def project_dialog_finished(self, result, project_path=None):
+        logger.debug(f"ATEWidget:project_dialog_finished {result}, {project_path}")
         if result == QDialog.Rejected:
             # hack: as spyder automatically create an empty project even
             # before semi-ate project validation done we need to clean up
@@ -240,10 +237,11 @@ class ATEWidget(PluginMainWidget):
                     force_delete_file_folder(project_path)
 
         elif result == QDialog.Accepted:
-            print(f"main_widget : Creating ATE project '{os.path.basename(project_path)}'")
+            logger.debug(f"ATEWidget : Creating ATE project '{os.path.basename(project_path)}'")
             self.sig_project_created.emit()
 
     def open_project(self, project_path, parent_instance) -> bool:
+        logger.debug(f"ATEWidget:open_project {project_path}")
         project_loaded = False
         if not os.path.exists(project_path):
             # hack: make sure to re-open with a valid project name
@@ -265,7 +263,7 @@ class ATEWidget(PluginMainWidget):
             default_spyder_project_configuration_file_relative_path = '.spyproject/config/workspace.ini'
             config_file_path = Path(project_path).joinpath(default_spyder_project_configuration_file_relative_path)
             if not config_file_path.exists:
-                print("could not find configuration file 'workspace.init' ")
+                logger.debug("ATEWidget: could not find configuration file 'workspace.init' ")
 
             if self._is_semi_ate_project(config_file_path):
                 self.project_info(project_path)
@@ -313,15 +311,18 @@ $ sammy generate all\n
                 self.sig_project_loaded.emit()
                 project_loaded = True
             else:
-                print(f'project type is not: {ATEProject.ID}')
+                logger.debug(f'ATEWidget: project type is not: {ATEProject.ID}')
 
         self.sig_ate_project_changed.emit(project_loaded)
+        logger.debug(f"ATEWidget:open_project {project_path} done")
         return project_loaded
 
     def init_project(self):
+        logger.debug("ATEWidget:init_project")
         self.toolbar(self.project_info)
         self.set_tree()
         self.init_done.emit()
+        logger.debug("ATEWidget:init_project done")
 
     def _is_semi_ate_project(self, config_file_path: Path) -> bool:
         with open(config_file_path, 'r') as file:
@@ -335,7 +336,7 @@ $ sammy generate all\n
         return False
 
     def close_project(self):
-        print(f"main_widget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
+        logger.debug(f"ATEWidget : Closing ATE project '{os.path.basename(self.project_info.project_directory)}'")
         self.toolbar.clean_up()
         self.project_info.project_name = ''
         self.project_info.project_directory = ''
