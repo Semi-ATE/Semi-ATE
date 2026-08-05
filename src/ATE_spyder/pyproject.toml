@@ -77,13 +77,13 @@ test = [
 
 [tool.hatch.build.targets.wheel]
 	packages = [
-		"ate_spyder"
-#		"ate_spyder_stil",
-#		"ate_spyder_test_runner"
+		"ate_spyder",
+		"ate_spyder_stil",
+		"ate_spyder_test_runner"
 	]
 
 [project.entry-points."spyder.plugins"]
 	ate = "ate_spyder.plugin:ATE"
-#	test_runner = "ate_spyder_test_runner.plugin:TestRunnerPlugin"
-#	stil = "ate_spyder_stil.plugin:STIL"
+	test_runner = "ate_spyder_test_runner.plugin:TestRunnerPlugin"
+	stil = "ate_spyder_stil.plugin:STIL"
 
