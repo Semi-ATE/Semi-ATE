@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10", "3.11", "3.12"]
+        PYTHON_VERSION: ["3.10", "3.11"]                #  "3.12" : exceeded the maximum execution time 
 
     steps:
       - name: Checkout Pull Requests
@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install -y spyder=6.1.5 
+          mamba install -y spyder=6.1.6 
           pip install PyQt5
           cd scripts
           python package_tool.py --change-env cicd

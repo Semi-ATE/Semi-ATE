@@ -233,8 +233,10 @@ class ATEWidget(PluginMainWidget):
             except Exception:
                 # Sometimes race conditions occur on Windows
                 if os.name == 'nt':
-                    from force_delete_win import force_delete_file_folder
-                    force_delete_file_folder(project_path)
+                    # from force_delete_win import force_delete_file_folder   # you can not install python >3.11 with force-delete-win
+                    # force_delete_file_folder(project_path)
+                    import shutil
+                    shutil.rmtree(project_path)
 
         elif result == QDialog.Accepted:
             logger.debug(f"ATEWidget : Creating ATE project '{os.path.basename(project_path)}'")

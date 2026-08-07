@@ -53,8 +53,8 @@ dependencies = [
 	"semi-ate-sammy",
 	"pygit2",
 	"requests",
-	"pyyaml",
-	"force-delete-win; os_name == 'nt'"
+	"pyyaml"
+	# "force-delete-win; os_name == 'nt'"	with python > 3.10 you get installation problems -> replace with shutil
 ]
 [project.optional-dependencies]
 test = [
