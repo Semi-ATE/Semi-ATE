@@ -57,7 +57,7 @@ distribution_packages = [
     {
         'name': 'semi-ate-spyder-lab-control',
         'dir': Path(git_root_folder, 'src/ATE_spyder/ate_spyder_lab_control'),
-        'namespace': 'ate_semiateplugins'
+        'namespace': 'labml_adjutancy'
     },
 ]
 
