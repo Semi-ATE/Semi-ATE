@@ -187,6 +187,7 @@ jobs:
         run: |
           cd scripts
           python package_tool.py --change-env cicd
+          pip install check-manifest
           cd ..
 
       - name: Run Manifest Check

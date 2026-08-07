@@ -248,7 +248,11 @@ class ATE(SpyderDockablePlugin):
 
     @staticmethod
     def close_file(path, editor):
-        if not editor.is_file_opened(path):
-            return
-
-        editor.close_file_in_all_editorstacks(str(id(editor)), path)
+        try:
+            codeeditor = editor.get_codeeditor_for_filename(path)
+            if codeeditor is not None:
+                editorstack = editor.get_current_editorstack()
+                if editorstack:
+                    editorstack.close_file(path)
+        except Exception as ex:
+            logger.error(f"ATE_spyder:close_file {path}: {ex}")
