@@ -397,7 +397,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>Last change: Jul 08, 2026</p>
+  <p>Last change: Aug 07, 2026</p>
 <section id="getting-started-with-ate-for-developers">
 <h1>Getting Started with ATE for developers<a class="headerlink" href="#getting-started-with-ate-for-developers" title="Link to this heading"></a></h1>
 <p>This document describes how to install semi-ate for developers to develop and test your test-flows. For example, for evaluation a sensor device or to use a test flow later in production.</p>
@@ -406,7 +406,8 @@ test sequences with different tests with relatively little effort.</p>
 <section id="we-assume-the-following">
 <h2>We assume the following<a class="headerlink" href="#we-assume-the-following" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>You have <a class="reference external" href="https://www.maxiconda.org/">maxiconda</a> installed (maxiconda is comparable to <a class="reference external" href="https://www.anaconda.com/">Anaconda</a> but completely license-free).
+<li><p>You have installed the GitPython package in your base environment or are using GitHub Desktop.</p></li>
+<li><p>You have installed Maxiconda, Anaconda or <a href="#id1"><span class="problematic" id="id2">`</span></a>Miniforge &lt;<a class="reference external" href="https://conda-forge.org/download/">https://conda-forge.org/download/</a>&gt; on your computer.
 You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later.
 This is not practical. And you should install maxiconda only for you, not for all users.
 Maxiconda is not running together with Anaconda, you  have to  deinstall Anaconda first!
@@ -430,7 +431,7 @@ Download and install as administrator to your PC (ask your IT service desk for s
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">init</span>     <span class="o">//</span> <span class="n">once</span> <span class="n">you</span> <span class="n">initialize</span> <span class="n">conda</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">custom</span> <span class="n">terminal</span> <span class="n">using</span>
 <span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">this</span> <span class="n">command</span> <span class="ow">or</span>
 <span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">you</span> <span class="n">are</span> <span class="n">using</span> <span class="n">conda</span> <span class="n">terminal</span> <span class="n">you</span> <span class="n">don</span><span class="s1">&#39;t need to run it again</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>  <span class="n">python</span><span class="o">=</span><span class="mf">3.11</span> <span class="n">spyder</span><span class="o">=</span><span class="mf">5.5.6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>  <span class="n">python</span><span class="o">=</span><span class="mf">3.11</span> <span class="n">spyder</span><span class="o">=</span><span class="mf">6.1.6</span>
 </pre></div>
 </div>
 </section>
