@@ -187,7 +187,7 @@ jobs:
         run: |
           cd scripts
           python package_tool.py --change-env cicd
-          pip install check-manifest
+          pip install build twine check-manifest
           cd ..
 
       - name: Run Manifest Check
@@ -264,7 +264,6 @@ jobs:
       - name: Generate distribution sdist files
         run: |
           cd scripts
-          python -m pip install build
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
           mkdir -p output
