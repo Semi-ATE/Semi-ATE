@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10", "3.11"]    # 3.12 doesn't run with Spyder 5.5.6
+        PYTHON_VERSION: ["3.10", "3.11"]                #  "3.12" : exceeded the maximum execution time 
 
     steps:
       - name: Checkout Pull Requests
@@ -51,7 +51,8 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install -y spyder=6.0.8
+          mamba install -y spyder=6.1.6 
+          pip install PyQt5
           cd scripts
           python package_tool.py --change-env cicd
           cd ..
@@ -100,7 +101,7 @@ jobs:
       - name: Run ATE_spyder tests
         run: |
           cd src/ATE_spyder
-          xvfb-run --auto-servernum pytest tests --asyncio-mode=strict --cov=ate_spyder
+          xvfb-run --auto-servernum pytest tests -s --asyncio-mode=strict --cov=ate_spyder
           cd ../../
 
       - name: Run Apps/common tests
@@ -175,7 +176,8 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Apply version
-        run: |
+        run: |        
+          conda install tomli
           echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
           python package_tool.py --tag-version "${{ steps.computed_version.outputs.VERSION }}"
@@ -185,6 +187,7 @@ jobs:
         run: |
           cd scripts
           python package_tool.py --change-env cicd
+          pip install build twine check-manifest
           cd ..
 
       - name: Run Manifest Check
@@ -261,7 +264,6 @@ jobs:
       - name: Generate distribution sdist files
         run: |
           cd scripts
-          python -m pip install build
           python package_tool.py --setup-cmd sdist --packages distribution
           cd ..
           mkdir -p output

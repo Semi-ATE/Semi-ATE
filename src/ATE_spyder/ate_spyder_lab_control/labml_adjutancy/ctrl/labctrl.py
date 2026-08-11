@@ -7,12 +7,16 @@ Created on Thu Jan  7 17:18:03 2021
 
 
 """
+import logging
 import inspect
 from ate_test_app.sequencers.MqttClient import MqttClient
 from ate_common.logger import LogLevel
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes, mqtt_init
 from labml_adjutancy.misc.common import color
 from labml_adjutancy.misc.softscope import Softscope
+
+# Logging
+logger = logging.getLogger(__name__)
 
 __author__ = "Zlin526F"
 __credits__ = ["Zlin526F"]
@@ -66,7 +70,8 @@ class LabCtrl(mqtt_deviceattributes):
     def __init__(self, logger=None):
         """Initialise."""
         global mqttc
-
+        
+        logger.debug("LabCtrl:__init__ start")
         super().__init__()
         self.logger = logger
         self.instName = "semictrl"
@@ -87,9 +92,11 @@ class LabCtrl(mqtt_deviceattributes):
         self.logger.debug(f"{self.instName}.__init__ done")
         self.publish("breakpoint", None)
         self.logger.info(f"{self.instName} initialized")
+        logger.debug("LabCtrl:__init__ start done")
 
     def init(self, parent):
         """Init the semictrl plugin."""
+        logger.debug("LabCtrl:init start")
         if self.parent is None:
             if self.loglevel != "":
                 self.logger.set_logger_level(LogLevel[self.loglevel])
@@ -110,6 +117,7 @@ class LabCtrl(mqtt_deviceattributes):
             # end workaround breakpoint
         else:
             self.setShortNames(parent)
+        logger.debug("LabCtrl:init done")
 
     def setShortNames(self, parent=None):
         """Init semi-ctrl."""

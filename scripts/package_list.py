@@ -54,6 +54,11 @@ distribution_packages = [
         'dir': Path(git_root_folder, 'src/Apps/test_app'),
         'namespace': 'ate_test_app'
     },
+    {
+        'name': 'semi-ate-spyder-lab-control',
+        'dir': Path(git_root_folder, 'src/ATE_spyder/ate_spyder_lab_control'),
+        'namespace': 'labml_adjutancy'
+    },
 ]
 
 integration_test_packages = [

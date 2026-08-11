@@ -6,12 +6,13 @@
 
 
 # Standard library imports
+import logging
 
 # Third-party imports
 
 # Spyder imports
 from spyder.api.plugins import SpyderDockablePlugin
-from spyder.api.plugins import Plugins, SpyderDockablePlugin
+from spyder.api.plugins import Plugins
 from spyder.api.translations import get_translation
 from spyder.api.plugin_registration.decorators import on_plugin_available, on_plugin_teardown
 
@@ -20,9 +21,13 @@ from qtpy.QtCore import Signal
 # Local imports
 from ate_spyder_test_runner.widgets.main_widget import TestRunner
 from ate_spyder.plugin import ATE
+from spyder import __version__ as spyder_version
 
 # Localization
 _ = get_translation("spyder")
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 class TestRunnerPlugin(SpyderDockablePlugin):
@@ -92,12 +97,16 @@ class TestRunnerPlugin(SpyderDockablePlugin):
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
+        logger.debug("TestRunnerPlugin:on_editor_available start")
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
-        self.sig_stop_debugging.connect(editor.stop_debugging)
+        if spyder_version == "5.5.6":
+            self.sig_run_cell.connect(editor.run_cell)
+            self.sig_debug_cell.connect(editor.debug_cell)
+            self.sig_stop_debugging.connect(editor.stop_debugging)
+
+        logger.debug("TestRunnerPlugin:on_editor_available done")
 
     # ----------------------- Plugin teardown ---------------------------------
 

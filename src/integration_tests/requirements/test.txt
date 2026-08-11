@@ -1,4 +1,3 @@
-pytest==7.1.1
-pytest-asyncio==0.18.2
-# no version here because async-timeout is also needed by aiohttp that is reqire by the semi-ate-master-app package
+pytest
+pytest-asyncio
 async-timeout

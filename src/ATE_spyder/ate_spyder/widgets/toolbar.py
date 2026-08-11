@@ -5,12 +5,13 @@ Created on Tue Apr  7 18:18:33 2020
 @author: hoeren
 """
 
-import qtawesome as qta
+import logging
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5 import QtGui
 from spyder.api.widgets.toolbars import ApplicationToolbar
+from spyder import __version__ as spyder_version
 
+logger = logging.getLogger(__name__)
 
 class ToolbarItems:
     HardwareLabel = 'hardware_label'
@@ -27,7 +28,13 @@ class ToolBar(ApplicationToolbar):
     ID = 'ate_toolbar'
 
     def __init__(self, project_info, parent, identifier):
-        super().__init__(parent, identifier)
+        logger.debug(f"ToolBar.__init__ START - identifier: {identifier}")
+
+        if spyder_version > "5.5.6":
+            super().__init__(parent=parent, title="ATE Plugin toolbar", toolbar_id=identifier)
+        else:
+            super().__init__(parent, identifier)
+
         self.parent = parent
         self.setMovable(False)
         self.active_tester = ''
@@ -39,8 +46,10 @@ class ToolBar(ApplicationToolbar):
 
         self._setup()
         self._connect_event_handler()
+        logger.debug("ToolBar.__init__ done")
 
     def __call__(self, project_info):
+        logger.debug("ToolBar.__call__")
         self.project_info = project_info
 
         hardware, base, target = self.project_info.load_project_settings()
@@ -55,27 +64,36 @@ class ToolBar(ApplicationToolbar):
 
         self.project_info.update_toolbar_elements(hardware, base, target)
         self.project_info.store_settings(hardware, base, target)
+        logger.debug("ToolBar.__call__ done")
 
     def add_external_toolbar_item(self, items: list):
+        logger.debug("ToolBar.add_external_toolbar_item")
         self.extended_toolbar_items.extend(items)
+        logger.debug("ToolBar.add_external_toolbar_item done")
 
     def get_standard_tooblar_items(self) -> list:
         return [self.hardware_label, self.hardware_combo, self.base_label, self.base_combo,
                 self.target_label, self.target_combo, self.group_label, self.group_combo]
 
     def toolbar_items(self):
+        logger.debug("ToolBar.toolbar_items")
         self.extended_toolbar_items.extend(self.get_standard_tooblar_items())
+        logger.debug("ToolBar.toolbar_items done")
         return self.extended_toolbar_items
 
     def build(self):
+        logger.debug("ToolBar.build")
         for item in self.toolbar_items():
             self.parent.add_item_to_toolbar(item, self, "run")
+        logger.debug("ToolBar.build done")
 
     def _setup(self):
+        logger.debug("ToolBar.setup")
         self._setup_hardware()
         self._setup_base()
         self._setup_target()
         self._setup_group()
+        logger.debug("ToolBar.setup done")
 
     def _setup_hardware(self):
         self.hardware_label = QtWidgets.QLabel("Hardware:")
@@ -151,6 +169,7 @@ class ToolBar(ApplicationToolbar):
         self.group_combo.blockSignals(False)
 
     def _connect_event_handler(self):
+        logger.debug("ToolBar._connect_event_handler")
         self.hardware_combo.currentTextChanged.connect(self._hardware_changed)
         self.base_combo.currentTextChanged.connect(self._base_changed)
         self.target_combo.currentTextChanged.connect(self._target_changed)
@@ -164,6 +183,7 @@ class ToolBar(ApplicationToolbar):
         self.parent.group_removed.connect(self._group_removed)
 
         self.group_combo.activated.connect(self._group_selected)
+        logger.debug("ToolBar._connect_event_handler done")
 
     @QtCore.pyqtSlot(int)
     def _group_selected(self, index: int):

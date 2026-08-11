@@ -1,5 +1,6 @@
 import sys
 import os
+import pytest_asyncio
 import asyncio
 import pytest
 import multiprocessing as mp
@@ -161,8 +162,7 @@ def create_xml_file(device_id):
 #       currently we can still end up with both, green and red, test results because of zombie processes still active in mqtt
 
 
-@pytest.mark.asyncio
-@pytest.fixture(scope='function')
+@pytest_asyncio.fixture(scope='function')
 async def handler_runner():
     configuration = {
         "handler_type": 'geringer',
@@ -436,8 +436,7 @@ def test_create_and_kill_sites(sites, process_manager):
     assert not master.is_process_active()
 
 
-@pytest.mark.asyncio
-@pytest.fixture
+@pytest_asyncio.fixture
 async def with_websocket_retry():
     async with aiohttp.ClientSession() as session:
         for _ in range(3):
@@ -450,8 +449,7 @@ async def with_websocket_retry():
         yield None
 
 
-@pytest.mark.asyncio
-@pytest.fixture
+@pytest_asyncio.fixture
 async def ws_connection():
     async with aiohttp.ClientSession() as session:
         def _ws_connect():
@@ -516,7 +514,6 @@ def remove_adjacent_dups(iterable):
     return [k for k, _ in itertools.groupby(iterable)]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("sites", [['0'], ['0', '1']])
 async def test_load_run_unload(sites, process_manager, ws_connection):
     master, controls = create_sites(process_manager, sites)

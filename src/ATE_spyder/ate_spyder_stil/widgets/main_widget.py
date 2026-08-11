@@ -36,7 +36,7 @@ from spyder.utils.programs import find_program
 # Local imports
 from ate_spyder_stil.api import STILActions
 from ate_spyder.widgets.navigation import ProjectNavigation
-from spyder.widgets.onecolumntree import OneColumnTree, OneColumnTreeActions
+from spyder.widgets.onecolumntree import OneColumnTree
 
 
 # Localization
@@ -241,6 +241,7 @@ class STILContainer(PluginMainWidget):
     """
 
     def __init__(self, name, plugin, parent=None):
+        logger.debug("STILContainer:__init__ start")
         super().__init__(name, plugin, parent)
 
         # Attributes
@@ -248,13 +249,14 @@ class STILContainer(PluginMainWidget):
         self.stil_process: Optional[QProcess] = None
         self.stil_process_running: bool = False
 
-        self.zmq_context = zmq.Context.instance()
-        self.stil_sock: zmq.Socket = self.zmq_context.socket(zmq.PULL)
-        self.stil_port = self.stil_sock.bind_to_random_port('tcp://127.0.0.1')
-
-        fid = self.stil_sock.getsockopt(zmq.FD)
-        self.notifier = QSocketNotifier(fid, QSocketNotifier.Read, self)
-        self.notifier.activated.connect(self.on_stil_msg_received)
+        # ZMQ will initial later
+        self.zmq_context = None
+        self.stil_sock = None
+        self.stil_port = None
+        self.notifier = None
+        #fid = self.stil_sock.getsockopt(zmq.FD)
+        #self.notifier = QSocketNotifier(fid, QSocketNotifier.Read, self)
+        #self.notifier.activated.connect(self.on_stil_msg_received)
 
         # Widgets
         self.tabwidget = Tabs(self)
@@ -274,6 +276,7 @@ class STILContainer(PluginMainWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.tabwidget)
         self.setLayout(layout)
+        logger.debug("STILContainer:__init__ done")
 
     # --- PluginMainWidget API
     # ------------------------------------------------------------------------
@@ -284,6 +287,26 @@ class STILContainer(PluginMainWidget):
         return self.tabwidget.currentWidget()
 
     def setup(self):
+        logger.debug("STILContainer:setup start")
+        try:
+            self.zmq_context = zmq.Context.instance()
+            self.stil_sock: zmq.Socket = self.zmq_context.socket(zmq.PULL)
+            self.stil_port = self.stil_sock.bind_to_random_port('tcp://127.0.0.1')
+
+            try:
+                fid = self.stil_sock.getsockopt(zmq.FD)
+                self.notifier = QSocketNotifier(fid, QSocketNotifier.Read, self)
+                self.notifier.activated.connect(self.on_stil_msg_received)
+                logger.info(f"STILContainer:setup ZMQ Socket initialized on port {self.stil_port}")
+            except Exception as e:
+                logger.warning(f"STILContainer:setup QSocketNotifier not available for ZMQ: {e}")
+                self.stil_sock.setsockopt(zmq.RCVTIMEO, 100)
+
+        except Exception as e:
+            logger.error(f"STILContainer:setup Failed to initialize ZMQ socket: {e}", exc_info=True)
+            self.stil_sock = None
+            self.zmq_context = None
+
         # stil file compilation shall only be triggered from the test flow
         # action we want to compile only the stil files required by a
         # specific test flow
@@ -293,6 +316,7 @@ class STILContainer(PluginMainWidget):
         )
         self.run_stil_action.setToolTip('STIL files Compilation Status: Idle')
         self.run_stil_action.setEnabled(False)
+        logger.debug("STILContainer:setup done")
 
     def update_actions(self):
         pass
@@ -304,6 +328,7 @@ class STILContainer(PluginMainWidget):
     # ------------------------------------------------------------------------
     def compile_stil(self, stil_files: Optional[List[str]] = None,
                      sig_to_chan_path: str = None):
+        logger.debug("STILContainer:compile_stil start")
         if self.stil_process_running:
             self.stil_process.kill()
             return
@@ -377,16 +402,22 @@ class STILContainer(PluginMainWidget):
             'STIL files Compilation Status: Running')
         self.run_stil_action.setEnabled(True)
         self.run_stil_action.setIcon(self.create_icon('stop'))
+        logger.debug("STILContainer:compile_stil done")
 
     def stil_process_finished(self, exit_code, exit_status):
+        logger.debug("STILContainer:stil_process_finished start")
         self.stil_process_running = False
         self.stil_process = None
         self.run_stil_action.setToolTip(
             'STIL files Compilation Status: Idle')
         self.run_stil_action.setEnabled(False)
         self.run_stil_action.setIcon(self.create_icon('run_again'))
+        logger.debug("STILContainer:stil_process_finished done")
 
     def on_stil_msg_received(self):
+        logger.debug("STILContainer:on_stil_msg_received start")
+        if self.stil_sock is None:
+            return
         try:
             response: STILCompilerMsg
             response = self.stil_sock.recv_json(flags=zmq.NOBLOCK)
@@ -402,6 +433,7 @@ class STILContainer(PluginMainWidget):
             self.publish_to_log(message, level=response['kind'].upper())
             self.tabwidget.setCurrentIndex(0)
             self.output_tree.append_file_msg(response)
+        logger.debug("STILContainer:on_stil_msg_received done")
 
     # --- Public API
     # ------------------------------------------------------------------------
@@ -423,10 +455,13 @@ class STILContainer(PluginMainWidget):
         color_scheme: str
             Name of the color scheme to use.
         """
+        logger.debug("STILContainer:update_font start")
         self.output_log.set_color_scheme(color_scheme)
         self.output_log.set_font(font)
+        logger.debug("STILContainer:update_font done")
 
     def publish_to_log(self, msg: str, skip_time=False, level=None):
+        logger.debug("STILContainer:publish_to_log start")
         prefix = ''
         if level is not None:
             prefix = f'{level} '
@@ -437,3 +472,4 @@ class STILContainer(PluginMainWidget):
         line_sep = self.output_log.get_line_separator()
         text += f'{prefix}{msg}{line_sep}'
         self.output_log.set_text(text)
+        logger.debug("STILContainer:publish_to_log done")

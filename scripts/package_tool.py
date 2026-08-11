@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 from subprocess import Popen
 from enum import Enum
-from typing import List, Union
+from typing import List, Union, Set
 from package_list import distribution_packages, integration_test_packages
 import re
 import sys
@@ -11,6 +11,11 @@ from os.path import basename, join
 from os import unlink
 from os import name as osname
 from os import environ
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 
 class SetupCommand(Enum):
@@ -124,24 +129,73 @@ def setup(packages: Package, setup_command: SetupCommand):
             print(f'ERROR: Path "{path}" could not be found!')
 
 
+def _read_dependencies_from_pyproject(pyproject_path: Path, include_test: bool = False) -> Set[str]:
+    """Liest dependencies aus pyproject.toml"""
+    packages = set()
+    
+    if not pyproject_path.exists():
+        return packages
+    
+    try:
+        with open(pyproject_path, 'rb') as f:
+            pyproject_data = tomllib.load(f)
+    except Exception as e:
+        print(f'ERROR: Could not read pyproject.toml at {pyproject_path}: {e}')
+        return packages
+    
+    if 'project' not in pyproject_data:
+        return packages
+    
+    project_data = pyproject_data['project']
+    
+    # Read main dependencies
+    if 'dependencies' in project_data:
+        for dep in project_data['dependencies']:
+            package = _parse_dependency(dep)
+            if package:
+                packages.add(package)
+    
+    # Read test dependencies if requested
+    if include_test and 'optional-dependencies' in project_data:
+        optional_deps = project_data['optional-dependencies']
+        if 'test' in optional_deps:
+            for dep in optional_deps['test']:
+                package = _parse_dependency(dep)
+                if package:
+                    packages.add(package)
+    
+    return packages
+
+
+def _parse_dependency(dep: str) -> str:
+    """Parst eine Dependency-Zeile und gibt das Package zurück, oder None"""
+    package = re.sub(r'#.*$', '', dep).strip()
+    
+    # Handle platform-specific dependencies
+    if 'os_name' in package:
+        os_name = re.findall(r'"(.*?)"', package)
+        if osname not in os_name:
+            return None
+        package = re.sub(r';.*$', '', package).strip()
+    
+    # Filter out unwanted packages
+    if package == '' or 'semi-ate' in package:
+        return None
+    
+    return package
+
+
 def install_requirements(paths):
     packages = set()
+    
     for p in paths:
         path = Path(Path(__file__).parents[0], p[0])
-        runtxt = join(path, 'requirements/run.txt')
-        if Path(runtxt).exists():
-            with open(runtxt) as f:
-                for line in f:
-                    package = re.sub(r'#.*$', '', line).strip()
-                    if package.find('os_name') > 0:
-                        os_name = re.findall(r'"(.*?)"',package)
-                        if osname in os_name:
-                            package = re.sub(r';.*$', '', package).strip()
-                        else:
-                            continue
-                    if package != '' and package.find('semi-ate') < 0:
-                        packages.add(package)
-    if packages != {}:
+        pyproject_path = Path(path, 'pyproject.toml')
+        
+        # Read both regular and test dependencies
+        packages.update(_read_dependencies_from_pyproject(pyproject_path, include_test=True))
+    
+    if packages:
         cmd = 'conda install '
         for package in packages:
             cmd += f'{package} '
@@ -159,10 +213,9 @@ def change_environment(profile: Profile):
     else:
         setup(Package.All, SetupCommand.Develop)
 
-    paths = _collect_test_requirements(True if profile == Profile.Clean or profile == Profile.Cicd else False)
-    packages = _collect_packages_from_paths(paths)
+    packages = _collect_test_requirements(True if profile == Profile.Clean or profile == Profile.Cicd else False)
     package_manager_action = 'uninstall' if profile == Profile.Clean else 'install'
-    print_message = 'Uninstalling:' if profile == Profile.Clean else 'Innstalling:'
+    print_message = 'Uninstalling:' if profile == Profile.Clean else 'Installing:'
     process_args = ['python', '-m', 'pip', package_manager_action, *packages, '-q']
 
     if profile == Profile.Clean:
@@ -234,24 +287,38 @@ def _profile_from_string(value: str) -> Profile:
         return Profile.Clean
 
 
-def _collect_test_requirements(include_cicd: bool) -> List[Path]:
-    distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.SetupDirPath)
-    distribution_packages_paths.append(integration_tests_path)
-    path_list = list(map(lambda entry: Path(entry, 'requirements/test.txt'), distribution_packages_paths))
-    if include_cicd is True:
-        path_list.append(Path(git_root_folder, 'requirements/cicd.txt'))
-    return path_list
-
-
-def _collect_packages_from_paths(paths: List[Path]) -> List[str]:
+def _collect_test_requirements(include_cicd: bool) -> List[str]:
+    """Sammelt test requirements aus pyproject.toml Dateien"""
     packages = set()
-    for p in paths:
-        if p.exists() is True:
-            with p.open('r') as f:
-                for line in f:
-                    line_without_comment = re.sub(r'#.*$', '', line).strip()
-                    if line_without_comment != '':
-                        packages.add(line.strip())
+    
+    # Distribution packages
+    distribution_packages_paths = _compute_package_list(Package.Distribution, PackageType.SetupDirPath)
+    for p in distribution_packages_paths:
+        path = Path(Path(__file__).parents[0], p)
+        pyproject_path = Path(path, 'pyproject.toml')
+        packages.update(_read_dependencies_from_pyproject(pyproject_path, include_test=True))
+    
+    # Integration test packages
+    integration_pyproject = Path(integration_tests_path, 'pyproject.toml')
+    packages.update(_read_dependencies_from_pyproject(integration_pyproject, include_test=True))
+    
+    # CICD packages (if requested)
+    if include_cicd:
+        cicd_pyproject = Path(git_root_folder, 'pyproject.toml')
+        if cicd_pyproject.exists():
+            try:
+                with open(cicd_pyproject, 'rb') as f:
+                    pyproject_data = tomllib.load(f)
+                
+                if 'project' in pyproject_data and 'optional-dependencies' in pyproject_data['project']:
+                    if 'cicd' in pyproject_data['project']['optional-dependencies']:
+                        for dep in pyproject_data['project']['optional-dependencies']['cicd']:
+                            package = _parse_dependency(dep)
+                            if package:
+                                packages.add(package)
+            except Exception as e:
+                print(f'ERROR: Could not read root pyproject.toml: {e}')
+    
     return list(packages)
 
 
@@ -298,7 +365,7 @@ def main():
     packages = Package.All if args.packages is None else _package_from_string(args.packages)
 
     if args.uninstall is True:
-        uninstall(packages, PackageType.Name)
+        uninstall(packages)
     elif args.change_env is not None:
         change_environment(_profile_from_string(args.change_env))
     elif args.tag_version is not None:

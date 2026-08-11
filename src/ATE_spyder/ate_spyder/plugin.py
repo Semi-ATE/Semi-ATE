@@ -2,9 +2,9 @@
 ATE Plugin.
 """
 # Standard library imports
+import logging
 import os
 from typing import Type
-from ate_spyder.widgets.navigation import ProjectNavigation
 
 # Third party imports
 from qtpy.QtCore import Signal
@@ -19,10 +19,14 @@ from ate_spyder.project import ATEProject, ATEPluginProject
 from ate_spyder.widgets.main_widget import ATEWidget
 from ate_spyder.widgets.navigation import ProjectNavigation
 from ate_spyder.widgets.vcs import VCSInitializationProvider
-from ate_spyder.widgets.constants import ATEActions, ATEToolbars, ATEStatusBars
+from ate_spyder.widgets.constants import ATEToolbars
+from spyder import __version__ as spyder_version
 
 # Localization
 _ = get_translation('spyder')
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 # --- Plugin
@@ -32,7 +36,7 @@ class ATE(SpyderDockablePlugin):
     Breakpoint list Plugin.
     """
     NAME = 'ate'
-    REQUIRES = [Plugins.Toolbar, Plugins.Projects, Plugins.Editor]   # TODO: fix crash  (Plugins.Editor)
+    REQUIRES = [Plugins.Toolbar, Plugins.Projects, Plugins.Editor, Plugins.IPythonConsole]   # TODO: fix crash  (Plugins.Editor)
     OPTIONAL = [Plugins.StatusBar]
     TABIFY = [Plugins.Projects]
     WIDGET_CLASS = ATEWidget
@@ -84,6 +88,7 @@ class ATE(SpyderDockablePlugin):
         return QIcon()
 
     def on_initialize(self):
+        logger.debug("ATE_spyder:on_initialize")
         widget = self.get_widget()
         widget.sig_edit_goto_requested.connect(self.sig_edit_goto_requested)
 
@@ -102,9 +107,11 @@ class ATE(SpyderDockablePlugin):
         widget.sig_project_created.connect(self.sig_ate_project_created)
         widget.sig_project_loaded.connect(self.sig_ate_project_loaded)
         widget.sig_test_tree_update.connect(self.sig_test_tree_update)
+        logger.debug("ATE_spyder:on_initialize done")
 
     @on_plugin_available(plugin=Plugins.Toolbar)
     def on_toolbar_available(self):
+        logger.debug("ATE_spyder:on_toolbar_available start")
         widget = self.get_widget()
         toolbar = self.get_plugin(Plugins.Toolbar)
 
@@ -120,34 +127,70 @@ class ATE(SpyderDockablePlugin):
             widget.toolbar.add_external_toolbar_item(control_toolbar.get_items())
         except PackageNotFoundError:
             pass  # Paket ist nicht installiert → nichts tun
+        except Exception as ex:
+            logger.error(f"ATE_spyder:on_toolbar_available Exception: {ex}")
 
         toolbar.add_application_toolbar(widget.toolbar)
         widget.toolbar.build()
+        logger.debug("ATE_spyder:on_toolbar_available done.")
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
+        logger.debug("ATE_spyder:on_projects_available")
         projects = self.get_plugin(Plugins.Projects)
         projects.register_project_type(self, ATEProject)
         projects.register_project_type(self, ATEPluginProject)
         projects.sig_project_loaded.connect(self.open_project)
         projects.sig_project_closed.connect(self.close_project)
+        logger.debug("ATE_spyder:on_projects_available done.")
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
+        logger.debug("ATE_spyder:on_editor_available")
         widget = self.get_widget()
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
-        self.sig_run_cell.connect(editor.run_cell)
-        self.sig_debug_cell.connect(editor.debug_cell)
+        if spyder_version == "5.5.6":
+            self.sig_run_cell.connect(editor.run_cell)
+            self.sig_debug_cell.connect(editor.debug_cell)
 
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
+        logger.debug("ATE_spyder:on_editor_available done.")
+ 
+    # new connection for Spyder 6 to the IPythonConsole Plugin instead the Editor
+    @on_plugin_available(plugin=Plugins.IPythonConsole)
+    def on_ipython_console_available(self):
+        """Connect run_cell and debug_cell to IPythonConsole"""
+        logger.debug("ATE_spyder:on_ipython_console_available")
+        if spyder_version > "5.5.6":
+            self.sig_run_cell.connect(self.run_cell_in_console)
+            self.sig_debug_cell.connect(self.debug_cell_in_console)
+        logger.debug("ATE_spyder:on_ipython_console_available done.")
+
+    def run_cell_in_console(self):
+        logger.debug("ATE_spyder:run_cell_in_console start.")
+        editor = self.get_plugin(Plugins.Editor)
+        console = self.get_plugin(Plugins.IPythonConsole)
+        editorstack = editor.get_current_editorstack()
+        codeeditor = editorstack.get_current_editor()
+        filename = codeeditor.filename
+        wdir = os.path.dirname(filename)
+
+        console.run_script(filename, wdir=wdir)
+        logger.debug(f"ATE_spyder:run_cell_in_console done: {filename}")
+        
+    def debug_cell_in_console(self):
+        logger.debug("Debug ist not supported, continue with run_cell_in_console")
+        self.run_cell_in_console()
 
     @on_plugin_teardown(plugin=Plugins.Toolbar)
     def on_toolbar_teardown(self):
+        logger.debug("ATE_spyder:on_toolbar_teardown")
         toolbar = self.get_plugin(Plugins.Toolbar)
         toolbar.remove_application_toolbar(ATEToolbars.ATE)
+        logger.debug("ATE_spyder:on_toolbar_teardown done")
 
     def on_mainwindow_visible(self):
         # Hide by default the first time the plugin is loaded.
@@ -162,10 +205,11 @@ class ATE(SpyderDockablePlugin):
         self.get_widget().create_project(project_root)
 
     def project_created(self):
-        print("Plugin : Creating ATE project "
+        logger.debug("Plugin : project_created,  Creating ATE project "
               f"'{os.path.basename(self.project_root)}'")
 
     def open_project(self, project_root):
+        logger.debug(f"ATE_spyder:open_project {project_root}")
         self.project_root = project_root
         projects = self.get_plugin(Plugins.Projects)
         # hide semi-ate toolbar if opening the project was not successful
@@ -176,10 +220,10 @@ class ATE(SpyderDockablePlugin):
             self.get_widget().show()
             self.get_widget().toolbar.show()
 
-        print(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
+        logger.debug(f"Plugin : Opening ATE project '{os.path.basename(project_root)}'")
 
     def close_project(self):
-        print(f"Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
+        logger.debug(f"Plugin : Closing ATE project '{os.path.basename(self.project_root)}'")
         self.get_widget().close_project()
 
     def get_project_navigation(self) -> ProjectNavigation:
@@ -204,10 +248,11 @@ class ATE(SpyderDockablePlugin):
 
     @staticmethod
     def close_file(path, editor):
-        if not editor.is_file_opened(path):
-            return
-
-        editor.close_file_in_all_editorstacks(str(id(editor)), path)
-
-    def get_project_navigation(self) -> ProjectNavigation:
-        return self.get_widget().get_project_navigation()
+        try:
+            codeeditor = editor.get_codeeditor_for_filename(path)
+            if codeeditor is not None:
+                editorstack = editor.get_current_editorstack()
+                if editorstack:
+                    editorstack.close_file(path)
+        except Exception as ex:
+            logger.error(f"ATE_spyder:close_file {path}: {ex}")
