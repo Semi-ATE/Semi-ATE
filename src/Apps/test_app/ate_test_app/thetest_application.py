@@ -13,6 +13,8 @@ from typing import Optional
 from ate_test_app import thetestzip_mock
 import queue
 
+from ate_test_app.sequencers.TopicFactory import FRAMEWORK_VERSION
+
 
 logger = logging.getLogger(__name__)
 
@@ -361,7 +363,7 @@ class TheTestAppMqttClient:
 
         resource_id = message.topic.rpartition('/')[2]
         if not resource_id:
-            logger.warning(f'ignoring unexpected Master resource message without resource_id')
+            logger.warning('ignoring unexpected Master resource message without resource_id')
             return
 
         # {
