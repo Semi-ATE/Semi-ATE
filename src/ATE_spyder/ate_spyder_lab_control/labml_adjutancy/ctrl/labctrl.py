@@ -90,7 +90,7 @@ class LabCtrl(mqtt_deviceattributes):
         logger.warning = self.log_warning
         logger.error = self.log_error
         self.logger.debug(f"{self.instName}.__init__ done")
-        self.publish("breakpoint", None)
+        self.publish("breakpoint", None)                            # get the breakpoint information
         self.logger.info(f"{self.instName} initialized")
         logger.debug("LabCtrl:__init__ start done")
 

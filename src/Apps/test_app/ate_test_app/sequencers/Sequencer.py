@@ -17,8 +17,6 @@ from ate_test_app.sequencers.TheTestAppStatusAlive import TheTestAppStatusAlive
 from ate_test_app.stages_sequence_generator.stages_sequence_generator import StagesSequenceGenerator
 from ate_test_app.sequencers.mqtt.MqttConnection import MqttConnection
 
-FRAMEWORK_VERSION = 1
-
 logger = logging.getLogger(__name__)
 
 RESOURCE_CONFIG_REQUEST_TIMEOUT = 30  # TODO: reduce, it's temporarily large for manual mqtt messaging

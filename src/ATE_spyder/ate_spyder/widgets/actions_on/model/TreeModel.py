@@ -1,3 +1,4 @@
+import logging
 from ate_spyder.widgets.navigation import ProjectNavigation
 from qtpy import QtCore
 from qtpy import QtGui
@@ -9,6 +10,8 @@ from ate_spyder.widgets.constants import TableIds
 from ate_semiateplugins.pluginmanager import get_plugin_manager
 from ate_spyder.widgets.actions_on.model.sections.TestSection import TestSection
 
+# Logging
+logger = logging.getLogger(__name__)
 
 QualificationFlow = 'qualification'
 
@@ -21,6 +24,7 @@ class TreeModel(QtGui.QStandardItemModel):
     def __init__(self, project_info: ProjectNavigation, parent=None):
         super().__init__(parent)
         self.parent = parent
+        self._updating = False
         self.setHorizontalHeaderLabels([self.tr("Project")])
         self.project_info = project_info
         self.hardware = ''
@@ -31,8 +35,7 @@ class TreeModel(QtGui.QStandardItemModel):
         self.plugin_manager = get_plugin_manager()
 
         installed_plugins = self.plugin_manager.hook.get_plugin_identification()
-        print("Installed plugins:")
-        print(installed_plugins)
+        logger.info(f"TreeModel: Installed plugins: {installed_plugins}")
 
         import os
         self.doc_path = os.path.join(self.project_info.project_directory, "doc")
@@ -90,9 +93,22 @@ class TreeModel(QtGui.QStandardItemModel):
         self.parent.group_removed.connect(self._remove_group)
         self.parent.groups_update.connect(self._update_groups)
 
-    @QtCore.Slot(str)
-    def _update_test_section(self, base):
-        self.tests_section.update()
+    def _disconnect_action_handler(self):
+        self.itemChanged.disconnect()
+        self.parent.database_changed.disconnect()
+        self.parent.toolbar_changed.disconnect()
+        self.parent.select_target.disconnect()
+        self.parent.select_base.disconnect()
+        self.parent.select_hardware.disconnect()
+        self.parent.test_target_deleted.disconnect()
+        self.parent.group_state_changed.disconnect()
+        self.parent.group_added.disconnect()
+        self.parent.group_removed.disconnect()
+        self.parent.groups_update.disconnect()
+
+#    @QtCore.Slot(str)
+#    def _update_test_section(self, base):
+#        self.tests_section.update()
 
     @QtCore.Slot()
     def _update_test_section(self):
@@ -182,11 +198,15 @@ class TreeModel(QtGui.QStandardItemModel):
             self.quali_flows.appendRow(self._make_single_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.THB.thbwizard"))
 
             if self.target != '':
-                package = self.project_info.get_device_package(self.target)
+                try:
+                    package = self.project_info.get_device_package(self.target)
 
-                if not self.project_info.is_package_a_naked_die(package):
-                    self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.ESD.esdwizard"))
-                    self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.RSH.rshwizard"))
+                    if not self.project_info.is_package_a_naked_die(package):
+                        self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.ESD.esdwizard"))
+                        self.quali_flows.appendRow(self._make_multi_instance_quali_flow_item(project_info, "ate_spyder.widgets.actions_on.flow.RSH.rshwizard"))
+
+                except (AssertionError, ValueError, Exception) as e:
+                    logger.debug(f"Could not get device package for target '{self.target}': {e}")
 
             self.flows.appendRow(self.quali_flows)
 
@@ -261,18 +281,27 @@ class TreeModel(QtGui.QStandardItemModel):
         self.root_item.insert_item(self.definition_section)
 
     def _update(self, item, hw, base, target):
+        if self._updating:
+            return
         self.update(hw, base, target)
 
     def update(self, hardware, base, target):
         # die update state
-        self.hardware = hardware
-        self.base = base
-        self.target = target
+        if self._updating:
+            return
 
-        self._update_die_section()
-        self._update_device_section()
-        self._update_product_section()
-        self._update_file_collector_section()
+        self._updating = True
+        try:
+            self.hardware = hardware
+            self.base = base
+            self.target = target
+
+            self._update_die_section()
+            self._update_device_section()
+            self._update_product_section()
+            self._update_file_collector_section()
+        finally:
+            self._updating = False
 
     def _update_device_section(self):
         if self.device.has_children():
@@ -342,6 +371,11 @@ class TreeModel(QtGui.QStandardItemModel):
                 pass
 
     def clean_up(self):
+        self._disconnect_action_handler()
+        self.hardware = ''
+        self.base = ''
+        self.target = ''
+
         self.doc_observer.stop_observer()
         self.pattern_observer.stop_observer()
         self.tests_section.observer.stop_observer()

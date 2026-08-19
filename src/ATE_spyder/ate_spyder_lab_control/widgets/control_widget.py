@@ -12,6 +12,7 @@ TODO:
     bekommt man über project_info auch den logger.log_file ??
 """
 import os
+import logging
 import time
 import json
 import qtawesome as qta
@@ -36,15 +37,15 @@ from spyder.api.translations import get_translation
 from spyder.api.widgets.main_widget import PluginMainWidget
 from pydantic import BaseModel
 
+# Logging
+logger = logging.getLogger(__name__)        # Spyder logger
+
+
 # Localization
 _ = get_translation("spyder")
 
 
-__author__ = "Zlin526F"
-__copyright__ = "Copyright 2022, Lab"
-__credits__ = ["Zlin526F"]
-__email__ = "Zlin526F@github"
-__version__ = "0.0.18"
+__version__ = "0.0.19"
 
 
 class LabControlDialog(QtWidgets.QDialog):
@@ -186,6 +187,7 @@ class LabControl(PluginMainWidget):
     receive_msg_for_instrument = Signal(str, dict)
 
     def __init__(self, name, plugin, parent=None):
+        logger.debug("LabControl:__init__ start")
         super().__init__(name, plugin, parent)
         """Initialise the class Lab Control."""
         QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
@@ -214,6 +216,8 @@ class LabControl(PluginMainWidget):
         self.test_program_name = ""
         self.configdata = None
         self.saveconfigdata = None
+        self.mqttclient = None
+        logger.debug("LabControl:__init__ done")
 
     def setup_widget(self, project_info):
         self.project_info = project_info
@@ -225,13 +229,16 @@ class LabControl(PluginMainWidget):
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
 
         self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
+        logger.debug(f"LabControl:setup_widget mqtt sendtopic = {self.sendtopic}")
+
         self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
-        mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
-        if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
-            self.state = "notconnect"
-            return
-        self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
-        self.mqttclient = mqttclient
+        if self.mqttclient is None:
+            mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
+            if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
+                self.state = "notconnect"
+                return
+            self.mqtt = mqtt_displayattributes(mqttclient, mqttclient.topic, self.mqtt_receive)
+            self.mqttclient = mqttclient
         self.mqtt.mqtt_add()
         hostname = socket.gethostname()
         self.computername = hostname if self.mqttclient.broker == "127.0.0.1" or \
@@ -434,10 +441,12 @@ class LabControl(PluginMainWidget):
             topic = self.sendtopic + topic
             self.mqtt.publish(topic, msg)
             self.change_status_display.emit("send " + str(msg["command"] + ", wait for answer"), "")
-            self.logger.debug("Lab Control.mqtt_send {}:{}".format(topic, msg))
+            self.logger.debug("LabControl:mqtt_send {}:{}".format(topic, msg))
+            logger.debug(f"LabControl:mqtt_send {topic}:{msg}")
             self.wait4answer = True
         else:
             self.error(f"Lab Control.mqtt_send {topic}:{cmd} not found in list")
+            logger.error("LabControl:mqtt_send {topic}:{cmd} not found in list")
 
     def mqtt_receive(self, topic, msg):
         """
@@ -449,6 +458,7 @@ class LabControl(PluginMainWidget):
             msg = json.loads(msg)
         except Exception as ex:
             self.logger.error(f"Lab Control.mqtt_receive '{topic}: {msg}' with error {ex}")
+            logger.error(f"LabControl:mqtt_receive '{topic}:{msg}' with error {ex}")
             return
         topicsplit = topic.split("/")
         notfound = False
@@ -461,7 +471,7 @@ class LabControl(PluginMainWidget):
                 and ("type" in msg or "status" in msg):  # received a message from controlling
             self.mqttReceiveLabcontrol(topic, msg)
         else:
-            print(f"Lab Control.mqtt_receive {topic} = {msg} -> not found")
+            logger.debug(f"LabControl:mqtt_receive {topic} = {msg} -> not found")
             notfound = True
         if notfound:
             self.logger.warning(f"Lab Control.mqtt_receive '{topic}: {msg}' don_t know what to do with this message")
@@ -808,11 +818,11 @@ class LabControl(PluginMainWidget):
             for val in apara:
                 dmsg = dmsg + f"{val[0]}={val[1]}, "
             msg = dmsg[:-2] + msg
-        # print(f"Lab Control.state = {value}, oldstate ={self._state}")
+        # logger.debug(f"LabControl:state = {value}, oldstate ={self._state}")
         # if hasattr(self, 'mqttclient'):
-        #     print(f"       mqttclient.typ ={self.mqttclient.typ}")
+        #     logger.debug(f"       mqttclient.typ ={self.mqttclient.typ}")
         # else:
-        #     print("       mqttclient not found ?!")
+        #     logger.debug("       mqttclient not found ?!")
         oldstate = self._state
         self._state = value if value in self._states else "unknown"
         self.change_status_display.emit(value, msg)
@@ -897,17 +907,18 @@ class LabControl(PluginMainWidget):
             gui.setGeometry(geometry[0], geometry[1], geometry[2], geometry[3])
         else:
             self.logger.warning(f"coudn't set last geometry for {name}, it is out of the actual screen")
-            print(f"coudn't set last geometry for {name}, it is out of the actual screen")
+            logger.debug(f"LabControl:set_Geometry coudn't set last geometry for {name}, it is out of the actual screen")
 
     @QtCore.pyqtSlot(str, str)
     def _change_status_display(self, msg, extendmsg=""):
-        self.logger.debug(f"       state = {msg}")
+        logger.debug(f"LabControl:_change_status_display      state = {msg}")
         style = self._states[msg][1] if msg in self._states else "color: rgb(255, 255, 255);background-color: transparent;"
         msg = self._states[msg][0] if msg in self._states else msg
         self.gui.Lstatus.setText(f"{extendmsg} {msg}")
         self.gui.Lstatus.setStyleSheet(style)
 
     def blockSignals(self, value):
+        logger.debug(f"LabControl:blockSignals({value})")
         self.gui.CBstoponfail.blockSignals(value)
         self.gui.CBstartauto.blockSignals(value)
         self.gui.CBstopauto.blockSignals(value)
@@ -927,7 +938,7 @@ class LabControl(PluginMainWidget):
         settings_dir = os.path.join(self.project_info.project_directory, "definitions", "lab_control")
         self.blockSignals(True)
         try:
-            print(f"Control: open last settings: {os.path.join(settings_dir, self.configfile)}")
+            logger.debug(f"LabControl: openconfig last settings: {os.path.join(settings_dir, self.configfile)}")
             with open(os.path.join(settings_dir, self.configfile), "r") as infile:
                 data = json.load(infile)
             if __version__ != data["version"]:
@@ -970,7 +981,7 @@ class LabControl(PluginMainWidget):
             #         index += 1
             self.saveconfigdata = data
         except Exception as ex:
-            print(f"{self.configfile}: {ex} not found or not ok -> use rest of default config")
+            logger.debug(f"LabControl:openconfig {self.configfile}: {ex} not found or not ok -> use rest of default config")
             self.saveconfig()
             self.progressbar.load_testbenches_time("")
         self.gui.Llogfilename.setText(self.logfilename)
