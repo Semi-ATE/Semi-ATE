@@ -12,14 +12,13 @@ test sequences with different tests with relatively little effort.
 
 We assume the following
 -----------------------
-* You have installed the GitPython package in your base environment or are using GitHub Desktop.
 
-* You have installed Maxiconda, Anaconda or `Miniforge <https://conda-forge.org/download/> on your computer.
+* You have installed Maxiconda, Anaconda or `Miniforge <https://conda-forge.org/download/>`_ on your computer.
   You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later. 
   This is not practical. And you should install maxiconda only for you, not for all users.
   Maxiconda is not running together with Anaconda, you  have to  deinstall Anaconda first!
-  And if c:\\users\\<your username>\\.condarc exist, than remove this file.
-	  
+  And if c:\users\<your username>\.condarc exist, than remove this file.
+    
 * You are running *Windows 10 64Bit* or an *linux system*.
 
 
@@ -45,7 +44,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.11 spyder=6.1.6
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.10 spyder=5.5.6
 
 
 activate environment
@@ -55,16 +54,39 @@ activate environment
   >>> (Semi-ATE) PS:> conda config --append channels conda-forge
 
 
+Installing Git
+--------------
+
+Before proceeding, you need to have Git installed on your system to download the Semi-ATE repositories.
+
+**For Windows:**
+Download the installer from the `official Git website <https://git-scm.com/download/win>`_. Run the downloaded setup file. In the Git installation manager, leave all default values and checkboxes as they are, and click through to install it. 
+
+**For Linux:**
+You can install Git using your distribution's default package manager. For example, on Debian/Ubuntu-based systems, open your terminal and run:
+
+  >>> $ sudo apt update
+  >>> $ sudo apt install git
+
+Once Git is installed, you will need to use a Git Bash terminal for the upcoming steps. 
+* On **Windows**, open the **Git Bash** application you just installed. 
+* On **Linux**, continue using your standard terminal. 
+
+Make sure to activate your conda environment again in this new terminal before proceeding:
+
+  >>> $ conda activate Semi-ATE
+
+
 Install Semi-ATE packages for developers
 ----------------------------------------
 
-  >>> (Semi-ATE) PS:> mkdir -p ~/repos/Semi-ATE					//or use a directory of your choice
-  >>> (Semi-ATE) PS:> cd ~/repos/Semi-ATE
-  >>> (Semi-ATE) PS:> git clone https://github.com/Semi-ATE/Semi-ATE.git
-  >>> (Semi-ATE) PS:> cd Semi-ATE
-  >>> (Semi-ATE) PS:> python scripts/package_tool.py --change-env cicd
-  >>> (Semi-ATE) PS:> cd src/ATE_spyder/ate_spyder_lab_control
-  >>> (Semi-ATE) PS:> pip install -e .
+  >>> (Semi-ATE) $ mkdir -p ~/repos/Semi-ATE        //or use a directory of your choice
+  >>> (Semi-ATE) $ cd ~/repos/Semi-ATE
+  >>> (Semi-ATE) $ git clone https://github.com/Semi-ATE/Semi-ATE.git
+  >>> (Semi-ATE) $ cd Semi-ATE
+  >>> (Semi-ATE) $ python scripts/package_tool.py --change-env cicd
+  >>> (Semi-ATE) $ cd src/ATE_spyder/ate_spyder_lab_control
+  >>> (Semi-ATE) $ pip install -e .
 
 
 Running Spyder
