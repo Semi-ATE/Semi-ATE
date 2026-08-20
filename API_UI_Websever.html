@@ -488,8 +488,8 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <p>Das Datenformat zwischen FE und BE soll JSON sein. Jedes Datum besteht aus mindestens einem Key-Value-Pair
 <strong>type</strong> und einem optionalen Key-Value-Pair <strong>payload</strong>:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&lt;s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&lt;</span><span class="kc">nu</span><span class="err">mber</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="p">{}</span><span class="err">&gt;</span><span class="w"> </span><span class="c1">// optional</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&lt;s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">&lt;</span><span class="kc">nu</span><span class="err">mber</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="p">{}</span><span class="err">&gt;</span><span class="w"> </span><span class="c1">// optional</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -520,16 +520,16 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>status</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"status"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;devic_id&gt;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;systemTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;system time&gt;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;sites&gt;&quot;</span><span class="p">],</span>
-<span class="w">        </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;master state&gt;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;error_message&gt;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;environment&gt;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;lot_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;lot_number if loaded&gt;&quot;</span>
+<span class="w">        </span><span class="nt">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;devic_id&gt;"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"systemTime"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;system time&gt;"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"sites"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"&lt;sites&gt;"</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;master state&gt;"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"error_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;error_message&gt;"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"env"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;environment&gt;"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"lot_number"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;lot_number if loaded&gt;"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -542,11 +542,11 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>user settings</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;usersettings&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"usersettings"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;testoptions&quot;</span><span class="p">:[</span><span class="s2">&quot;&lt;settings&gt; z.B: {&#39;name&#39;: &#39;stop_on_fail&#39;, &#39;active&#39;: false, &#39;value&#39;: -1}&quot;</span><span class="p">],</span>
-<span class="w">        </span><span class="nt">&quot;loglevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;debug level&gt;&quot;</span>
+<span class="w">        </span><span class="nt">"testoptions"</span><span class="p">:[</span><span class="s2">"&lt;settings&gt; z.B: {'name': 'stop_on_fail', 'active': false, 'value': -1}"</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">"loglevel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;debug level&gt;"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -559,13 +559,13 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>logs</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;usersettings&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"usersettings"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;source&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;who post the information&gt;&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;date&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;log date&gt;&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;info type&gt;&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;message&gt;&quot;</span>
+<span class="w">            </span><span class="nt">"source"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;who post the information&gt;"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;log date&gt;"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;info type&gt;"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"description"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;message&gt;"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
@@ -579,9 +579,9 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>test result</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;testresult&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span>
-<span class="w">    </span><span class="p">[</span><span class="s2">&quot;&lt;test records&gt;&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"testresult"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span>
+<span class="w">    </span><span class="p">[</span><span class="s2">"&lt;test records&gt;"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -593,9 +593,9 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>yield information</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;yield&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span>
-<span class="w">    </span><span class="p">[</span><span class="s2">&quot;&lt;yield information&gt;&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"yield"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span>
+<span class="w">    </span><span class="p">[</span><span class="s2">"&lt;yield information&gt;"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -607,9 +607,9 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <ul>
 <li><p>test results</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;testresults&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span>
-<span class="w">    </span><span class="p">[[</span><span class="s2">&quot;&lt;stdf records&gt;&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;stdf records&gt;&quot;</span><span class="p">],</span><span class="w"> </span><span class="s2">&quot;etc...&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"testresults"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="w"> </span><span class="p">:</span>
+<span class="w">    </span><span class="p">[[</span><span class="s2">"&lt;stdf records&gt;"</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">"&lt;stdf records&gt;"</span><span class="p">],</span><span class="w"> </span><span class="s2">"etc..."</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -625,28 +625,28 @@ dem UI, im Folgendem als Frontend (FE) bezeichnet soll über Websockets stattfin
 <li><p>Beispiele:</p></li>
 <li><p>Lade Losnummer</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cmd&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;load&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;lot_number&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">123456.123</span>
-<span class="w">    </span><span class="nt">&quot;connectionid&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;conneciton id&gt;&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"cmd"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"command"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"load"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"lot_number"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">123456.123</span>
+<span class="w">    </span><span class="nt">"connectionid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;conneciton id&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p>Starte Testausführung</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cmd&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nt">&quot;start&quot;</span>
-<span class="w">    </span><span class="nt">&quot;connectionid&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;conneciton id&gt;&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"cmd"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"command"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nt">"start"</span>
+<span class="w">    </span><span class="nt">"connectionid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;conneciton id&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p>Starte Testausführung</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cmd&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unload&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;connectionid&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;conneciton id&gt;&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"cmd"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"command"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"unload"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"connectionid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;conneciton id&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>

@@ -456,25 +456,25 @@
 <p>The proxy will be instanciated for each testprogramm (common.py), whereas the actual implementation will run on the master.</p>
 <p>Example:
 Suppose we have an object called the “K2000”, which can be activated or deactivated. In the test we’d like an interface similar to the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">k2000</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">get_proxy</span><span class="p">(</span><span class="s2">&quot;k2000&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">k2000</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">get_proxy</span><span class="p">(</span><span class="s2">"k2000"</span><span class="p">)</span>
 <span class="n">k2000</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The proxy side of the activate method would be as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">mqttclient</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;{cmd:activate&quot;</span><span class="p">})</span>
-    <span class="n">mqttclient</span><span class="o">.</span><span class="n">wait_response</span><span class="p">(</span><span class="s2">&quot;activate&quot;</span><span class="p">)</span>
+    <span class="n">mqttclient</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">"{cmd:activate"</span><span class="p">})</span>
+    <span class="n">mqttclient</span><span class="o">.</span><span class="n">wait_response</span><span class="p">(</span><span class="s2">"activate"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Whereas the code on the master would be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">resource</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="s2">&quot;k2000&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">resource</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="s2">"k2000"</span><span class="p">)</span>
 <span class="n">resource</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">k2000</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">hdl</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dev/tty0/&quot;</span><span class="p">)</span>
-        <span class="n">write</span><span class="p">(</span><span class="n">hdl</span><span class="p">,</span> <span class="s2">&quot;do stuff)</span>
+        <span class="n">hdl</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"dev/tty0/"</span><span class="p">)</span>
+        <span class="n">write</span><span class="p">(</span><span class="n">hdl</span><span class="p">,</span> <span class="s2">"do stuff)</span>
 </pre></div>
 </div>
 <p>To enable this behavior the hookspec for an ATE.org Plugin is changed as follows:</p>

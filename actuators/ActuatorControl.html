@@ -417,12 +417,12 @@ Note, that we do not need multiple actuators of the same type per teststation/te
 <h2>The IOCtl Protocol<a class="headerlink" href="#the-ioctl-protocol" title="Link to this heading"></a></h2>
 <p>The Master &lt;-&gt; Testprogram interface for actuators is based on controlcodes with parameters, such as:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fluxcompensator&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;param0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"periphery_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fluxcompensator"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_output"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"param0"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -436,9 +436,9 @@ topic it shall perform the required action and send the result on the topic:
 ATE/&lt;deviceid&gt;/fluxcompensator/io-control/response</p>
 <p>The response shall have the following form:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_output"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="cm">/* Data */</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
@@ -456,20 +456,20 @@ ATE/&lt;deviceid&gt;/fluxcompensator/io-control/response</p>
 to ATE/<deviceid>/<actuatortype>/status as soon as it receives a status message from the master.
 with the following form:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;available&quot;</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"available"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Further: The actuator shall instruct the broker to post a last-will message of the following form:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;crashed&quot;</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"crashed"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Note</strong> This message is used to automatically notify the master in case of a crash of the actuator application. If the
 actuator shuts down gracefully (however that happens!), if shall replace the last-will message with:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;terminated&quot;</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"terminated"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -491,23 +491,23 @@ but the actuator can only produce 250 mA this testprogram would be incompatible 
 a drycall request, the actuatorimplementation shall check if the parameters and the provided ioctl could be made into an actual
 call. Note that the actuator shall <em>not</em> perform that call.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-drycall&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-drycall"</span><span class="p">,</span>
 <span class="w">    </span><span class="c1">// These lines are the same, as with the actual call</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;millitesla&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_field"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"millitesla"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-drycall-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;bad_ioctl | missing_parameter |badparamvalue | error&quot;</span><span class="p">},</span>
-<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-drycall-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_field"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"bad_ioctl | missing_parameter |badparamvalue | error"</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">"error_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some string"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -528,22 +528,22 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Set Field<a class="headerlink" href="#set-field" title="Link to this heading"></a></h4>
 <p>The set field command shall enable the magnetic field and set its strength to the given value. Setting the strangth to 0 millitesla shall not disable the device but instead use it to create a “true” 0 millitesla field (taking into account earths magnetic field!)</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;millitesla&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_field"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"millitesla"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_field&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;badfieldstrength&quot;</span><span class="p">},</span>
-<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_field"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"badfieldstrength"</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">"error_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some string"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -558,21 +558,21 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Disable Field<a class="headerlink" href="#disable-field" title="Link to this heading"></a></h4>
 <p>The disable field command shall physically disable the magnetic field (i.e. the powersource shall be disabled).</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;disable&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"disable"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;disable&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">},</span>
-<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"disable"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"error"</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">"error_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some string"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -587,24 +587,24 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Program Curve<a class="headerlink" href="#program-curve" title="Link to this heading"></a></h4>
 <p>The program curve io command shall instruct the actuator to store a given curve of field strengths. The curve is presented as array of tuples, where the first value of the tuple denotes the field strength (in millitesla!) and the second value denotes the time (in seconds!) for which this strength should be kept.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;magfield&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;program_curve&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;hull&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="err">val</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">0</span><span class="p">},{</span><span class="err">val</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">1</span><span class="p">}],</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"periphery_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"magfield"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"program_curve"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"hull"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="err">val</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">0</span><span class="p">},{</span><span class="err">val</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">dura</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">1</span><span class="p">}],</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Result:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;program_curve&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;invalidid&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;curvetoolarge&quot;</span><span class="w"> </span><span class="err">|</span><span class="s2">&quot;error&quot;</span><span class="p">},</span>
-<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;some string&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"program_curve"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"invalidid"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"curvetoolarge"</span><span class="w"> </span><span class="err">|</span><span class="s2">"error"</span><span class="p">},</span>
+<span class="w">        </span><span class="err">&lt;op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="err">&gt;</span><span class="w"> </span><span class="nt">"error_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some string"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -621,20 +621,20 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Play curve<a class="headerlink" href="#play-curve" title="Link to this heading"></a></h4>
 <p>The play curve command shall instruct the actuator (or the softwareimplementation) to playback a previously programmed curve. This function has no overridable timeout, but shall instead only timeout 2 seconds after the curve should have completed.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"play_curve"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Result:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"play_curve"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"unknown"</span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -653,20 +653,20 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Play curve stepwise<a class="headerlink" href="#play-curve-stepwise" title="Link to this heading"></a></h4>
 <p>The play curve stepwise function shall instruct the actuator to playback a previously defined curve, while waiting for explicit instructions to switch between different points of the curve. When a curve is played using this function the duration value for each curvepoint shall be ignored.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve_stepwise&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"play_curve_stepwise"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Result:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;play_curve_stepwise&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"play_curve_stepwise"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"unknown"</span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -681,18 +681,18 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Curve step<a class="headerlink" href="#curve-step" title="Link to this heading"></a></h4>
 <p>The curvestep function shall instruct to move to the next curvepoint in a currently running stepwise playback. The step shall be performed immediately and shall ignore any timing settings of the curve.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_step&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curve_step"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Result:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_step&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;done&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;notplaying&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curve_step"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"done"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"notplaying"</span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -714,18 +714,18 @@ call. Note that the actuator shall <em>not</em> perform that call.</p>
 <h4>Curve stop<a class="headerlink" href="#curve-stop" title="Link to this heading"></a></h4>
 <p>The curve_stop function shall abort a stepwise playback of a curve and disable the magfield.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_stop&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curve_stop"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Result:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-response&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;curve_stop&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">&quot;notplaying&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-response"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curve_stop"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"ok"</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="s2">"notplaying"</span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -776,7 +776,7 @@ A canonical way to implement a device_io_control that does not return immediatel
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
+        <span class="k">return</span> <span class="s2">"Done"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_event_happened</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
@@ -794,27 +794,27 @@ can be set.</p>
         <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
             <span class="c1"># Always store the actual lambda/callback to use for registration</span>
-            <span class="c1"># and unregistration. Don&#39; use ad-hoc lambdas as this will</span>
+            <span class="c1"># and unregistration. Don' use ad-hoc lambdas as this will</span>
             <span class="c1"># always create a new lambda and cause the instance of the peripheral</span>
             <span class="c1"># to never be released due to it being kept alive by the lambdas.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_message_received</span>
         
         <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mqtt_client</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span> <span class="o">=</span> <span class="n">mqtt_client</span>
-            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
-            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">register_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">"SomePeripheral/command"</span><span class="p">)</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">register_route</span><span class="p">(</span><span class="s2">"SomePeripheral/command"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
         
         <span class="k">def</span><span class="w"> </span><span class="nf">on_message_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
-            <span class="c1"># This code is called whenever a message arrives on &quot;SomePeripheral/command&quot;</span>
+            <span class="c1"># This code is called whenever a message arrives on "SomePeripheral/command"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">device_io_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ioctl_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-            <span class="k">return</span> <span class="s2">&quot;Done&quot;</span>
+            <span class="k">return</span> <span class="s2">"Done"</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">)</span>
-            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">unregister_route</span><span class="p">(</span><span class="s2">&quot;SomePeripheral/command&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mqtt_client</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="s2">"SomePeripheral/command"</span><span class="p">)</span>
+            <span class="n">mqtt_client</span><span class="o">.</span><span class="n">unregister_route</span><span class="p">(</span><span class="s2">"SomePeripheral/command"</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">message_cb</span><span class="p">)</span>
   
 </pre></div>
 </div>

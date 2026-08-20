@@ -406,7 +406,7 @@
 The following is an example of a generated test based on the configuration of one input parameter and one output parameter:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">contact</span><span class="p">(</span><span class="n">contact_BC</span><span class="p">):</span>
 
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">'''</span>
 <span class="sd">    for debug purposes, a logger is available to log infomration and porpagate them to the UI.</span>
 <span class="sd">    logging can be used as described below:</span>
 <span class="sd">    self.log_info(&lt;message&gt;)</span>
@@ -428,10 +428,10 @@ The following is an example of a generated test based on the configuration of on
 <span class="sd">    op.new_parameter1 | No  |  -∞ |  (-∞) | 0.000 | (+∞)  | +∞   | ˽    | .3f</span>
 <span class="sd">    &lt;/do_not_touch&gt;</span>
 
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Default implementation for test.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Default implementation for test."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">new_parameter1</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
 </pre></div>
 </div>

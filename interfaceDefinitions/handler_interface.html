@@ -414,15 +414,15 @@
 <p>Der “identify” Befehl weist den Handler an seinen Namen zu schicken.
 Dies ist die Antwort auf den <strong>identify</strong> Befehl Type (Master command)</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identify&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"identify"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Antwort durch den Handler</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"name"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
@@ -431,16 +431,16 @@ Dies ist die Antwort auf den <strong>identify</strong> Befehl Type (Master comma
 <h3>get-state<a class="headerlink" href="#get-state" title="Link to this heading"></a></h3>
 <p>Der get-state Befehl weist den Handler an seinen Internen Zustand zu schicken.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"get-state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Antwort durch den Handler</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">               </span><span class="p">}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
@@ -470,14 +470,14 @@ Dies ist die Antwort auf den <strong>identify</strong> Befehl Type (Master comma
 <h3>get-temperature<a class="headerlink" href="#get-temperature" title="Link to this heading"></a></h3>
 <p>Der get-temperature Befehl weist den Handler an die Temperatur zu schicken, die im Testbereich des Testers herrscht, der die Anfrage geschickt hat. D.h. der Handler muss in diesem Fall auswerten auf welchem Befehlstopic die Anfrage kam um zu wissen, welche Temperatur verlangt ist.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;temperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"temperature"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"temperature"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -486,11 +486,11 @@ Dies ist die Antwort auf den <strong>identify</strong> Befehl Type (Master comma
 <h3>error<a class="headerlink" href="#error" title="Link to this heading"></a></h3>
 <p>Erhält der Handler einen Befehl, den er nicht bearbeiten kann, oder den er nicht unterstützt so darf er mit einem Error Paket antworten.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Befehl, das den Fehler ausgelöst hat&gt;&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;Fehlermeldung im Klartext&gt;&quot;</span>
+<span class="w">            </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;Befehl, das den Fehler ausgelöst hat&gt;"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;Fehlermeldung im Klartext&gt;"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -500,10 +500,10 @@ Dies ist die Antwort auf den <strong>identify</strong> Befehl Type (Master comma
 <h3>send-layout<a class="headerlink" href="#send-layout" title="Link to this heading"></a></h3>
 <p>Handler sendet beim Hochfahren folgende Nachricht an Master:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;site-layout&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"site-layout"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+<span class="w">        </span><span class="nt">"sites"</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>

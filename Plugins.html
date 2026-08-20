@@ -423,17 +423,17 @@
 </pre></div>
 </div>
 <p>This hook shall return a dictionary with the following layout:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Plugin Name&quot;</span>
-    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Plugin Version&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">name</span><span class="p">:</span> <span class="s2">"Plugin Name"</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">"Plugin Version"</span>
 </pre></div>
 </div>
 </section>
 <section id="plugin-functionality">
 <h3>Plugin Functionality<a class="headerlink" href="#plugin-functionality" title="Link to this heading"></a></h3>
 <p>A given plugin publishes its functionality by means of Importers/Exporters/Actuators/Instruments/Equipments/Testers. Each of these can be queried by means of a “get_x_names” function where x is the name of the respective functionality. The returnvalue of the get_x_names functions is always a list of dictionaries, where each dictionary has the following layout:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">display_name</span><span class="p">:</span> <span class="s2">&quot;Display Name&quot;</span>
-    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Object Version&quot;</span>
-    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Object Name&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">display_name</span><span class="p">:</span> <span class="s2">"Display Name"</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">"Object Version"</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">"Object Name"</span>
 </pre></div>
 </div>
 <p>Where:</p>
@@ -488,9 +488,9 @@
 </div>
 <p>The complete layout of the results of this function is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="n">display_name</span><span class="p">:</span> <span class="s2">&quot;Display Name&quot;</span>
-    <span class="n">version</span><span class="p">:</span> <span class="s2">&quot;Object Version&quot;</span>
-    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Object Name&quot;</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="s2">"Display Name"</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s2">"Object Version"</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">"Object Name"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -761,10 +761,10 @@ function:</p>
 <p><strong>File</strong>: PluginSrc\setup.py</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">setuptools</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup</span>
 <span class="n">setup</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SomeAtePlugin&quot;</span><span class="p">,</span>
-    <span class="n">install_requires</span><span class="o">=</span><span class="s2">&quot;ate.org&quot;</span><span class="p">,</span>
-    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ate.org&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;plug = PluginB:ThePlugin&quot;</span><span class="p">]},</span>
-    <span class="n">py_modules</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;PluginB&quot;</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"SomeAtePlugin"</span><span class="p">,</span>
+    <span class="n">install_requires</span><span class="o">=</span><span class="s2">"ate.org"</span><span class="p">,</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">"ate.org"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"plug = PluginB:ThePlugin"</span><span class="p">]},</span>
+    <span class="n">py_modules</span><span class="o">=</span><span class="p">[</span><span class="s2">"PluginB"</span><span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
 </div>

@@ -431,12 +431,12 @@
 <span class="w">  </span><span class="n">session_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1800</span>
 
 <span class="k">[[runners]]</span>
-<span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;clean&quot;</span>
-<span class="w">  </span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://git.awinia.lan/&quot;</span>
-<span class="w">  </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;8BUky95eUg4x411kXhp7&quot;</span>
+<span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"clean"</span>
+<span class="w">  </span><span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://git.awinia.lan/"</span>
+<span class="w">  </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"8BUky95eUg4x411kXhp7"</span>
 <span class="w">  </span><span class="n">limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
-<span class="w">  </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shell&quot;</span>
-<span class="w">  </span><span class="n">shell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;powershell&quot;</span>
+<span class="w">  </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"shell"</span>
+<span class="w">  </span><span class="n">shell</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"powershell"</span>
 <span class="w">  </span><span class="k">[runners.custom_build_dir]</span>
 <span class="w">  </span><span class="k">[runners.cache]</span>
 <span class="w">    </span><span class="k">[runners.cache.s3]</span>
@@ -453,69 +453,69 @@
 </section>
 <section id="beispiel-gitlab-ci-yml">
 <h2>Beispiel .gitlab-ci.yml<a class="headerlink" href="#beispiel-gitlab-ci-yml" title="Link to this heading"></a></h2>
-<div class="highlight-yml notranslate"><div class="highlight"><pre><span></span>variables:
-    GIT_CLEAN_FLAGS: -f -d -x
+<div class="highlight-yml notranslate"><div class="highlight"><pre><span></span><span class="nt">variables</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">GIT_CLEAN_FLAGS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-f -d -x</span>
 
-cache:
-  paths:
-    - name_of_to_cached_file
+<span class="nt">cache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">paths</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name_of_to_cached_file</span>
 
-stages:
-    - build
-    - test
-    - deploy
+<span class="nt">stages</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy</span>
 
-before_script:
-    - &gt;
-      function Build-Linux-Target {
-          &quot;&quot;&quot; do build &quot;&quot;&quot;
-      }
+<span class="nt">before_script</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">      </span><span class="no">function Build-Linux-Target {</span>
+<span class="w">          </span><span class="no">""" do build """</span>
+<span class="w">      </span><span class="no">}</span>
 
-    - &gt;
-      function Build-Win-Target {
-          &quot;&quot;&quot; do build &quot;&quot;&quot;
-      }
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">      </span><span class="no">function Build-Win-Target {</span>
+<span class="w">          </span><span class="no">""" do build """</span>
+<span class="w">      </span><span class="no">}</span>
 
-    - &gt;
-      function Run-Tests {
-          &quot;&quot;&quot; do test &quot;&quot;&quot;
-      }
-    - &gt;
-      function Deploy {
-          &quot;&quot;&quot; do test &quot;&quot;&quot;
-      }
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">      </span><span class="no">function Run-Tests {</span>
+<span class="w">          </span><span class="no">""" do test """</span>
+<span class="w">      </span><span class="no">}</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+<span class="w">      </span><span class="no">function Deploy {</span>
+<span class="w">          </span><span class="no">""" do test """</span>
+<span class="w">      </span><span class="no">}</span>
 
-job1:
-  stage: build
-  artifacts:
-    expire_in: &#39;10 mins&#39;
-    paths:
-      - artifact_name
-  script:
-    &quot;&quot;&quot; do build &quot;&quot;&quot;
-    - Build-Linux-Target
+<span class="nt">job1</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">expire_in</span><span class="p">:</span><span class="w"> </span><span class="s">'10</span><span class="nv"> </span><span class="s">mins'</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">artifact_name</span>
+<span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">    </span><span class="s">"""</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">build</span><span class="nv"> </span><span class="s">"""</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build-Linux-Target</span>
 
-job2:
-  stage: build
-  script:
-    &quot;&quot;&quot; do build &quot;&quot;&quot;
-    - Build-Win-Target
+<span class="nt">job2</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">    </span><span class="s">"""</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">build</span><span class="nv"> </span><span class="s">"""</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build-Win-Target</span>
 
-job3:
-  stage: test
-  script:
-    &quot;&quot;&quot; do tests &quot;&quot;&quot;
-   - Run-Tests
-  dependencies:
-   - artifact_name
+<span class="nt">job3</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+<span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">    </span><span class="s">"""</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">tests</span><span class="nv"> </span><span class="s">"""</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run-Tests</span>
+<span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">artifact_name</span>
 
-job4:
-  stage: deploy
-  script:
-    &quot;&quot;&quot; do stuff &quot;&quot;&quot;
-    - Deploy
-  dependencies:
-   - artifact_name
+<span class="nt">job4</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy</span>
+<span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">    </span><span class="s">"""</span><span class="nv"> </span><span class="s">do</span><span class="nv"> </span><span class="s">stuff</span><span class="nv"> </span><span class="s">"""</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy</span>
+<span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">artifact_name</span>
 </pre></div>
 </div>
 <p><strong>Beschreibung</strong>:</p>

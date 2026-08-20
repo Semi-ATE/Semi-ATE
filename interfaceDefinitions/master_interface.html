@@ -421,9 +421,9 @@
 </table>
 <p>Beispiel:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;interface_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;idle&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"status"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"interface_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"idle"</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -475,20 +475,20 @@ Der Master meldet Vollzug, indem das korrespondierende Feld im Topic “&lt;devi
 Im Test wird gefordert, dass der Fluxkompensator auf 100 bozos geschaltet wird.</p>
 <p>Der aktuelle Peripheriestatus ist:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;fluxcompensator&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"fluxcompensator"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">    </span><span class="err">...</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>TestApp postet:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;io-control-request&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;periphery_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fluxcompensator&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;ioctl_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;set_output&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"io-control-request"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"periphery_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fluxcompensator"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"ioctl_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"set_output"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"parameters"</span><span class="p">:</span><span class="w"> </span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;param0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
+<span class="w">        </span><span class="nt">"param0"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -527,10 +527,10 @@ informationen über das zu ladene lot (Losnumber, Temperature, etc..). Viele Bef
 <p>Der site-layout Befehl teilt dem Master mit welches physische Layout die Sites des Testers zueinander haben.
 Der Master ermittelt anhand dieses Layouts, welche Pingpong Konfiguration zu verwenden ist.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;site-layout&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"site-layout"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="nt">"sites"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span>
 <span class="w">                </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
 <span class="w">            </span><span class="p">]</span>
@@ -568,13 +568,13 @@ from the example above:</p>
 <p>Der Loadbefehl weist die Masterapplikation an ein Los zu laden.
 Bei Erfolg wechselt der Master in den Zustand XXX</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;load&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"load"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;lotnumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">            </span><span class="nt">&quot;sublotnumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">            </span><span class="nt">&quot;devicetype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">            </span><span class="nt">&quot;measurementtemperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">            </span><span class="nt">"lotnumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">"sublotnumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">"devicetype"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">"measurementtemperature"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -592,16 +592,16 @@ Bei Erfolg wechselt der Master in den Zustand XXX</p>
 <h4>next<a class="headerlink" href="#next" title="Link to this heading"></a></h4>
 <p>Der Nextbefehl weist die Masterapplikation die Tests für eine gegebene Menge von Sites zu starten. Der Master wechselt während die Tests laufen in den Zustand XXX und nach Testabschluss in den Zustand YYY. Die Handlerapplikation darf keinen neuen Testbefehl schicken, solange der Zustand XXX nicht erreicht wurde, selbst dann nicht, wenn der Master bereits Testergebnisse publiziert hat.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;next&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"next"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="nt">"sites"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                </span><span class="p">{</span>
-<span class="w">                    </span><span class="nt">&quot;siteid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;site-id&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;partid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">                    </span><span class="nt">&quot;binning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">                    </span><span class="nt">&quot;logflag&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">                    </span><span class="nt">&quot;additionalinfo&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"siteid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"site-id"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"partid"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">"binning"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">"logflag"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span>
+<span class="w">                    </span><span class="nt">"additionalinfo"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
 <span class="w">                </span><span class="p">},</span>
 <span class="w">                </span><span class="err">(mehr</span><span class="w"> </span><span class="err">si</span><span class="kc">tes</span><span class="err">)</span>
 <span class="w">            </span><span class="p">]</span>
@@ -623,8 +623,8 @@ Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in
 <h4>end lot<a class="headerlink" href="#end-lot" title="Link to this heading"></a></h4>
 <p>Der Endlotbefehl weist die Masterapplikation ihre Testapplikation zu beenden. Bei Erfolg wechselt der Master in den Zustand XXX</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;endlot&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"endlot"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -633,14 +633,14 @@ Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in
 <h4>identify<a class="headerlink" href="#identify" title="Link to this heading"></a></h4>
 <p>Der identifybefehl weist die Masterapplikation sein ID(Name) zu schicken. Die Antwort ist:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identify&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"identify"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identify&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"identify"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -649,16 +649,16 @@ Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in
 <h4>get-state<a class="headerlink" href="#get-state" title="Link to this heading"></a></h4>
 <p>Der get-state Befehl weist die Masterapplikation seinen Zustand zu schicken. Der Master published daraufhin seinen aktuellen Zustand im status Topic.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"get-state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Antwort durch den Master</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"get-state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span>
 <span class="w">               </span><span class="p">}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
@@ -683,18 +683,18 @@ Wird ein Testbefehl für eine Unbekannte Site erzeugt, so wechselt der Master in
 <p>Der get-host Befehl weist die Masterapplikation seinen host information zu schicken. Diese werden verwendet, um auf dem Master WebUI zugreifen zu können.
 Der Master published daraufhin die information in seinem response topic.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"get-state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Antwort durch den Master</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get-state&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"get-state"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"payload"</span><span class="p">:</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">/&lt;por</span><span class="kc">t</span><span class="mi">-</span><span class="kc">nu</span><span class="err">m/&gt;</span>
+<span class="w">        </span><span class="nt">"host"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"port"</span><span class="p">:</span><span class="w"> </span><span class="err">/&lt;por</span><span class="kc">t</span><span class="mi">-</span><span class="kc">nu</span><span class="err">m/&gt;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w"> </span><span class="p">}</span>
 </pre></div>
