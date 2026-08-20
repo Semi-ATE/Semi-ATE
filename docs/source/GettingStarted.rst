@@ -38,7 +38,7 @@ Download and install as administrator to your PC (ask your IT service desk for s
 Environment:
 ____________
 
-create new environment (conda/mamba)
+Create New Environment (conda/mamba)
 ------------------------------------
 
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
@@ -47,11 +47,34 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.10 spyder=5.5.6
 
 
-activate environment
+Activate Environment
 --------------------
 
   >>> (maxiconda) PS:> conda activate Semi-ATE
   >>> (Semi-ATE) PS:> conda config --append channels conda-forge
+
+
+Installing Git
+--------------
+
+Before proceeding, you need to have Git installed on your system to download the Semi-ATE repositories.
+
+**For Windows:**
+Download the installer from the `official Git website <https://git-scm.com/download/win>`_. Run the downloaded setup file. In the Git installation manager, leave all default values and checkboxes as they are, and click through to install it. 
+
+**For Linux:**
+You can install Git using your distribution's default package manager. For example, on Debian/Ubuntu-based systems, open your terminal and run:
+
+  >>> $ sudo apt update
+  >>> $ sudo apt install git
+
+Once Git is installed, you will need to use a Bash terminal for the upcoming steps. 
+* On **Windows**, open the **Git Bash** application you just installed. 
+* On **Linux**, continue using your standard terminal. 
+
+Make sure to activate your conda environment again in this new terminal before proceeding:
+
+  >>> $ conda activate Semi-ATE
 
 
 Install Semi-ATE packages for developers
