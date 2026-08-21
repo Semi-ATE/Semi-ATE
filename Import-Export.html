@@ -67,7 +67,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#create-new-environment-conda-mamba">create new environment (conda/mamba)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#activate-environment">activate environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#installing-git">Installing Git</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#install-semi-ate-packages-for-developers">Install Semi-ATE packages for developers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted.html#running-spyder">Running Spyder</a></li>
 </ul>
@@ -137,6 +136,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Import/Export</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#export">Export</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#import">Import</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#import-excel-test-list">Import Excel Test list</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Interstage-Communication.html">Semi-ATE Interstage Communication</a><ul>
@@ -410,6 +410,7 @@
 <section id="import">
 <h2>Import<a class="headerlink" href="#import" title="Link to this heading"></a></h2>
 <p>Import is also supported from within Spyder IDE.</p>
+<img src="_static/pictures/import.png">
 <p>the following cases are supported:</p>
 <ul class="simple">
 <li><p>import of non-existing test: a new test will be automatically generated and persisted</p></li>
@@ -423,6 +424,22 @@
 <li><p>import of test with different version number: this case is not supported, no import is possible</p></li>
 </ul>
 </section>
+<section id="import-excel-test-list">
+<h2>Import Excel Test list<a class="headerlink" href="#import-excel-test-list" title="Link to this heading"></a></h2>
+<img src="_static/pictures/import_excel1.png">
+<p>This allows you to create the basic structure of the test benches from an Excel list with just a few clicks.
+An example is available in the <a class="reference internal" href="exampleProject/exampleproject.html"><span class="std std-doc">demo</span></a>. In the demo, you can find a relevant Excel file in the ‘harness’ directory.
+The Excel list contains the test names and the various input/output parameters:
+<img src="_static/pictures/import_excel2.png"></p>
+<p>Open the Excel file via the Excel Test List Import.
+The names and order of the columns in the first row can be chosen freely and are then mapped in the Excel Test Wizard.
+<img src="_static/pictures/import_excel3.png"></p>
+<p>The column on the far right lists the available parameters. You can then assign a parameter to a column by selecting it and dragging it onto the relevant column.
+You can use the Save/Load icon to save the assignment and load it again next time.
+Any errors will be displayed in orange below the table. These must be rectified before the ‘OK’ button becomes active.
+<img src="_static/pictures/import_excel4.png"></p>
+<p>Once ‘OK’ has been selected, the respective basic structure of the test benches will be created using the specified parameters.</p>
+<img src="_static/pictures/import_excel5.png"></section>
 </section>
 
 
