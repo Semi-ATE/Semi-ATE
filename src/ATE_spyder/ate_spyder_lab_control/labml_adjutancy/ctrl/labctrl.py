@@ -8,6 +8,7 @@ Created on Thu Jan  7 17:18:03 2021
 
 """
 import logging
+from ate_common.logger import LogLevel
 import inspect
 from ate_test_app.sequencers.MqttClient import MqttClient
 from ate_common.logger import LogLevel
@@ -71,7 +72,7 @@ class LabCtrl(mqtt_deviceattributes):
         """Initialise."""
         global mqttc
         
-        logger.debug("LabCtrl:__init__ start")
+        logger.log_message(LogLevel.Debug(), "LabCtrl:__init__ start")
         super().__init__()
         self.logger = logger
         self.instName = "semictrl"
