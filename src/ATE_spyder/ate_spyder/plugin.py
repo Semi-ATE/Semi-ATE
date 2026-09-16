@@ -81,10 +81,12 @@ class ATE(SpyderDockablePlugin):
     def get_name():
         return _("ATE")
 
-    def get_description(self):
+    @staticmethod
+    def get_description():
         return _("Automatic test equipment.")
 
-    def get_icon(self):
+    @classmethod
+    def get_icon(cls):
         return QIcon()
 
     def on_initialize(self):
@@ -158,7 +160,7 @@ class ATE(SpyderDockablePlugin):
         self.sig_close_file.connect(lambda path: self.close_file(path, editor))
         widget.sig_save_all.connect(editor.save_all)
         logger.debug("ATE_spyder:on_editor_available done.")
- 
+
     # new connection for Spyder 6 to the IPythonConsole Plugin instead the Editor
     @on_plugin_available(plugin=Plugins.IPythonConsole)
     def on_ipython_console_available(self):
@@ -180,7 +182,7 @@ class ATE(SpyderDockablePlugin):
 
         console.run_script(filename, wdir=wdir)
         logger.debug(f"ATE_spyder:run_cell_in_console done: {filename}")
-        
+
     def debug_cell_in_console(self):
         logger.debug("Debug ist not supported, continue with run_cell_in_console")
         self.run_cell_in_console()
