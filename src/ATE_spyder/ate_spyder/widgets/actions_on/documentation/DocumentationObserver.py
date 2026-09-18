@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from ate_spyder.widgets.actions_on.documentation.DocumentationItem import DocumentationItem
 from ate_spyder.widgets.actions_on.utils.Util import get_changed_dir_item
@@ -7,6 +8,9 @@ from ate_spyder.widgets.actions_on.utils.ObserverBase import EventHandlerBase
 import os
 
 from ate_spyder.widgets.navigation import ProjectNavigation
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 class EventHandler(EventHandlerBase):
@@ -40,6 +44,7 @@ class EventHandler(EventHandlerBase):
     def _on_file_modified(self, path):
         file_name = os.path.basename(path)
         parent_item = get_changed_dir_item(self.section_root, path, self.path)
+        logger.debug(f"EventHandler: _on_file_modified: {type(parent_item)}")
         parent_item.add_file_item(file_name, path, parent_item.rowCount())
 
     def _on_dir_modified(self, event):
