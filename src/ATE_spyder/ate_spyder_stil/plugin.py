@@ -84,11 +84,13 @@ class STIL(SpyderDockablePlugin):
     def get_name() -> str:
         return _('STIL')
 
-    def get_description(self) -> str:
+    @staticmethod
+    def get_description() -> str:
         return _('STIL tools integration')
 
-    def get_icon(self):
-        return self.create_icon('mdi.chip')
+    @classmethod
+    def get_icon(cls):
+        return cls.create_icon('mdi.chip')
 
     def on_initialize(self):
         logger.debug("STIL:on_initialize start")

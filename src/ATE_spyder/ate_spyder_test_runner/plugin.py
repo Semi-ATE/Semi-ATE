@@ -53,11 +53,13 @@ class TestRunnerPlugin(SpyderDockablePlugin):
     def get_name() -> str:
         return _('TEST_RUNNER')
 
-    def get_description(self) -> str:
+    @staticmethod
+    def get_description() -> str:
         return _('Test Runner integration')
 
-    def get_icon(self):
-        return self.create_icon('mdi.chip')
+    @classmethod
+    def get_icon(cls):
+        return cls.create_icon('mdi.chip')
 
     def on_initialize(self):
         widget = self.get_widget()
