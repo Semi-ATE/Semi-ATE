@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install -y spyder=6.1.6 
+          mamba install -y spyder=6.1.7 
           pip install PyQt5
           cd scripts
           python package_tool.py --change-env cicd
