@@ -9,6 +9,7 @@ Created on Thu Jan  7 17:18:03 2021
 
 """
 import logging
+from ate_common.logger import LogLevel
 from ate_semiateplugins.hookspec import hookimpl
 from labml_adjutancy.ctrl.labctrl import LabCtrl
 
@@ -91,41 +92,41 @@ class Plugin:
     @hookimpl
     def get_importer(importer_name):
         if Plugin.prefix() in importer_name:
-            logger.debug(f"{Plugin.prefix()}.get_importer")
+            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_importer")
             return LabCtrl()
 
     @hookimpl
     def get_exporter(exporter_name):
         if Plugin.prefix() in exporter_name:
-            print(f"{Plugin.prefix()}.get_exporter")
+            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_exporter")
             return LabCtrl()
 
     @hookimpl
     def get_equipment(equipment_name):
         if "SemiCtrl." in equipment_name:
-            logger.debug(f"{Plugin.prefix()}.get_equipment")
+            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_equipment")
             return LabCtrl()
 
     @hookimpl
     def get_devicepin_importer(importer_name):
         if "SemiCtrl." in importer_name:
-            logger.debug(f"{Plugin.prefix()}.get_devicepin_importer")
+            logger.log_message(LogLevel.Debug(),f"{Plugin.prefix()}.get_devicepin_importer")
             return LabCtrl()
 
     @hookimpl
     def get_instrument(instrument_name: str, logger):
         if instrument_name == "SemiCtrl.Control":
-            logger.debug(f"{Plugin.prefix()}.get_instrument")
+            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_instrument")
             return LabCtrl(logger)
 
     @hookimpl
     def get_instrument_proxy(instrument_name):
         if Plugin.prefix() in instrument_name:
-            logger.debug(f"{Plugin.prefix()}.get_instrument_proxy")
+            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_instrument_proxy")
             return LabCtrl()
 
     @hookimpl
     def get_configuration_options(object_name):
         if Plugin.prefix() in object_name:
-            logger.debug(f"{Plugin.prefix()}.get_configuration_options")
+            logger.log_message(LogLevel.Debug(), "{Plugin.prefix()}.get_configuration_options")
             return LabCtrl.parameter[object_name]

@@ -6,8 +6,6 @@ Created on Mon Sep  5 18:56:05 2022
 
 Starting from TestWizard.py
 
-push get errors....
-
 
 """
 import os
@@ -79,6 +77,12 @@ class ExcelTestWizard(BaseDialog):
     def __init__(self, project_info, filename):
         super().__init__(__file__, parent=project_info.parent)
         self.project_info = project_info
+
+        if 'Empty_Field_999' not in mappingATEDic.keys():
+            keys = mappingATEDic.copy()
+            for key in keys:
+                mappingATEDic.pop(key)
+            mappingATEDic['Empty_Field_999'] = ""
 
         test_content = utils.make_blank_definition(project_info)
         self.test_content = test_content
@@ -210,9 +214,9 @@ class ExcelTestWizard(BaseDialog):
     def get_excel_pages(self, filename):
         self.ForFilename.setText(filename)
         self.ForFilename.setStyleSheet("font-weight: bold;")
-        wb = pd.ExcelFile(filename)
-        for page in wb.sheet_names:
-            self.ForExcelPages.addItem(page)
+        with pd.ExcelFile(filename) as wb:
+            for page in wb.sheet_names:
+                self.ForExcelPages.addItem(page)
         self.ForExcelPages.setCurrentIndex(0)
         self.ForExcelPages.activated.connect(lambda filename, value=filename: self.create_excel_table(value))
 
@@ -250,7 +254,7 @@ class ExcelTestWizard(BaseDialog):
             tb.insertColumn(tb.columnCount())
             tb.setHorizontalHeaderItem(tb.columnCount()-1, QtWidgets.QTableWidgetItem(str(column)))
         # add an empty row for the mappings
-        wp.loc[-1] = np.array([0] * wp.columns, dtype=str)
+        wp.loc[-1] = np.array([''] * len(wp.columns), dtype=str)
         wp.index += 1
         wp.sort_index(inplace=True)
 
@@ -413,11 +417,12 @@ class ExcelTestWizard(BaseDialog):
                     if tableColumn != -1:
                         matching_items = []
                         for rowIndex in range(self.table.rowCount()):
-                            if self.table.item(rowIndex, tableColumn).text == value:
+                            if self.table.item(rowIndex, tableColumn).text() == value:
                                 matching_items.append(self.table.item(rowIndex, tableColumn))
                     else:
                         matching_items = self.table.findItems(value, QtCore.Qt.MatchExactly)        # todo: validate only column not the complete table 
 
+                    self.table.blockSignals(True)
                     if testfunc(value) ^ (not invert):
                         for val in range(0, len(matching_items)):
                             # if self.table.column(matching_items[val]) == self.workpage.columns.get_loc(self.get_dicKey(mappingATEDic, 'name')):
@@ -430,9 +435,13 @@ class ExcelTestWizard(BaseDialog):
                             result = False
                     elif addAction is not None:
                         result = addAction(matching_items, msg)
+
+                    self.table.blockSignals(False)
             return result
 
         def startWithInteger(string):
+            if string == "":
+                return False
             return True if string[0].isnumeric() else False
 
         def checkErrorItem(item, fb):
@@ -463,6 +472,8 @@ class ExcelTestWizard(BaseDialog):
 
         for i in range(1, self.table.rowCount()):
             for j in range(0, self.table.columnCount()):
+                if self.table.item(i, j) is None:
+                    continue
                 self.table.item(i, j).setBackground(QtGui.QColor(self._generate_color(BACKGROUNDCOLOR)))
                 self.table.item(i, j).setForeground(QtGui.QColor(self._generate_color(FOREGROUNDCOLOR)))
 
@@ -472,7 +483,8 @@ class ExcelTestWizard(BaseDialog):
             table_name = self.workpage[self.get_dicKey(mappingATEDic, 'name')]
             testnamelist = list(table_name)
             nameColumn = -1
-            if hasattr(self.table.mappingDic, 'name'):
+            # if hasattr(self.table.mappingDic, 'name'):
+            if "name" in self.table.mappingDic:
                 nameColumn = self.table.mappingDic['name']
                 for rowIndex in range(self.table.rowCount()):
                     if hasattr(self.table.item(rowIndex, nameColumn), 'action') and self.table.item(rowIndex, nameColumn).action == 'disable':
@@ -534,6 +546,9 @@ class ExcelTestWizard(BaseDialog):
                     if paraName == 'unit':
                         if not (text in SI or (len(text) > 1 and text[0] in POWER.keys() and text[1:] in SI)):                 # check if exp valid
                             erroritem = self.table.item(index, column)
+                    elif paraName == 'mpr':
+                        if text not in ['no', 'yes', 'n', 'y']:
+                            erroritem = self.table.item(index, column) 
                     elif not self._validate_isfloat(text):  # check for floats
                         erroritem = self.table.item(index, column)
                     elif paraName in ['ltl', 'utl', 'nom']:
@@ -601,7 +616,8 @@ class ExcelTestWizard(BaseDialog):
 
         def searchAndAssign(header, default='', write_content=True):
             column = searchmapping(header)
-            value = row[column] if column is not None else default
+            value = row[column] if column is not None and pd.notna(row[column]) else default
+
             if write_content:
                 test_content[header] = value
             return value
@@ -678,8 +694,10 @@ class ExcelTestWizard(BaseDialog):
                 test_content['base'] = self.WithBase.text()
                 test_content['groups'] = self._get_groups()
 
-                if type(searchAndAssign('docstring', [''])[0]) is not str:
-                    test_content['docstring'][0] = str(test_content['docstring'][0])
+                if type(searchAndAssign('docstring', '')) is not str:
+                    test_content['docstring'] = str(test_content['docstring'])
+                test_content['docstring'] = test_content['docstring'].split('\n')
+
                 test_content['input_parameters'] = {'Temperature': utils.make_default_input_parameter(temperature=True)}
                 test_content['input_parameters']['Temperature']['exp10'] = 0
                 test_content['input_parameters']['Temperature'] = self.validationInputParameter(test_content['input_parameters']['Temperature'])
@@ -736,6 +754,7 @@ class ExcelTestWizard(BaseDialog):
 
         # QtWidgets.QApplication.restoreOverrideCursor()
         self.accept()
+
 
     def validationInputParameter(self, parameters):
         parameters['min'] = float(parameters['min'])
@@ -898,7 +917,7 @@ if __name__ == "__main__":
     app.references = set()
     main = QMainWindow()
     homedir = os.path.expanduser("~")
-    project_directory = homedir + r'\ATE\packages\envs\tb_ate'    # path to your semi-ate project
+    project_directory = input("path to your semi-ate project: ")
     project_info = ProjectNavigation(project_directory, homedir, main)
     project_info.active_hardware = 'HW0'
     project_info.active_base = 'FT'
