@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10", "3.11", "3.12", "3.13"]                #  "3.12" : exceeded the maximum execution time 
+        PYTHON_VERSION: ["3.11", "3.12", "3.13", "3.14]
 
     steps:
       - name: Checkout Pull Requests
