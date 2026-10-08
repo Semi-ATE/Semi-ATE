@@ -19,13 +19,14 @@ class PingPongWidget(QWidget):
     def __init__(self, parent: Optional[QWidget]):
         super().__init__(parent=parent)
         self.tp_wizard: TestProgramWizard = parent
-        uic.loadUi(__file__.replace(".py", ".ui"), self)
-
+        
         self._ui_enabled = True
-        self._update_parallelism_store()
         self._cur_parallelism = None
         self._cur_ping_pong_config = None
         self._cur_stage_selected = None
+        uic.loadUi(__file__.replace(".py", ".ui"), self)
+
+        self._update_parallelism_store()
         self._setup_ui()
         self._setup_handlers()
         self._generate_parallelism_ui()

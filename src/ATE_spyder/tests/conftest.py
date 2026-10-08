@@ -1,34 +1,17 @@
 # -*- coding: utf-8 -*-
-#
-# Copyright © Spyder Project Contributors
-# Licensed under the terms of the MIT License
-#
-
 """
 Configuration file for Pytest
 """
-
 import os
-import pytest
-from qtpy.QtWidgets import QApplication
-import sys
 
-# To activate/deactivate certain things for pytest's only
-# NOTE: Please leave this before any other import here!!
+# NOTE: Muss vor allen anderen Imports stehen!
 os.environ['SPYDER_PYTEST'] = 'True'
+os.environ.setdefault('QT_API', 'pyqt5')   # Binding für qtpy festlegen
 
-
-@pytest.fixture(scope="session")
-def qapp():
-    """QApplication für alle Qt-Tests"""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
-    yield app
-    app.quit()
+import pytest
 
 
 @pytest.fixture
 def qt_app(qapp):
-    """Stelle sicher, dass QApplication vorhanden ist"""
+    """Alias auf das qapp-Fixture von pytest-qt (für ältere Tests)."""
     return qapp
