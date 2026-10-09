@@ -41,15 +41,9 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance"
 ]
 dependencies = [
-	"xlrd",
-	"lxml",
 	"paho-mqtt",
-	"ipywidgets",
-	"hightime",
 	"QtAwesome",
-	"QDarkStyle",
-	"svgelements",
-	"semi-ate-common",
+	"semi-ate-common",                 # libname: ate_common
 ]
 
 [project.urls]
@@ -66,7 +60,6 @@ dependencies = [
 
 [project.entry-points."spyder.plugins"]
 	lab_control = "plugin_control:LabControlPlugin"
-	lab_gui = "plugin_gui:LabGuiPlugin"
 
 [project.entry-points."ate.org"]
 	semiplug = "plugin_semictrl:Plugin"

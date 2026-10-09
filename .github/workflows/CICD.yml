@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PYTHON_VERSION: ["3.10", "3.11"]                #  "3.12" : exceeded the maximum execution time 
+        PYTHON_VERSION: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout Pull Requests
@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup environment
         run: |
-          mamba install -y spyder=6.1.7 
+          mamba install -y spyder=6.1.7
           pip install PyQt5
           cd scripts
           python package_tool.py --change-env cicd
@@ -84,7 +84,7 @@ jobs:
           print("Mosquitto did not become ready in time")
           sys.exit(1)
           PY
-          
+
       - name: Show installed packages
         shell: bash -el {0}
         run: |
@@ -176,7 +176,7 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Apply version
-        run: |        
+        run: |
           conda install tomli
           echo Version is ${{ steps.computed_version.outputs.VERSION }}
           cd scripts
