@@ -10,10 +10,11 @@ import yaml
 class SignalToChannelTab(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget, read_only: bool = False):
         super().__init__(parent=parent)
-        uic.loadUi(__file__.replace('.py', '.ui'), self)
-
-        self.parent = parent
+        
+        self._owner = parent
         self.read_only = read_only
+        
+        uic.loadUi(__file__.replace('.py', '.ui'), self)
 
     def setup(self):
         self.signal_to_channel_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
@@ -175,4 +176,4 @@ class SignalToChannelTab(QtWidgets.QWidget):
 
     @property
     def feedback(self) -> QtWidgets.QLineEdit:
-        return self.parent.feedback
+        return getattr(self._owner, 'feedback', None)

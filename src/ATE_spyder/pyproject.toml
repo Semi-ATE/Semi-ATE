@@ -87,3 +87,5 @@ test = [
 	test_runner = "ate_spyder_test_runner.plugin:TestRunnerPlugin"
 	stil = "ate_spyder_stil.plugin:STIL"
 
+[tool.pytest.ini_options]
+    qt_api = "pyqt5"

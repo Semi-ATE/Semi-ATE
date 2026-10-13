@@ -23,8 +23,8 @@ class IntParamWizard(wizardbase.wizardbase):
         return []
 
 @pytest.fixture
-def window(qtbot, qt_app):
-    """Erstelle ein Wizard-Fenster für Tests"""
+def window(qtbot):
+    """Erstelle ein Wizard-Fenster für Tests."""
     wizard_window = IntParamWizard()
     qtbot.addWidget(wizard_window)
     return wizard_window

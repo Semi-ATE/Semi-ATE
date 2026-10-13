@@ -1,14 +1,3 @@
-sphinx_rtd_theme
-xlrd
-h5py
-lxml
 paho-mqtt
-openpyxl
-ipywidgets
-tables
-hightime
 QtAwesome
-QDarkStyle
-svgelements
 semi-ate-common
-Semi-ATE-Metis

@@ -16,7 +16,6 @@ import logging
 import time
 import json
 import qtawesome as qta
-import qdarkstyle
 import socket
 from PyQt5 import uic
 from qtpy.QtCore import Signal
@@ -45,7 +44,7 @@ logger = logging.getLogger(__name__)        # Spyder logger
 _ = get_translation("spyder")
 
 
-__version__ = "0.0.19"
+__version__ = "0.0.20"
 
 
 class LabControlDialog(QtWidgets.QDialog):
@@ -201,7 +200,6 @@ class LabControl(PluginMainWidget):
         self.progressbar = Barprogress(self)
         self.sequencer = Sequencer(self, self.gui.Fsequencer)
         self.adjustUI()
-        self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.closeEvent = self.close
         self._createFilterMenu()
         self._createSeqMenu()

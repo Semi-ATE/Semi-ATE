@@ -16,12 +16,15 @@ class ParallelismWidget(QWidget):
     def __init__(self, parent: Optional['QWidget'], parallelism_count: int):
         super().__init__(parent=parent)
         self.hardware_wizard: HardwareWizard = parent
-        uic.loadUi(__file__.replace(".py", ".ui"), self)
+
         self._selected_site_num = None
-        self.parallelism_count = parallelism_count
+        self._parallelism_count = parallelism_count
+        self._parallelism_store: ParallelismStore = ParallelismStore()
         self.current_item: QListWidgetItem = None
         self.current_table: ParallelismConfig = None
-        self._parallelism_store: ParallelismStore = ParallelismStore()
+        uic.loadUi(__file__.replace(".py", ".ui"), self)
+
+        self.parallelism_count = parallelism_count
         self._setup_ui()
         self._setup_handlers()
         self._parallelism_add_list: Dict[str, int] = {}

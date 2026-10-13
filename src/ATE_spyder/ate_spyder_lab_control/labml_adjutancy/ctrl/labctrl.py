@@ -3,26 +3,19 @@
 
 Created on Thu Jan  7 17:18:03 2021
 
-@author: ZLin526F
-
 
 """
 import logging
 from ate_common.logger import LogLevel
 import inspect
 from ate_test_app.sequencers.MqttClient import MqttClient
-from ate_common.logger import LogLevel
 from labml_adjutancy.misc.mqtt_client import mqtt_deviceattributes, mqtt_init
 from labml_adjutancy.misc.common import color
-from labml_adjutancy.misc.softscope import Softscope
 
 # Logging
 logger = logging.getLogger(__name__)
 
-__author__ = "Zlin526F"
-__credits__ = ["Zlin526F"]
-__email__ = "Zlin526F@github"
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 
 mqttc = None
@@ -31,7 +24,6 @@ mqttc = None
 class ShortName(object):
     def __init__(self, topinstname):
         self.topinstname = topinstname
-        # self._initdic = tuple(self.__class__.__dict__)
         self._initdic = dir(self)
 
     def setattr(self, name, value):
@@ -71,7 +63,7 @@ class LabCtrl(mqtt_deviceattributes):
     def __init__(self, logger=None):
         """Initialise."""
         global mqttc
-        
+
         logger.log_message(LogLevel.Debug(), "LabCtrl:__init__ start")
         super().__init__()
         self.logger = logger
@@ -84,7 +76,6 @@ class LabCtrl(mqtt_deviceattributes):
         self.mqttc = mqttc
         self._sbreakpoint = False
         self.mqtt_list = ["_breakpoint"]
-        self.softscope = Softscope(mqttc, logger, "softscope")
         logger.debug = self.log_debug
         logger.measure = self.log_measure
         logger.info = self.log_info
@@ -144,8 +135,9 @@ class LabCtrl(mqtt_deviceattributes):
             if hasattr(instrument, "instName"):
                 shortname = instrument.instName
             self.topinstance.setattr(shortname, instrument)
+            if hasattr(instrument, 'setshortnames'):
+                getattr(parent, instancename).setshortnames(self.topinstance)
         self.topinstance.setattr("logger", self.logger)
-        self.topinstance.setattr("softscope", self.softscope)
         if hasattr(self.topinstance, self.default_topinstname):
             self.labmlNames()
         self.log_debug(f"set shortnames: {self.topinstance}")
@@ -168,7 +160,6 @@ class LabCtrl(mqtt_deviceattributes):
         object.__setattr__(self, self.default_topinstname, ShortName(self.default_topinstname))
         self.topinstance = object.__getattribute__(self, self.default_topinstname)
         self.topinstname = self.default_topinstname
-        self.softscope.init(self.topinstance)
         self.loglevel = data[parameter[0]] if parameter[0] in data and data[parameter[0]] in dir(LogLevel) else ""
         if self.loglevel != "":
             self.logger.set_logger_level(LogLevel[self.loglevel])
