@@ -56,9 +56,8 @@ class LabControlPlugin(SpyderDockablePlugin):
     def get_description() -> str:
         return _('Lab Control integration')
 
-    @classmethod
-    def get_icon(cls):
-        return cls.create_icon('mdi.chip')
+    def get_icon(self):
+        return self.create_icon('mdi.chip')
 
     def on_initialize(self):
         logger.debug("ATE_lab_control:on_initialize")
