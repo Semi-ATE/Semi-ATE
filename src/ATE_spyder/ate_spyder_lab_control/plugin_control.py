@@ -60,7 +60,7 @@ class LabControlPlugin(SpyderDockablePlugin):
         return self.create_icon('mdi.chip')
 
     def on_initialize(self):
-        logger.debug("ATE_lab_control:on_initialize")
+        logger.debug("LabControlPlugin:on_initialize")
         pass
 
     def update_font(self):
@@ -69,21 +69,21 @@ class LabControlPlugin(SpyderDockablePlugin):
     # -------------------- Plugin initialization ------------------------------
     @on_plugin_available(plugin=ATE.NAME)
     def on_ate_available(self):
-        logger.debug("ATE_lab_control:on_ate_available")
+        logger.debug("LabControlPlugin:on_ate_available")
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         ate.sig_ate_project_loaded.connect(self._setup_test_runner_widget)
         ate.sig_ate_progname.connect(self.runflow_changed)
         ate.sig_stop_debugging.connect(widget.debug_stop)
-        logger.debug("ATE_lab_control:on_ate_available done")
+        logger.debug("LabControlPlugin:on_ate_available done")
 
     def _setup_test_runner_widget(self):
-        logger.debug("ATE_lab_control:_setup_test_runner_widget")
+        logger.debug("LabControlPlugin:_setup_test_runner_widget")
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
-        logger.debug("ATE_lab_control:_setup_test_runner_widget done")
+        logger.debug("LabControlPlugin:_setup_test_runner_widget done")
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
@@ -95,7 +95,7 @@ class LabControlPlugin(SpyderDockablePlugin):
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
-        logger.debug("ATE_lab_control:on_editor_available new version")
+        logger.debug("LabControlPlugin:on_editor_available new version")
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
@@ -103,7 +103,7 @@ class LabControlPlugin(SpyderDockablePlugin):
             self.sig_run_cell.connect(editor.run_cell)
             self.sig_debug_cell.connect(editor.debug_cell)
             self.sig_stop_debugging.connect(editor.stop_debugging)
-        logger.debug("ATE_lab_control:on_editor_available done")
+        logger.debug("LabControlPlugin:on_editor_available done")
 
     def runflow_changed(self, progname: str):
         widget: LabControl = self.get_widget()
@@ -113,8 +113,11 @@ class LabControlPlugin(SpyderDockablePlugin):
 
     @on_plugin_teardown(plugin=ATE.NAME)
     def on_ate_teardown(self):
+        logger.debug("LabControlPlugin: on_ate_teardown")
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
 
-        widget.set_project_information(None)
+        # widget.set_project_information(None)
         ate.sig_ate_project_changed.disconnect(widget.notify_project_status)
+        widget.close()
+        logger.debug("LabControlPlugin: on_ate_teardown done")

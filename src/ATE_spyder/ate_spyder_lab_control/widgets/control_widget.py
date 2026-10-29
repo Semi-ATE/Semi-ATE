@@ -17,6 +17,7 @@ import time
 import json
 import qtawesome as qta
 import socket
+import subprocess
 from PyQt5 import uic
 from qtpy.QtCore import Signal
 from PyQt5 import QtWidgets, QtCore
@@ -28,6 +29,7 @@ from labml_adjutancy.misc.mqtt_client import (
     mqtt_init,
     mylogger,
 )
+from labml_adjutancy.misc.mqtt_broker import find_broker
 from labml_adjutancy.ctrl.sequencer import Sequencer
 from labml_adjutancy.ctrl.barprogress import Barprogress
 
@@ -44,7 +46,7 @@ logger = logging.getLogger(__name__)        # Spyder logger
 _ = get_translation("spyder")
 
 
-__version__ = "0.0.20"
+__version__ = "0.0.21"
 
 
 class LabControlDialog(QtWidgets.QDialog):
@@ -76,7 +78,8 @@ class LabControl(PluginMainWidget):
     timefile = "lab_controltimes.json"
 
     _states = {  # from extern mean: no handling from Lab Control, normally you get this message if your are running the MiniSCTGui
-        "notconnect": ["no connection to broker ", "color: rgb(0, 0, 0);background-color: #ff0000"],
+        "notconnect": ["no Connection to broker ", "color: rgb(0, 0, 0);background-color: #ff0000"],
+        "mosquitto": ["Broker not found, use internal local mosquitto", None],
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
         "ready": ["get ready from extern", None],
@@ -215,9 +218,11 @@ class LabControl(PluginMainWidget):
         self.configdata = None
         self.saveconfigdata = None
         self.mqttclient = None
+        self.broker = None
         logger.debug("LabControl:__init__ done")
 
     def setup_widget(self, project_info):
+        local_broker = ""
         self.project_info = project_info
         self.project_info.lab_control = self
         current_config = project_info.load_plugin_cfg(project_info.active_hardware, self.plugin.NAME)
@@ -225,11 +230,27 @@ class LabControl(PluginMainWidget):
         if current_config.keys() != default_parameter.keys():
             current_config = {}
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
+        
+        logger.debug(f"LabControl: setup_widget() start {self.current_config.broker}")
+        # self.logging(default_parameter)
+        if not find_broker(self.current_config.broker, 1883):
+            logger.debug(f"LabControl: Broker ({self.current_config.broker}/1883) not found")
+            self.logging(f"[INFO] LabControl: Broker ({self.current_config.broker}/1883) not found")
+
+            mosquitto_path = os.environ["CONDA_PREFIX"] + "\Library\sbin\mosquitto.exe"
+            self.state = "mosquitto"
+            if not os.path.isfile(mosquitto_path):
+                self.logging("[ERROR] LabControl: mosquitto broker missing. Please install mosquitto first: 'conda installl mosquitto'")
+                return
+            self.logging(f"[INFO] LabControl: use internal mosquitto Broker ({default_parameter['broker']}/1883)")
+            self.broker = subprocess.Popen([mosquitto_path])        # , '-v'
+            if self.broker is not None:
+                logger.debug("LabControl: start local mosquitto broker")
+                self.logging("[INFO] LabControl: Broker start local mosquitto broker in extra terminal, please do not terminate this window")
+                local_broker = " (local mosquitto)"
 
         self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
         logger.debug(f"LabControl:setup_widget mqtt sendtopic = {self.sendtopic}")
-
-        self.logger.info(f"mqtt sendtopic = {self.sendtopic}")
         if self.mqttclient is None:
             mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
             if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
@@ -241,7 +262,7 @@ class LabControl(PluginMainWidget):
         hostname = socket.gethostname()
         self.computername = hostname if self.mqttclient.broker == "127.0.0.1" or \
             socket.gethostbyname(hostname) == self.mqttclient.broker else self.mqttclient.broker
-        self.gui.Lconnect.setText(f"{self.computername} ({socket.gethostbyname(hostname)})")
+        self.gui.Lconnect.setText(f"{self.computername} ({socket.gethostbyname(hostname)}) {local_broker}")
         self.openconfig()
         self.menuBar.adjustSize()
 
@@ -303,8 +324,10 @@ class LabControl(PluginMainWidget):
         menuBar.addAction(resetaction)
         self.resetaction = resetaction
 
+        # entry 'Preferences'
         actionTools = QtWidgets.QAction(self.gui)
         actionTools.setIcon(qta.icon("ei.wrench", color="white", scale_factor=1.0))
+        actionTools.setText("Preferences")
         resetaction.setToolTip("Preferences")
         actionTools.triggered.connect(lambda: self.guiclicked("preferences"))
         menuBar.addAction(actionTools)
@@ -313,12 +336,14 @@ class LabControl(PluginMainWidget):
         menuLog = menuBar.addMenu(menuBar.titles[1])
         menuView = menuBar.addMenu(menuBar.titles[2])
 
+        # entries under 'Tools'
         resetTools = QtWidgets.QAction(self.gui)
         resetTools.setIcon(qta.icon("ei.refresh", color="white", scale_factor=1.0))
         resetTools.setText("reset Lab Control")
         resetTools.triggered.connect(self.reset)
         menuTools.addAction(resetTools)
 
+        # entries under 'View'
         actionProgress = QtWidgets.QAction(self.gui)
         actionProgress.setText("    Progress")
         actionProgress.setCheckable(True)
@@ -335,6 +360,7 @@ class LabControl(PluginMainWidget):
         actionSequencer_Parameters.triggered.connect(lambda: self.guiclicked("sequencer"))
         self.actionSequencer_Parameters = actionSequencer_Parameters
 
+        # entries under 'Logging'
         actionClrProTime = QtWidgets.QAction(self.gui)
         actionClrProTime.setText("Clear progress timing")
         menuLog.addAction(actionClrProTime)
@@ -375,6 +401,7 @@ class LabControl(PluginMainWidget):
         menuLog.addAction(actiondebug)
         actiondebug.triggered.connect(lambda: self.guiclicked("debug"))
         self.actiondebug = actiondebug
+        # end Menue entries
 
         # set connect:
         self.gui.RBdebug.clicked.connect(lambda: self.logging(self.logging_cmd_reload))
@@ -1093,11 +1120,18 @@ class LabControl(PluginMainWidget):
 
     def close(self, event=None):
         self.saveconfig()
+        if self.broker is not None and self.broker.poll is None:
+            self.broker.terminate()
+            if self.broker.poll is None:
+                self.broker.kill()
         super().close()
 
     def __del__(self):
         self.close()
         super().__del__
+        
+    def __exit__(self, *exc):
+        self.close()
 
     def debug_stop(self):
         ''' do update the state of lab control when the test application is stoped '''
