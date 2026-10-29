@@ -18,6 +18,7 @@ import json
 import qtawesome as qta
 import socket
 import subprocess
+import platform
 from PyQt5 import uic
 from qtpy.QtCore import Signal
 from PyQt5 import QtWidgets, QtCore
@@ -80,6 +81,7 @@ class LabControl(PluginMainWidget):
     _states = {  # from extern mean: no handling from Lab Control, normally you get this message if your are running the MiniSCTGui
         "notconnect": ["no Connection to broker ", "color: rgb(0, 0, 0);background-color: #ff0000"],
         "mosquitto": ["Broker not found, use internal local mosquitto", None],
+        "no_mosquitto": ["Mosquitto missing,  install mosquitto first:", "color: rgb(0, 0, 0);background-color: #ff0000"],        
         "busy": ["get busy from extern", None],
         "next": ["get next from extern", None],
         "ready": ["get ready from extern", None],
@@ -232,14 +234,14 @@ class LabControl(PluginMainWidget):
         self.current_config = LabConrolConfig(**default_parameter if current_config == {} else current_config)
         
         logger.debug(f"LabControl: setup_widget() start {self.current_config.broker}")
-        # self.logging(default_parameter)
         if not find_broker(self.current_config.broker, 1883):
             logger.debug(f"LabControl: Broker ({self.current_config.broker}/1883) not found")
             self.logging(f"[INFO] LabControl: Broker ({self.current_config.broker}/1883) not found")
 
-            mosquitto_path = os.environ["CONDA_PREFIX"] + "\Library\sbin\mosquitto.exe"
+            mosquitto_path = os.environ["CONDA_PREFIX"] + "\Library\sbin\mosquitto.exe" if platform.system() =='Windows' else os.environ["CONDA_PREFIX"] + "/sbin/mosquitto" 
             self.state = "mosquitto"
             if not os.path.isfile(mosquitto_path):
+                self.state = "no_mosquitto"
                 self.logging("[ERROR] LabControl: mosquitto broker missing. Please install mosquitto first: 'conda installl mosquitto'")
                 return
             self.logging(f"[INFO] LabControl: use internal mosquitto Broker ({default_parameter['broker']}/1883)")
@@ -248,11 +250,13 @@ class LabControl(PluginMainWidget):
                 logger.debug("LabControl: start local mosquitto broker")
                 self.logging("[INFO] LabControl: Broker start local mosquitto broker in extra terminal, please do not terminate this window")
                 local_broker = " (local mosquitto)"
-
+            if not find_broker(default_parameter["broker"], 1883):
+                logger.error(f"LabControl: Could not start local mosquitto ({default_parameter['broker']}/1883)")
+                self.logging(f"[ERROR] LabControl: Could not start local mosquitto ({default_parameter['broker']}/1883)")
         self.sendtopic = f"ate/{self.current_config.device_id}/TestApp/"
         logger.debug(f"LabControl:setup_widget mqtt sendtopic = {self.sendtopic}")
         if self.mqttclient is None:
-            mqttclient = mqtt_init(typ="control")  # prepare mqtt for controlling
+            mqttclient = mqtt_init(typ="control")                 # prepare mqtt for controlling
             if not mqttclient.init(self.current_config.broker):   # mqtt client connect to default broker and default topic
                 self.state = "notconnect"
                 return
