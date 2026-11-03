@@ -41,6 +41,7 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance"
 ]
 dependencies = [
+    "mosquitto",
 	"paho-mqtt",
 	"QtAwesome",
 	"semi-ate-common",                 # libname: ate_common
