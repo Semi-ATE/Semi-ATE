@@ -36,7 +36,7 @@ class LabControlPlugin(SpyderDockablePlugin):
     WIDGET_CLASS = LabControl
     CONF_SECTION = NAME
     REQUIRES = [ATE.NAME]
-    OPTIONAL = [Plugins.MainMenu, Plugins.Editor, Plugins.Projects]
+    OPTIONAL = [Plugins.Toolbar, Plugins.Editor, Plugins.Projects]
     CONF_FILE = False
     TABIFY = [Plugins.Help]
 
@@ -70,6 +70,7 @@ class LabControlPlugin(SpyderDockablePlugin):
     # -------------------- Plugin initialization ------------------------------
     @on_plugin_available(plugin=ATE.NAME)
     def on_ate_available(self):
+        print("LabControlPlugin: on_ate_available")
         logger.debug("LabControlPlugin:on_ate_available")
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
@@ -77,14 +78,17 @@ class LabControlPlugin(SpyderDockablePlugin):
         ate.sig_ate_progname.connect(self.runflow_changed)
         ate.sig_stop_debugging.connect(widget.debug_stop)
         logger.debug("LabControlPlugin:on_ate_available done")
+        print("LabControlPlugin: on_ate_available done")        
 
     def _setup_test_runner_widget(self):
         logger.debug("LabControlPlugin:_setup_test_runner_widget")
+        print("LabControlPlugin:_setup_test_runner_widget")
         widget: LabControl = self.get_widget()
         ate: ATE = self.get_plugin(ATE.NAME)
         project_info = ate.get_project_navigation()
         widget.setup_widget(project_info)
         logger.debug("LabControlPlugin:_setup_test_runner_widget done")
+        print("LabControlPlugin:_setup_test_runner_widget done")
 
     @on_plugin_available(plugin=Plugins.Projects)
     def on_projects_available(self):
@@ -92,11 +96,12 @@ class LabControlPlugin(SpyderDockablePlugin):
         projects.sig_project_closed.connect(self.project_closed)
 
     def project_closed(self):
-        pass
+        print("LabControlPlugin: project_closed")
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
-        logger.debug("LabControlPlugin:on_editor_available new version")
+        print("LabControlPlugin: on_editor_available")
+        logger.debug("LabControlPlugin:on_editor_available")
         editor = self.get_plugin(Plugins.Editor)
         self.sig_edit_goto_requested.connect(editor.load)
 
@@ -105,6 +110,7 @@ class LabControlPlugin(SpyderDockablePlugin):
             self.sig_debug_cell.connect(editor.debug_cell)
             self.sig_stop_debugging.connect(editor.stop_debugging)
         logger.debug("LabControlPlugin:on_editor_available done")
+        print("LabControlPlugin: on_editor_available done")
 
     def runflow_changed(self, progname: str):
         widget: LabControl = self.get_widget()
@@ -114,11 +120,32 @@ class LabControlPlugin(SpyderDockablePlugin):
 
     @on_plugin_teardown(plugin=ATE.NAME)
     def on_ate_teardown(self):
+        print("LabControlPlugin: on_plugin_teardown start")
         logger.debug("LabControlPlugin: on_ate_teardown")
         widget: LabControl = self.get_widget()
-        ate: ATE = self.get_plugin(ATE.NAME)
+        ate: ATE = self.get_plugin(ATE.NAME, error=False)
 
-        # widget.set_project_information(None)
-        ate.sig_ate_project_changed.disconnect(widget.notify_project_status)
+        if ate is not None:
+            try:
+                ate.sig_ate_project_changed.disconnect(widget.notify_project_status)
+            except (TypeError, RuntimeError):
+                pass
+
         widget.close()
         logger.debug("LabControlPlugin: on_ate_teardown done")
+        print("LabControlPlugin: on_plugin_teardown done")
+        
+    @on_plugin_teardown(plugin=Plugins.Editor)
+    def on_editor_teardown(self):
+        print("LabControlPlugin: on_editor_teardown")        
+        self.on_ate_teardown()
+        
+    # ----------------------- Plugin close ---------------------------------
+    def on_close(self, cancelable=False):
+        print("LabControlPlugin: on_close")        
+        self.on_ate_teardown()
+
+    def __exit__(self, *exc):
+        print("LabControlPlugin: __exit__")        
+        self.on_ate_teardown()
+        
