@@ -25,14 +25,13 @@ We assume the following
 MQTT
 ----
 
-The components use MQTT for communication, so an MQTT server must
-be available. The easiest solution is to use HBMQTT, which is a
-Python based broker. It can be installed via PIP or conda/mamba.
+The components use MQTT for communication. An external MQTT broker can be used. 
+If none is found, a Mosquitto broker is started on the local computer.
+On a Windows computer, a terminal is launched for this purpose; it must not be closed during operation,
+otherwise communication with the test benches will no longer work. 
 
-You can also use `mosquitto <https://mosquitto.org/download/>`_.
-Download and install as administrator to your PC (ask your IT service desk for support).
-
-
+You can also install `mosquitto <https://mosquitto.org/download/>`_ yourself on your computer or network. 
+To do so, `download <https://mosquitto.org/download/>`_ the program and install it on your PC as an administrator (contact your IT help desk for assistance).
 
 
 Environment:

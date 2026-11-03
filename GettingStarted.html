@@ -418,11 +418,12 @@ And if c:users&lt;your username&gt;.condarc exist, than remove this file.</p></l
 </section>
 <section id="mqtt">
 <h2>MQTT<a class="headerlink" href="#mqtt" title="Link to this heading"></a></h2>
-<p>The components use MQTT for communication, so an MQTT server must
-be available. The easiest solution is to use HBMQTT, which is a
-Python based broker. It can be installed via PIP or conda/mamba.</p>
-<p>You can also use <a class="reference external" href="https://mosquitto.org/download/">mosquitto</a>.
-Download and install as administrator to your PC (ask your IT service desk for support).</p>
+<p>The components use MQTT for communication. An external MQTT broker can be used.
+If none is found, a Mosquitto broker is started on the local computer.
+On a Windows computer, a terminal is launched for this purpose; it must not be closed during operation,
+otherwise communication with the test benches will no longer work.</p>
+<p>You can also install <a class="reference external" href="https://mosquitto.org/download/">mosquitto</a> yourself on your computer or network.
+To do so, <a class="reference external" href="https://mosquitto.org/download/">download</a> the program and install it on your PC as an administrator (contact your IT help desk for assistance).</p>
 <section id="environment">
 <h3>Environment:<a class="headerlink" href="#environment" title="Link to this heading"></a></h3>
 </section>
