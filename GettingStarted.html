@@ -399,7 +399,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>Last change: Nov 03, 2026</p>
+  <p>Last change: Nov 04, 2026</p>
 <section id="getting-started-with-ate-for-developers">
 <h1>Getting Started with ATE for developers<a class="headerlink" href="#getting-started-with-ate-for-developers" title="Link to this heading"></a></h1>
 <p>This document describes how to install semi-ate for developers to develop and test your test-flows. For example, for evaluation a sensor device or to use a test flow later in production.</p>
@@ -433,7 +433,7 @@ To do so, <a class="reference external" href="https://mosquitto.org/download/">d
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">init</span>     <span class="o">//</span> <span class="n">once</span> <span class="n">you</span> <span class="n">initialize</span> <span class="n">conda</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">custom</span> <span class="n">terminal</span> <span class="n">using</span>
 <span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">this</span> <span class="n">command</span> <span class="ow">or</span>
 <span class="gp">&gt;&gt;&gt; </span>                                <span class="o">//</span> <span class="n">you</span> <span class="n">are</span> <span class="n">using</span> <span class="n">conda</span> <span class="n">terminal</span> <span class="n">you</span> <span class="n">don</span><span class="s1">'t need to run it again</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>  <span class="n">python</span><span class="o">=</span><span class="mf">3.11</span> <span class="n">spyder</span><span class="o">=</span><span class="mf">6.1.7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">maxiconda</span><span class="p">)</span> <span class="n">PS</span><span class="p">:</span><span class="o">&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">Semi</span><span class="o">-</span><span class="n">ATE</span>  <span class="n">python</span><span class="o">=</span><span class="mf">3.14</span> <span class="n">spyder</span><span class="o">=</span><span class="mf">6.1.8</span>
 </pre></div>
 </div>
 </section>
@@ -470,8 +470,7 @@ You can install Git using your distribution’s default package manager. For exa
 &gt;&gt;&gt; (Semi-ATE) $ git clone https://github.com/Semi-ATE/Semi-ATE.git
 &gt;&gt;&gt; (Semi-ATE) $ cd Semi-ATE
 &gt;&gt;&gt; (Semi-ATE) $ python scripts/package_tool.py --change-env cicd
-&gt;&gt;&gt; (Semi-ATE) $ cd src/ATE_spyder/ate_spyder_lab_control
-&gt;&gt;&gt; (Semi-ATE) $ pip install -e .
+&gt;&gt;&gt; (Semi-ATE) $ conda install mosquitto
 </pre></div>
 </div>
 </section>
