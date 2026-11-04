@@ -43,7 +43,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.11 spyder=6.1.7
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.14 spyder=6.1.8
 
 
 activate environment
@@ -84,9 +84,7 @@ Install Semi-ATE packages for developers
   >>> (Semi-ATE) $ git clone https://github.com/Semi-ATE/Semi-ATE.git
   >>> (Semi-ATE) $ cd Semi-ATE
   >>> (Semi-ATE) $ python scripts/package_tool.py --change-env cicd
-  >>> (Semi-ATE) $ cd src/ATE_spyder/ate_spyder_lab_control
-  >>> (Semi-ATE) $ pip install -e .
-
+  >>> (Semi-ATE) $ conda install mosquitto
 
 Running Spyder
 --------------
