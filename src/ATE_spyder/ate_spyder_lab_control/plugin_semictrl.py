@@ -92,41 +92,41 @@ class Plugin:
     @hookimpl
     def get_importer(importer_name):
         if Plugin.prefix() in importer_name:
-            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_importer")
+            logger.debug(f"{Plugin.prefix()}.get_importer")
             return LabCtrl()
 
     @hookimpl
     def get_exporter(exporter_name):
         if Plugin.prefix() in exporter_name:
-            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_exporter")
+            logger.debug(f"{Plugin.prefix()}.get_exporter")
             return LabCtrl()
 
     @hookimpl
     def get_equipment(equipment_name):
         if "SemiCtrl." in equipment_name:
-            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_equipment")
+            logger.debug(f"{Plugin.prefix()}.get_equipment")
             return LabCtrl()
 
     @hookimpl
     def get_devicepin_importer(importer_name):
         if "SemiCtrl." in importer_name:
-            logger.log_message(LogLevel.Debug(),f"{Plugin.prefix()}.get_devicepin_importer")
+            logger.debug(f"{Plugin.prefix()}.get_devicepin_importer")
             return LabCtrl()
 
     @hookimpl
     def get_instrument(instrument_name: str, logger):
         if instrument_name == "SemiCtrl.Control":
-            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_instrument")
+            logger.debug(f"{Plugin.prefix()}.get_instrument")
             return LabCtrl(logger)
 
     @hookimpl
     def get_instrument_proxy(instrument_name):
         if Plugin.prefix() in instrument_name:
-            logger.log_message(LogLevel.Debug(), f"{Plugin.prefix()}.get_instrument_proxy")
+            logger.debug(f"{Plugin.prefix()}.get_instrument_proxy")
             return LabCtrl()
 
     @hookimpl
     def get_configuration_options(object_name):
         if Plugin.prefix() in object_name:
-            logger.log_message(LogLevel.Debug(), "{Plugin.prefix()}.get_configuration_options")
+            logger.debug("{Plugin.prefix()}.get_configuration_options")
             return LabCtrl.parameter[object_name]
