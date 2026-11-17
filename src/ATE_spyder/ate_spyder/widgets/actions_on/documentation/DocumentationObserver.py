@@ -45,7 +45,7 @@ class EventHandler(EventHandlerBase):
         file_name = os.path.basename(path)
         parent_item = get_changed_dir_item(self.section_root, path, self.path)
         logger.debug(f"EventHandler: _on_file_modified: {type(parent_item)}")
-        parent_item.add_file_item(file_name, path, parent_item.rowCount())
+        parent_item.add_file__item(file_name, path, parent_item.rowCount())
 
     def _on_dir_modified(self, event):
         # event is generated each time we do change the content of folder
