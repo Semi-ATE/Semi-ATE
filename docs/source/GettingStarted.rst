@@ -7,30 +7,30 @@ Getting Started with ATE for developers
 
 This document describes how to install semi-ate for developers to develop and test your test-flows. For example, for evaluation a sensor device or to use a test flow later in production.
 
-You will be guided how to install the required *conda packages*, to configure `spyder <https://www.spyder-ide.org/>`_ with different plugins, so that you can then create 
+You will be guided how to install the required *conda packages*, to configure `spyder <https://www.spyder-ide.org/>`_ with different plugins, so that you can then create
 test sequences with different tests with relatively little effort.
 
 We assume the following
 -----------------------
 
 * You have installed Maxiconda, Anaconda or `Miniforge <https://conda-forge.org/download/>`_ on your computer.
-  You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later. 
+  You should not install maxiconda as an administrator, otherwise you need admin rights for each package that is to be installed later.
   This is not practical. And you should install maxiconda only for you, not for all users.
   Maxiconda is not running together with Anaconda, you  have to  deinstall Anaconda first!
   And if c:\users\<your username>\.condarc exist, than remove this file.
-    
+
 * You are running *Windows 10 64Bit* or an *linux system*.
 
 
 MQTT
 ----
 
-The components use MQTT for communication. An external MQTT broker can be used. 
+The components use MQTT for communication. An external MQTT broker can be used.
 If none is found, a Mosquitto broker is started on the local computer.
 On a Windows computer, a terminal is launched for this purpose; it must not be closed during operation,
-otherwise communication with the test benches will no longer work. 
+otherwise communication with the test benches will no longer work.
 
-You can also install `mosquitto <https://mosquitto.org/download/>`_ yourself on your computer or network. 
+You can also install `mosquitto <https://mosquitto.org/download/>`_ yourself on your computer or network.
 To do so, `download <https://mosquitto.org/download/>`_ the program and install it on your PC as an administrator (contact your IT help desk for assistance).
 
 
@@ -43,7 +43,7 @@ create new environment (conda/mamba)
    >>> (maxiconda) PS:> conda init     // once you initialize conda in your custom terminal using
    >>>                                 // this command or
    >>>                                 // you are using conda terminal you don't need to run it again
-   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.14 spyder=6.1.8
+   >>> (maxiconda) PS:> conda create -n Semi-ATE  python=3.12 spyder=6.1.7
 
 
 activate environment
@@ -59,7 +59,7 @@ Installing Git
 Before proceeding, you need to have Git installed on your system to download the Semi-ATE repositories.
 
 **For Windows:**
-Download the installer from the `official Git website <https://git-scm.com/download/win>`_. Run the downloaded setup file. In the Git installation manager, leave all default values and checkboxes as they are, and click through to install it. 
+Download the installer from the `official Git website <https://git-scm.com/download/win>`_. Run the downloaded setup file. In the Git installation manager, leave all default values and checkboxes as they are, and click through to install it.
 
 **For Linux:**
 You can install Git using your distribution's default package manager. For example, on Debian/Ubuntu-based systems, open your terminal and run:
@@ -67,9 +67,9 @@ You can install Git using your distribution's default package manager. For examp
   >>> $ sudo apt update
   >>> $ sudo apt install git
 
-Once Git is installed, you will need to use a Git Bash terminal for the upcoming steps. 
-* On **Windows**, open the **Git Bash** application you just installed. 
-* On **Linux**, continue using your standard terminal. 
+Once Git is installed, you will need to use a Git Bash terminal for the upcoming steps.
+* On **Windows**, open the **Git Bash** application you just installed.
+* On **Linux**, continue using your standard terminal.
 
 Make sure to activate your conda environment again in this new terminal before proceeding:
 
@@ -101,18 +101,18 @@ than check View->Panes and enable the necessary panes
    :width: 400
    :class: hover400
    :alt:   Spyder_enable_docstyle
-   
+
 
 
 
 
 and View->Toolbars
-   
+
  .. image:: _static/pictures/semiate_enable_toolbar.png
    :width: 400
    :class: hover400
    :alt:   Spyder_enable_docstyle
-   
+
 
 
 Now we are ready to open an existing project or create a new one.
