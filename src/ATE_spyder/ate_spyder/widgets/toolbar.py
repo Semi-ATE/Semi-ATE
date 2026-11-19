@@ -25,13 +25,13 @@ class ToolbarItems:
 
 
 class ToolBar(ApplicationToolbar):
-    ID = 'ate_toolbar'
+    ID = 'ATE Plugin toolbar'
 
     def __init__(self, project_info, parent, identifier):
         logger.debug(f"ToolBar.__init__ START - identifier: {identifier}")
 
         if spyder_version > "5.5.6":
-            super().__init__(parent=parent, title="ATE Plugin toolbar", toolbar_id=identifier)
+            super().__init__(parent=parent, title=self.ID, toolbar_id=identifier)
         else:
             super().__init__(parent, identifier)
 
